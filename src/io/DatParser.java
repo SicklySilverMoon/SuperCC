@@ -14,7 +14,6 @@ import java.io.IOException;
 public class DatParser{
 
     private final static int MSCC_SIGNATURE = 0x0002AAAC;
-
     private final static int TWORLD_LYNX_SIGNATURE = 0x0102AAAC;
 
     private final File file;
@@ -75,8 +74,10 @@ public class DatParser{
     }
 
     /**
-     * Load a level.
+     * Load a level from the .dat file.
      * @param level The level number
+     * @param rngSeed The starting rng seed
+     * @param step The starting step of the level. Either Step.ODD or Step.EVEN
      * @return a Level object
      */
     public Level parseLevel(int level, int rngSeed, Step step) throws IOException{
@@ -151,7 +152,7 @@ public class DatParser{
     }
 
     /**
-     * DatParser constructor. The .dat file is skimmed in order to fromOrdinal an
+     * DatParser constructor. The .dat file is skimmed in order to create an
      * array of pointers to each individual level. No levels get loaded in
      * this constructor.
      * @param file The .dat file
@@ -180,10 +181,7 @@ public class DatParser{
             throw e;
         }
     }
-
-    /**
-     * The InputStream
-     */
+    
     private class DatReader extends FileInputStream{
         private int readByte() throws IOException{
             return read();
@@ -197,17 +195,17 @@ public class DatParser{
         private byte[] readAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
             readNBytes(asciiBytes, 0, length-1);
-            read();
+            read();                                         // trailing '\0'
             return asciiBytes;
         }
         private byte[] readEncodedAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
             readNBytes(asciiBytes, 0, length-1);
-            read();
+            read();                                         // trailing '\0'
             for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99);
             return asciiBytes;
         }
-        public DatReader (File datFile) throws IOException{
+        DatReader (File datFile) throws IOException{
             super(datFile);
         }
     }

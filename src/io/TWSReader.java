@@ -8,8 +8,8 @@ import java.util.HashMap;
 
 public class TWSReader{
 
-    private HashMap<Long, Long> lPassLevelOffsets = new HashMap<Long, Long>();
-    private HashMap<Long, Long> passLevelOffsets = new HashMap<Long, Long>();
+    private HashMap<Long, Long> lPassLevelOffsets = new HashMap<>();
+    private HashMap<Long, Long> passLevelOffsets = new HashMap<>();
 
     private final File twsFile;
 

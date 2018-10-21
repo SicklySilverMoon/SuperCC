@@ -1,13 +1,13 @@
 package emulator;
 
 import game.Creature;
+import game.Level;
 import game.Step;
 import graphics.MainWindow;
 import io.DatParser;
 import io.Solution;
 import io.TWSReader;
 import savestateTree.Tree;
-import game.Level;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

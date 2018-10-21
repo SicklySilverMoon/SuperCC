@@ -9,7 +9,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
 import java.io.*;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;

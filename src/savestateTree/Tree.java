@@ -13,7 +13,7 @@ public class Tree{
         currentNode = new Node(savestate, currentNode);
     }
     public void addSaveState(byte[] savestate, int branch){
-        leaves.put(branch, currentNode);
+        leaves.put(branch, new Node(savestate, currentNode.getParent()));
     }
 
     public byte[] rewind(){

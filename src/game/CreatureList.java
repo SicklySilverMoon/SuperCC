@@ -1,7 +1,5 @@
 package game;
 
-import java.util.BitSet;
-
 import static game.Tile.*;
 
 /**

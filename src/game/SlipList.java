@@ -1,7 +1,6 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SlipList extends ArrayList<Creature>{
 

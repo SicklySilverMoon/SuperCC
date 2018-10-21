@@ -1,8 +1,8 @@
 package savestateTree;
 
 /**
- * A node of the savestate tree. This consists of a game and a pointer to its
- * parent.
+ * A node of the savestate tree. This consists of a savestate and a pointer to
+ * its parent.
  */
 class Node{
 

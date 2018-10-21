@@ -5,8 +5,6 @@ import game.Level;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.font.LineMetrics;
-import java.io.StringReader;
 
 public class TextPanel extends JPanel{
 
