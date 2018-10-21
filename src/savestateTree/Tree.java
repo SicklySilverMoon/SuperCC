@@ -6,12 +6,11 @@ import java.util.HashMap;
 
 public class Tree{
 
-    protected HashMap<Integer, Node> leaves;
+    private HashMap<Integer, Node> leaves;
     private Node currentNode;
 
     public void addSaveState(byte[] savestate){
-        Node newNode = new Node(savestate, currentNode);
-        currentNode = newNode;
+        currentNode = new Node(savestate, currentNode);
     }
     public void addSaveState(byte[] savestate, int branch){
         leaves.put(branch, currentNode);
@@ -28,7 +27,7 @@ public class Tree{
     }
 
     public Tree(Level startingLevel){
-        this.leaves = new HashMap<Integer, Node>(1000);
+        this.leaves = new HashMap<>();
         currentNode = new Node(startingLevel.save(), null);
     }
 

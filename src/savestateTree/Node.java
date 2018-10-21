@@ -8,28 +8,19 @@ class Node{
 
     private byte[] savestate;
     private Node parent;
-    public int branch;
-    public int nodeIndex;
-    public int parentIndex;
 
-    //TODO
-    public int getDepth(){
-        return 1;
-    }
-
-    public byte[] getSavestate(){
+    byte[] getSavestate(){
         return savestate;
     }
 
-    public Node getParent(){
+    Node getParent(){
         if (parent != null) return parent;
         else return this;
     }
 
-    public Node(byte[] savestate, Node parent){
+    Node(byte[] savestate, Node parent){
         this.parent = parent;
         this.savestate = savestate;
-        this.branch = branch;
     }
 
 }
