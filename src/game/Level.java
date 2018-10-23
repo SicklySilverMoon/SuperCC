@@ -74,6 +74,12 @@ public class Level extends SaveState {
     public SlipList getSlipList(){
         return slipList;
     }
+    public int[][] getTrapConnections(){
+        return trapConnections;
+    }
+    public int[][] getCloneConnections(){
+        return cloneConnections;
+    }
     
     public static boolean isKeyMovement(char c){
         return c != '?';
