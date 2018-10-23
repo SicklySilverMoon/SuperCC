@@ -10,7 +10,8 @@ public class MainWindow extends JFrame {
 
     public static final int TILE_SIZE = 20;
 
-    private GamePanel gamePanel;
+    private JPanel container;
+    GamePanel gamePanel;
     private TextPanel textPanel;
     private MenuBar menuBar;
 
@@ -20,8 +21,7 @@ public class MainWindow extends JFrame {
         menuBar = new MenuBar(this, emulator);
         setJMenuBar(menuBar);
 
-        JPanel container = new JPanel();
-
+        container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 
         gamePanel = new GamePanel(emulator, "resources/tiles.png");
@@ -36,7 +36,6 @@ public class MainWindow extends JFrame {
         setResizable(false);
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
     }
 
     public void repaint(Level level, boolean fromSratch){
