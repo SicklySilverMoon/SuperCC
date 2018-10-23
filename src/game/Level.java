@@ -68,6 +68,12 @@ public class Level extends SaveState {
     public short[] getBoots(){
         return boots;
     }
+    public CreatureList getMonsterList(){
+        return monsterList;
+    }
+    public SlipList getSlipList(){
+        return slipList;
+    }
     
     public static boolean isKeyMovement(char c){
         return c != '?';
