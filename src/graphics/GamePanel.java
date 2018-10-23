@@ -27,8 +27,10 @@ class GamePanel extends JPanel{
 
     private Tile[] previousFG = new Tile[32*32];
     private SuperCC emulator;
-    private boolean showMonsterList = false;
-    private boolean showSlipList = false;
+    private boolean showMonsterList;
+    private boolean showSlipList;
+    private boolean showTrapConnections;
+    private boolean showCloneConnections;
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
@@ -82,6 +84,8 @@ class GamePanel extends JPanel{
         previousFG = layerFG.clone();
         if (showMonsterList) drawMonsterList(level.getMonsterList().list);
         if (showSlipList) drawSlipList(level.getSlipList());
+        if (showCloneConnections) drawButtonConnections(level.getCloneConnections());
+        if (showTrapConnections) drawButtonConnections(level.getTrapConnections());
     }
     
     private void drawMonsterList(Creature[] monsterList){
@@ -111,12 +115,30 @@ class GamePanel extends JPanel{
         }
     }
     
-    public void setMonsterListVisible(boolean visible){
-        showMonsterList = true;
+    private void drawButtonConnections(int[][] connections){
+        Graphics2D g = fg.createGraphics();
+        g.setColor(Color.BLACK);
+        for (int[] connection : connections){
+            int pos1 = connection[0], pos2 = connection[1];
+            int x1 = pos1 & 0b11111, x2 = pos2 & 0b11111, y1 = pos1 >> 5, y2 = pos2 >> 5;
+            g.drawLine(x1*TILE_SIZE + TILE_SIZE / 2,
+                y1*TILE_SIZE + TILE_SIZE / 2,
+                x2*TILE_SIZE + TILE_SIZE / 2,
+                y2*TILE_SIZE + TILE_SIZE / 2);
+        }
     }
     
+    public void setMonsterListVisible(boolean visible){
+        showMonsterList = visible;
+    }
     public void setSlipListVisible(boolean visible){
-        showSlipList = true;
+        showSlipList = visible;
+    }
+    public void setTrapsVisible(boolean visible){
+        showTrapConnections = visible;
+    }
+    public void setClonesVisible(boolean visible){
+        showCloneConnections = visible;
     }
     
     private static void initialiseTileGraphics(String tilespngPath) throws IOException{
