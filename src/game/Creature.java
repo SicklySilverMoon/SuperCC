@@ -184,8 +184,14 @@ public class Creature{
 
     // Position-related methods
 
-    int getPosition() {
+    public int getPosition() {
         return position;
+    }
+    public int getX(){
+        return position & 0b11111;
+    }
+    public int getY(){
+        return position >>> 5;
     }
     void setPosition(int position){
         this.position = position;
@@ -258,15 +264,16 @@ public class Creature{
         }
     }
 
-    private MoveFlags pushBlock(Creature block, Level level, int newPosition){
+    private MoveFlags pushBlock(Creature block, Level level){
         if (block.sliding) {
             int blockDirection = block.getDirection();
             if (blockDirection == direction || turnFromDir(blockDirection, TURN_AROUND) == direction)
                 return MoveFlags.FAIL;
         }
+        int newChipPosition = block.position;
         MoveFlags blockFlags = block.tryMove(direction, level);
         if (blockFlags.moved){
-            MoveFlags chipFlags = tryEnter(direction, level, newPosition, level.layerFG[newPosition]);
+            MoveFlags chipFlags = tryEnter(direction, level, newChipPosition, level.layerFG[newChipPosition]);
             if (chipFlags.moved) {
                 if (blockFlags.pressedRedButton) {
                     int redButtonIndex;
@@ -308,7 +315,6 @@ public class Creature{
             default: return true;
         }
     }
-    // canEnter is only used by clone machines & blocks.
     boolean canEnter(int direction, Tile tile, Level level){
         switch (tile) {
             case FLOOR: return true;
@@ -439,9 +445,9 @@ public class Creature{
             case THIN_WALL_LEFT: return new MoveFlags(direction != DIRECTION_RIGHT);
             case BLOCK:
                 if (isChip()){
-                    for (Creature m : level.slipList) if (m.getPosition() == newPosition) return pushBlock(m, level, newPosition);
+                    for (Creature m : level.slipList) if (m.getPosition() == newPosition) return pushBlock(m, level);
                     Creature block = new Creature(newPosition, Tile.BLOCK);
-                    return pushBlock(block, level, newPosition);
+                    return pushBlock(block, level);
                 }
                 return MoveFlags.FAIL;
             case DIRT:
@@ -697,6 +703,15 @@ public class Creature{
                     int exitPosition = teleportPosition+directionToMotion(direction);
                     Tile exitTile = level.layerFG[exitPosition];
                     if (exitTile.isTransparent()) exitTile = level.layerBG[exitPosition];
+                    if (isChip() && exitTile == Tile.BLOCK){
+                        if (canEnter(direction, level.layerBG[exitPosition], level)){
+                            Creature block = new Creature(DIRECTION_UP, BLOCK, exitPosition);
+                            if (block.canEnter(direction, level.layerFG[exitPosition+directionToMotion(direction)], level)){
+                                break;
+                            }
+                        }
+                        pushBlock(new Creature(DIRECTION_UP, BLOCK, exitPosition), level);
+                    }
                     if (canEnter(direction, exitTile, level)) break;
                 }
                 while (i != portalIndex);
@@ -799,6 +814,7 @@ public class Creature{
     public Creature(int bitMonster){
         direction   = bitMonster & 0b11_0000_0000000000;
         monsterType = bitMonster & 0b00_1111_0000000000;
+        if (monsterType == CHIP_SLIDING) sliding = true;
         position    = bitMonster & 0b00_0000_1111111111;
     }
 
