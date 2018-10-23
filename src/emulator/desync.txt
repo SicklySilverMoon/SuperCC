@@ -3,10 +3,9 @@ Monsters kill swimming chip (?)
 Mouse
 Teleport into block/exit
 Teeth/Blobs exiting traps
-Bouncing from FFs
 Bumping unreachable monsters
 Partial post sliding blocks
-Traps pressed by chip dont stay open long enough
+Two clones one tick
 
 45 monster lab
 120 Alphabet Soup
@@ -21,7 +20,6 @@ Traps pressed by chip dont stay open long enough
 50 Once upon a troubadour
 51 Dancing on Ice
 60 Red, Blue and Green
-66 The Aftermath
 76 Complex
 77 Oh-ho!
 78 Slide Show
