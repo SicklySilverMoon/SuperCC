@@ -1,11 +1,12 @@
 package io;
 
+import game.Level;
 import game.Step;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 
-public class Solution implements Serializable{
+public class Solution{
 
     public static final int QUARTER_MOVES = 0,
                             HALF_MOVES = 1,
@@ -34,6 +35,26 @@ public class Solution implements Serializable{
             writer.write(b);
         }
         return writer.toByteArray();
+    }
+    
+    public Solution(String s){
+        try {
+            String[] lines = s.split("\n");
+            step = Step.valueOf(lines[0].substring(5));
+            rngSeed = Integer.valueOf(lines[1].substring(5));
+            if (lines.length > 2) halfMoves = lines[2].getBytes();
+            else halfMoves = new byte[0];
+        }
+        catch (Exception e){
+            throw new IllegalArgumentException("Invalid solution file:\n" + s);
+        }
+    }
+    
+    @Override
+    public String toString(){
+        return "Step " + step + "\n"
+            + "Seed " + rngSeed + "\n"
+            + new String(halfMoves);
     }
 
     public Solution(byte[] moves, int rngSeed, Step step, int format){

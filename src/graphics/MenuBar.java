@@ -8,7 +8,9 @@ import io.Solution;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.io.*;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
@@ -34,7 +36,6 @@ public class MenuBar extends JMenuBar{
                     emulator.openLevelset(fc.getSelectedFile());
                 }
             });
-            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
             add(openLevelset);
 
             add(new JSeparator());
@@ -101,58 +102,87 @@ public class MenuBar extends JMenuBar{
 
         }
     }
-
-    // TODO Everything
+    
     private class SolutionMenu extends JMenu{
         public SolutionMenu(){
             super("Solution");
-
-            JMenuItem save = new JMenuItem("Save");
-            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
-            save.addActionListener(event -> {
+    
+            JMenuItem saveAs = new JMenuItem("Save as");
+            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
+            saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(
-                        l.getMoves(), l.getRngSeed(), l.getStep(), Solution.SUCC_MOVES
+                    l.getMoves(), l.getRngSeed(), l.getStep(), Solution.SUCC_MOVES
                 );
                 try{
-                    FileOutputStream fos = new FileOutputStream("test.ser");
-                    ObjectOutputStream oos = new ObjectOutputStream(fos);
-                    oos.writeObject(solution);
-                    fos.close();
-                    oos.close();
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
+                    fc.setCurrentDirectory(new File("."));
+                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        FileOutputStream fos = new FileOutputStream(fc.getSelectedFile());
+                        fos.write(solution.toString().getBytes());
+                        fos.close();
+                    }
                 }
                 catch (IOException e){
                     e.printStackTrace();
                     emulator.throwError("Could not save file");
                 }
             });
+            add(saveAs);
+    
+            JMenuItem save = new JMenuItem("Save");
             add(save);
+            save.setEnabled(false);
 
             JMenuItem load = new JMenuItem("Load");
             load.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
             load.addActionListener(event -> {
                 try{
-                    FileInputStream fis = new FileInputStream("test.ser");
-                    ObjectInputStream ois = new ObjectInputStream(fis);
-                    Solution solution = (Solution) ois.readObject();
-                    emulator.playSolution(solution);
-                    ois.close();
-                    fis.close();
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
+                    fc.setCurrentDirectory(new File("."));
+                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        FileInputStream fis = new FileInputStream(fc.getSelectedFile());
+                        Solution solution = new Solution(new String(fis.readAllBytes()));
+                        emulator.playSolution(solution);
+                        fis.close();
+                    }
                 }
                 catch (IOException e){
                     e.printStackTrace();
-                    emulator.throwError("Could not load file");
-                } catch (ClassNotFoundException e){}
+                    emulator.throwError("Could not load file:\n" + e.getMessage());
+                }
             });
             add(load);
-
+    
             JMenuItem copy = new JMenuItem("Copy moves to clipboard");
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
             copy.addActionListener(event -> {
-                String moves = new String(emulator.getLevel().getMoves());
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(moves), null);
+                Level level = emulator.getLevel();
+                Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep(), Solution.SUCC_MOVES);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
             });
             add(copy);
+    
+            JMenuItem paste = new JMenuItem("Paste moves from clipboard");
+            paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, CTRL_MASK));
+            paste.addActionListener(event -> {
+                Level level = emulator.getLevel();
+                Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
+                Solution s;
+                try {
+                    s = new Solution((String) t.getTransferData(DataFlavor.stringFlavor));
+                    emulator.playSolution(s);
+                }
+                catch (IllegalArgumentException e){
+                    emulator.throwError(e.getMessage());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            });
+            add(paste);
         }
     }
 
@@ -199,6 +229,34 @@ public class MenuBar extends JMenuBar{
     private class ViewMenu extends JMenu{
         public ViewMenu(){
             super("View");
+    
+            JToggleButton monsterList = new JToggleButton("Show Monster List");
+            monsterList.addActionListener(e -> {
+                window.gamePanel.setMonsterListVisible(((AbstractButton) e.getSource()).isSelected());
+                window.repaint(emulator.getLevel(), true);
+            });
+            add(monsterList);
+    
+            JToggleButton slipList = new JToggleButton("Show Slip List");
+            slipList.addActionListener(e -> {
+                window.gamePanel.setSlipListVisible(((AbstractButton) e.getSource()).isSelected());
+                window.repaint(emulator.getLevel(), true);
+            });
+            add(slipList);
+    
+            JToggleButton clones = new JToggleButton("Show Clone connections");
+            clones.addActionListener(e -> {
+                window.gamePanel.setClonesVisible(((AbstractButton) e.getSource()).isSelected());
+                window.repaint(emulator.getLevel(), true);
+            });
+            add(clones);
+    
+            JToggleButton traps = new JToggleButton("Show Trap Connections");
+            traps.addActionListener(e -> {
+                window.gamePanel.setTrapsVisible(((AbstractButton) e.getSource()).isSelected());
+                window.repaint(emulator.getLevel(), true);
+            });
+            add(traps);
 
         }
     }
@@ -209,6 +267,7 @@ public class MenuBar extends JMenuBar{
         add(new LevelMenu());
         add(new SolutionMenu());
         add(new TWSMenu());
+        add(new ViewMenu());
         this.window = window;
         this.emulator = emulator;
     }
