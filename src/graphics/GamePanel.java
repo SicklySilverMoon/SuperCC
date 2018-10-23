@@ -24,20 +24,18 @@ class GamePanel extends JPanel{
     private BufferedImage fg = new BufferedImage(32*TILE_SIZE, 32*TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
     // The image behind the background (32*32 floor tiles)
     private BufferedImage bbg = new BufferedImage(32*TILE_SIZE, 32*TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
+    private BufferedImage overlay;
 
     private Tile[] previousFG = new Tile[32*32];
     private SuperCC emulator;
-    private boolean showMonsterList;
-    private boolean showSlipList;
-    private boolean showTrapConnections;
-    private boolean showCloneConnections;
+    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections;
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
     private static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
-    private static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS];
-    private static final int[][] blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
-    private static final int[][] blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
+    private static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
+        blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
+        blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     
     /**
      * Draw the game state. This does not update the graphics - call
@@ -49,6 +47,7 @@ class GamePanel extends JPanel{
         g.drawImage(bbg, 0, 0, null);
         g.drawImage(bg, 0, 0, null);
         g.drawImage(fg, 0, 0, null);
+        g.drawImage(overlay, 0, 0, null);
     }
     
     /**
@@ -82,41 +81,42 @@ class GamePanel extends JPanel{
             }
         }
         previousFG = layerFG.clone();
-        if (showMonsterList) drawMonsterList(level.getMonsterList().list);
-        if (showSlipList) drawSlipList(level.getSlipList());
-        if (showCloneConnections) drawButtonConnections(level.getCloneConnections());
-        if (showTrapConnections) drawButtonConnections(level.getTrapConnections());
+        
+        overlay = new BufferedImage(32 * TILE_SIZE, 32 * TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
+        WritableRaster r = overlay.getRaster();
+        if (showMonsterList) drawMonsterList(level.getMonsterList().list, r);
+        if (showSlipList) drawSlipList(level.getSlipList(), r);
+        Graphics2D g = overlay.createGraphics();
+        if (showCloneConnections) drawButtonConnections(level.getCloneConnections(), g);
+        if (showTrapConnections) drawButtonConnections(level.getTrapConnections(), g);
     }
     
-    private void drawMonsterList(Creature[] monsterList){
-        WritableRaster raster = fg.getRaster();
+    private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
         for (int i = 0; i < monsterList.length; i++){
             Creature monster = monsterList[i];
             int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
             char[] chars = String.valueOf(i).toCharArray();
             for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10);
+                int digit = Character.digit(chars[j], 10) + 1;
                 raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blackDigits[digit]);
             }
         }
     }
     
-    private void drawSlipList(SlipList slipList){
-        WritableRaster raster = fg.getRaster();
+    private void drawSlipList(SlipList slipList, WritableRaster raster){
         int yOffset = TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2;
         for (int i = 0; i < slipList.size(); i++){
             Creature monster = slipList.get(i);
             int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
             char[] chars = String.valueOf(i).toCharArray();
             for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10);
+                int digit = Character.digit(chars[j], 10) + 1;
                 raster.setPixels(x+4*j, y+yOffset, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blueDigits[digit]);
             }
         }
     }
     
-    private void drawButtonConnections(int[][] connections){
-        Graphics2D g = fg.createGraphics();
+    private void drawButtonConnections(int[][] connections, Graphics2D g){
         g.setColor(Color.BLACK);
         for (int[] connection : connections){
             int pos1 = connection[0], pos2 = connection[1];
