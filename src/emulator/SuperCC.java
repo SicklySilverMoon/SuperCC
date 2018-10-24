@@ -43,6 +43,9 @@ public class SuperCC implements KeyListener{
     public Level getLevel(){
         return level;
     }
+    public Tree getSavestates(){
+        return savestates;
+    }
 
     public SuperCC() throws IOException {
         this.window = new MainWindow(this);
