@@ -257,6 +257,13 @@ public class MenuBar extends JMenuBar{
                 window.repaint(emulator.getLevel(), true);
             });
             add(traps);
+    
+            JToggleButton history = new JToggleButton("Show Move History");
+            history.addActionListener(e -> {
+                window.gamePanel.setHistoryVisible(((AbstractButton) e.getSource()).isSelected());
+                window.repaint(emulator.getLevel(), true);
+            });
+            add(history);
 
         }
     }

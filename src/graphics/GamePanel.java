@@ -12,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.BitSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import static graphics.MainWindow.TILE_SIZE;
@@ -28,7 +30,7 @@ class GamePanel extends JPanel{
 
     private Tile[] previousFG = new Tile[32*32];
     private SuperCC emulator;
-    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory = true;
+    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
@@ -127,13 +129,29 @@ class GamePanel extends JPanel{
     
     private void drawChipHistory(Position currentPosition, Graphics2D g){
         LinkedList<Position> history = emulator.getSavestates().getChipHistory();
+        history.addFirst(currentPosition);
         float length = history.size();
         int i = 0;
-        Position previousPos = currentPosition;
-        for (Position pos : history){
-            g.setColor(Color.getHSBColor(i++/length, 1, 1));
-            g.drawLine(previousPos.getGraphicX(), previousPos.getGraphicY(), pos.getGraphicX(), pos.getGraphicY());
+        Position previousPos = history.getLast();
+        boolean[][] tileEnterCount = new boolean[32*32][21];
+        int oldOffset = 0, offset = 0;
+        Iterator iter = history.descendingIterator();
+        while(iter.hasNext()){
+            Position pos = (Position) iter.next();
+            int tile = pos.getPosition();
+            if (tile == previousPos.getPosition()) continue;
+            if (tileEnterCount[tile][oldOffset]){
+                for (offset = 0; offset < 21; offset++) if (!tileEnterCount[tile][offset]) break;
+            }
+            else offset = oldOffset;
+            if (offset == 21) offset = 0;
+            float hue = (float) (0.5 + i++ / length / 1);
+            //g.setColor(Color.getHSBColor(hue, (float) 0.9, (float) 0.8));
+            g.setColor(Color.WHITE);
+            g.drawLine(previousPos.getGraphicX(oldOffset), previousPos.getGraphicY(oldOffset), pos.getGraphicX(offset), pos.getGraphicY(offset));
             previousPos = pos;
+            oldOffset = offset;
+            tileEnterCount[tile][offset] = true;
         }
     }
     
@@ -148,6 +166,9 @@ class GamePanel extends JPanel{
     }
     public void setClonesVisible(boolean visible){
         showCloneConnections = visible;
+    }
+    public void setHistoryVisible(boolean visible){
+        showHistory = visible;
     }
     
     private static void initialiseTileGraphics(String tilespngPath) throws IOException{
