@@ -2,7 +2,6 @@ package graphics;
 
 import emulator.SuperCC;
 import game.*;
-import org.w3c.dom.css.RGBColor;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import static graphics.MainWindow.TILE_SIZE;
 
@@ -28,7 +28,7 @@ class GamePanel extends JPanel{
 
     private Tile[] previousFG = new Tile[32*32];
     private SuperCC emulator;
-    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections;
+    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory = true;
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
@@ -89,15 +89,16 @@ class GamePanel extends JPanel{
         Graphics2D g = overlay.createGraphics();
         if (showCloneConnections) drawButtonConnections(level.getCloneConnections(), g);
         if (showTrapConnections) drawButtonConnections(level.getTrapConnections(), g);
+        if (showHistory) drawChipHistory(new Position(level.getChip().getPosition()), g);
     }
     
     private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
         for (int i = 0; i < monsterList.length; i++){
             Creature monster = monsterList[i];
             int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
-            char[] chars = String.valueOf(i).toCharArray();
+            char[] chars = (String.valueOf(i+1)).toCharArray();
             for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10) + 1;
+                int digit = Character.digit(chars[j], 10);
                 raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blackDigits[digit]);
             }
         }
@@ -108,9 +109,9 @@ class GamePanel extends JPanel{
         for (int i = 0; i < slipList.size(); i++){
             Creature monster = slipList.get(i);
             int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
-            char[] chars = String.valueOf(i).toCharArray();
+            char[] chars = String.valueOf(i+1).toCharArray();
             for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10) + 1;
+                int digit = Character.digit(chars[j], 10);
                 raster.setPixels(x+4*j, y+yOffset, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blueDigits[digit]);
             }
         }
@@ -119,12 +120,20 @@ class GamePanel extends JPanel{
     private void drawButtonConnections(int[][] connections, Graphics2D g){
         g.setColor(Color.BLACK);
         for (int[] connection : connections){
-            int pos1 = connection[0], pos2 = connection[1];
-            int x1 = pos1 & 0b11111, x2 = pos2 & 0b11111, y1 = pos1 >> 5, y2 = pos2 >> 5;
-            g.drawLine(x1*TILE_SIZE + TILE_SIZE / 2,
-                y1*TILE_SIZE + TILE_SIZE / 2,
-                x2*TILE_SIZE + TILE_SIZE / 2,
-                y2*TILE_SIZE + TILE_SIZE / 2);
+            Position pos1 = new Position(connection[0]), pos2 = new Position(connection[1]);
+            g.drawLine(pos1.getGraphicX(), pos1.getGraphicY(), pos2.getGraphicX(), pos2.getGraphicY());
+        }
+    }
+    
+    private void drawChipHistory(Position currentPosition, Graphics2D g){
+        LinkedList<Position> history = emulator.getSavestates().getChipHistory();
+        float length = history.size();
+        int i = 0;
+        Position previousPos = currentPosition;
+        for (Position pos : history){
+            g.setColor(Color.getHSBColor(i++/length, 1, 1));
+            g.drawLine(previousPos.getGraphicX(), previousPos.getGraphicY(), pos.getGraphicX(), pos.getGraphicY());
+            previousPos = pos;
         }
     }
     

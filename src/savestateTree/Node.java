@@ -14,8 +14,12 @@ class Node{
     }
 
     Node getParent(){
-        if (parent != null) return parent;
+        if (hasParent()) return parent;
         else return this;
+    }
+    
+    boolean hasParent(){
+        return parent != null;
     }
 
     Node(byte[] savestate, Node parent){

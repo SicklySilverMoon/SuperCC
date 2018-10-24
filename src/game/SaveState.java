@@ -26,9 +26,9 @@ public class SaveState {
         byte[] traps = this.traps.toByteArray();
         int length = 4                              // Length
                 + 2                                 // Version
+                + 2                                 // Chip
                 + 32 * 32                           // BG Layer
                 + 32 * 32                           // FG Layer
-                + 2                                 // Chip
                 + 2                                 // Timer
                 + 2                                 // Chips left
                 + 8                                 // Keys
@@ -40,11 +40,11 @@ public class SaveState {
                 + 2 + 2 * monsterList.list.length   // Monster list
                 + 2 + 2 * slipList.size();          // Slip list
         SavestateWriter writer = new SavestateWriter(length);
-        writer.writeShort(1);
         writer.writeInt(length);
+        writer.writeShort(1);
+        writer.writeShort((short) chip.bits());
         writer.writeLayer(layerBG);
         writer.writeLayer(layerFG);
-        writer.writeShort((short) chip.bits());
         writer.writeShort(timer);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
@@ -62,14 +62,18 @@ public class SaveState {
         
         return writer.toByteArray();
     }
+    
+    public static Creature getChip(byte[] savestate){
+        return new Creature(((savestate[6] & 0xFF) << 8) | (savestate[7] & 0xFF));
+    }
 
     public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
         int length = reader.readInt();
         int version = reader.readShort();
+        chip = new Creature(reader.readShort());
         layerBG = reader.readLayer(32*32);
         layerFG = reader.readLayer(32*32);
-        chip = new Creature(reader.readShort());
         timer = (short) reader.readShort();
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);

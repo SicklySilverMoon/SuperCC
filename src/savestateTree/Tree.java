@@ -1,8 +1,11 @@
 package savestateTree;
 
 import game.Level;
+import graphics.Position;
+import game.SaveState;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class Tree{
 
@@ -29,6 +32,17 @@ public class Tree{
     public Tree(Level startingLevel){
         this.leaves = new HashMap<>();
         currentNode = new Node(startingLevel.save(), null);
+    }
+    
+    public LinkedList<Position> getChipHistory(){
+        Node n = currentNode;
+        LinkedList<Position> history = new LinkedList<>();
+        history.add(new Position(SaveState.getChip(n.getSavestate()).getPosition()));
+        while (n.hasParent()){
+            n = n.getParent();
+            history.add(new Position(SaveState.getChip(n.getSavestate()).getPosition()));
+        }
+        return history;
     }
 
 }
