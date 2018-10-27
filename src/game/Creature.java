@@ -742,11 +742,6 @@ public class Creature{
         Creature copy = clone();
         for (int newDirection : directions){
             
-            if (isChip() && isSliding()){
-                if (!level.layerBG[position].isFF()) return;
-                if (newDirection == direction) return;
-            }
-            
             MoveFlags flags = tryMove(newDirection, level);
             
             if (flags.pressedGreenButton){

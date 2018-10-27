@@ -96,9 +96,9 @@ public class SuperCC implements KeyListener{
         int[] directions;
         if (isClick(b)){
             Position screenPosition = Position.screenPosition(new Position(level.getChip().getPosition()));
-            Position seekedPosition = Position.clickPosition(screenPosition, b);
-            directions = level.getChip().seekPosition(seekedPosition.getIndex());
-            level.setClick(seekedPosition.getIndex());
+            Position clickedPosition = Position.clickPosition(screenPosition, b);
+            directions = level.getChip().seekPosition(clickedPosition.getIndex());
+            level.setClick(clickedPosition.getIndex());
             return tick(b, directions, repaint);
         }
         else{
@@ -122,6 +122,7 @@ public class SuperCC implements KeyListener{
                     int y = solution.halfMoves[++move];
                     Position chipPosition = new Position(level.getChip().getPosition());
                     Position clickPosition = chipPosition.add(x, y);
+                    level.setClick(clickPosition.getIndex());
                     b = clickPosition.clickByte(chipPosition);
                 }
                 boolean tickedTwice = tick(b, false);
