@@ -1,19 +1,22 @@
 Rewind sliplist
 Monsters kill swimming chip (?)
-Mouse
-Teleport into block/exit
+TWS mouse
+Teleport into block at edge of screen
 Teeth/Blobs exiting traps
 Bumping unreachable monsters
 Partial post sliding blocks
 Two clones one tick
 
+20 Tossed Salad
 45 monster lab
+99 Catacombs
 120 Alphabet Soup
 124 Fire Trap
 
 1 Entrance Examination
 10 Annoying Wall
 16 Two sets of rules
+20 Super Chip
 24 Impossible?
 27 Jumble
 37 Blue Moon

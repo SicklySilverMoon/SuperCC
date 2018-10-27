@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import static graphics.MainWindow.TILE_SIZE;
-import static graphics.Position.UNCLICKABLE;
+import static game.Position.UNCLICKABLE;
 
 class GamePanel extends JPanel{
 
@@ -91,7 +91,7 @@ class GamePanel extends JPanel{
         Graphics2D g = overlay.createGraphics();
         if (showCloneConnections) drawButtonConnections(level.getCloneConnections(), g);
         if (showTrapConnections) drawButtonConnections(level.getTrapConnections(), g);
-        if (showHistory) drawChipHistory(new Position(level.getChip().getPosition()), g);
+        if (showHistory) drawChipHistory(level.getChip().getPosition(), g);
     }
     
     private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
@@ -236,11 +236,10 @@ class GamePanel extends JPanel{
         public void mouseClicked(MouseEvent e) {
             Position clickPosition = new Position(e);
             Creature chip = emulator.getLevel().getChip();
-            Position chipPosition = new Position(chip.getPosition());
-            byte b = (byte) clickPosition.clickByte(chipPosition);
+            byte b = (byte) clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
             emulator.getLevel().setClick(clickPosition.getIndex());
-            int[] directions = chip.seekPosition(clickPosition.getIndex());
+            int[] directions = chip.seek(clickPosition);
             emulator.tick(b, directions, true);
         }
         

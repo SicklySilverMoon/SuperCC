@@ -1,11 +1,17 @@
-package graphics;
+package game;
 
 import java.awt.event.MouseEvent;
 
+import static game.Creature.*;
 import static graphics.MainWindow.TILE_SIZE;
 import static java.lang.Math.abs;
 
 public class Position {
+    
+    private static final int  MOVE_DOWN  =  0b100000,
+        MOVE_UP    = -0b100000,
+        MOVE_RIGHT =  0b000001,
+        MOVE_LEFT  = -0b000001;
     
     public static final byte UNCLICKABLE = 127;
     
@@ -26,28 +32,55 @@ public class Position {
     public int getIndex(){
         return index;
     }
-    void setIndex(int index){
+    public void setIndex(int index){
         this.index = index;
         x = index & 0b11111;
         y = index >>> 5;
+    }
+    
+    private void moveUp(){
+        y--;
+        index += MOVE_UP;
+    }
+    private void moveLeft(){
+        x--;
+        index += MOVE_LEFT;
+    }
+    private void moveDown(){
+        y++;
+        index += MOVE_DOWN;
+    }
+    private void moveRight(){
+        x++;
+        index += MOVE_RIGHT;
+    }
+    public Position move(int direction){
+        Position p = clone();
+        switch (direction){
+            case DIRECTION_UP:    p.moveUp(); break;
+            case DIRECTION_LEFT:  p.moveLeft(); break;
+            case DIRECTION_DOWN:  p.moveDown(); break;
+            case DIRECTION_RIGHT: p.moveRight(); break;
+        }
+        return p;
     }
     
     public Position add(int x, int y){
         return new Position(this.x + x, this.y + y);
     }
     
-    int getGraphicX(){
+    public int getGraphicX(){
         return x*TILE_SIZE + TILE_SIZE/2;
     }
-    int getGraphicY(){
+    public int getGraphicY(){
         return y*TILE_SIZE + TILE_SIZE/2;
     }
     
-    int getGraphicX(int offset){
+    public int getGraphicX(int offset){
         if (offset >= OFFSETS.length) offset = OFFSETS.length - 1;
         return x*TILE_SIZE + OFFSETS[offset];
     }
-    int getGraphicY(int offset){
+    public int getGraphicY(int offset){
         if (offset >= OFFSETS.length) offset = OFFSETS.length - 1;
         return y*TILE_SIZE + OFFSETS[offset];
     }
@@ -82,6 +115,23 @@ public class Position {
         return UNCLICKABLE;
     }
     
+    public int[] seek(Position seekedPosition){
+        int verticalDifference = y - seekedPosition.y;
+        int horizontalDifference = x - seekedPosition.x;
+        
+        int verticalDirection = -1;
+        if (verticalDifference > 0) verticalDirection = DIRECTION_UP;
+        else if (verticalDifference < 0) verticalDirection = DIRECTION_DOWN;
+        
+        int horizontalDirection = -1;
+        if (horizontalDifference > 0) horizontalDirection = DIRECTION_LEFT;
+        else if (horizontalDifference < 0) horizontalDirection = DIRECTION_RIGHT;
+        
+        if (abs(verticalDifference) >= abs(horizontalDifference))
+            return new int[] {verticalDirection, horizontalDirection};
+        else return new int[] {horizontalDirection, verticalDirection};
+    }
+    
     public Position(MouseEvent e){
         this.x = e.getX() / TILE_SIZE;
         this.y = e.getY() / TILE_SIZE;
@@ -96,6 +146,20 @@ public class Position {
     
     public Position(int index){
         setIndex(index);
+    }
+    
+    @Override
+    public String toString() {
+        return "("+x+", "+y+")";
+    }
+    
+    @Override
+    public Position clone(){
+        return new Position(index);
+    }
+    
+    public boolean equals(Position p){
+        return index == p.index;
     }
     
 }

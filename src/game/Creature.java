@@ -11,11 +11,6 @@ import static java.lang.Math.abs;
  */
 public class Creature{
 
-    private static final int  MOVE_DOWN  =  0b100000,
-                              MOVE_UP    = -0b100000,
-                              MOVE_RIGHT =  0b000001,
-                              MOVE_LEFT  = -0b000001;
-
     public static final int  BUG             = 0b00_0000_0000000000,
                              FIREBALL        = 0b00_0001_0000000000,
                              PINK_BALL       = 0b00_0010_0000000000,
@@ -40,7 +35,7 @@ public class Creature{
     static final int TURN_LEFT = DIRECTION_LEFT, TURN_RIGHT = DIRECTION_RIGHT,
                              TURN_AROUND = DIRECTION_DOWN, TURN_FORWARD = DIRECTION_UP;
 
-    private int position;
+    private Position position;
     private int monsterType;
     private int direction;
     private boolean sliding;
@@ -68,24 +63,8 @@ public class Creature{
     protected void turn(int turn){
         direction = turnFromDir(direction, turn);
     }
-    public int[] seekPosition(int position){
-        int currentPosition = getPosition();
-        int verticalDifference = (currentPosition >>> 5) - (position >>> 5);
-        int horizontalDifference = (currentPosition & 0b11111) - (position & 0b11111);
 
-        int verticalDirection = -1;
-        if (verticalDifference > 0) verticalDirection = DIRECTION_UP;
-        else if (verticalDifference < 0) verticalDirection = DIRECTION_DOWN;
-
-        int horizontalDirection = -1;
-        if (horizontalDifference > 0) horizontalDirection = DIRECTION_LEFT;
-        else if (horizontalDifference < 0) horizontalDirection = DIRECTION_RIGHT;
-
-        if (abs(verticalDifference) >= abs(horizontalDifference))
-            return new int[] {verticalDirection, horizontalDirection};
-        else return new int[] {horizontalDirection, verticalDirection};
-    }
-    int[] getDirectionPriority(int chipPosition, RNG rng){
+    int[] getDirectionPriority(Creature chip, RNG rng){
         if (isSliding()) return turnFromDir(new int[] {TURN_FORWARD, TURN_AROUND});
         switch (monsterType){
             case BUG: return turnFromDir(new int[] {TURN_LEFT, TURN_FORWARD, TURN_RIGHT, TURN_AROUND});
@@ -93,7 +72,7 @@ public class Creature{
             case PINK_BALL: return turnFromDir(new int[] {TURN_FORWARD, TURN_AROUND});
             case TANK_STATIONARY: return new int[] {};
             case GLIDER: return turnFromDir(new int[] {TURN_FORWARD, TURN_LEFT, TURN_RIGHT, TURN_AROUND});
-            case TEETH: return seekPosition(chipPosition);
+            case TEETH: return position.seek(chip.position);
             case WALKER:
                 int[] directions = new int[] {TURN_LEFT, TURN_AROUND, TURN_RIGHT};
                 rng.randomPermutation3(directions);
@@ -106,6 +85,9 @@ public class Creature{
             case TANK_MOVING: return new int[] {getDirection()};
         }
         return new int[] {};
+    }
+    public int[] seek(Position position){
+        return this.position.seek(position);
     }
     
     private static int applySlidingTile(int direction, Tile tile, RNG rng){
@@ -184,49 +166,23 @@ public class Creature{
 
     // Position-related methods
 
-    public int getPosition() {
+    public Position getPosition() {
         return position;
     }
     public int getX(){
-        return position & 0b11111;
+        return position.getX();
     }
     public int getY(){
-        return position >>> 5;
+        return position.getY();
     }
-    void setPosition(int position){
-        this.position = position;
+    public int getIndex() {
+        return position.getIndex();
     }
-    static int moveInDirection(int position, int direction){
-        switch (direction){
-            case DIRECTION_UP:    return position + MOVE_UP;
-            case DIRECTION_LEFT:  return position + MOVE_LEFT;
-            case DIRECTION_DOWN:  return position + MOVE_DOWN;
-            case DIRECTION_RIGHT: return position + MOVE_RIGHT;
-        }
-        return 0;
+    Position move(int direction){
+        return position.move(direction);
     }
-    void moveInDirection(int direction){
-        position = moveInDirection(position, direction);
-    }
-    void moveForwards(){
-        moveInDirection(direction);
-    }
-
-    /**
-     * Convert a direction to an increment to be added to the monster's
-     * position
-     * @param direction The direction to be converted
-     * @return An int that can be added directly to a monster to change its
-     * position in the specified direction.
-     */
-    protected static int directionToMotion(int direction){
-        switch (direction){
-            case DIRECTION_UP:    return MOVE_UP;
-            case DIRECTION_RIGHT: return MOVE_RIGHT;
-            case DIRECTION_LEFT:  return MOVE_LEFT;
-            case DIRECTION_DOWN:  return MOVE_DOWN;
-            default:              return 0;
-        }
+    private void moveForwards(){
+        position = position.move(direction);
     }
 
 
@@ -240,7 +196,7 @@ public class Creature{
     }
     void setSliding(boolean sliding, Level level){
         if (this.sliding && !sliding){
-            if (isBlock() && level.layerBG[position] == TRAP) return;
+            if (isBlock() && level.layerBG[getIndex()] == TRAP) return;
             if (isChip()) setMonsterType(CHIP);
             else level.slipList.remove(this);
         }
@@ -270,15 +226,15 @@ public class Creature{
             if (blockDirection == direction || turnFromDir(blockDirection, TURN_AROUND) == direction)
                 return MoveFlags.FAIL;
         }
-        int newChipPosition = block.position;
+        Position newChipPosition = block.position.clone();
         MoveFlags blockFlags = block.tryMove(direction, level);
         if (blockFlags.moved){
-            MoveFlags chipFlags = tryEnter(direction, level, newChipPosition, level.layerFG[newChipPosition]);
+            MoveFlags chipFlags = tryEnter(direction, level, newChipPosition.getIndex(), level.layerFG[newChipPosition.getIndex()]);
             if (chipFlags.moved) {
                 if (blockFlags.pressedRedButton) {
                     int redButtonIndex;
                     for (redButtonIndex = 0; redButtonIndex < level.cloneConnections.length; redButtonIndex++) {
-                        if (level.cloneConnections[redButtonIndex][0] == block.position) {
+                        if (level.cloneConnections[redButtonIndex][0] == block.position.getIndex()) {
                             level.monsterList.addClone(level.cloneConnections[redButtonIndex][1]);
                         }
                     }
@@ -286,7 +242,7 @@ public class Creature{
     
                 if (blockFlags.pressedBrownButton) {
                     for (int j = 0; j < level.trapConnections.length; j++) {
-                        if (level.trapConnections[j][0] == block.position) {
+                        if (level.trapConnections[j][0] == block.position.getIndex()) {
                             level.traps.set(j, true);
                             break;
                         }
@@ -307,7 +263,7 @@ public class Creature{
             case THIN_WALL_DOWN_RIGHT: return direction != DIRECTION_DOWN && direction != DIRECTION_RIGHT;
             case TRAP:
                 for (int i = 0; i < level.trapConnections.length; i++){
-                    if (level.trapConnections[i][1] == getPosition()){
+                    if (level.trapConnections[i][1] == getIndex()){
                         if (level.traps.get(i)) return true;
                     }
                 }
@@ -360,7 +316,7 @@ public class Creature{
             case BUTTON_BLUE:
             case BOMB:
             case TRAP: return true;
-            case HIDDENWALL_TEMP: return isChip();
+            case HIDDENWALL_TEMP: return false;
             case GRAVEL: return (!isMonster());
             case POP_UP_WALL: return isChip();
             case HINT: return true;
@@ -396,26 +352,26 @@ public class Creature{
             case CHIP_DOWN: return !isChip();
         }
     }
-    private MoveFlags tryEnter(int direction, Level level, int newPosition, Tile tile){
+    private MoveFlags tryEnter(int direction, Level level, int newPositionIndex, Tile tile){
         switch (tile) {
             case FLOOR: return MoveFlags.SUCCESS;
             case WALL: return MoveFlags.FAIL;
             case CHIP:
                 if (isChip()) {
                     level.chipsLeft--;
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case WATER:
                 if (isChip()){
                     if (level.boots[0] == 0){
-                        level.layerFG[newPosition] = DROWNED_CHIP;
+                        level.layerFG[newPositionIndex] = DROWNED_CHIP;
                         return MoveFlags.DIED;
                     } else return MoveFlags.SUCCESS;
                 }
                 if (isBlock()) {
-                    level.layerFG[newPosition] = DIRT;
+                    level.layerFG[newPositionIndex] = DIRT;
                     return MoveFlags.DIED;
                 }
                 if (monsterType != GLIDER) return MoveFlags.DIED;
@@ -423,7 +379,7 @@ public class Creature{
             case FIRE:
                 if (isChip()) {
                     if (level.boots[1] == 0){
-                        level.layerFG[newPosition] = BURNED_CHIP;
+                        level.layerFG[newPositionIndex] = BURNED_CHIP;
                         return MoveFlags.DIED;
                     }
                     else return MoveFlags.SUCCESS;
@@ -445,14 +401,14 @@ public class Creature{
             case THIN_WALL_LEFT: return new MoveFlags(direction != DIRECTION_RIGHT);
             case BLOCK:
                 if (isChip()){
-                    for (Creature m : level.slipList) if (m.getPosition() == newPosition) return pushBlock(m, level);
-                    Creature block = new Creature(newPosition, Tile.BLOCK);
+                    for (Creature m : level.slipList) if (m.getIndex() == newPositionIndex) return pushBlock(m, level);
+                    Creature block = new Creature(newPositionIndex, Tile.BLOCK);
                     return pushBlock(block, level);
                 }
                 return MoveFlags.FAIL;
             case DIRT:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -474,34 +430,34 @@ public class Creature{
             case EXIT:
                 if (isBlock()) return MoveFlags.SUCCESS;
                 if (isChip()){
-                    level.layerFG[newPosition] = EXITED_CHIP;
+                    level.layerFG[newPositionIndex] = EXITED_CHIP;
                     return MoveFlags.DIED;
                 }
                 return MoveFlags.FAIL;
             case DOOR_BLUE:
                 if (isChip() && level.keys[0] > 0) {
                     level.keys[0] = (short) (level.keys[0] - 1);
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_RED:
                 if (isChip() && level.keys[1] > 0) {
                     level.keys[1] = (short) (level.keys[1] - 1);
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_GREEN:
                 if (isChip() && level.keys[2] > 0) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_YELLOW:
                 if (isChip() && level.keys[3] > 0) {
                     level.keys[3] = (short) (level.keys[3] - 1);
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -531,12 +487,12 @@ public class Creature{
                 else return MoveFlags.FAIL;
             case BLUEWALL_FAKE:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 else return MoveFlags.FAIL;
             case BLUEWALL_REAL:
-                if (isChip()) level.layerFG[newPosition] = WALL;
+                if (isChip()) level.layerFG[newPositionIndex] = WALL;
                 return MoveFlags.FAIL;
             case OVERLAY_BUFFER: return MoveFlags.FAIL;
             case THIEF:
@@ -547,7 +503,7 @@ public class Creature{
                 return MoveFlags.FAIL;
             case SOCKET:
                 if (isChip() && level.chipsLeft <= 0) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -560,13 +516,13 @@ public class Creature{
             case TELEPORT: return new MoveFlags(true, false, false, false, false, true, false, true);
             case BOMB:
                 if (!isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                 }
                 return MoveFlags.DIED;
             case TRAP: return MoveFlags.SUCCESS;
             case HIDDENWALL_TEMP:
                 if (isChip()) {
-                    level.layerFG[newPosition] = WALL;
+                    level.layerFG[newPositionIndex] = WALL;
                 }
                 return MoveFlags.FAIL;
             case GRAVEL: return new MoveFlags(!isMonster());
@@ -607,49 +563,49 @@ public class Creature{
                 return MoveFlags.FAIL;
             case KEY_BLUE:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.keys[0]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_RED:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.keys[1]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_GREEN:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.keys[2]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_YELLOW:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.keys[3]++;
                 }
                 return MoveFlags.SUCCESS;
             case BOOTS_WATER:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.boots[0] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_FIRE:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.boots[1] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_ICE:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.boots[2] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_SLIDE:
                 if (isChip()) {
-                    level.layerFG[newPosition] = FLOOR;
+                    level.layerFG[newPositionIndex] = FLOOR;
                     level.boots[3] = 1;
                 }
                 return new MoveFlags(!isMonster());
@@ -667,46 +623,45 @@ public class Creature{
     private MoveFlags tryMove(int direction, Level level){
         if (direction == -1) return MoveFlags.FAIL;
         setDirection(direction);
-        int x = position & 0b11111;
-        int y = (position >>> 5) & 0b11111;
-        if ((direction == DIRECTION_LEFT && x == 0) ||
-            (direction == DIRECTION_RIGHT && x == 31) ||
-            (direction == DIRECTION_UP && y == 0) ||
-            (direction == DIRECTION_DOWN && y == 31)) return MoveFlags.FAIL;
+        if ((direction == DIRECTION_LEFT && getX() == 0) ||
+            (direction == DIRECTION_RIGHT && getX() == 31) ||
+            (direction == DIRECTION_UP && getY() == 0) ||
+            (direction == DIRECTION_DOWN && getY() == 31)) return MoveFlags.FAIL;
 
-        if (!canLeave(direction, level.layerBG[position], level)) return MoveFlags.FAIL;
-        int newPosition = moveInDirection(position, direction);
-        Tile newTile = level.layerFG[newPosition];
-        if (!isChip() && newTile.isChip()) newTile = level.layerBG[newPosition];
-        if (newTile.isTransparent() && !canEnter(direction, level.layerBG[newPosition], level)) return MoveFlags.FAIL;
+        if (!canLeave(direction, level.layerBG[getIndex()], level)) return MoveFlags.FAIL;
+        Position newPosition = move(direction);
+        int newPositionIndex = newPosition.getIndex();
+        Tile newTile = level.layerFG[newPositionIndex];
+        if (!isChip() && newTile.isChip()) newTile = level.layerBG[newPositionIndex];
+        if (newTile.isTransparent() && !canEnter(direction, level.layerBG[newPositionIndex], level)) return MoveFlags.FAIL;
         
-        MoveFlags flags = tryEnter(direction, level, newPosition, newTile);
+        MoveFlags flags = tryEnter(direction, level, newPositionIndex, newTile);
         
         if (flags.moved) {
-            level.popTile(position);
-            moveForwards();
+            level.popTile(getIndex());
+            position = newPosition;
             
             if (flags.enteredPortal){
                 int portalIndex;
                 for (portalIndex = 0; true; portalIndex++){
-                    if (level.portals[portalIndex] == position){
+                    if (level.portals[portalIndex] == getIndex()){
                         break;
                     }
                 }
                 int l = level.portals.length;
                 int i = portalIndex;
-                int teleportPosition;
+                Position teleportPosition;
                 do{
                     i = (i + l - 1) % l;
-                    teleportPosition = level.portals[i];
-                    if (level.layerFG[teleportPosition] != TELEPORT) continue;
-                    int exitPosition = teleportPosition+directionToMotion(direction);
-                    Tile exitTile = level.layerFG[exitPosition];
-                    if (exitTile.isTransparent()) exitTile = level.layerBG[exitPosition];
+                    teleportPosition = new Position(level.portals[i]);
+                    if (level.layerFG[teleportPosition.getIndex()] != TELEPORT) continue;
+                    Position exitPosition = teleportPosition.move(direction);
+                    Tile exitTile = level.layerFG[exitPosition.getIndex()];
+                    if (exitTile.isTransparent()) exitTile = level.layerBG[exitPosition.getIndex()];
                     if (isChip() && exitTile == Tile.BLOCK){
-                        if (canEnter(direction, level.layerBG[exitPosition], level)){
-                            Creature block = new Creature(DIRECTION_UP, BLOCK, exitPosition);
-                            if (block.canEnter(direction, level.layerFG[exitPosition+directionToMotion(direction)], level)){
+                        if (canEnter(direction, level.layerBG[exitPosition.getIndex()], level)){
+                            Creature block = new Creature(DIRECTION_UP, BLOCK, exitPosition.getIndex());
+                            if (block.canEnter(direction, level.layerFG[exitPosition.move(direction).getIndex()], level)){
                                 break;
                             }
                         }
@@ -715,17 +670,17 @@ public class Creature{
                     if (canEnter(direction, exitTile, level)) break;
                 }
                 while (i != portalIndex);
-                setPosition(teleportPosition);
+                position.setIndex(teleportPosition.getIndex());
             }
     
-            if (flags.sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG[position], level.rng);
+            if (flags.sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG[getIndex()], level.rng);
             
             if (!flags.creatureDied) level.insertTile(getPosition(), toTile());
     
-            if (level.layerBG[newPosition] == POP_UP_WALL) level.layerBG[newPosition] = WALL;
+            if (level.layerBG[newPositionIndex] == POP_UP_WALL) level.layerBG[newPositionIndex] = WALL;
         }
         else{
-            if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerBG[position], level.rng);
+            if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerBG[getIndex()], level.rng);
         }
     
         setSliding(flags.sliding, level);
@@ -756,7 +711,7 @@ public class Creature{
             if (flags.pressedRedButton){
                 int redButtonIndex;
                 for (redButtonIndex = 0; redButtonIndex < level.cloneConnections.length; redButtonIndex++){
-                    if (level.cloneConnections[redButtonIndex][0] == position){
+                    if (level.cloneConnections[redButtonIndex][0] == getIndex()){
                         level.monsterList.addClone(level.cloneConnections[redButtonIndex][1]);
                     }
                 }
@@ -764,7 +719,7 @@ public class Creature{
             
             if (flags.pressedBrownButton){
                 for (int j = 0; j < level.trapConnections.length; j++){
-                    if (level.trapConnections[j][0] == getPosition()){
+                    if (level.trapConnections[j][0] == getIndex()){
                         level.traps.set(j, true);
                         break;
                     }
@@ -776,7 +731,7 @@ public class Creature{
                     if (m.isTank() && !m.isSliding()){
                         m.setMonsterType(TANK_MOVING);
                         m.turn(TURN_RIGHT);
-                        level.layerFG[m.getPosition()] = m.toTile();
+                        level.layerFG[m.getIndex()] = m.toTile();
                         m.turn(TURN_RIGHT);
                     }
                 }
@@ -789,18 +744,23 @@ public class Creature{
         if (isTank()) setMonsterType(TANK_STATIONARY);
         else if (monsterType == TEETH){
             direction = directions[0];
-            level.layerFG[position] = toTile();
+            level.layerFG[getIndex()] = toTile();
         }
         else setDirection(copy.direction);
     }
-
+    
     public Creature(int direction, int monsterType, int position){
+        this.direction = direction;
+        this.monsterType = monsterType;
+        this.position = new Position(position);
+    }
+    public Creature(int direction, int monsterType, Position position){
         this.direction = direction;
         this.monsterType = monsterType;
         this.position = position;
     }
     public Creature(int position, Tile tile){
-        this.position = position;
+        this.position = new Position(position);
         if (BLOCK_UP.ordinal() <= tile.ordinal() && tile.ordinal() <= BLOCK_RIGHT.ordinal()){
             direction = ((tile.ordinal() + 2) % 4) << 14;
             monsterType = BLOCK;
@@ -813,14 +773,14 @@ public class Creature{
         if (monsterType == TANK_STATIONARY) monsterType = TANK_MOVING;
     }
     public Creature(int bitMonster){
-        direction   = bitMonster & 0b11_0000_0000000000;
+        direction = bitMonster & 0b11_0000_0000000000;
         monsterType = bitMonster & 0b00_1111_0000000000;
         if (monsterType == CHIP_SLIDING) sliding = true;
-        position    = bitMonster & 0b00_0000_1111111111;
+        position = new Position(bitMonster & 0b00_0000_1111111111);
     }
 
     public int bits(){
-        return direction | monsterType | position;
+        return direction | monsterType | getIndex();
     }
 
     @Override
@@ -832,8 +792,7 @@ public class Creature{
 
     @Override
     public String toString(){
-        return "Monster "+toTile()+
-                " at position ("+(position&0b11111)+", "+(position >>> 5)+")";
+        return "Monster "+toTile()+" at position "+position;
     }
 
 }

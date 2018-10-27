@@ -10,7 +10,7 @@ public class SlipList extends ArrayList<Creature>{
         // Iterating like this causes slide delay.
         for (int i = size(); i > 0; i--){
             Creature monster = get(size()-i);
-            monster.tick(monster.getSlideDirectionPriority(level.layerBG[monster.getPosition()], level.rng), level);
+            monster.tick(monster.getSlideDirectionPriority(level.layerBG[monster.getIndex()], level.rng), level);
         }
     }
 

@@ -1,7 +1,6 @@
 package game;
 
 import emulator.SuperCC;
-import graphics.Position;
 
 import java.util.BitSet;
 
@@ -26,7 +25,7 @@ public class Level extends SaveState {
                  Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
 
         super(layerBG, layerFG, monsterList, slipList, chip, new byte[0],
-                time, chips, new short[4], new short[4], rng, 0, traps);
+                time, chips, new short[4], new short[4], rng, NO_CLICK, traps);
 
         this.levelNumber = levelNumber;
         this.title = title;
@@ -88,15 +87,26 @@ public class Level extends SaveState {
     public void setClick(int position){
         this.mouseClick = position;
     }
-
+    
     protected Tile popTile(int position){
         layerFG[position] = layerBG[position];
         layerBG[position] = FLOOR;
         return layerFG[position];
     }
+    protected Tile popTile(Position position){
+        int index = position.getIndex();
+        layerFG[index] = layerBG[index];
+        layerBG[index] = FLOOR;
+        return layerFG[index];
+    }
     protected void insertTile(int position, Tile tile){
         layerBG[position] = layerFG[position];
         layerFG[position] = tile;
+    }
+    protected void insertTile(Position position, Tile tile){
+        int index = position.getIndex();
+        layerBG[index] = layerFG[index];
+        layerFG[index] = tile;
     }
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
@@ -117,14 +127,14 @@ public class Level extends SaveState {
 
     private void moveChipSliding(){
         int direction = chip.getDirection();
-        if (layerBG[chip.getPosition()].isFF()) chip.tick(new int[] {direction}, this);
+        if (layerBG[chip.getIndex()].isFF()) chip.tick(new int[] {direction}, this);
         else chip.tick(new int[] {direction, Creature.turnFromDir(direction, Creature.TURN_AROUND)}, this);
     }
     
     private void moveChip(int[] directions){
         for (int direction : directions) {
             if (chip.isSliding()) {
-                if (!layerBG[chip.getPosition()].isFF()) continue;
+                if (!layerBG[chip.getIndex()].isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
             chip.tick(new int[] {direction}, this);
@@ -183,8 +193,8 @@ public class Level extends SaveState {
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (chip.isDead()) return false;
-        if (chip.isSliding() && !layerBG[chip.getPosition()].isFF()) b = SuperCC.WAIT;
-        if (moveType == CLICK) moveChip(chip.seekPosition(mouseClick));
+        if (chip.isSliding() && !layerBG[chip.getIndex()].isFF()) b = SuperCC.WAIT;
+        if (moveType == CLICK) moveChip(chip.seek(new Position(mouseClick)));
         slipList.tick();
         if (chip.isDead()) return false;
         if (moveType == KEY) moveChip(directions);
@@ -192,7 +202,7 @@ public class Level extends SaveState {
 
         monsterList.finalise();
         finaliseTraps();
-        if (moveType == KEY || chip.getPosition() == mouseClick) mouseClick = NO_CLICK;
+        if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
 
         if (moveType == KEY && !isHalfMove && !chip.isSliding()){
             tick(capital(b), null);

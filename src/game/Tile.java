@@ -113,12 +113,7 @@ public enum Tile {
     /* 6C CHIP N               */    CHIP_UP,
     /* 6D CHIP W               */    CHIP_LEFT,
     /* 6E CHIP S               */    CHIP_DOWN,
-    /* 6F CHIP E               */    CHIP_RIGHT,
-    /* ------ NEW TILES ------ */
-    /* 70 BLOCK SLIDING N      */    BLOCK_SLIDING_UP,
-    /* 71 BLOCK SLIDING W      */    BLOCK_SLIDING_LEFT,
-    /* 72 BLOCK SLIDING S      */    BLOCK_SLIDING_DOWN,
-    /* 73 BLOCK SLIDING E      */    BLOCK_SLIDING_RIGHT;
+    /* 6F CHIP E               */    CHIP_RIGHT;
 
     private static final Tile[] allTiles = Tile.values();
     public static Tile fromOrdinal(int ordinal){

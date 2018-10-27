@@ -1,5 +1,7 @@
 package game;
 
+import java.text.BreakIterator;
+
 import static game.Tile.*;
 
 /**
@@ -7,6 +9,8 @@ import static game.Tile.*;
  */
 public class CreatureList{
 
+    private static int NO_DIRECTION = -1;
+    
     private Level level;
 
     public Creature[] list;
@@ -20,7 +24,7 @@ public class CreatureList{
 
         blobStep = (level.getStep() == Step.EVEN) != (level.tickN % 4 == 3);
 
-        direction = -1;
+        direction = NO_DIRECTION;
         for(Creature monster : list){
 
             if (monster.isBlock()){
@@ -33,7 +37,7 @@ public class CreatureList{
 
             if (!monster.isSliding()){
                 if (!monster.isAffectedByCB()) direction = monster.getDirection();
-                Tile bgTile = level.layerBG[monster.getPosition()];
+                Tile bgTile = level.layerBG[monster.getIndex()];
                 if (bgTile == CLONE_MACHINE) tickClonedMonster(monster);
                 else if (bgTile == TRAP) tickTrappedMonster(monster);
                 else tickFreeMonster(monster);
@@ -44,11 +48,12 @@ public class CreatureList{
     }
 
     private void tickClonedMonster(Creature monster){
-        int clonerPosition = monster.getPosition();
+        int clonerPosition = monster.getIndex();
         Tile tile = monster.toTile();
         if (monster.isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + (monster.getDirection() >>> 14));
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
-        if (monster.canEnter(direction, level.layerFG[Creature.moveInDirection(monster.getPosition(), direction)], level)){
+        if (direction == NO_DIRECTION) return;
+        if (monster.canEnter(direction, level.layerFG[monster.move(direction).getIndex()], level)){
             monster.tick(new int[] {direction}, level);
             level.insertTile(clonerPosition, tile);
         }
@@ -56,28 +61,29 @@ public class CreatureList{
 
     private void tickTrappedMonster(Creature monster){
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
+        if (direction == NO_DIRECTION) return;
         if (monster.getMonsterType() == Creature.TANK_STATIONARY) monster.setMonsterType(Creature.TANK_MOVING);
         monster.tick(new int[] {direction}, level);
     }
 
     private void tickFreeMonster(Creature monster){
-        int[] directionPriorities = monster.getDirectionPriority(level.chip.getPosition(), level.rng);
+        int[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
         monster.tick(directionPriorities, level);
     }
 
     void addClone(int position){
 
         for (Creature c: list){
-            if (c.getPosition() == position) return;
+            if (c.getIndex() == position) return;
         }
         Tile tile = level.layerFG[position];
         if (!tile.isCreature()) return;
         Creature clone = new Creature(position, tile);
         direction = clone.getDirection();
-        int newPosition = Creature.moveInDirection(clone.getPosition(), direction);
-        Tile newTile = level.layerFG[newPosition];
+        Position newPosition = clone.move(direction);
+        Tile newTile = level.layerFG[newPosition.getIndex()];
 
-        if (clone.canEnter(direction, level.layerFG[newPosition], level) || newTile == clone.toTile()){
+        if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()){
             if (clone.isBlock()) tickClonedMonster(clone);
             else newClones[numClones++] = clone;
         }

@@ -17,7 +17,7 @@ public class SaveState {
     short[] keys;
     short[] boots;
     RNG rng;
-    int mouseClick = NO_CLICK;
+    int mouseClick;
     BitSet traps;
     byte[] moves;
     CreatureList monsterList;

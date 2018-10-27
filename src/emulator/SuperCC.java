@@ -4,7 +4,7 @@ import game.Creature;
 import game.Level;
 import game.Step;
 import graphics.MainWindow;
-import graphics.Position;
+import game.Position;
 import io.DatParser;
 import io.Solution;
 import io.TWSReader;
@@ -95,9 +95,9 @@ public class SuperCC implements KeyListener{
         if (level == null) return false;
         int[] directions;
         if (isClick(b)){
-            Position screenPosition = Position.screenPosition(new Position(level.getChip().getPosition()));
+            Position screenPosition = Position.screenPosition(level.getChip().getPosition());
             Position clickedPosition = Position.clickPosition(screenPosition, b);
-            directions = level.getChip().seekPosition(clickedPosition.getIndex());
+            directions = level.getChip().getPosition().seek(clickedPosition);
             level.setClick(clickedPosition.getIndex());
             return tick(b, directions, repaint);
         }
@@ -120,7 +120,7 @@ public class SuperCC implements KeyListener{
                 if (b == CHIP_RELATIVE_CLICK){
                     int x = solution.halfMoves[++move];
                     int y = solution.halfMoves[++move];
-                    Position chipPosition = new Position(level.getChip().getPosition());
+                    Position chipPosition = level.getChip().getPosition();
                     Position clickPosition = chipPosition.add(x, y);
                     level.setClick(clickPosition.getIndex());
                     b = clickPosition.clickByte(chipPosition);
