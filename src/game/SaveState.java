@@ -7,7 +7,7 @@ import java.util.BitSet;
 
 public class SaveState {
     
-    public static final int NO_CLICK = -1;
+    public static final int NO_CLICK = 1025;
 
     Tile[] layerBG;
     Tile[] layerFG;
