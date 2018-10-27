@@ -279,9 +279,9 @@ public class Creature{
             case WATER: return true;
             case FIRE: return getMonsterType() != BUG && getMonsterType() != WALKER;
             case HIDDENWALL_PERM: return false;
-            case THIN_WALL_UP: return direction != DIRECTION_UP;
+            case THIN_WALL_UP: return direction != DIRECTION_RIGHT;
             case THIN_WALL_RIGHT: return direction != DIRECTION_LEFT;
-            case THIN_WALL_DOWN: return direction != DIRECTION_DOWN;
+            case THIN_WALL_DOWN: return direction != DIRECTION_UP;
             case THIN_WALL_LEFT: return direction != DIRECTION_RIGHT;
             case BLOCK: return false;
             case DIRT: return isChip();
