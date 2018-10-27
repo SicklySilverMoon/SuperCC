@@ -4,6 +4,7 @@ import game.Creature;
 import game.Level;
 import game.Step;
 import graphics.MainWindow;
+import graphics.Position;
 import io.DatParser;
 import io.Solution;
 import io.TWSReader;
@@ -17,11 +18,13 @@ import java.io.IOException;
 
 public class SuperCC implements KeyListener{
 
-    private final int[] MOVEMENT_KEYS = {KeyEvent.VK_UP, KeyEvent.VK_RIGHT, KeyEvent.VK_DOWN, KeyEvent.VK_LEFT,
+    private static final int[] MOVEMENT_KEYS = {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
             KeyEvent.VK_SPACE};
-    private final char[] CHAR_MOVEMENT_KEYS = {'u', 'r', 'd', 'l', '-'};
-    private final int[] DIRECTIONS = {Creature.DIRECTION_UP, Creature.DIRECTION_RIGHT, Creature.DIRECTION_DOWN,
-            Creature.DIRECTION_LEFT, -1};
+    public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
+    private static final byte[] BYTE_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
+    private static final int[][] DIRECTIONS = new int[][] {{Creature.DIRECTION_UP}, {Creature.DIRECTION_LEFT},
+        {Creature.DIRECTION_DOWN}, {Creature.DIRECTION_RIGHT}, {}};
+    public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private boolean shiftPressed = false;
 
@@ -76,37 +79,59 @@ public class SuperCC implements KeyListener{
         loadLevel(levelNumber, 0, Step.EVEN);
     }
 
-    private synchronized boolean tick(char c, int direction, boolean repaint){
+    public synchronized boolean tick(byte b, int[] directions, boolean repaint){
         if (level == null) return false;
-        boolean tickedTwice = level.tick(c, direction, -1);
+        boolean tickedTwice = level.tick(b, directions);
         if (repaint) window.repaint(level, false);
         savestates.addSaveState(level.save());
         return tickedTwice;
     }
     
-    public synchronized boolean tick(int mouseClick){
+    public boolean isClick(byte b){
+        return b <= 0;
+    }
+    
+    public synchronized boolean tick(byte b, boolean repaint){
         if (level == null) return false;
-        boolean tickedTwice = level.tick('?', -1, mouseClick);
-        window.repaint(level, false);
-        savestates.addSaveState(level.save());
-        return tickedTwice;
+        int[] directions;
+        if (isClick(b)){
+            Position screenPosition = Position.screenPosition(new Position(level.getChip().getPosition()));
+            Position seekedPosition = Position.clickPosition(screenPosition, b);
+            directions = level.getChip().seekPosition(seekedPosition.getIndex());
+            level.setClick(seekedPosition.getIndex());
+            return tick(b, directions, repaint);
+        }
+        else{
+            for (int i = 0; i < BYTE_MOVEMENT_KEYS.length; i++) {
+                if (BYTE_MOVEMENT_KEYS[i] == b) {
+                    directions = DIRECTIONS[i];
+                    return tick(b, directions, repaint);
+                }
+            }
+        }
+        return false;
     }
 
     public void playSolution(Solution solution){
         try{
             loadLevel(level.levelNumber, solution.rngSeed, solution.step);
             for (int move = 0; move < solution.halfMoves.length; move++){
-                byte m = solution.halfMoves[move];
-                int i;
-                for (i = 0; i < 5; i++) if (CHAR_MOVEMENT_KEYS[i] == m) break;
-                boolean tickedTwice = tick((char) m, DIRECTIONS[i], false);
+                byte b = solution.halfMoves[move];
+                if (b == CHIP_RELATIVE_CLICK){
+                    int x = solution.halfMoves[++move];
+                    int y = solution.halfMoves[++move];
+                    Position chipPosition = new Position(level.getChip().getPosition());
+                    Position clickPosition = chipPosition.add(x, y);
+                    b = clickPosition.clickByte(chipPosition);
+                }
+                boolean tickedTwice = tick(b, false);
                 if (tickedTwice) move++;
                 if (level.getChip().isDead()){
                     break;
                 }
             }
             while (level.getChip().isSliding()){
-                tick('-', -1, false);
+                tick((byte) '-', new int[] {-1}, false);
                 if (level.getChip().isDead()){
                     break;
                 }
@@ -133,7 +158,7 @@ public class SuperCC implements KeyListener{
         for (int i = 0; i < 5; i++){
             if (key == MOVEMENT_KEYS[i]){
                 if (level.getChip().isDead()) return;
-                tick(CHAR_MOVEMENT_KEYS[i], DIRECTIONS[i], true);
+                tick(BYTE_MOVEMENT_KEYS[i], DIRECTIONS[i], true);
                 return;
             }
         }

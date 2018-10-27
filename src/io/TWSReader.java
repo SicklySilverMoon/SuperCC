@@ -6,6 +6,8 @@ import game.Step;
 import java.io.*;
 import java.util.HashMap;
 
+import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
+
 public class TWSReader{
 
     private HashMap<Long, Long> lPassLevelOffsets = new HashMap<>();
@@ -142,9 +144,11 @@ public class TWSReader{
                 writer.write(direction);
             }
             else{
-                writer.write('M');
-                writer.write((byte) d);
-                writer.write((byte) d >>> 8);
+                int x = (d + 6) % 19;
+                int y = (d - 25 - x) / 19 - 9;
+                writer.write(CHIP_RELATIVE_CLICK);
+                writer.write((byte) x);
+                writer.write((byte) y);
             }
         }
 

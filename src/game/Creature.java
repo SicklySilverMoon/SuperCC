@@ -68,7 +68,7 @@ public class Creature{
     protected void turn(int turn){
         direction = turnFromDir(direction, turn);
     }
-    int[] seekPosition(int position){
+    public int[] seekPosition(int position){
         int currentPosition = getPosition();
         int verticalDifference = (currentPosition >>> 5) - (position >>> 5);
         int horizontalDifference = (currentPosition & 0b11111) - (position & 0b11111);
@@ -741,6 +741,12 @@ public class Creature{
     void tick(int[] directions, Level level){
         Creature copy = clone();
         for (int newDirection : directions){
+            
+            if (isChip() && isSliding()){
+                if (!level.layerBG[position].isFF()) return;
+                if (newDirection == direction) return;
+            }
+            
             MoveFlags flags = tryMove(newDirection, level);
             
             if (flags.pressedGreenButton){

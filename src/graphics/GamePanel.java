@@ -12,11 +12,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 import static graphics.MainWindow.TILE_SIZE;
+import static graphics.Position.UNCLICKABLE;
 
 class GamePanel extends JPanel{
 
@@ -138,16 +138,16 @@ class GamePanel extends JPanel{
         Iterator iter = history.descendingIterator();
         while(iter.hasNext()){
             Position pos = (Position) iter.next();
-            int tile = pos.getPosition();
-            if (tile == previousPos.getPosition()) continue;
+            int tile = pos.getIndex();
+            if (tile == previousPos.getIndex()) continue;
             if (tileEnterCount[tile][oldOffset]){
                 for (offset = 0; offset < 21; offset++) if (!tileEnterCount[tile][offset]) break;
             }
             else offset = oldOffset;
             if (offset == 21) offset = 0;
             float hue = (float) (0.5 + i++ / length / 1);
-            //g.setColor(Color.getHSBColor(hue, (float) 0.9, (float) 0.8));
-            g.setColor(Color.WHITE);
+            g.setColor(Color.getHSBColor(hue, (float) 0.9, (float) 0.8));
+            //g.setColor(Color.WHITE);
             g.drawLine(previousPos.getGraphicX(oldOffset), previousPos.getGraphicY(oldOffset), pos.getGraphicX(offset), pos.getGraphicY(offset));
             previousPos = pos;
             oldOffset = offset;
@@ -234,9 +234,14 @@ class GamePanel extends JPanel{
     private class GameMouseListener implements MouseListener{
         @Override
         public void mouseClicked(MouseEvent e) {
-            int x = e.getX() / TILE_SIZE;
-            int y = e.getY() / TILE_SIZE;
-            emulator.tick(x + (y << 5));
+            Position clickPosition = new Position(e);
+            Creature chip = emulator.getLevel().getChip();
+            Position chipPosition = new Position(chip.getPosition());
+            byte b = (byte) clickPosition.clickByte(chipPosition);
+            if (b == UNCLICKABLE) return;
+            emulator.getLevel().setClick(clickPosition.getIndex());
+            int[] directions = chip.seekPosition(clickPosition.getIndex());
+            emulator.tick(b, directions, true);
         }
         
         @Override

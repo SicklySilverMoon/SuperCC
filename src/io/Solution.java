@@ -1,10 +1,9 @@
 package io;
 
-import game.Level;
 import game.Step;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 public class Solution{
 
@@ -16,14 +15,28 @@ public class Solution{
     public int rngSeed;
     public Step step;
 
-    private static byte[] succToHalfMoves(byte[] mixedMoves){
-        String moves = new String(mixedMoves);
-        moves = moves.replaceAll("U", "u-")
-                .replaceAll("L", "l-")
-                .replaceAll("D", "d-")
-                .replaceAll("R", "r-")
-                .replaceAll("_", "--");
-        return moves.getBytes();
+    private static byte[] succToHalfMoves(byte[] succMoves){
+        ByteArrayOutputStream writer = new ByteArrayOutputStream();
+        for (byte b : succMoves){
+            if (b == 'U'){
+                writer.write('u');
+                writer.write('-');
+            }
+            else if (b == 'L'){
+                writer.write('l');
+                writer.write('-');
+            }
+            else if (b == 'D'){
+                writer.write('d');
+                writer.write('-');
+            }
+            else if (b == 'R'){
+                writer.write('r');
+                writer.write('-');
+            }
+            else writer.write(b);
+        }
+        return writer.toByteArray();
     }
     private static byte[] quarterToHalfMoves(byte[] quarterMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
@@ -42,7 +55,7 @@ public class Solution{
             String[] lines = s.split("\n");
             step = Step.valueOf(lines[0].substring(5));
             rngSeed = Integer.valueOf(lines[1].substring(5));
-            if (lines.length > 2) halfMoves = lines[2].getBytes();
+            if (lines.length > 2) halfMoves = lines[2].getBytes(StandardCharsets.ISO_8859_1);
             else halfMoves = new byte[0];
         }
         catch (Exception e){
@@ -54,7 +67,7 @@ public class Solution{
     public String toString(){
         return "Step " + step + "\n"
             + "Seed " + rngSeed + "\n"
-            + new String(halfMoves);
+            + new String(halfMoves, StandardCharsets.ISO_8859_1);
     }
 
     public Solution(byte[] moves, int rngSeed, Step step, int format){

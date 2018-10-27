@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 
 public class SaveState {
+    
+    public static final int NO_CLICK = -1;
 
     Tile[] layerBG;
     Tile[] layerFG;
@@ -15,12 +17,11 @@ public class SaveState {
     short[] keys;
     short[] boots;
     RNG rng;
-    int mouseClick;
+    int mouseClick = NO_CLICK;
     BitSet traps;
     byte[] moves;
     CreatureList monsterList;
     SlipList slipList;
-    
 
     public byte[] save(){
         byte[] traps = this.traps.toByteArray();
