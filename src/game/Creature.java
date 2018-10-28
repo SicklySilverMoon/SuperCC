@@ -703,6 +703,8 @@ public class Creature{
         Creature copy = clone();
         for (int newDirection : directions){
             
+            CreatureList.direction = newDirection;
+            
             MoveFlags flags = tryMove(newDirection, level);
             
             if (flags.pressedGreenButton){

@@ -17,7 +17,7 @@ public class CreatureList{
     int numDeadMonsters;
     private int numClones;
     private Creature[] newClones;
-    private int direction;
+    public static int direction;
     boolean blobStep;
 
     void tick(){
@@ -42,8 +42,6 @@ public class CreatureList{
                 else if (bgTile == TRAP) tickTrappedMonster(monster);
                 else tickFreeMonster(monster);
             }
-
-            direction = monster.getDirection();
         }
     }
 
