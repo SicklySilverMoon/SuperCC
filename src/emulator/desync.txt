@@ -7,19 +7,15 @@ Two clones one tick
 120 Alphabet Soup
 
 10 Annoying Wall
-16 Two sets of rules
-37 Blue Moon (tws read)
 60 Red, Blue and Green
-77 Oh-ho!
 78 Slide Show
-94 Mistakes
 102 Triple Alarm
 114 LUNIT
 116 Mini Challenges (crash)
-140 YAYAP (crash)
+140 YAYAP
 
 112 Carousel
 116 Communism
 117 blobs on a plane
-123 the very hungry caterpillar (unknown cause)
-145 chance time (unknown cause)
+123 the very hungry caterpillar
+145 chance time

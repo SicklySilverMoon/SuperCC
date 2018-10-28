@@ -752,6 +752,7 @@ public class Creature{
                         }
                     }
                 }
+                if (level.layerBG[getIndex()].isChip()) level.getChip().kill();
                 return;
             }
             
@@ -762,7 +763,7 @@ public class Creature{
             direction = directions[0];
             level.layerFG[getIndex()] = toTile();
         }
-        else setDirection(copy.direction);
+        else if (!isChip() && !isBlock()) setDirection(copy.direction);
     }
     
     public Creature(int direction, int monsterType, Position position){
