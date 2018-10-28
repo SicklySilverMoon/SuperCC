@@ -132,12 +132,14 @@ public class Level extends SaveState {
     }
     
     private void moveChip(int[] directions){
+        int oldPosition = chip.getIndex();
         for (int direction : directions) {
             if (chip.isSliding()) {
                 if (!layerBG[chip.getIndex()].isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
             chip.tick(new int[] {direction}, this);
+            if (chip.getIndex() != oldPosition) break;
         }
     }
 

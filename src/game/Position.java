@@ -102,7 +102,7 @@ public class Position {
     }
     
     public static Position clickPosition(Position screenPosition, byte clickByte){
-        int n = -clickByte;
+        int n = -clickByte - 1;
         return new Position(screenPosition.x + n % 9, screenPosition.y + n / 9);
     }
     
@@ -110,7 +110,7 @@ public class Position {
         Position screen = screenPosition(chipPosition);
         if (y - screen.y < 9 && y - screen.y >= 0 &&
             x - screen.x < 9 && x - screen.x >= 0){
-            return (byte) -(9 * (y - screen.y) + (x - screen.x));
+            return (byte) -(9 * (y - screen.y) + (x - screen.x) + 1);
         }
         return UNCLICKABLE;
     }
