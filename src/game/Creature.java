@@ -727,7 +727,6 @@ public class Creature{
                 for (int j = 0; j < level.trapConnections.length; j++){
                     if (level.trapConnections[j][0] == getIndex()){
                         level.traps.set(j, true);
-                        break;
                     }
                 }
             }
@@ -743,7 +742,18 @@ public class Creature{
                 }
             }
     
-            if (flags.moved) return;
+            if (flags.moved){
+                if (level.layerFG[copy.getIndex()] == BUTTON_BROWN){
+                    for (int j = 0; j < level.trapConnections.length; j++){
+                        if (level.trapConnections[j][0] == copy.getIndex()
+                            && level.layerBG[level.trapConnections[j][1]] != TRAP){
+                            level.traps.set(j, false);
+                            break;
+                        }
+                    }
+                }
+                return;
+            }
             
         }
         setSliding(copy.sliding, level);

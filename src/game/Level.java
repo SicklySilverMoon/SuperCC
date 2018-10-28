@@ -149,8 +149,11 @@ public class Level extends SaveState {
     }
 
     private void finaliseTraps(){
-        for (int i = 0; i < traps.length(); i++){
-            if (layerBG[trapConnections[i][0]] != BUTTON_BROWN && layerBG[trapConnections[i][1]] != TRAP){
+        for (int i = 0; i < trapConnections.length; i++){
+            if (layerBG[trapConnections[i][0]] == BUTTON_BROWN){
+                traps.set(i, true);
+            }
+            else if (layerBG[trapConnections[i][1]] != TRAP){
                 traps.set(i, false);
             }
         }
