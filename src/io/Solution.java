@@ -5,6 +5,8 @@ import game.Step;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
+import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
+
 public class Solution{
 
     public static final int QUARTER_MOVES = 0,
@@ -41,11 +43,16 @@ public class Solution{
     private static byte[] quarterToHalfMoves(byte[] quarterMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         for (int i = 0; i < quarterMoves.length; i += 2){
+            int j = i;
             byte b = quarterMoves[i];
             if (b == '-' && i+1 < quarterMoves.length){
-                b = quarterMoves[i+1];
+                b = quarterMoves[++j];
             }
             writer.write(b);
+            if (b == CHIP_RELATIVE_CLICK){
+                writer.write(quarterMoves[++j]);
+                writer.write(quarterMoves[++j]);
+            }
         }
         return writer.toByteArray();
     }
@@ -76,6 +83,7 @@ public class Solution{
         else if (format == HALF_MOVES) this.halfMoves = moves;
         this.rngSeed = rngSeed;
         this.step = step;
+        //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
     }
 
 }

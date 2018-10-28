@@ -135,7 +135,7 @@ public class TWSReader{
             int length = ((b >>> 2) & 0b11) + 1;
             counter += length;
             int b2 = readByte();
-            int d = (b >>> 5) + (b2 & 0b00111111) << 3;
+            int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
             int time = (b2 & 0b11000000) >> 6;
             for (int i = 2; i < length; i++) time = time | readByte() << (2 + 8*i);
             for (int i = 0; i < time; i++) writer.write('-');
@@ -144,11 +144,14 @@ public class TWSReader{
                 writer.write(direction);
             }
             else{
-                int x = (d + 6) % 19;
-                int y = (d - 25 - x) / 19 - 9;
+                d -= 16;
+                int x9 = d % 19;
+                int y9 = (d - x9) / 19;
+                //System.out.println(x9);
+                //System.out.println(y9);
                 writer.write(CHIP_RELATIVE_CLICK);
-                writer.write((byte) x);
-                writer.write((byte) y);
+                writer.write(x9);
+                writer.write(y9);
             }
         }
 
