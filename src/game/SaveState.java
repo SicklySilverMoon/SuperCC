@@ -51,7 +51,7 @@ public class SaveState {
     }
     
     public static Creature getChip(byte[] savestate){
-        return new Creature(((savestate[6] & 0xFF) << 8) | (savestate[7] & 0xFF));
+        return new Creature(((savestate[2] & 0xFF) << 8) | (savestate[3] & 0xFF));
     }
 
     public void load(byte[] savestate){
