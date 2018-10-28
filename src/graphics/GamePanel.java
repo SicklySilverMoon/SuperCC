@@ -35,7 +35,7 @@ class GamePanel extends JPanel{
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
     private static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
-    private static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
+    private final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     
@@ -171,8 +171,7 @@ class GamePanel extends JPanel{
         showHistory = visible;
     }
     
-    private static void initialiseTileGraphics(String tilespngPath) throws IOException{
-        BufferedImage allTiles = ImageIO.read(new File(tilespngPath));
+    public void initialiseTileGraphics(BufferedImage allTiles) throws IOException{
         for (int i = 0; i < 16 * 7; i++) {
             int x = i / 16;
             int y = i % 16;
@@ -203,7 +202,7 @@ class GamePanel extends JPanel{
         return digit;
     }
     
-    private static void initialiseDigits(){
+    private void initialiseDigits(){
         for (int n = 0; n <= 9; n++){
             BufferedImage digitBlue = drawDigit(n, Color.BLUE, Color.WHITE);
             digitBlue.getRaster().getPixels(0, 0, digitBlue.getWidth(), digitBlue.getHeight(), blueDigits[n]);
@@ -220,12 +219,12 @@ class GamePanel extends JPanel{
         }
     }
 
-    GamePanel(SuperCC emulator, String tilespngPath) throws IOException {
+    GamePanel(SuperCC emulator, Image tilespng) throws IOException {
         this.emulator = emulator;
         setPreferredSize(new Dimension(32*TILE_SIZE, 32*TILE_SIZE));
         addMouseListener(new GameMouseListener());
     
-        initialiseTileGraphics(tilespngPath);
+        initialiseTileGraphics((BufferedImage) tilespng);
         initialiseDigits();
         initialiseBBG();
         

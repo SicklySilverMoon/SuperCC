@@ -5,6 +5,7 @@ import game.Level;
 import game.Step;
 import io.Solution;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -230,6 +231,24 @@ public class MenuBar extends JMenuBar{
     private class ViewMenu extends JMenu{
         public ViewMenu(){
             super("View");
+    
+            JMenu tileset = new JMenu("Tileset");
+            ButtonGroup allTilesets = new ButtonGroup();
+            String[] tilesetNames = new String[] {"Tile World (Editor)", "Tile World", "MSCC (Editor)"};
+            String[] tilesetPaths = new String[] {"/resources/tw-editor.png", "/resources/tw.png", "/resources/mscc-editor.png"};
+            for (int i = 0; i < tilesetNames.length; i++) {
+                JRadioButton msccEditor = new JRadioButton(tilesetNames[i]);
+                String tilesetPath = tilesetPaths[i];
+                msccEditor.addActionListener(e -> {
+                    try {
+                        window.gamePanel.initialiseTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
+                        window.repaint(emulator.getLevel(), true);
+                    } catch (IOException exc) {}
+                });
+                allTilesets.add(msccEditor);
+                tileset.add(msccEditor);
+            }
+            add(tileset);
     
             JToggleButton monsterList = new JToggleButton("Show Monster List");
             monsterList.addActionListener(e -> {

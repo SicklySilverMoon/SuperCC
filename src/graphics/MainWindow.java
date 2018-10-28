@@ -3,7 +3,9 @@ package graphics;
 import emulator.SuperCC;
 import game.Level;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 
 public class MainWindow extends JFrame {
@@ -24,7 +26,7 @@ public class MainWindow extends JFrame {
         container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 
-        gamePanel = new GamePanel(emulator, "resources/tiles.png");
+        gamePanel = new GamePanel(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
         container.add(gamePanel);
 
         textPanel = new TextPanel(emulator);
