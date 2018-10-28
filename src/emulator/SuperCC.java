@@ -6,7 +6,6 @@ import game.Step;
 import graphics.MainWindow;
 import game.Position;
 import io.DatParser;
-import io.Solution;
 import io.TWSReader;
 import savestateTree.Tree;
 
@@ -86,7 +85,7 @@ public class SuperCC implements KeyListener{
         if (level == null) return false;
         boolean tickedTwice = level.tick(b, directions);
         if (repaint) window.repaint(level, false);
-        savestates.addSaveState(level.save());
+        savestates.addRewindState(level.save(), level.getMoves());
         return tickedTwice;
     }
     
@@ -136,14 +135,17 @@ public class SuperCC implements KeyListener{
         }
 
         if (key == KeyEvent.VK_BACK_SPACE) {
-            level.load(savestates.rewind());
+            savestates.rewind();
+            level.load(savestates.getSavestate());
             window.repaint(level, false);
             return;
         }
 
-        if (shiftPressed) savestates.addSaveState(level.save(), key);
+        if (shiftPressed) savestates.addSavestate(level.save(), level.getMoves(), key);
         else {
-            level.load(savestates.load(key));
+            savestates.load(key);
+            level.load(savestates.getSavestate());
+            level.setMoves(savestates.getMoves());
             window.repaint(level, false);
         }
 

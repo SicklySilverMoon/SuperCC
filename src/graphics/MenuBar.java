@@ -13,6 +13,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.io.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
@@ -112,9 +117,7 @@ public class MenuBar extends JMenuBar{
             saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(
-                    l.getMoves(), l.getRngSeed(), l.getStep(), Solution.SUCC_MOVES
-                );
+                Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
@@ -161,7 +164,7 @@ public class MenuBar extends JMenuBar{
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
-                Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep(), Solution.SUCC_MOVES);
+                Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
             });
             add(copy);
@@ -234,8 +237,9 @@ public class MenuBar extends JMenuBar{
     
             JMenu tileset = new JMenu("Tileset");
             ButtonGroup allTilesets = new ButtonGroup();
-            String[] tilesetNames = new String[] {"Tile World (Editor)", "Tile World", "MSCC (Editor)"};
-            String[] tilesetPaths = new String[] {"/resources/tw-editor.png", "/resources/tw.png", "/resources/mscc-editor.png"};
+            String[] tilesetNames = new String[] {"Tile World (Editor)", "Tile World", "MSCC (Editor)", "MSCC"};
+            String[] tilesetPaths = new String[] {"/resources/tw-editor.png", "/resources/tw.png",
+                "/resources/mscc-editor.png", "/resources/mscc.png"};
             for (int i = 0; i < tilesetNames.length; i++) {
                 JRadioButton msccEditor = new JRadioButton(tilesetNames[i]);
                 String tilesetPath = tilesetPaths[i];
@@ -250,40 +254,31 @@ public class MenuBar extends JMenuBar{
             }
             add(tileset);
     
-            JToggleButton monsterList = new JToggleButton("Show Monster List");
-            monsterList.addActionListener(e -> {
-                window.gamePanel.setMonsterListVisible(((AbstractButton) e.getSource()).isSelected());
-                window.repaint(emulator.getLevel(), true);
-            });
-            add(monsterList);
-    
-            JToggleButton slipList = new JToggleButton("Show Slip List");
-            slipList.addActionListener(e -> {
-                window.gamePanel.setSlipListVisible(((AbstractButton) e.getSource()).isSelected());
-                window.repaint(emulator.getLevel(), true);
-            });
-            add(slipList);
-    
-            JToggleButton clones = new JToggleButton("Show Clone connections");
-            clones.addActionListener(e -> {
-                window.gamePanel.setClonesVisible(((AbstractButton) e.getSource()).isSelected());
-                window.repaint(emulator.getLevel(), true);
-            });
-            add(clones);
-    
-            JToggleButton traps = new JToggleButton("Show Trap Connections");
-            traps.addActionListener(e -> {
-                window.gamePanel.setTrapsVisible(((AbstractButton) e.getSource()).isSelected());
-                window.repaint(emulator.getLevel(), true);
-            });
-            add(traps);
-    
-            JToggleButton history = new JToggleButton("Show Move History");
-            history.addActionListener(e -> {
-                window.gamePanel.setHistoryVisible(((AbstractButton) e.getSource()).isSelected());
-                window.repaint(emulator.getLevel(), true);
-            });
-            add(history);
+            String[] setterNames = new String[] {
+                "Show Monster List",
+                "Show Slip List",
+                "Show Clone connections",
+                "Show Trap Connections",
+                "Show Move History"
+            };
+            
+            List<Consumer<Boolean>> setters = Arrays.asList(
+                b -> window.gamePanel.setMonsterListVisible(b),
+                b -> window.gamePanel.setSlipListVisible(b),
+                b -> window.gamePanel.setClonesVisible(b),
+                b -> window.gamePanel.setTrapsVisible(b),
+                b -> window.gamePanel.setHistoryVisible(b)
+            );
+            
+            for (int i = 0; i < setterNames.length; i++){
+                JToggleButton b = new JToggleButton(setterNames[i]);
+                Consumer<Boolean> setter = setters.get(i);
+                b.addActionListener(e -> {
+                    setter.accept(((AbstractButton) e.getSource()).isSelected());
+                    window.repaint(emulator.getLevel(), true);
+                });
+                add(b);
+            }
 
         }
     }

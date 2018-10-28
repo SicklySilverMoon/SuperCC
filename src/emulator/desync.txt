@@ -2,20 +2,20 @@ Monsters kill swimming chip (?)
 Partial post sliding blocks
 Two clones one tick
 
-45 monster lab
-99 Catacombs
-120 Alphabet Soup
+45 monster lab (cloning flags, rng)
+99 Catacombs (rng)
+120 Alphabet Soup (unknown)
 
-10 Annoying Wall
-60 Red, Blue and Green
-78 Slide Show
-102 Triple Alarm
-114 LUNIT
-116 Mini Challenges (crash)
-140 YAYAP
+10 Annoying Wall (unknown)
+60 Red, Blue and Green (unknown)
+78 Slide Show (unknown)
+102 Triple Alarm (unknown)
+114 LUNIT (rng)
+116 Mini Challenges (tws clicks)
+140 YAYAP (trap slide delay)
 
-112 Carousel
-116 Communism
-117 blobs on a plane
-123 the very hungry caterpillar
-145 chance time
+112 Carousel (cloning flags)
+116 Communism (unknown)
+117 blobs on a plane (rng)
+123 the very hungry caterpillar (unknown)
+145 chance time (rng)

@@ -87,7 +87,7 @@ public class TextPanel extends JPanel{
         drawColoredShorts(g, level.getBoots(), new Color[] {Color.BLUE, Color.RED, Color.WHITE, Color.GREEN});
         drawText(g, "", 1);
         g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 24));
-        drawText(g, new String(level.getMoves(), StandardCharsets.ISO_8859_1), Integer.MAX_VALUE);
+        drawText(g, level.getMoves().toString(), Integer.MAX_VALUE);
     }
 
 }

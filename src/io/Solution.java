@@ -2,12 +2,14 @@ package io;
 
 import emulator.SuperCC;
 import game.Level;
+import game.Moves;
 import game.Position;
 import game.Step;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
 
@@ -88,12 +90,6 @@ public class Solution{
                     break;
                 }
             }
-            while (level.getChip().isSliding()){
-                emulator.tick((byte) '-', new int[] {-1}, true);
-                if (level.getChip().isDead()){
-                    break;
-                }
-            }
         }
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
@@ -102,6 +98,29 @@ public class Solution{
     }
     
     private static byte[] succToHalfMoves(byte[] succMoves){
+        ByteArrayOutputStream writer = new ByteArrayOutputStream();
+        for (byte b : succMoves){
+            if (b == 'U'){
+                writer.write('u');
+                writer.write('-');
+            }
+            else if (b == 'L'){
+                writer.write('l');
+                writer.write('-');
+            }
+            else if (b == 'D'){
+                writer.write('d');
+                writer.write('-');
+            }
+            else if (b == 'R'){
+                writer.write('r');
+                writer.write('-');
+            }
+            else writer.write(b);
+        }
+        return writer.toByteArray();
+    }
+    private static byte[] succToHalfMoves(Moves succMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         for (byte b : succMoves){
             if (b == 'U'){
@@ -160,11 +179,18 @@ public class Solution{
             + "Seed " + rngSeed + "\n"
             + new String(halfMoves, StandardCharsets.ISO_8859_1);
     }
-
+    
     public Solution(byte[] moves, int rngSeed, Step step, int format){
         if (format == QUARTER_MOVES) this.halfMoves = quarterToHalfMoves(moves);
         else if (format == SUCC_MOVES) this.halfMoves = succToHalfMoves(moves);
         else if (format == HALF_MOVES) this.halfMoves = moves;
+        this.rngSeed = rngSeed;
+        this.step = step;
+        //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
+    }
+    
+    public Solution(Moves moves, int rngSeed, Step step){
+        this.halfMoves = succToHalfMoves(moves);
         this.rngSeed = rngSeed;
         this.step = step;
         //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);

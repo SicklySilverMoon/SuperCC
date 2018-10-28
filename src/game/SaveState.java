@@ -21,16 +21,15 @@ public class SaveState {
     RNG rng;
     int mouseClick;
     BitSet traps;
-    byte[] moves;
     CreatureList monsterList;
     SlipList slipList;
 
     public byte[] save(){
         byte[] traps = this.traps.toByteArray();
         SavestateWriter writer = new SavestateWriter();
-        writer.writeShort(2);                                        // Version
-        writer.writeShort((short) chip.bits());                         // Chip
-        writer.writeLayer(layerBG);                                     //
+        writer.writeShort(3);                                        // Version
+        writer.writeShort((short) chip.bits());
+        writer.writeLayer(layerBG);
         writer.writeLayer(layerFG);
         writer.writeShort(timer);
         writer.writeShort(chipsLeft);
@@ -40,8 +39,6 @@ public class SaveState {
         writer.writeShort(mouseClick);
         writer.writeShort(traps.length);
         writer.writeBytes(traps);
-        writer.writeInt(moves.length);
-        writer.writeBytes(moves);
         writer.writeShort(monsterList.list.length);
         writer.writeMonsterArray(monsterList.list);
         writer.writeShort(slipList.size());
@@ -67,20 +64,17 @@ public class SaveState {
         rng.currentValue = (reader.readInt());
         mouseClick = reader.readShort();
         traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-        moves = reader.readBytes(reader.readInt());
         monsterList.list = reader.readMonsterArray(reader.readShort());
         slipList = new SlipList(reader.readMonsterArray(reader.readShort()), slipList.getLevel());
     }
 
     public SaveState(Tile[] layerBG, Tile[] layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
-                     byte[] moves, int timer, int chipsLeft, short[] keys, short[] boots, RNG rng, int mouseClick,
-                     BitSet traps){
+                     int timer, int chipsLeft, short[] keys, short[] boots, RNG rng, int mouseClick, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
         this.monsterList = monsterList;
         this.slipList = slipList;
         this.chip = chip;
-        this.moves = moves;
         this.timer = timer;
         this.chipsLeft = chipsLeft;
         this.keys = keys;

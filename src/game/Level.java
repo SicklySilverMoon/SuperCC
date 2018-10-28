@@ -3,6 +3,7 @@ package game;
 import emulator.SuperCC;
 
 import java.util.BitSet;
+import java.util.LinkedList;
 
 import static game.Tile.*;
 
@@ -18,13 +19,14 @@ public class Level extends SaveState {
     protected int tickN;
     private int rngSeed;
     private Step step;
+    private Moves moves = new Moves();
 
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
                  int[][] trapConnections, BitSet traps, int[][] cloneConnections,
                  Tile[] layerBG, Tile[] layerFG, CreatureList monsterList, SlipList slipList,
                  Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
 
-        super(layerBG, layerFG, monsterList, slipList, chip, new byte[0],
+        super(layerBG, layerFG, monsterList, slipList, chip,
                 time, chips, new short[4], new short[4], rng, NO_CLICK, traps);
 
         this.levelNumber = levelNumber;
@@ -57,9 +59,6 @@ public class Level extends SaveState {
     public Creature getChip(){
         return chip;
     }
-    public byte[] getMoves(){
-        return moves;
-    }
     public int getRngSeed(){
         return rngSeed;
     }
@@ -83,6 +82,12 @@ public class Level extends SaveState {
     }
     public int[][] getCloneConnections(){
         return cloneConnections;
+    }
+    public Moves getMoves(){
+        return moves;
+    }
+    public void setMoves(Moves moves){
+        this.moves = moves;
     }
     public void setClick(int position){
         this.mouseClick = position;
@@ -141,13 +146,6 @@ public class Level extends SaveState {
             chip.tick(new int[] {direction}, this);
             if (chip.getIndex() != oldPosition) break;
         }
-    }
-
-    private void addMove(byte b){
-        byte[] newMoves = new byte[moves.length+1];
-        System.arraycopy(moves, 0, newMoves, 0, moves.length);
-        newMoves[moves.length] = b;
-        moves = newMoves;
     }
 
     private void finaliseTraps(){
@@ -214,7 +212,7 @@ public class Level extends SaveState {
             tick(capital(b), null);
             return true;
         }
-        addMove(b);
+        moves.add(b);
         return false;
     }
     

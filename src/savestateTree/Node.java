@@ -14,8 +14,7 @@ class Node{
     }
 
     Node getParent(){
-        if (hasParent()) return parent;
-        else return this;
+        return parent;
     }
     
     boolean hasParent(){
@@ -25,6 +24,7 @@ class Node{
     Node(byte[] savestate, Node parent){
         this.parent = parent;
         this.savestate = savestate;
+        System.out.println(savestate.length);
     }
 
 }

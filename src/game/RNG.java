@@ -24,7 +24,6 @@ public class RNG{
      * walkers on the array {left, backwards, right}. This advances the rng
      * once.
      * @param a The array to permute
-     * @return the array a with a  random permutation applied
      */
     public void randomPermutation3(int[] a){
         nextValue();
@@ -42,7 +41,6 @@ public class RNG{
      * blobs on the array {forwards, left, backwards, right}. This advances the
      * rng once.
      * @param a The array to permute
-     * @return the array a with a  random permutation applied
      */
     public void randomPermutation4(int[] a){
         nextValue();
