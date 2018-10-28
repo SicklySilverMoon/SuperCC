@@ -49,6 +49,9 @@ public class SuperCC implements KeyListener{
     public Tree getSavestates(){
         return savestates;
     }
+    public MainWindow getMainWindow(){
+        return window;
+    }
 
     public SuperCC() throws IOException {
         this.window = new MainWindow(this);
@@ -110,43 +113,6 @@ public class SuperCC implements KeyListener{
             }
         }
         return false;
-    }
-
-    public void playSolution(Solution solution){
-        try{
-            loadLevel(level.levelNumber, solution.rngSeed, solution.step);
-            for (int move = 0; move < solution.halfMoves.length; move++){
-                byte b = solution.halfMoves[move];
-                if (b == CHIP_RELATIVE_CLICK){
-                    int x = solution.halfMoves[++move] - 9;
-                    int y = solution.halfMoves[++move] - 9;
-                    if (x == 0 && y == 0){                      // idk about this but it fixes thief street
-                        b = '-';
-                    }
-                    else {
-                        Position chipPosition = level.getChip().getPosition();
-                        Position clickPosition = chipPosition.add(x, y);
-                        level.setClick(clickPosition.getIndex());
-                        b = clickPosition.clickByte(chipPosition);
-                    }
-                }
-                boolean tickedTwice = tick(b, false);
-                if (tickedTwice) move++;
-                if (level.getChip().isDead()){
-                    break;
-                }
-            }
-            while (level.getChip().isSliding()){
-                tick((byte) '-', new int[] {-1}, false);
-                if (level.getChip().isDead()){
-                    break;
-                }
-            }
-        }
-        catch (Exception e){
-            throwError("Something went wrong:\n"+e.getMessage());
-        }
-        window.repaint(level, true);
     }
 
     public void keyTyped(KeyEvent e){}

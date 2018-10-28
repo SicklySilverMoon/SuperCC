@@ -1,7 +1,11 @@
 package io;
 
+import emulator.SuperCC;
+import game.Level;
+import game.Position;
 import game.Step;
 
+import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -16,7 +20,87 @@ public class Solution{
     public byte[] halfMoves;
     public int rngSeed;
     public Step step;
-
+    
+    public void play(SuperCC emulator){
+        emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
+        Level level = emulator.getLevel();
+        try{
+            for (int move = 0; move < halfMoves.length; move++){
+                byte b = halfMoves[move];
+                if (b == CHIP_RELATIVE_CLICK){
+                    int x = halfMoves[++move] - 9;
+                    int y = halfMoves[++move] - 9;
+                    if (x == 0 && y == 0){                      // idk about this but it fixes thief street
+                        b = '-';
+                    }
+                    else {
+                        Position chipPosition = level.getChip().getPosition();
+                        Position clickPosition = chipPosition.add(x, y);
+                        level.setClick(clickPosition.getIndex());
+                        b = clickPosition.clickByte(chipPosition);
+                    }
+                }
+                boolean tickedTwice = emulator.tick(b, false);
+                if (tickedTwice) move++;
+                if (level.getChip().isDead()){
+                    break;
+                }
+            }
+            while (level.getChip().isSliding()){
+                emulator.tick((byte) '-', new int[] {-1}, false);
+                if (level.getChip().isDead()){
+                    break;
+                }
+            }
+        }
+        catch (Exception e){
+            emulator.throwError("Something went wrong:\n"+e.getMessage());
+        }
+        emulator.getMainWindow().repaint(level, true);
+    }
+    
+    public void play(SuperCC emulator, long waitTime){
+        emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
+        Level level = emulator.getLevel();
+        try{
+            for (int move = 0; move < halfMoves.length; move++){
+                byte b = halfMoves[move];
+                if (b == CHIP_RELATIVE_CLICK){
+                    int x = halfMoves[++move] - 9;
+                    int y = halfMoves[++move] - 9;
+                    if (x == 0 && y == 0){                      // idk about this but it fixes thief street
+                        b = '-';
+                    }
+                    else {
+                        Position chipPosition = level.getChip().getPosition();
+                        Position clickPosition = chipPosition.add(x, y);
+                        level.setClick(clickPosition.getIndex());
+                        b = clickPosition.clickByte(chipPosition);
+                    }
+                }
+                boolean tickedTwice = emulator.tick(b, true);
+                if (tickedTwice){
+                    move++;
+                    Thread.sleep(waitTime*2);
+                }
+                else Thread.sleep(waitTime);
+                if (level.getChip().isDead()){
+                    break;
+                }
+            }
+            while (level.getChip().isSliding()){
+                emulator.tick((byte) '-', new int[] {-1}, true);
+                if (level.getChip().isDead()){
+                    break;
+                }
+            }
+        }
+        catch (Exception e){
+            emulator.throwError("Something went wrong:\n"+e.getMessage());
+        }
+        emulator.getMainWindow().repaint(level, true);
+    }
+    
     private static byte[] succToHalfMoves(byte[] succMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         for (byte b : succMoves){

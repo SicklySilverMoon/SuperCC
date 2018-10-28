@@ -51,7 +51,7 @@ public class MenuBar extends JMenuBar{
             next.addActionListener(e ->{
                 emulator.loadLevel(emulator.getLevel().levelNumber + 1);
                 try {
-                    emulator.playSolution(emulator.twsReader.readSolution(emulator.getLevel()));
+                    emulator.twsReader.readSolution(emulator.getLevel()).play(emulator);
                 }
                 catch (Exception ex){
                     ex.printStackTrace();
@@ -145,7 +145,7 @@ public class MenuBar extends JMenuBar{
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                         FileInputStream fis = new FileInputStream(fc.getSelectedFile());
                         Solution solution = new Solution(new String(fis.readAllBytes()));
-                        emulator.playSolution(solution);
+                        solution.play(emulator);
                         fis.close();
                     }
                 }
@@ -172,8 +172,7 @@ public class MenuBar extends JMenuBar{
                 Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
                 Solution s;
                 try {
-                    s = new Solution((String) t.getTransferData(DataFlavor.stringFlavor));
-                    emulator.playSolution(s);
+                    new Solution((String) t.getTransferData(DataFlavor.stringFlavor)).play(emulator);
                 }
                 catch (IllegalArgumentException e){
                     emulator.throwError(e.getMessage());
@@ -210,12 +209,14 @@ public class MenuBar extends JMenuBar{
 
             JMenuItem playSolution = new JMenuItem("Play solution");
             playSolution.addActionListener(event ->{
-                try{
-                    emulator.playSolution(emulator.twsReader.readSolution(emulator.getLevel()));
-                }
-                catch (IOException e){
-                    emulator.throwError("Error while loading solution");
-                }
+                new Thread(() -> {
+                    try {
+                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 100);
+                    }
+                    catch (IOException e){
+                        emulator.throwError("Error while loading solution");
+                    }
+                }).start();
             });
             add(playSolution);
 
