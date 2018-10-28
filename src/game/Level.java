@@ -195,6 +195,7 @@ public class Level extends SaveState {
         if (chip.isDead()) return false;
         if (chip.isSliding() && !layerBG[chip.getIndex()].isFF()) b = SuperCC.WAIT;
         if (moveType == CLICK) moveChip(chip.seek(new Position(mouseClick)));
+        if (chip.isDead()) return false;
         slipList.tick();
         if (chip.isDead()) return false;
         if (moveType == KEY) moveChip(directions);

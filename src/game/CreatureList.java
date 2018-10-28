@@ -54,7 +54,11 @@ public class CreatureList{
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
         if (direction == NO_DIRECTION) return;
         if (monster.canEnter(direction, level.layerFG[monster.move(direction).getIndex()], level)){
-            monster.tick(new int[] {direction}, level);
+            if (monster.getMonsterType() == Creature.BLOB){
+                int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
+                monster.tick(directions, level);
+            }
+            else monster.tick(new int[] {direction}, level);
             level.insertTile(clonerPosition, tile);
         }
     }
@@ -63,7 +67,11 @@ public class CreatureList{
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
         if (direction == NO_DIRECTION) return;
         if (monster.getMonsterType() == Creature.TANK_STATIONARY) monster.setMonsterType(Creature.TANK_MOVING);
-        monster.tick(new int[] {direction}, level);
+        if (monster.getMonsterType() == Creature.BLOB){
+            int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
+            monster.tick(directions, level);
+        }
+        else monster.tick(new int[] {direction}, level);
     }
 
     private void tickFreeMonster(Creature monster){

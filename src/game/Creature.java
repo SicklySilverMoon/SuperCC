@@ -122,12 +122,13 @@ public class Creature{
         return direction;
     }
     int[] getSlideDirectionPriority(Tile tile, RNG rng){
-        if (tile.isIce() || tile == TELEPORT){
+        if (tile.isIce() || (isChip() && tile == TELEPORT)){
             int[] directions = turnFromDir(new int[]{TURN_FORWARD, TURN_AROUND});
             directions[0] = applySlidingTile(directions[0], tile, rng);
             directions[1] = applySlidingTile(directions[1], tile, rng);
             return directions;
         }
+        else if (tile == TELEPORT) return new int[] {direction};
         else{
             return new int[] {applySlidingTile(getDirection(), tile, rng)};
         }
@@ -279,7 +280,7 @@ public class Creature{
             case WATER: return true;
             case FIRE: return getMonsterType() != BUG && getMonsterType() != WALKER;
             case HIDDENWALL_PERM: return false;
-            case THIN_WALL_UP: return direction != DIRECTION_RIGHT;
+            case THIN_WALL_UP: return direction != DIRECTION_DOWN;
             case THIN_WALL_RIGHT: return direction != DIRECTION_LEFT;
             case THIN_WALL_DOWN: return direction != DIRECTION_UP;
             case THIN_WALL_LEFT: return direction != DIRECTION_RIGHT;
@@ -640,7 +641,7 @@ public class Creature{
         if (flags.moved) {
             level.popTile(getIndex());
             position = newPosition;
-            
+    
             if (flags.enteredPortal){
                 int portalIndex;
                 for (portalIndex = 0; true; portalIndex++){
@@ -650,27 +651,32 @@ public class Creature{
                 }
                 int l = level.portals.length;
                 int i = portalIndex;
-                Position teleportPosition;
                 do{
-                    i = (i + l - 1) % l;
-                    teleportPosition = new Position(level.portals[i]);
-                    if (level.layerFG[teleportPosition.getIndex()] != TELEPORT) continue;
-                    Position exitPosition = teleportPosition.move(direction);
+                    i--;
+                    if (i < 0) i += l;
+                    position.setIndex(level.portals[i]);
+                    if (level.layerFG[position.getIndex()] != TELEPORT) continue;
+                    Position exitPosition = position.move(direction);
+                    if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
+                        exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
                     Tile exitTile = level.layerFG[exitPosition.getIndex()];
                     if (exitTile.isTransparent()) exitTile = level.layerBG[exitPosition.getIndex()];
                     if (isChip() && exitTile == Tile.BLOCK){
-                        if (canEnter(direction, level.layerBG[exitPosition.getIndex()], level)){
-                            Creature block = new Creature(DIRECTION_UP, BLOCK, exitPosition.getIndex());
-                            if (block.canEnter(direction, level.layerFG[exitPosition.move(direction).getIndex()], level)){
+                        Creature block = new Creature(direction, BLOCK, exitPosition);
+                        if (canEnter(direction, level.layerBG[exitPosition.getIndex()], level) &&
+                            block.canLeave(direction, level.layerBG[exitPosition.getIndex()], level)){
+                            Position blockPushPosition = exitPosition.move(direction);
+                            if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
+                                blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
+                            if (block.canEnter(direction, level.layerFG[blockPushPosition.getIndex()], level)){
                                 break;
                             }
                         }
-                        pushBlock(new Creature(DIRECTION_UP, BLOCK, exitPosition), level);
+                        pushBlock(block, level);
                     }
                     if (canEnter(direction, exitTile, level)) break;
                 }
                 while (i != portalIndex);
-                position.setIndex(teleportPosition.getIndex());
             }
     
             if (flags.sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG[getIndex()], level.rng);
@@ -736,7 +742,7 @@ public class Creature{
                     }
                 }
             }
-            
+    
             if (flags.moved) return;
             
         }
@@ -749,11 +755,6 @@ public class Creature{
         else setDirection(copy.direction);
     }
     
-    public Creature(int direction, int monsterType, int position){
-        this.direction = direction;
-        this.monsterType = monsterType;
-        this.position = new Position(position);
-    }
     public Creature(int direction, int monsterType, Position position){
         this.direction = direction;
         this.monsterType = monsterType;
@@ -792,6 +793,7 @@ public class Creature{
 
     @Override
     public String toString(){
+        if (monsterType == BLOCK) return "Monster BLOCK "+direction+" at position "+position;
         return "Monster "+toTile()+" at position "+position;
     }
 

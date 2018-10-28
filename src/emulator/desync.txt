@@ -16,40 +16,23 @@ Two clones one tick
 1 Entrance Examination
 10 Annoying Wall
 16 Two sets of rules
-20 Super Chip
-24 Impossible?
-27 Jumble
 37 Blue Moon
 50 Once upon a troubadour
-51 Dancing on Ice
 60 Red, Blue and Green
-76 Complex
 77 Oh-ho!
 78 Slide Show
 94 Mistakes
 102 Triple Alarm
 114 LUNIT
-116 Mini Challenges
-122 Manic Depression
-134 We'll be right back
-135 Color Wheel
+116 Mini Challenges (crash)
 137 Vulcan
-140 YAYAP
+140 YAYAP (crash)
 141 Bug Arranging
 144 YCTaOFNT
 145 Recurring Dream
-146 Suspended Animation
-149 Mr Mcallahan presents
 
-last starfighter
-74 Traveller
-78 Secret Passages
-new block in town
-carousel
-communism
-blobs on a plane
-chip plank galleon
-the very hungry caterpillar (unknown cause)
-utter clutter
-Thief street (unknown cause)
-chance time (unknown cause)
+112 Carousel
+116 Communism
+117 blobs on a plane
+123 the very hungry caterpillar (unknown cause)
+145 chance time (unknown cause)
