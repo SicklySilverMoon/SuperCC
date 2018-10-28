@@ -5,9 +5,7 @@ Two clones one tick
 45 monster lab
 99 Catacombs
 120 Alphabet Soup
-124 Fire Trap
 
-1 Entrance Examination (tws read)
 10 Annoying Wall
 16 Two sets of rules
 37 Blue Moon (tws read)

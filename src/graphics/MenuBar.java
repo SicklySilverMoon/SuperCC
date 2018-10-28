@@ -208,15 +208,15 @@ public class MenuBar extends JMenuBar{
             add(new JSeparator());
 
             JMenuItem playSolution = new JMenuItem("Play solution");
-            playSolution.addActionListener(event ->{
-                new Thread(() -> {
+            playSolution.addActionListener(event -> {
+                Thread t = new Thread(() -> {
                     try {
-                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 100);
-                    }
-                    catch (IOException e){
+                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 33);
+                    } catch (IOException e) {
                         emulator.throwError("Error while loading solution");
                     }
-                }).start();
+                });
+                t.start();
             });
             add(playSolution);
 

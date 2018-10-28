@@ -44,20 +44,26 @@ public class TWSReader{
 
         reader.counter = 0;
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
-        while (writer.size() < solutionLength){
+        while (writer.size() + reader.solutionLengthOffset < solutionLength){
+            System.out.println(writer.size() + reader.solutionLengthOffset+"\n"+solutionLength);
             int b = reader.readByte();
-            switch (b & 0b11){
-                case 0:
-                    reader.readFormat3(b, writer);
-                    break;
-                case 1:
-                case 2:
-                    reader.readFormat1(b, writer);
-                    break;
-                case 3:
-                    if ((b & 0x10) == 0) reader.readFormat2(b, writer);
-                    else reader.readFormat4(b, writer);
-                    break;
+            try {
+                switch (b & 0b11) {
+                    case 0:
+                        reader.readFormat3(b, writer);
+                        break;
+                    case 1:
+                    case 2:
+                        reader.readFormat1(b, writer);
+                        break;
+                    case 3:
+                        if ((b & 0x10) == 0) reader.readFormat2(b, writer);
+                        else reader.readFormat4(b, writer);
+                        break;
+                }
+            }
+            catch (Exception e){                    // Some solution files are too long - seems to be caused by long
+                break;                              // slides at the end of a level
             }
         }
         return new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);
@@ -95,6 +101,8 @@ public class TWSReader{
 
     private class twsInputStream extends FileInputStream{
         private final byte[] DIRECTIONS = new byte[] {'u', 'l', 'd', 'r'};
+        
+        public int solutionLengthOffset = 0;
 
         public int counter;
         public void readFormat1(int b, ByteArrayOutputStream writer) throws IOException{
@@ -152,6 +160,7 @@ public class TWSReader{
                 writer.write(CHIP_RELATIVE_CLICK);
                 writer.write(x9);
                 writer.write(y9);
+                solutionLengthOffset -= 2;
             }
         }
 
