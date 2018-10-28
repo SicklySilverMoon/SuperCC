@@ -8,6 +8,8 @@ import java.util.BitSet;
 public class SaveState {
     
     public static final int NO_CLICK = 1025;
+    private static final int RLE_MULTIPLE = 0x7F;
+    private static final int RLE_END = 0x7E;
 
     Tile[] layerBG;
     Tile[] layerFG;
@@ -25,26 +27,10 @@ public class SaveState {
 
     public byte[] save(){
         byte[] traps = this.traps.toByteArray();
-        int length = 4                              // Length
-                + 2                                 // Version
-                + 2                                 // Chip
-                + 32 * 32                           // BG Layer
-                + 32 * 32                           // FG Layer
-                + 2                                 // Timer
-                + 2                                 // Chips left
-                + 8                                 // Keys
-                + 8                                 // Boots
-                + 4                                 // RNG
-                + 2                                 // Mouse click
-                + 2 + traps.length                  // Traps
-                + 4 + moves.length                  // Moves
-                + 2 + 2 * monsterList.list.length   // Monster list
-                + 2 + 2 * slipList.size();          // Slip list
-        SavestateWriter writer = new SavestateWriter(length);
-        writer.writeInt(length);
-        writer.writeShort(1);
-        writer.writeShort((short) chip.bits());
-        writer.writeLayer(layerBG);
+        SavestateWriter writer = new SavestateWriter();
+        writer.writeShort(2);                                        // Version
+        writer.writeShort((short) chip.bits());                         // Chip
+        writer.writeLayer(layerBG);                                     //
         writer.writeLayer(layerFG);
         writer.writeShort(timer);
         writer.writeShort(chipsLeft);
@@ -70,7 +56,6 @@ public class SaveState {
 
     public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
-        int length = reader.readInt();
         int version = reader.readShort();
         chip = new Creature(reader.readShort());
         layerBG = reader.readLayer(32*32);
@@ -135,11 +120,20 @@ public class SaveState {
             return out;
         }
         Tile[] readLayer(int length){
-            Tile[] out = new Tile[length];
-            for (int i = 0; i < length; i++){
-                out[i] = Tile.fromOrdinal(readShort());
+            Tile[] layer = new Tile[32*32];
+            int tileIndex = 0;
+            int b;
+            while ((b = read()) != RLE_END){
+                if (b == RLE_MULTIPLE){
+                    int rleLength = readUnsignedByte() + 1;
+                    Tile t = Tile.fromOrdinal(read());
+                    for (int i = 0; i < rleLength; i++){
+                        layer[tileIndex++] = t;
+                    }
+                }
+                else layer[tileIndex++] = Tile.fromOrdinal(b);
             }
-            return out;
+            return layer;
         }
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];
@@ -187,19 +181,42 @@ public class SaveState {
             }
         }
         void writeLayer(Tile[] layer){
-            for (int i = 0; i < layer.length; i++){
-                writeShort(layer[i].ordinal());
+            int lastOrdinal = layer[0].ordinal();
+            int ordinal;
+            int copyCount = -1;
+            for (Tile t : layer){
+                ordinal = t.ordinal();
+                if (ordinal == lastOrdinal){
+                    if (copyCount == 255){
+                        write(RLE_MULTIPLE);
+                        write(copyCount);
+                        copyCount = 0;
+                        write(ordinal);
+                    }
+                    else copyCount++;
+                }
+                else {
+                    if (copyCount != 0){
+                        write(RLE_MULTIPLE);
+                        write(copyCount);
+                    }
+                    write(lastOrdinal);
+                    copyCount = 0;
+                    lastOrdinal = ordinal;
+                }
             }
+            if (copyCount != 0){
+                write(RLE_MULTIPLE);
+                write(copyCount);
+            }
+            write(lastOrdinal);
+            write(RLE_END);
         }
         void writeMonsterArray(Creature[] monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
         void writeMonsterList(ArrayList<Creature> monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
-        }
-
-        SavestateWriter(int length){
-            super(length);
         }
 
     }
