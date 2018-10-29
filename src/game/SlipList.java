@@ -21,12 +21,13 @@ public class SlipList extends ArrayList<Creature>{
         return level;
     }
 
-    SlipList(Creature[] monsters, Level level){
+    SlipList(Creature[] slidingCreatures, Level level){
         super();
-        sliders: for (Creature slider : monsters){
+        sliders: for (Creature slider : slidingCreatures){
             for (Creature monster : level.monsterList.list){
-                if (slider.getPosition() == monster.getPosition()){
+                if (slider.getIndex() == monster.getIndex()){
                     add(monster);
+                    monster.setSliding(true);
                     continue sliders;
                 }
             }
