@@ -26,7 +26,8 @@ public class SlipList extends FixedCapacityList<Creature> {
     public void setSliplist(Creature[] slidingCreatures){
         clear();
         for (Creature slider : slidingCreatures){
-            Creature c = Objects.requireNonNullElse(level.monsterList.creatureAt(slider.getPosition()), slider);
+            Creature c = level.monsterList.creatureAt(slider.getPosition());
+            if (c == null) c = slider;
             add(c);                // Blocks are not in the monster list, so they are added separately
         }
     }

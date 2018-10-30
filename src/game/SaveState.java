@@ -163,13 +163,11 @@ public class SaveState {
             write(n >>> 8);
             write(n);
         }
-        /*
         public void writeBytes(byte[] a){
             for (int i = 0; i < a.length; i++){
                 write(a[i]);
             }
         }
-        */
         void writeShorts(short[] a){
             for (int i = 0; i < a.length; i++){
                 writeShort(a[i]);
