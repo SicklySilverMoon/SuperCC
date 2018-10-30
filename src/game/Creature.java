@@ -760,7 +760,7 @@ public class Creature{
             
         }
         setSliding(copy.sliding, level);
-        if (isTank()) setMonsterType(TANK_STATIONARY);
+        if (isTank() && !isSliding()) setMonsterType(TANK_STATIONARY);
         else if (monsterType == TEETH){
             direction = directions[0];
             level.layerFG[getIndex()] = toTile();
