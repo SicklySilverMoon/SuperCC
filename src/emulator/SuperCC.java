@@ -6,6 +6,7 @@ import game.Step;
 import graphics.MainWindow;
 import game.Position;
 import io.DatParser;
+import io.Solution;
 import io.TWSReader;
 
 import javax.swing.*;
@@ -147,14 +148,43 @@ public class SuperCC implements KeyListener{
         }
 
     }
+    
+    private void runBenchmark(int levelNumber, int runs){
+        loadLevel(levelNumber);
+        Solution s;
+        try {
+            s = twsReader.readSolution(level);
+            long startTime = System.nanoTime();
+            for (int i = 0; i < runs; i++) s.play(this);
+            long endTime = System.nanoTime();
+            double timePerIteration = (endTime - startTime) / (double) runs;
+            System.out.println("Time per iteration:");
+            System.out.println((timePerIteration / 1000000)+"ms");
+            System.out.println((timePerIteration / 1000000000)+"s");
+            double numMoves = savestates.getMoves().size();
+            int size = savestates.getSavestate().length;
+            while (savestates.getNode().hasParent()){
+                savestates.rewind();
+                size += savestates.getSavestate().length;
+            }
+            System.out.println("\nTotal state size:");
+            System.out.println((size / (double) 1000)+" kb");
+            System.out.println("\nAverage state size:");
+            System.out.println((size / numMoves / 1000)+" kb");
+        }
+        catch (IOException e){
+            System.out.println("Benchmark of level "+level+"failed");
+        }
+    }
 
     public static void initialise(){
         try{
             SuperCC emulator = new SuperCC();
-            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
-            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
+            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
+            //emulator.runBenchmark(116, 1000);
         }
         catch (IOException e){
             e.printStackTrace();
