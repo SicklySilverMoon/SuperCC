@@ -85,8 +85,11 @@ public class CreatureList{
     }
 
     void addClone(int position){
-
+    
         for (Creature c: list){
+            if (c.getIndex() == position) return;
+        }
+        for (Creature c: newClones){
             if (c.getIndex() == position) return;
         }
         Tile tile = level.layerFG[position];
@@ -133,6 +136,18 @@ public class CreatureList{
     public CreatureList(Creature[] monsters){
         list = monsters;
         numDeadMonsters = 0;
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.length; i++){
+            sb.append(i);
+            sb.append('\t');
+            sb.append(list[i]);
+            sb.append('\n');
+        }
+        return sb.toString();
     }
 
 }
