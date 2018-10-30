@@ -115,12 +115,12 @@ public class TWSWriter{
         }
         byte[] readAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
-            readNBytes(asciiBytes, 0, length);
+            read(asciiBytes);
             return asciiBytes;
         }
         byte[] readEncodedAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
-            readNBytes(asciiBytes, 0, length);
+            read(asciiBytes);
             for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99b);
             return asciiBytes;
         }

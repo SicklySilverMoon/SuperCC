@@ -28,13 +28,13 @@ public class DatParser{
      */
     private byte[] readLayer(DatReader reader) throws IOException{
         byte[] layer = new byte[32*32];
-        final int bytesInLayerFG = reader.readWord();
+        int bytesInLayer = reader.readWord();
         int i = 0;
         while (i < 1024){
-            int b = reader.readByte();
+            int b = reader.readUnsignedByte();
             if (b == 0xFF){
-                int copies = reader.readByte();
-                int objectCode = reader.readByte();
+                int copies = reader.readUnsignedByte();
+                int objectCode = reader.read();
                 for (int k = 0; k < copies; k++){
                     layer[i] = (byte) objectCode;
                     i++;
@@ -98,9 +98,9 @@ public class DatParser{
             int[][] monsterPositions = null;
             int optionalFieldsLength = reader.readWord();
             while (optionalFieldsLength > 0) {
-                final int fieldType = reader.readByte();
+                final int fieldType = reader.readUnsignedByte();
                 optionalFieldsLength--;
-                final int fieldLength = reader.readByte();
+                final int fieldLength = reader.readUnsignedByte();
                 optionalFieldsLength--;
                 switch (fieldType) {
                     case 1:
@@ -128,14 +128,14 @@ public class DatParser{
                         password = reader.readAscii(fieldLength);
                         break;
                     case 9:
-                        for (int j = 0; j < fieldLength; j++) reader.readByte();
+                        for (int j = 0; j < fieldLength; j++) reader.readUnsignedByte();
                         break;
                     case 10:
                         int numMonsters = fieldLength / 2;
                         monsterPositions = new int[numMonsters][2];
                         for (int j = 0; j < numMonsters; j++) {
-                            monsterPositions[j][0] = reader.readByte();
-                            monsterPositions[j][1] = reader.readByte();
+                            monsterPositions[j][0] = reader.readUnsignedByte();
+                            monsterPositions[j][1] = reader.readUnsignedByte();
                         }
                         break;
                 }
@@ -183,24 +183,24 @@ public class DatParser{
     }
     
     private class DatReader extends FileInputStream{
-        private int readByte() throws IOException{
-            return read();
+        private int readUnsignedByte() throws IOException{
+            return read() & 0xFF;
         }
         private int readWord() throws IOException{
-            return read() + 256*read();
+            return readUnsignedByte() + 256*readUnsignedByte();
         }
         private int readInt32() throws IOException{
-            return read() + 256*read() + 65536*read() + 16777216*read();
+            return readUnsignedByte() + 256*readUnsignedByte() + 65536*readUnsignedByte() + 16777216*readUnsignedByte();
         }
         private byte[] readAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
-            readNBytes(asciiBytes, 0, length-1);
+            read(asciiBytes, 0, length-1);
             read();                                         // trailing '\0'
             return asciiBytes;
         }
         private byte[] readEncodedAscii(int length) throws IOException{
             byte[] asciiBytes = new byte[length];
-            readNBytes(asciiBytes, 0, length-1);
+            read(asciiBytes, 0, length-1);
             read();                                         // trailing '\0'
             for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99);
             return asciiBytes;
