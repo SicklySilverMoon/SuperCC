@@ -7,7 +7,6 @@ import graphics.MainWindow;
 import game.Position;
 import io.DatParser;
 import io.TWSReader;
-import savestateTree.Tree;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -27,7 +26,7 @@ public class SuperCC implements KeyListener{
 
     private boolean shiftPressed = false;
 
-    private Tree savestates;
+    private SavestateManager savestates;
     private Level level;
     private MainWindow window;
     private DatParser dat;
@@ -45,7 +44,7 @@ public class SuperCC implements KeyListener{
     public Level getLevel(){
         return level;
     }
-    public Tree getSavestates(){
+    public SavestateManager getSavestates(){
         return savestates;
     }
     public MainWindow getMainWindow(){
@@ -69,7 +68,7 @@ public class SuperCC implements KeyListener{
     public synchronized void loadLevel(int levelNumber, int rngSeed, Step step){
         try{
             level = dat.parseLevel(levelNumber, rngSeed, step);
-            savestates = new Tree(level);
+            savestates = new SavestateManager(level);
             window.repaint(level, true);
         }
         catch (IOException e){
@@ -85,7 +84,7 @@ public class SuperCC implements KeyListener{
         if (level == null) return false;
         boolean tickedTwice = level.tick(b, directions);
         if (repaint) window.repaint(level, false);
-        savestates.addRewindState(level.save(), level.getMoves());
+        savestates.addRewindState(level.save());
         return tickedTwice;
     }
     
@@ -141,11 +140,9 @@ public class SuperCC implements KeyListener{
             return;
         }
 
-        if (shiftPressed) savestates.addSavestate(level.save(), level.getMoves(), key);
+        if (shiftPressed) savestates.addSavestate(key);
         else {
-            savestates.load(key);
-            level.load(savestates.getSavestate());
-            level.setMoves(savestates.getMoves());
+            savestates.load(key, level);
             window.repaint(level, false);
         }
 
@@ -154,9 +151,9 @@ public class SuperCC implements KeyListener{
     public static void initialise(){
         try{
             SuperCC emulator = new SuperCC();
-            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
-            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
+            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
         }
         catch (IOException e){
             e.printStackTrace();
@@ -168,7 +165,7 @@ public class SuperCC implements KeyListener{
         JOptionPane.showMessageDialog(window, s, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args){
         SwingUtilities.invokeLater(() -> initialise());
     }
 
