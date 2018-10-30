@@ -10,17 +10,15 @@ CC1
 CCLP3
 10 Annoying Wall (unknown)
 60 Red, Blue and Green (unknown)
-78 Slide Show (unknown)
+78 Slide Show (boosting with block)
 102 Triple Alarm (unknown)
-114 LUNIT (rng)
 116 Mini Challenges (tws clicks)
-140 YAYAP (unknown)
+140 YAYAP (boosting with block)
 
 CCLP1
 112 Carousel (cloning flags)
 116 Communism (unknown)
-117 blobs on a plane (rng)
-123 the very hungry caterpillar (unknown)
+117 blobs on a plane (blob cloning?)
 145 chance time (rng)
 
 CCLP4
