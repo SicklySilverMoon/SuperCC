@@ -2,10 +2,12 @@ Monsters kill swimming chip (?)
 Partial post sliding blocks
 Two clones one tick
 
+CC1
 45 monster lab (cloning flags, rng)
 99 Catacombs (rng)
 120 Alphabet Soup (unknown)
 
+CCLP3
 10 Annoying Wall (unknown)
 60 Red, Blue and Green (unknown)
 78 Slide Show (unknown)
@@ -14,8 +16,21 @@ Two clones one tick
 116 Mini Challenges (tws clicks)
 140 YAYAP (trap slide delay)
 
+CCLP1
 112 Carousel (cloning flags)
 116 Communism (unknown)
 117 blobs on a plane (rng)
 123 the very hungry caterpillar (unknown)
 145 chance time (rng)
+
+CCLP4
+4 Oasis (unknown)
+37 Tropical Hibiscus (rng)
+52 protect your fortress (trap slide delay)
+55 If I ran the zoo (teleports)
+58 Ruinous Plaza (rng)
+76 Flow State (2 clones same tick)
+91 How to retune your harp (unknown)
+100 One tanks adventure (Sliding tank not set to moving tank)
+106 Gridlock (Ice corner bonk)
+143 Color Coordination (unknown)
