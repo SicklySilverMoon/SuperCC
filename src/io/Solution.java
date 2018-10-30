@@ -2,14 +2,12 @@ package io;
 
 import emulator.SuperCC;
 import game.Level;
-import game.Moves;
 import game.Position;
 import game.Step;
+import util.ByteList;
 
-import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
 
@@ -120,7 +118,7 @@ public class Solution{
         }
         return writer.toByteArray();
     }
-    private static byte[] succToHalfMoves(Moves succMoves){
+    private static byte[] succToHalfMoves(ByteList succMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         for (byte b : succMoves){
             if (b == 'U'){
@@ -189,7 +187,7 @@ public class Solution{
         //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
     }
     
-    public Solution(Moves moves, int rngSeed, Step step){
+    public Solution(ByteList moves, int rngSeed, Step step){
         this.halfMoves = succToHalfMoves(moves);
         this.rngSeed = rngSeed;
         this.step = step;
