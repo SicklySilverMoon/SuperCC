@@ -135,7 +135,7 @@ public class Level extends SaveState {
     private void moveChipSliding(){
         int direction = chip.getDirection();
         if (layerBG[chip.getIndex()].isFF()) chip.tick(new int[] {direction}, this);
-        else chip.tick(new int[] {direction, Creature.turnFromDir(direction, Creature.TURN_AROUND)}, this);
+        else chip.tick(chip.getSlideDirectionPriority(layerBG[chip.getIndex()], rng), this);
     }
     
     private void moveChip(int[] directions){
