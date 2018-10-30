@@ -1,6 +1,7 @@
 package game;
 
 import emulator.SuperCC;
+import util.ByteList;
 
 import java.util.BitSet;
 import java.util.LinkedList;
@@ -19,7 +20,7 @@ public class Level extends SaveState {
     protected int tickN;
     private int rngSeed;
     private Step step;
-    private Moves moves = new Moves();
+    private ByteList moves = new ByteList();
 
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
                  int[][] trapConnections, BitSet traps, int[][] cloneConnections,
@@ -83,10 +84,10 @@ public class Level extends SaveState {
     public int[][] getCloneConnections(){
         return cloneConnections;
     }
-    public Moves getMoves(){
+    public ByteList getMoves(){
         return moves;
     }
-    public void setMoves(Moves moves){
+    public void setMoves(ByteList moves){
         this.moves = moves;
     }
     public void setClick(int position){
