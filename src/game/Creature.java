@@ -118,6 +118,8 @@ public class Creature{
                 if (direction == DIRECTION_UP) return DIRECTION_LEFT;
                 else if (direction == DIRECTION_RIGHT) return DIRECTION_DOWN;
                 else return direction;
+            case TRAP:
+                return direction;
         }
         return direction;
     }
@@ -197,13 +199,17 @@ public class Creature{
     }
     void setSliding(boolean sliding, Level level){
         if (this.sliding && !sliding){
-            if (isBlock() && level.layerBG[getIndex()] == TRAP) return;
             if (isChip()) setMonsterType(CHIP);
             else level.slipList.remove(this);
         }
         else if (!this.sliding && sliding){
             if (isChip()) setMonsterType(CHIP_SLIDING);
             else level.slipList.add(this);
+        }
+        if (isBlock() && level.layerBG[getIndex()] == TRAP){
+            level.slipList.remove(this);
+            level.slipList.add(this);
+            this.sliding = sliding = true;
         }
         this.sliding = sliding;
     }
