@@ -46,12 +46,6 @@ public class Solution{
                     break;
                 }
             }
-            while (level.getChip().isSliding()){
-                emulator.tick((byte) '-', new int[] {-1}, false);
-                if (level.getChip().isDead()){
-                    break;
-                }
-            }
         }
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
