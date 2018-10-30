@@ -57,6 +57,14 @@ public class ByteList implements Iterable<Byte> {
     }
     
     /**
+     * Returns the number of elements in this list.
+     * @return the number of elements in this list
+     */
+    public int size(){
+        return size;
+    }
+    
+    /**
      * The default constructor for ByteList. The initial capacity is set to
      * INITIAL_CAPACITY.
      */

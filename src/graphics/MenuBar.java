@@ -57,7 +57,7 @@ public class MenuBar extends JMenuBar{
             next.addActionListener(e ->{
                 emulator.loadLevel(emulator.getLevel().levelNumber + 1);
                 try {
-                    emulator.twsReader.readSolution(emulator.getLevel()).play(emulator);
+                    //emulator.twsReader.readSolution(emulator.getLevel()).play(emulator);
                 }
                 catch (Exception ex){
                     ex.printStackTrace();
@@ -215,7 +215,7 @@ public class MenuBar extends JMenuBar{
             playSolution.addActionListener(event -> {
                 Thread t = new Thread(() -> {
                     try {
-                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 33);
+                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 5);
                     } catch (IOException e) {
                         emulator.throwError("Error while loading solution");
                     }

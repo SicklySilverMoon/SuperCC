@@ -88,9 +88,9 @@ public class LevelFactory {
         }
         return new Creature(0, Tile.CHIP_DOWN);
     }
-    private static short getTimer(int timeLimit){
+    private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
-        return (short) (timeLimit*10+8);
+        return (timeLimit*10+8);
     }
     private static int getSliplistCapacity(Tile[] layerFG, Tile[] layerBG){
         int counter = 0;
@@ -138,7 +138,7 @@ public class LevelFactory {
         if (cloneConnections == null) cloneConnections = new int[][] {};
 
         Creature chip = findPlayer(layerFG);
-        short timer = getTimer(timeLimit);
+        int timer = getTimer(timeLimit);
         RNG rng = new RNG();
         rng.setRNG(rngSeed);
 

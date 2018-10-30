@@ -12,12 +12,12 @@ public class Level extends SaveState {
     
     private static final int HALF_WAIT = 0, KEY = 1, CLICK = 2;
     
-    public final int levelNumber;
+    public final int levelNumber, startTime;
     public final byte[] title, password, hint;
     public final short[] toggleDoors, portals;
     public final int[][] trapConnections, cloneConnections;
 
-    protected int tickN;
+    int tickN;
     private int rngSeed;
     private Step step;
     private ByteList moves = new ByteList();
@@ -31,6 +31,7 @@ public class Level extends SaveState {
                 time, chips, new short[4], new short[4], rng, NO_CLICK, traps);
 
         this.levelNumber = levelNumber;
+        this.startTime = time;
         this.title = title;
         this.password = password;
         this.hint = hint;
@@ -125,9 +126,9 @@ public class Level extends SaveState {
         }
         else return HALF_WAIT;
     }
-
-    public void tickTimer(int t){
-        timer -= t;
+    
+    private void tickTimer(){
+        timer--;
         while (timer < -10) timer += 4;
     }
 
@@ -170,27 +171,29 @@ public class Level extends SaveState {
         return (byte) Character.toUpperCase((char) b);
     }
 
-    private int numTicks(byte newMove){
-        int t = 0;
-        for (byte c : moves){
-            if (Character.isUpperCase(c)) t += 2;
+    private int tickNumber(byte b){
+        if (startTime == timer){
+            int t = 0;
+            for (byte c : moves){
+                if (Character.isUpperCase(c)) t += 2;
+                else t++;
+            }
+            if (Character.isUpperCase(b)) t += 2;
             else t++;
+            return t;
         }
-        if (Character.isUpperCase(newMove)) t += 2;
-        else t++;
-        return t;
+        return startTime - timer + 3;
     }
     
     // return: did it tick twice?
     public boolean tick(byte b, int[] directions){
         
         initialiseSlidingMonsters();
-        tickN = numTicks(b);
+        tickN = tickNumber(b);
         boolean isHalfMove = tickN % 2 == 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
-
+    
         if (tickN > 2){
-            tickTimer(1);
             if (!isHalfMove) monsterList.tick();
         }
         
@@ -208,7 +211,8 @@ public class Level extends SaveState {
         monsterList.finalise();
         finaliseTraps();
         if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
-
+    
+        if (tickN > 2) tickTimer();
         if (moveType == KEY && !isHalfMove && !chip.isSliding()){
             tick(capital(b), null);
             return true;
