@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 public class SaveState {
     
@@ -65,7 +66,7 @@ public class SaveState {
         mouseClick = reader.readShort();
         traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
         monsterList.list = reader.readMonsterArray(reader.readShort());
-        slipList = new SlipList(reader.readMonsterArray(reader.readShort()), slipList.getLevel());
+        slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
     }
 
     public SaveState(Tile[] layerBG, Tile[] layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
@@ -209,7 +210,7 @@ public class SaveState {
         void writeMonsterArray(Creature[] monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
-        void writeMonsterList(ArrayList<Creature> monsters){
+        void writeMonsterList(List<Creature> monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
 

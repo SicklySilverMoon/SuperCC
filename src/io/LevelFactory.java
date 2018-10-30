@@ -92,6 +92,12 @@ public class LevelFactory {
         if (timeLimit == 0) return -2;
         return (short) (timeLimit*10+8);
     }
+    private static int getSliplistCapacity(Tile[] layerFG, Tile[] layerBG){
+        int counter = 0;
+        for (Tile t : layerBG) if (t.isSliding()) counter++;
+        for (Tile t : layerFG) if (t.isSliding()) counter++;
+        return counter;
+    }
 
     /**
      * Convert the raw data of the .dat file into a level
@@ -126,7 +132,7 @@ public class LevelFactory {
         short[] toggleDoors = getToggleDoors(layerFG, layerBG);
         short[] portals = getPortals(layerFG, layerBG);
         CreatureList monsterList = getMonsterList(monsterPositions, layerFG, layerBG);
-        SlipList slipList = new SlipList();
+        SlipList slipList = new SlipList(getSliplistCapacity(layerFG, layerBG));
         if (trapConnections == null) trapConnections = new int[][] {};
         BitSet traps = new BitSet(trapConnections.length);
         if (cloneConnections == null) cloneConnections = new int[][] {};

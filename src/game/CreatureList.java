@@ -1,5 +1,7 @@
 package game;
 
+import util.FixedCapacityList;
+
 import java.text.BreakIterator;
 
 import static game.Tile.*;
@@ -15,10 +17,15 @@ public class CreatureList{
 
     public Creature[] list;
     int numDeadMonsters;
-    private int numClones;
-    private Creature[] newClones;
+    private FixedCapacityList<Creature> newClones;
     public static int direction;
     boolean blobStep;
+    
+    public Creature creatureAt(Position position){
+        int index = position.getIndex();
+        for (Creature c : list) if (c.getIndex() == index) return c;
+        return null;
+    }
 
     void tick(){
 
@@ -91,14 +98,14 @@ public class CreatureList{
 
         if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()){
             if (clone.isBlock()) tickClonedMonster(clone);
-            else newClones[numClones++] = clone;
+            else newClones.add(clone);
         }
 
     }
 
     void finalise(){
 
-        int length = list.length - numDeadMonsters + numClones;
+        int length = list.length - numDeadMonsters + newClones.size();
         Creature[] newMonsterList = new Creature[length];
 
         // Re-add everything except dead monsters. Non-sliding blocks count as dead.
@@ -108,24 +115,23 @@ public class CreatureList{
         }
 
         // Add all cloned monsters
-        for (int i = 0; i < numClones; i++){
-            newMonsterList[index++] = newClones[i];
+        for (Creature clone : newClones){
+            newMonsterList[index++] = clone;
         }
 
         list = newMonsterList;
-        numClones = 0;
+        newClones.clear();
         numDeadMonsters = 0;
 
     }
 
     void setLevel(Level level){
         this.level = level;
-        newClones = new Creature[this.level.cloneConnections.length];
+        newClones = new FixedCapacityList<>(this.level.cloneConnections.length);
     }
 
     public CreatureList(Creature[] monsters){
         list = monsters;
-        numClones = 0;
         numDeadMonsters = 0;
     }
 

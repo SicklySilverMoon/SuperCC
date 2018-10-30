@@ -1,11 +1,13 @@
 package game;
 
-import java.util.ArrayList;
+import util.FixedCapacityList;
 
-public class SlipList extends ArrayList<Creature>{
+import java.util.Objects;
+
+public class SlipList extends FixedCapacityList<Creature> {
 
     private Level level;
-
+    
     void tick(){
         // Iterating like this causes slide delay.
         for (int i = size(); i > 0; i--){
@@ -21,29 +23,28 @@ public class SlipList extends ArrayList<Creature>{
         return level;
     }
 
-    SlipList(Creature[] slidingCreatures, Level level){
-        super();
-        sliders: for (Creature slider : slidingCreatures){
-            for (Creature monster : level.monsterList.list){
-                if (slider.getIndex() == monster.getIndex()){
-                    add(monster);
-                    monster.setSliding(true);
-                    continue sliders;
-                }
-            }
-            add(slider);                // Blocks are not in the monster list, so they are added separately
+    public void setSliplist(Creature[] slidingCreatures){
+        clear();
+        for (Creature slider : slidingCreatures){
+            Creature c = level.monsterList.creatureAt(slider.getPosition());
+            Objects.requireNonNullElse(c, slider);
+            add(c);                // Blocks are not in the monster list, so they are added separately
         }
-        this.level = level;
     }
-    public SlipList() {}
+    public SlipList(int capacity) {
+        super(capacity);
+    }
 
     @Override
     public String toString(){
-        String str = "";
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < size(); i++){
-            str += i + "\t" + get(i)+"\n";
+            sb.append(i);
+            sb.append('\t');
+            sb.append(get(i));
+            sb.append('\n');
         }
-        return str;
+        return sb.toString();
     }
 
 }
