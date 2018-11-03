@@ -14,13 +14,12 @@ public class LevelPanel extends TextPanel {
     
     @Override
     public void paintComponent(Graphics g){
-    
-        System.out.println("called");
+        
         if (emulator == null) return;
         Level level = emulator.getLevel();
         if (level == null) return;
         
-        setSize(emulator.getMainWindow().getRightContainer().getWidth(), getHeight());
+        //setSize(emulator.getMainWindow().getRightContainer().getWidth(), getHeight());
         
         textHeight = 40;
     
@@ -36,12 +35,9 @@ public class LevelPanel extends TextPanel {
         drawText(g, "Time: "+ timerToString(level.getTimer()), 1);
         drawText(g, "Chips left: "+level.getChipsLeft(), 1);
         
-        setSize(getWidth(), textHeight);
-    }
-    
-    @Override
-    public void repaint(){
-        paintComponent(getGraphics());
+        setPreferredSize(new Dimension(getWidth(), textHeight));
+        setSize(getPreferredSize());
+        //setMinimumSize(new Dimension(getWidth(), textHeight));
     }
     
 }

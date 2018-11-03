@@ -4,16 +4,20 @@ import emulator.SuperCC;
 import game.Level;
 
 import javax.imageio.ImageIO;
+import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 
 public class Gui extends JFrame{
     private JPanel mainPanel;
-    private JPanel textPanel;
+    private JPanel rightContainer;
     private JPanel gamePanel;
+    private JPanel levelPanel;
+    private JPanel inventoryPanel;
+    private JPanel movePanel;
     
     private final SuperCC emulator;
     
@@ -23,12 +27,26 @@ public class Gui extends JFrame{
         return (GamePanel) gamePanel;
     }
     
-    public TextPanel getTextPanel() {
-        return (TextPanel) textPanel;
+    public LevelPanel getLevelPanel() {
+        return (LevelPanel) levelPanel;
+    }
+    
+    public MovePanel getMovePanel() {
+        return (MovePanel) movePanel;
+    }
+    
+    public InventoryPanel getInventoryPanel() {
+        return (InventoryPanel) inventoryPanel;
+    }
+    
+    public JPanel getRightContainer() {
+        return rightContainer;
     }
     
     private void createUIComponents() {
-        textPanel = new TextPanel();
+        levelPanel = new LevelPanel();
+        inventoryPanel = new InventoryPanel();
+        movePanel = new MovePanel();
         gamePanel = new GamePanel();
         try {
             ((GamePanel) gamePanel).initialise(ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
@@ -49,13 +67,14 @@ public class Gui extends JFrame{
         catch (Exception e){
             e.printStackTrace();
         }
-        setTitle("SuperCC");
         try{
             setIconImage(ImageIO.read(getClass().getResource("/resources/icons/windowIcon.png")));
         }
         catch (IOException e){}
         this.emulator = emulator;
-        getTextPanel().setEmulator(emulator);
+        getMovePanel().setEmulator(emulator);
+        getLevelPanel().setEmulator(emulator);
+        getInventoryPanel().setEmulator(emulator);
         getGamePanel().setEmulator(emulator);
         getContentPane().addKeyListener(emulator);
         setContentPane(mainPanel);
@@ -66,10 +85,16 @@ public class Gui extends JFrame{
         addKeyListener(emulator);
     }
     
+    private void repaintRightContainer(){
+        levelPanel.repaint();
+        inventoryPanel.repaint();
+        movePanel.repaint();
+    }
+    
     public void repaint(Level level, boolean fromSratch){
         getGamePanel().updateGraphics(level, fromSratch);
         gamePanel.repaint();
-        textPanel.repaint();
+        repaintRightContainer();
     }
     
 }
