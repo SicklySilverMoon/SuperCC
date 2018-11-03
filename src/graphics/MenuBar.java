@@ -28,6 +28,13 @@ public class MenuBar extends JMenuBar{
 
     private SuperCC emulator;
     Gui window;
+    
+    private void addIcon(JMenuItem m, String path){
+        try {
+            m.setIcon(new ImageIcon(ImageIO.read(getClass().getResource(path))));
+        }
+        catch (Exception e) {}
+    }
 
     private class LevelMenu extends JMenu{
         public LevelMenu(){
@@ -42,6 +49,7 @@ public class MenuBar extends JMenuBar{
                     emulator.openLevelset(fc.getSelectedFile());
                 }
             });
+            addIcon(openLevelset, "/resources/icons/open.gif");
             add(openLevelset);
 
             add(new JSeparator());
@@ -51,6 +59,7 @@ public class MenuBar extends JMenuBar{
                 emulator.loadLevel(emulator.getLevel().levelNumber - 1)
             );
             previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, CTRL_MASK));
+            addIcon(previous, "/resources/icons/left.gif");
             add(previous);
 
             JMenuItem next = new JMenuItem("Next");
@@ -64,6 +73,7 @@ public class MenuBar extends JMenuBar{
                 }
                 });
             next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
+            addIcon(next, "/resources/icons/right.gif");
             add(next);
 
             JMenuItem goTo = new JMenuItem("Go to...");
@@ -78,6 +88,7 @@ public class MenuBar extends JMenuBar{
                 }
             });
             goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, CTRL_MASK));
+            addIcon(goTo, "/resources/icons/goto.gif");
             add(goTo);
 
             add(new JSeparator());
@@ -104,6 +115,7 @@ public class MenuBar extends JMenuBar{
                     JOptionPane.showMessageDialog(window, "Not a number");
                 }
             });
+            addIcon(rngSeed, "/resources/icons/rng.gif");
             add(rngSeed);
 
         }
@@ -114,7 +126,6 @@ public class MenuBar extends JMenuBar{
             super("Solution");
     
             JMenuItem saveAs = new JMenuItem("Save as");
-            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
@@ -133,15 +144,18 @@ public class MenuBar extends JMenuBar{
                     emulator.throwError("Could not save file");
                 }
             });
+            addIcon(saveAs, "/resources/icons/saveAs.gif");
             add(saveAs);
     
             JMenuItem save = new JMenuItem("Save");
+            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
+            addIcon(save, "/resources/icons/save.gif");
             add(save);
             save.setEnabled(false);
 
-            JMenuItem load = new JMenuItem("Load");
-            load.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
-            load.addActionListener(event -> {
+            JMenuItem open = new JMenuItem("Open");
+            open.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
+            open.addActionListener(event -> {
                 /*
                 try{
                     JFileChooser fc = new JFileChooser();
@@ -160,19 +174,21 @@ public class MenuBar extends JMenuBar{
                 }
                 */
             });
-            add(load);
-            load.setEnabled(false);
+            addIcon(open, "/resources/icons/open.gif");
+            add(open);
+            open.setEnabled(false);
     
-            JMenuItem copy = new JMenuItem("Copy moves to clipboard");
+            JMenuItem copy = new JMenuItem("Copy solution");
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
             });
+            addIcon(copy, "/resources/icons/copy.gif");
             add(copy);
     
-            JMenuItem paste = new JMenuItem("Paste moves from clipboard");
+            JMenuItem paste = new JMenuItem("Paste solution");
             paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, CTRL_MASK));
             paste.addActionListener(event -> {
                 Level level = emulator.getLevel();
@@ -188,6 +204,7 @@ public class MenuBar extends JMenuBar{
                     e.printStackTrace();
                 }
             });
+            addIcon(paste, "/resources/icons/paste.gif");
             add(paste);
         }
     }
