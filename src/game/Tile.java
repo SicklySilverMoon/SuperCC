@@ -114,7 +114,10 @@ public enum Tile {
     /* 6D CHIP W               */    CHIP_LEFT,
     /* 6E CHIP S               */    CHIP_DOWN,
     /* 6F CHIP E               */    CHIP_RIGHT;
-
+    
+    public static final int NUM_BOOTS = 4;
+    public static final int NUM_KEYS = 4;
+    
     private static final Tile[] allTiles = Tile.values();
     public static Tile fromOrdinal(int ordinal){
         return allTiles[ordinal];
