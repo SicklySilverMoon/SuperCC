@@ -35,9 +35,11 @@ public class LevelPanel extends TextPanel {
         drawText(g, "Time: "+ timerToString(level.getTimer()), 1);
         drawText(g, "Chips left: "+level.getChipsLeft(), 1);
         
-        setPreferredSize(new Dimension(getWidth(), textHeight));
-        setSize(getPreferredSize());
-        //setMinimumSize(new Dimension(getWidth(), textHeight));
+        if (textHeight != getHeight()){
+            setPreferredSize(new Dimension(getWidth(), textHeight));
+            setSize(getPreferredSize());
+            emulator.getMainWindow().repaintRightContainer();
+        }
     }
     
 }

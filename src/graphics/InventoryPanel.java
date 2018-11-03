@@ -21,6 +21,8 @@ public class InventoryPanel extends JPanel {
     private int[][] tileImage;
     private BufferedImage bg;
     
+    private static final int BORDER = 2;
+    
     public void initialise(SuperCC emulator){
         this.emulator = emulator;
         tileImage = GamePanel.tileImage;
@@ -55,10 +57,10 @@ public class InventoryPanel extends JPanel {
         
         WritableRaster r = bg.getRaster();
         for (int i = 0; i < NUM_KEYS; i++){
-            GamePanel.drawNumber(emulator.getLevel().getKeys()[i], GamePanel.blackDigits, r, TILE_SIZE * i, TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2);
+            GamePanel.drawNumber(emulator.getLevel().getKeys()[i], GamePanel.blackDigits, r, TILE_SIZE * i,  TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2);
             GamePanel.drawNumber(emulator.getLevel().getBoots()[i], GamePanel.blackDigits, r, TILE_SIZE * i, 2 * TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2);
         }
-        g.drawImage(bg, TILE_SIZE, 0, null);
+        g.drawImage(bg, BORDER, BORDER, null);
     }
     
 }

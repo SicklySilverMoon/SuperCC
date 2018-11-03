@@ -84,9 +84,13 @@ public class Gui extends JFrame{
         pack();
         setVisible(true);
         addKeyListener(emulator);
+        rightContainer.setBackground(Color.DARK_GRAY);
+        levelPanel.setBackground(Color.DARK_GRAY);
+        inventoryPanel.setBackground(Color.DARK_GRAY);
+        movePanel.setBackground(Color.DARK_GRAY);
     }
     
-    private void repaintRightContainer(){
+    public void repaintRightContainer(){
         levelPanel.repaint();
         inventoryPanel.repaint();
         movePanel.repaint();
