@@ -51,7 +51,7 @@ public class Gui extends JFrame{
         }
         setTitle("SuperCC");
         try{
-            setIconImage(ImageIO.read(getClass().getResource("/resources/icon.png")));
+            setIconImage(ImageIO.read(getClass().getResource("/resources/icons/windowIcon.png")));
         }
         catch (IOException e){}
         this.emulator = emulator;
