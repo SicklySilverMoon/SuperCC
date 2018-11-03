@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import static graphics.MainWindow.TILE_SIZE;
+import static graphics.Gui.TILE_SIZE;
 import static game.Position.UNCLICKABLE;
 
 class GamePanel extends JPanel{
@@ -38,6 +38,10 @@ class GamePanel extends JPanel{
     private final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
+    
+    public void setEmulator(SuperCC emulator){
+        this.emulator = emulator;
+    }
     
     /**
      * Draw the game state. This does not update the graphics - call
@@ -218,16 +222,16 @@ class GamePanel extends JPanel{
             bbgRaster.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[0]);
         }
     }
-
-    GamePanel(SuperCC emulator, Image tilespng) throws IOException {
-        this.emulator = emulator;
-        setPreferredSize(new Dimension(32*TILE_SIZE, 32*TILE_SIZE));
-        addMouseListener(new GameMouseListener());
     
+    public void initialise(Image tilespng) throws IOException{
         initialiseTileGraphics((BufferedImage) tilespng);
         initialiseDigits();
         initialiseBBG();
-        
+    }
+
+    GamePanel() {
+        setPreferredSize(new Dimension(32*TILE_SIZE, 32*TILE_SIZE));
+        addMouseListener(new GameMouseListener());
     }
     
     private class GameMouseListener implements MouseListener{

@@ -7,21 +7,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.EmptyStackException;
 
 public class TextPanel extends JPanel{
 
     private final int BORDER_HORIZONTAL = 20;
-
-    private final SuperCC emulator;
+    
+    public void setEmulator(SuperCC emulator) {
+        this.emulator = emulator;
+    }
+    
+    private SuperCC emulator;
 
     private int textHeight;
-
-    public TextPanel(SuperCC emulator){
-        this.emulator = emulator;
-        setPreferredSize(new Dimension(320, 32*20));
-        setBackground(Color.BLACK);
-    }
-
+    
     private static String addLineBreaks(String str, int lineWidth, FontMetrics m){
         int width = 0, i, cutoff = 0;
         for (i = 0; i < str.length(); i++){
@@ -66,6 +65,7 @@ public class TextPanel extends JPanel{
     @Override
     public void paintComponent(Graphics g){
 
+        if (emulator == null) return;
         Level level = emulator.getLevel();
         if (level == null) return;
 

@@ -27,7 +27,7 @@ public class MenuBar extends JMenuBar{
     private static final String FILE_PATH = "C:\\Users\\Markus\\Games\\tworld-2.1.0\\sets";
 
     private SuperCC emulator;
-    MainWindow window;
+    Gui window;
 
     private class LevelMenu extends JMenu{
         public LevelMenu(){
@@ -142,6 +142,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem load = new JMenuItem("Load");
             load.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
             load.addActionListener(event -> {
+                /*
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
@@ -157,8 +158,10 @@ public class MenuBar extends JMenuBar{
                     e.printStackTrace();
                     emulator.throwError("Could not load file:\n" + e.getMessage());
                 }
+                */
             });
             add(load);
+            load.setEnabled(false);
     
             JMenuItem copy = new JMenuItem("Copy moves to clipboard");
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
@@ -215,7 +218,7 @@ public class MenuBar extends JMenuBar{
             playSolution.addActionListener(event -> {
                 Thread t = new Thread(() -> {
                     try {
-                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 5);
+                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 10);
                     } catch (IOException e) {
                         emulator.throwError("Error while loading solution");
                     }
@@ -245,7 +248,7 @@ public class MenuBar extends JMenuBar{
                 String tilesetPath = tilesetPaths[i];
                 msccEditor.addActionListener(e -> {
                     try {
-                        window.gamePanel.initialiseTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
+                        window.getGamePanel().initialiseTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
                         window.repaint(emulator.getLevel(), true);
                     } catch (IOException exc) {}
                 });
@@ -263,11 +266,11 @@ public class MenuBar extends JMenuBar{
             };
             
             List<Consumer<Boolean>> setters = Arrays.asList(
-                b -> window.gamePanel.setMonsterListVisible(b),
-                b -> window.gamePanel.setSlipListVisible(b),
-                b -> window.gamePanel.setClonesVisible(b),
-                b -> window.gamePanel.setTrapsVisible(b),
-                b -> window.gamePanel.setHistoryVisible(b)
+                b -> window.getGamePanel().setMonsterListVisible(b),
+                b -> window.getGamePanel().setSlipListVisible(b),
+                b -> window.getGamePanel().setClonesVisible(b),
+                b -> window.getGamePanel().setTrapsVisible(b),
+                b -> window.getGamePanel().setHistoryVisible(b)
             );
             
             for (int i = 0; i < setterNames.length; i++){
@@ -283,7 +286,7 @@ public class MenuBar extends JMenuBar{
         }
     }
 
-    public MenuBar(MainWindow window, SuperCC emulator){
+    public MenuBar(Gui window, SuperCC emulator){
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
         add(new LevelMenu());
