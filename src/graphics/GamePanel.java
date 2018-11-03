@@ -4,6 +4,7 @@ import emulator.SuperCC;
 import game.*;
 
 import javax.imageio.ImageIO;
+import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -34,8 +35,8 @@ class GamePanel extends JPanel{
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
-    private static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
-    private final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
+    public static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
+    public static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     
@@ -98,15 +99,19 @@ class GamePanel extends JPanel{
         if (showHistory) drawChipHistory(level.getChip().getPosition(), g);
     }
     
+    public static void drawNumber(int n, int[][] digitRaster, WritableRaster raster, int x, int y){
+        char[] chars = (String.valueOf(n)).toCharArray();
+        for (int j = 0; j < chars.length; j++){
+            int digit = Character.digit(chars[j], 10);
+            raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, digitRaster[digit]);
+        }
+    }
+    
     private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
         for (int i = 0; i < monsterList.length; i++){
             Creature monster = monsterList[i];
             int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
-            char[] chars = (String.valueOf(i+1)).toCharArray();
-            for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10);
-                raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blackDigits[digit]);
-            }
+            drawNumber(i+1, blackDigits, raster, x, y);
         }
     }
     
@@ -114,12 +119,8 @@ class GamePanel extends JPanel{
         int yOffset = TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2;
         for (int i = 0; i < slipList.size(); i++){
             Creature monster = slipList.get(i);
-            int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
-            char[] chars = String.valueOf(i+1).toCharArray();
-            for (int j = 0; j < chars.length; j++){
-                int digit = Character.digit(chars[j], 10);
-                raster.setPixels(x+4*j, y+yOffset, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, blueDigits[digit]);
-            }
+            int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE + yOffset;
+            drawNumber(i+1, blueDigits, raster, x, y);
         }
     }
     
@@ -173,6 +174,12 @@ class GamePanel extends JPanel{
     }
     public void setHistoryVisible(boolean visible){
         showHistory = visible;
+    }
+    public int[][] getTileGraphics(){
+        return tileImage;
+    }
+    public int[][] getBlackDigits(){
+        return blackDigits;
     }
     
     public void initialiseTileGraphics(BufferedImage allTiles) throws IOException{

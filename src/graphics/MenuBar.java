@@ -266,6 +266,7 @@ public class MenuBar extends JMenuBar{
                 msccEditor.addActionListener(e -> {
                     try {
                         window.getGamePanel().initialiseTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
+                        window.getInventoryPanel().initialise(emulator);
                         window.repaint(emulator.getLevel(), true);
                     } catch (IOException exc) {}
                 });

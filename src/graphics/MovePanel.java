@@ -8,11 +8,6 @@ import java.nio.charset.StandardCharsets;
 
 public class MovePanel extends TextPanel {
     
-    public void resize(JPanel container, JPanel inventory, JPanel levelPanel){
-        setMaximumSize(new Dimension(container.getWidth(), container.getHeight() - inventory.getHeight() - levelPanel.getHeight()));
-        setLocation(0, levelPanel.getY()+levelPanel.getHeight());
-    }
-    
     @Override
     public void paintComponent(Graphics g){
         

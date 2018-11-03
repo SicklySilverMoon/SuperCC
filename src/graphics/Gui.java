@@ -74,7 +74,8 @@ public class Gui extends JFrame{
         this.emulator = emulator;
         getMovePanel().setEmulator(emulator);
         getLevelPanel().setEmulator(emulator);
-        getInventoryPanel().setEmulator(emulator);
+        getInventoryPanel().initialise(emulator);
+        getInventoryPanel().setOpaque(true);
         getGamePanel().setEmulator(emulator);
         getContentPane().addKeyListener(emulator);
         setContentPane(mainPanel);
