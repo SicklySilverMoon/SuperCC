@@ -38,7 +38,7 @@ public class LevelPanel extends TextPanel {
         if (textHeight != getHeight()){
             setPreferredSize(new Dimension(getWidth(), textHeight));
             setSize(getPreferredSize());
-            emulator.getMainWindow().repaintRightContainer();
+            emulator.getMainWindow().pack();
         }
     }
     
