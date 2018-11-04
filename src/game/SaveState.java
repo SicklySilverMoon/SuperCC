@@ -3,6 +3,7 @@ package game;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -14,8 +15,8 @@ public class SaveState {
     private static final byte UNCOMPRESSED = 4;
     public static final byte COMPRESSED = 5;
 
-    Tile[] layerBG;
-    Tile[] layerFG;
+    Layer layerBG;
+    Layer layerFG;
     Creature chip;
     int timer;
     int chipsLeft;
@@ -71,7 +72,7 @@ public class SaveState {
         slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
     }
 
-    public SaveState(Tile[] layerBG, Tile[] layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
+    public SaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
                      int timer, int chipsLeft, short[] keys, short[] boots, RNG rng, int mouseClick, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
@@ -88,7 +89,7 @@ public class SaveState {
     }
 
     private class SavestateReader extends ByteArrayInputStream{
-
+        
         int readUnsignedByte(){
             return read() & 0xFF;
         }
@@ -116,33 +117,27 @@ public class SaveState {
             }
             return out;
         }
-        Tile[] readLayerRLE(){
-            Tile[] layer = new Tile[32*32];
+        Layer readLayerRLE(){
+            byte[] layer = new byte[32*32];
             int tileIndex = 0;
-            int b;
-            while ((b = read()) != RLE_END){
+            byte b;
+            while ((b = (byte) read()) != RLE_END){
                 if (b == RLE_MULTIPLE){
                     int rleLength = readUnsignedByte() + 1;
-                    Tile t = Tile.fromOrdinal(read());
+                    byte t = (byte) read();
                     for (int i = 0; i < rleLength; i++){
                         layer[tileIndex++] = t;
                     }
                 }
-                else layer[tileIndex++] = Tile.fromOrdinal(b);
+                else layer[tileIndex++] = b;
             }
-            return layer;
+            return new Layer(layer);
         }
-        Tile[] readLayer(int version){
+        Layer readLayer(int version){
             if (version == COMPRESSED) {
                 return readLayerRLE();
             }
-            else {
-                Tile[] layer = new Tile[32*32];
-                for (int i = 0; i < 32*32; i++) {
-                    layer[i] = Tile.fromOrdinal(read());
-                }
-                return layer;
-            }
+            else return new Layer(readBytes(32*32));
         }
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];
@@ -187,9 +182,9 @@ public class SaveState {
                 writeShort(a[i]);
             }
         }
-        void writeLayer(Tile[] layer){
-            for (Tile t : layer) {
-                write(t.ordinal());
+        void writeLayer(Layer layer){
+            for (byte b : layer.getLayer()) {
+                write(b);
             }
         }
         void writeMonsterArray(Creature[] monsters){

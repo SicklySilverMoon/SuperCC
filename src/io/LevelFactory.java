@@ -11,30 +11,23 @@ import java.util.BitSet;
 public class LevelFactory {
 
     // Various helper functions for processing parts of the .dat file.
-    private static Tile[] convertLayer(byte[] layer){
-        Tile[] convertedLayer = new Tile[32*32];
-        for (int i = 0; i < 32*32; i++){
-            convertedLayer[i] = Tile.fromOrdinal(layer[i]);
-        }
-        return convertedLayer;
-    }
-    private static short[] getToggleDoors(Tile[] layerFG, Tile[] layerBG){
+    private static short[] getToggleDoors(Layer layerFG, Layer layerBG){
         int l = 0;
         for (int i = 0; i < 32*32; i++){
-            Tile tile = layerFG[i];
+            Tile tile = layerFG.get(i);
             if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN) l++;
-            tile = layerBG[i];
+            tile = layerBG.get(i);
             if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN) l++;
         }
         short[] toggleDoors = new short[l];
         l = 0;
         for (short i = 0; i < 32*32; i++){
-            Tile tile = layerFG[i];
+            Tile tile = layerFG.get(i);
             if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN){
                 toggleDoors[l] = i;
                 l++;
             }
-            tile = layerBG[i];
+            tile = layerBG.get(i);
             if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN){
                 toggleDoors[l] = i;
                 l++;
@@ -42,28 +35,28 @@ public class LevelFactory {
         }
         return toggleDoors;
     }
-    private static short[] getPortals(Tile[] layerFG, Tile[] layerBG){
+    private static short[] getPortals(Layer layerFG, Layer layerBG){
         int l = 0;
         for (int i = 0; i < 32*32; i++){
-            if (layerFG[i] == Tile.TELEPORT || layerBG[i] == Tile.TELEPORT) l++;
+            if (layerFG.get(i) == Tile.TELEPORT || layerBG.get(i) == Tile.TELEPORT) l++;
         }
         short[] portals = new short[l];
         l = 0;
         for (short i = 0; i < 32*32; i++){
-            if (layerFG[i] == Tile.TELEPORT || layerBG[i] == Tile.TELEPORT){
+            if (layerFG.get(i) == Tile.TELEPORT || layerBG.get(i) == Tile.TELEPORT){
                 portals[l++] = i;
             }
         }
         return portals;
     }
-    private static CreatureList getMonsterList(int[][] monsterPositions, Tile[] layerFG, Tile[] layerBG){
+    private static CreatureList getMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){
         if (monsterPositions == null) return new CreatureList(new Creature[] {});
         int l = 0;
         for (int i = 0; i < monsterPositions.length; i++){
             int x = monsterPositions[i][0];
             int y = monsterPositions[i][1];
             int position = 32*y+x;
-            if (layerFG[position].isMonster() && (layerBG[position] != Tile.CLONE_MACHINE)) {
+            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
                 l++;
             }
         }
@@ -72,27 +65,27 @@ public class LevelFactory {
         for (int i = 0; i < monsterPositions.length; i++){
             int x = monsterPositions[i][0];
             int y = monsterPositions[i][1];
-            int position = 32*y+x;
-            if (layerFG[position].isMonster() && (layerBG[position] != Tile.CLONE_MACHINE)) {
-                monsterList[l++] = new Creature(position, layerFG[position]);
+            Position position = new Position(x, y);
+            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
+                monsterList[l++] = new Creature(position, layerFG.get(position));
             }
         }
         return new CreatureList(monsterList);
     }
-    private static Creature findPlayer(Tile[] layerFG){
+    private static Creature findPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){
-            Tile tile = layerFG[i];
-            if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new Creature(i, tile);
+            Tile tile = layerFG.get(i);
+            if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new Creature(new Position(i), tile);
             if (Tile.CHIP_SWIMMING_NORTH.ordinal() <= tile.ordinal() && tile.ordinal() <= Tile.CHIP_SWIMMING_EAST.ordinal())
-                return new Creature(i, tile);
+                return new Creature(new Position(i), tile);
         }
-        return new Creature(0, Tile.CHIP_DOWN);
+        return new Creature(new Position(0), Tile.CHIP_DOWN);
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
         return (timeLimit*10+8);
     }
-    private static int getSliplistCapacity(Tile[] layerFG, Tile[] layerBG){
+    private static int getSliplistCapacity(Layer layerFG, Layer layerBG){
         int counter = 0;
         for (Tile t : layerBG) if (t.isSliding()) counter++;
         for (Tile t : layerFG) if (t.isSliding()) counter++;
@@ -127,8 +120,8 @@ public class LevelFactory {
                            byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
                            byte[] hint, int[][] monsterPositions, int rngSeed, Step step){
 
-        Tile[] layerBG = convertLayer(byteLayerBG);
-        Tile[] layerFG = convertLayer(byteLayerFG);
+        Layer layerBG = new Layer(byteLayerBG);
+        Layer layerFG = new Layer(byteLayerFG);
         short[] toggleDoors = getToggleDoors(layerFG, layerBG);
         short[] portals = getPortals(layerFG, layerBG);
         CreatureList monsterList = getMonsterList(monsterPositions, layerFG, layerBG);

@@ -206,7 +206,7 @@ public class Creature{
             if (isChip()) setMonsterType(CHIP_SLIDING);
             else level.slipList.add(this);
         }
-        if (isBlock() && level.layerBG[getIndex()] == TRAP){
+        if (isBlock() && level.layerBG.get(getIndex()) == TRAP){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = sliding = true;
@@ -236,7 +236,7 @@ public class Creature{
         Position newChipPosition = block.position.clone();
         MoveFlags blockFlags = block.tryMove(direction, level);
         if (blockFlags.moved){
-            MoveFlags chipFlags = tryEnter(direction, level, newChipPosition.getIndex(), level.layerFG[newChipPosition.getIndex()]);
+            MoveFlags chipFlags = tryEnter(direction, level, newChipPosition, level.layerFG.get(newChipPosition));
             if (chipFlags.moved) {
                 if (blockFlags.pressedRedButton) {
                     int redButtonIndex;
@@ -359,26 +359,26 @@ public class Creature{
             case CHIP_DOWN: return !isChip();
         }
     }
-    private MoveFlags tryEnter(int direction, Level level, int newPositionIndex, Tile tile){
+    private MoveFlags tryEnter(int direction, Level level, Position newPosition, Tile tile){
         switch (tile) {
             case FLOOR: return MoveFlags.SUCCESS;
             case WALL: return MoveFlags.FAIL;
             case CHIP:
                 if (isChip()) {
                     level.chipsLeft--;
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case WATER:
                 if (isChip()){
                     if (level.boots[0] == 0){
-                        level.layerFG[newPositionIndex] = DROWNED_CHIP;
+                        level.layerFG.set(newPosition, DROWNED_CHIP);
                         return MoveFlags.DIED;
                     } else return MoveFlags.SUCCESS;
                 }
                 if (isBlock()) {
-                    level.layerFG[newPositionIndex] = DIRT;
+                    level.layerFG.set(newPosition, DIRT);
                     return MoveFlags.DIED;
                 }
                 if (monsterType != GLIDER) return MoveFlags.DIED;
@@ -386,7 +386,7 @@ public class Creature{
             case FIRE:
                 if (isChip()) {
                     if (level.boots[1] == 0){
-                        level.layerFG[newPositionIndex] = BURNED_CHIP;
+                        level.layerFG.set(newPosition,  BURNED_CHIP);
                         return MoveFlags.DIED;
                     }
                     else return MoveFlags.SUCCESS;
@@ -408,14 +408,14 @@ public class Creature{
             case THIN_WALL_LEFT: return new MoveFlags(direction != DIRECTION_RIGHT);
             case BLOCK:
                 if (isChip()){
-                    for (Creature m : level.slipList) if (m.getIndex() == newPositionIndex) return pushBlock(m, level);
-                    Creature block = new Creature(newPositionIndex, Tile.BLOCK);
+                    for (Creature m : level.slipList) if (m.position.equals(newPosition)) return pushBlock(m, level);
+                    Creature block = new Creature(newPosition, Tile.BLOCK);
                     return pushBlock(block, level);
                 }
                 return MoveFlags.FAIL;
             case DIRT:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -437,34 +437,34 @@ public class Creature{
             case EXIT:
                 if (isBlock()) return MoveFlags.SUCCESS;
                 if (isChip()){
-                    level.layerFG[newPositionIndex] = EXITED_CHIP;
+                    level.layerFG.set(newPosition, EXITED_CHIP);
                     return MoveFlags.DIED;
                 }
                 return MoveFlags.FAIL;
             case DOOR_BLUE:
                 if (isChip() && level.keys[0] > 0) {
                     level.keys[0] = (short) (level.keys[0] - 1);
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_RED:
                 if (isChip() && level.keys[1] > 0) {
                     level.keys[1] = (short) (level.keys[1] - 1);
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_GREEN:
                 if (isChip() && level.keys[2] > 0) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
             case DOOR_YELLOW:
                 if (isChip() && level.keys[3] > 0) {
                     level.keys[3] = (short) (level.keys[3] - 1);
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -494,12 +494,12 @@ public class Creature{
                 else return MoveFlags.FAIL;
             case BLUEWALL_FAKE:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 else return MoveFlags.FAIL;
             case BLUEWALL_REAL:
-                if (isChip()) level.layerFG[newPositionIndex] = WALL;
+                if (isChip()) level.layerFG.set(newPosition, WALL);
                 return MoveFlags.FAIL;
             case OVERLAY_BUFFER: return MoveFlags.FAIL;
             case THIEF:
@@ -510,7 +510,7 @@ public class Creature{
                 return MoveFlags.FAIL;
             case SOCKET:
                 if (isChip() && level.chipsLeft <= 0) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     return MoveFlags.SUCCESS;
                 }
                 return MoveFlags.FAIL;
@@ -523,13 +523,13 @@ public class Creature{
             case TELEPORT: return new MoveFlags(true, false, false, false, false, true, false, true);
             case BOMB:
                 if (!isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                 }
                 return MoveFlags.DIED;
             case TRAP: return MoveFlags.SUCCESS;
             case HIDDENWALL_TEMP:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = WALL;
+                    level.layerFG.set(newPosition, WALL);
                 }
                 return MoveFlags.FAIL;
             case GRAVEL: return new MoveFlags(!isMonster());
@@ -570,49 +570,49 @@ public class Creature{
                 return MoveFlags.FAIL;
             case KEY_BLUE:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.keys[0]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_RED:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.keys[1]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_GREEN:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.keys[2]++;
                 }
                 return MoveFlags.SUCCESS;
             case KEY_YELLOW:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.keys[3]++;
                 }
                 return MoveFlags.SUCCESS;
             case BOOTS_WATER:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.boots[0] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_FIRE:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.boots[1] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_ICE:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.boots[2] = 1;
                 }
                 return new MoveFlags(!isMonster());
             case BOOTS_SLIDE:
                 if (isChip()) {
-                    level.layerFG[newPositionIndex] = FLOOR;
+                    level.layerFG.set(newPosition, FLOOR);
                     level.boots[3] = 1;
                 }
                 return new MoveFlags(!isMonster());
@@ -635,17 +635,16 @@ public class Creature{
             (direction == DIRECTION_UP && getY() == 0) ||
             (direction == DIRECTION_DOWN && getY() == 31)) return MoveFlags.FAIL;
 
-        if (!canLeave(direction, level.layerBG[getIndex()], level)) return MoveFlags.FAIL;
+        if (!canLeave(direction, level.layerBG.get(position), level)) return MoveFlags.FAIL;
         Position newPosition = move(direction);
-        int newPositionIndex = newPosition.getIndex();
-        Tile newTile = level.layerFG[newPositionIndex];
-        if (!isChip() && newTile.isChip()) newTile = level.layerBG[newPositionIndex];
-        if (newTile.isTransparent() && !canEnter(direction, level.layerBG[newPositionIndex], level)) return MoveFlags.FAIL;
+        Tile newTile = level.layerFG.get(newPosition);
+        if (!isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
+        if (newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level)) return MoveFlags.FAIL;
         
-        MoveFlags flags = tryEnter(direction, level, newPositionIndex, newTile);
+        MoveFlags flags = tryEnter(direction, level, newPosition, newTile);
         
         if (flags.moved) {
-            level.popTile(getIndex());
+            level.popTile(position);
             position = newPosition;
     
             if (flags.enteredPortal){
@@ -661,20 +660,20 @@ public class Creature{
                     i--;
                     if (i < 0) i += l;
                     position.setIndex(level.portals[i]);
-                    if (level.layerFG[position.getIndex()] != TELEPORT) continue;
+                    if (level.layerFG.get(position) != TELEPORT) continue;
                     Position exitPosition = position.move(direction);
                     if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                         exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
-                    Tile exitTile = level.layerFG[exitPosition.getIndex()];
-                    if (exitTile.isTransparent()) exitTile = level.layerBG[exitPosition.getIndex()];
+                    Tile exitTile = level.layerFG.get(exitPosition);
+                    if (exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
                     if (isChip() && exitTile == Tile.BLOCK){
                         Creature block = new Creature(direction, BLOCK, exitPosition);
-                        if (canEnter(direction, level.layerBG[exitPosition.getIndex()], level) &&
-                            block.canLeave(direction, level.layerBG[exitPosition.getIndex()], level)){
+                        if (canEnter(direction, level.layerBG.get(exitPosition), level) &&
+                            block.canLeave(direction, level.layerBG.get(exitPosition), level)){
                             Position blockPushPosition = exitPosition.move(direction);
                             if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
                                 blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
-                            if (block.canEnter(direction, level.layerFG[blockPushPosition.getIndex()], level)){
+                            if (block.canEnter(direction, level.layerFG.get(blockPushPosition), level)){
                                 break;
                             }
                         }
@@ -685,14 +684,14 @@ public class Creature{
                 while (i != portalIndex);
             }
     
-            if (flags.sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG[getIndex()], level.rng);
+            if (flags.sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);
             
             if (!flags.creatureDied) level.insertTile(getPosition(), toTile());
     
-            if (level.layerBG[newPositionIndex] == POP_UP_WALL) level.layerBG[newPositionIndex] = WALL;
+            if (level.layerBG.get(newPosition) == POP_UP_WALL) level.layerBG.set(newPosition, WALL);
         }
         else{
-            if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerBG[getIndex()], level.rng);
+            if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerBG.get(position), level.rng);
         }
     
         setSliding(flags.sliding, level);
@@ -715,10 +714,10 @@ public class Creature{
             
             if (flags.pressedGreenButton){
                 for (int i : level.toggleDoors) {
-                    if (level.layerBG[i] == TOGGLE_OPEN) level.layerBG[i] = TOGGLE_CLOSED;
-                    else if (level.layerBG[i] == TOGGLE_CLOSED) level.layerBG[i] = TOGGLE_OPEN;
-                    if (level.layerFG[i] == TOGGLE_OPEN) level.layerFG[i] = TOGGLE_CLOSED;
-                    else if (level.layerFG[i] == TOGGLE_CLOSED) level.layerFG[i] = TOGGLE_OPEN;
+                    if (level.layerBG.get(i) == TOGGLE_OPEN) level.layerBG.set(i, TOGGLE_CLOSED);
+                    else if (level.layerBG.get(i) == TOGGLE_CLOSED) level.layerBG.set(i, TOGGLE_OPEN);
+                    if (level.layerFG.get(i) == TOGGLE_OPEN) level.layerFG.set(i, TOGGLE_CLOSED);
+                    else if (level.layerFG.get(i) == TOGGLE_CLOSED) level.layerFG.set(i, TOGGLE_OPEN);
                 }
             }
             
@@ -744,23 +743,23 @@ public class Creature{
                     if (m.isTank() && !m.isSliding()){
                         m.setMonsterType(TANK_MOVING);
                         m.turn(TURN_RIGHT);
-                        level.layerFG[m.getIndex()] = m.toTile();
+                        level.layerFG.set(m.getPosition(), m.toTile());
                         m.turn(TURN_RIGHT);
                     }
                 }
             }
     
             if (flags.moved){
-                if (level.layerFG[copy.getIndex()] == BUTTON_BROWN){
+                if (level.layerFG.get(copy.position) == BUTTON_BROWN){
                     for (int j = 0; j < level.trapConnections.length; j++){
                         if (level.trapConnections[j][0] == copy.getIndex()
-                            && level.layerBG[level.trapConnections[j][1]] != TRAP){
+                            && level.layerBG.get(level.trapConnections[j][1]) != TRAP){
                             level.traps.set(j, false);
                             break;
                         }
                     }
                 }
-                if (level.layerBG[getIndex()].isChip()) level.getChip().kill();
+                if (level.layerBG.get(position).isChip()) level.getChip().kill();
                 return;
             }
             
@@ -769,7 +768,7 @@ public class Creature{
         if (isTank() && !isSliding()) setMonsterType(TANK_STATIONARY);
         else if (monsterType == TEETH){
             direction = directions[0];
-            level.layerFG[getIndex()] = toTile();
+            level.layerFG.set(position, toTile());
         }
         else if (!isChip() && !isBlock()) setDirection(copy.direction);
     }
@@ -779,8 +778,8 @@ public class Creature{
         this.monsterType = monsterType;
         this.position = position;
     }
-    public Creature(int position, Tile tile){
-        this.position = new Position(position);
+    public Creature(Position position, Tile tile){
+        this.position = position;
         if (BLOCK_UP.ordinal() <= tile.ordinal() && tile.ordinal() <= BLOCK_RIGHT.ordinal()){
             direction = ((tile.ordinal() + 2) % 4) << 14;
             monsterType = BLOCK;

@@ -44,7 +44,7 @@ public class CreatureList{
 
             if (!monster.isSliding()){
                 if (!monster.isAffectedByCB()) direction = monster.getDirection();
-                Tile bgTile = level.layerBG[monster.getIndex()];
+                Tile bgTile = level.layerBG.get(monster.getPosition());
                 if (bgTile == CLONE_MACHINE) tickClonedMonster(monster);
                 else if (bgTile == TRAP) tickTrappedMonster(monster);
                 else tickFreeMonster(monster);
@@ -53,12 +53,12 @@ public class CreatureList{
     }
 
     private void tickClonedMonster(Creature monster){
-        int clonerPosition = monster.getIndex();
+        Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
         if (monster.isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + (monster.getDirection() >>> 14));
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
         if (direction == NO_DIRECTION) return;
-        if (monster.canEnter(direction, level.layerFG[monster.move(direction).getIndex()], level)){
+        if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
             if (monster.getMonsterType() == Creature.BLOB){
                 int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
                 monster.tick(directions, level);
@@ -92,12 +92,12 @@ public class CreatureList{
         for (Creature c: newClones){
             if (c.getIndex() == position) return;
         }
-        Tile tile = level.layerFG[position];
+        Tile tile = level.layerFG.get(position);
         if (!tile.isCreature()) return;
-        Creature clone = new Creature(position, tile);
+        Creature clone = new Creature(new Position(position), tile);
         direction = clone.getDirection();
         Position newPosition = clone.move(direction);
-        Tile newTile = level.layerFG[newPosition.getIndex()];
+        Tile newTile = level.layerFG.get(newPosition);
 
         if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()){
             if (clone.isBlock()) tickClonedMonster(clone);

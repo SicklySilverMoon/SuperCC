@@ -29,7 +29,7 @@ class GamePanel extends JPanel{
     private BufferedImage bbg = new BufferedImage(32*TILE_SIZE, 32*TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
     private BufferedImage overlay;
 
-    private Tile[] previousFG = new Tile[32*32];
+    private byte[] previousFG = new byte[32*32];
     private SuperCC emulator;
     private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
 
@@ -65,13 +65,13 @@ class GamePanel extends JPanel{
      *                    update where the level changed.
      */
     void updateGraphics(Level level, boolean fromScratch){
-
-        Tile[] layerBG;
-        Tile[] layerFG;
+    
+        byte[] layerBG;
+        byte[] layerFG;
 
         try{
-            layerFG = level.getLayerFG();
-            layerBG = level.getLayerBG();
+            layerFG = level.getLayerFG().getLayer();
+            layerBG = level.getLayerBG().getLayer();
         }
         catch (NullPointerException npe){
             return;
@@ -83,8 +83,8 @@ class GamePanel extends JPanel{
         for (int i = 0; i < 32*32; i++){
             if (fromScratch | layerFG[i] != previousFG[i]){
                 int x = TILE_SIZE*(i%32), y = TILE_SIZE*(i/32);
-                rasterBG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerBG[i].ordinal()]);
-                rasterFG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerFG[i].ordinal()]);
+                rasterBG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerBG[i]]);
+                rasterFG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerFG[i]]);
             }
         }
         previousFG = layerFG.clone();

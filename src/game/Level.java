@@ -16,6 +16,7 @@ public class Level extends SaveState {
     public final byte[] title, password, hint;
     public final short[] toggleDoors, portals;
     public final int[][] trapConnections, cloneConnections;
+    private final byte[] startingState;
 
     int tickN;
     private int rngSeed;
@@ -24,7 +25,7 @@ public class Level extends SaveState {
 
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
                  int[][] trapConnections, BitSet traps, int[][] cloneConnections,
-                 Tile[] layerBG, Tile[] layerFG, CreatureList monsterList, SlipList slipList,
+                 Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
                  Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
 
         super(layerBG, layerFG, monsterList, slipList, chip,
@@ -41,15 +42,16 @@ public class Level extends SaveState {
         this.cloneConnections = cloneConnections;
         this.rngSeed = rngSeed;
         this.step = step;
+        this.startingState = save();
 
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
     }
 
-    public Tile[] getLayerBG() {
+    public Layer getLayerBG() {
         return layerBG;
     }
-    public Tile[] getLayerFG() {
+    public Layer getLayerFG() {
         return layerFG;
     }
     public int getTimer(){
@@ -95,25 +97,21 @@ public class Level extends SaveState {
         this.mouseClick = position;
     }
     
-    protected Tile popTile(int position){
-        layerFG[position] = layerBG[position];
-        layerBG[position] = FLOOR;
-        return layerFG[position];
+    public void reset(int rngSeed, Step step){
+        load(startingState);
+        this.rngSeed = rngSeed;
+        rng.setRNG(rngSeed);
+        this.step = step;
+        moves = new ByteList();
     }
-    protected Tile popTile(Position position){
-        int index = position.getIndex();
-        layerFG[index] = layerBG[index];
-        layerBG[index] = FLOOR;
-        return layerFG[index];
-    }
-    protected void insertTile(int position, Tile tile){
-        layerBG[position] = layerFG[position];
-        layerFG[position] = tile;
+    
+    protected void popTile(Position position){
+        layerFG.set(position, layerBG.get(position));
+        layerBG.set(position, FLOOR);
     }
     protected void insertTile(Position position, Tile tile){
-        int index = position.getIndex();
-        layerBG[index] = layerFG[index];
-        layerFG[index] = tile;
+        layerBG.set(position, layerFG.get(position));
+        layerFG.set(position, tile);
     }
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
@@ -134,15 +132,16 @@ public class Level extends SaveState {
 
     private void moveChipSliding(){
         int direction = chip.getDirection();
-        if (layerBG[chip.getIndex()].isFF()) chip.tick(new int[] {direction}, this);
-        else chip.tick(chip.getSlideDirectionPriority(layerBG[chip.getIndex()], rng), this);
+        Tile bgTile = layerBG.get(chip.getPosition());
+        if (bgTile.isFF()) chip.tick(new int[] {direction}, this);
+        else chip.tick(chip.getSlideDirectionPriority(bgTile, rng), this);
     }
     
     private void moveChip(int[] directions){
         int oldPosition = chip.getIndex();
         for (int direction : directions) {
             if (chip.isSliding()) {
-                if (!layerBG[chip.getIndex()].isFF()) continue;
+                if (!layerBG.get(chip.getPosition()).isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
             chip.tick(new int[] {direction}, this);
@@ -152,10 +151,10 @@ public class Level extends SaveState {
 
     private void finaliseTraps(){
         for (int i = 0; i < trapConnections.length; i++){
-            if (layerBG[trapConnections[i][0]] == BUTTON_BROWN){
+            if (layerBG.get(trapConnections[i][0]) == BUTTON_BROWN){
                 traps.set(i, true);
             }
-            else if (layerBG[trapConnections[i][1]] != TRAP){
+            else if (layerBG.get(trapConnections[i][1]) != TRAP){
                 traps.set(i, false);
             }
         }
@@ -194,13 +193,14 @@ public class Level extends SaveState {
         int moveType = moveType(b, isHalfMove, chip.isSliding());
     
         if (tickN > 2){
+            tickTimer();
             if (!isHalfMove) monsterList.tick();
         }
         
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (chip.isDead()) return false;
-        if (chip.isSliding() && !layerBG[chip.getIndex()].isFF()) b = SuperCC.WAIT;
+        if (chip.isSliding() && !layerBG.get(chip.getPosition()).isFF()) b = SuperCC.WAIT;
         if (moveType == CLICK) moveChip(chip.seek(new Position(mouseClick)));
         if (chip.isDead()) return false;
         slipList.tick();
@@ -212,7 +212,6 @@ public class Level extends SaveState {
         finaliseTraps();
         if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
     
-        if (tickN > 2) tickTimer();
         if (moveType == KEY && !isHalfMove && !chip.isSliding()){
             tick(capital(b), null);
             return true;

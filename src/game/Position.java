@@ -3,7 +3,7 @@ package game;
 import java.awt.event.MouseEvent;
 
 import static game.Creature.*;
-import static graphics.MainWindow.TILE_SIZE;
+import static graphics.Gui.TILE_SIZE;
 import static java.lang.Math.abs;
 
 public class Position {
