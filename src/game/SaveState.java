@@ -2,6 +2,7 @@ package game;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -33,8 +34,8 @@ public class SaveState {
         SavestateWriter writer = new SavestateWriter();
         writer.write(UNCOMPRESSED);                                        // Version
         writer.writeShort((short) chip.bits());
-        writer.writeLayer(layerBG);
-        writer.writeLayer(layerFG);
+        writer.writeBytes(layerBG.getLayer());
+        writer.writeBytes(layerFG.getLayer());
         writer.writeShort(timer);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
@@ -173,18 +174,16 @@ public class SaveState {
             write(n);
         }
         public void writeBytes(byte[] a){
-            for (int i = 0; i < a.length; i++){
-                write(a[i]);
+            try {
+                write(a);
+            }
+            catch (IOException e){
+                e.printStackTrace();
             }
         }
         void writeShorts(short[] a){
             for (int i = 0; i < a.length; i++){
                 writeShort(a[i]);
-            }
-        }
-        void writeLayer(Layer layer){
-            for (byte b : layer.getLayer()) {
-                write(b);
             }
         }
         void writeMonsterArray(Creature[] monsters){
