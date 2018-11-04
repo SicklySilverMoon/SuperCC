@@ -34,8 +34,9 @@ public abstract class TextPanel extends JPanel{
         }
         if (i <= 0) return str;
         if (width <= lineWidth) return str;
-        if (cutoff == 0) cutoff = i;
-        return str.substring(0, cutoff) + "\n" + addLineBreaks(str.substring(cutoff), lineWidth, m);
+        if (cutoff == 0) return str.substring(0, i) + "\n" + addLineBreaks(str.substring(i), lineWidth, m);
+        else return str.substring(0, cutoff) + "\n" + addLineBreaks(str.substring(cutoff + 1), lineWidth, m);
+        
     }
 
     protected void drawText(Graphics g, String text, int maxLines){
