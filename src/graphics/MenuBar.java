@@ -3,18 +3,23 @@ package graphics;
 import emulator.SuperCC;
 import game.Level;
 import game.Step;
+import graphics.popup.ChangeInventory;
+import io.GifSequenceWriter;
 import io.Solution;
+import util.TreeNode;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
@@ -185,6 +190,8 @@ public class MenuBar extends JMenuBar{
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                emulator.showAction("Copied solution");
+                emulator.getMainWindow().repaint(emulator.getLevel(), false);
             });
             addIcon(copy, "/resources/icons/copy.gif");
             add(copy);
@@ -197,6 +204,8 @@ public class MenuBar extends JMenuBar{
                 Solution s;
                 try {
                     new Solution((String) t.getTransferData(DataFlavor.stringFlavor)).play(emulator);
+                    emulator.showAction("Pasted solution");
+                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
                 }
                 catch (IllegalArgumentException e){
                     emulator.throwError(e.getMessage());
@@ -304,7 +313,66 @@ public class MenuBar extends JMenuBar{
 
         }
     }
-
+    
+    private class ToolMenu extends JMenu{
+        public ToolMenu() {
+            super("Tools");
+    
+            JMenuItem gif = new JMenuItem("Record gif");
+            gif.addActionListener(e -> {
+                String s = JOptionPane.showInputDialog(window, "Choose gif length");
+                if (s.length() == 0) return;
+                try {
+                    int n = Integer.parseInt(s);
+                    ArrayList<BufferedImage> images = new ArrayList<>();
+                    emulator.getSavestates().addSavestate(-1);
+                    emulator.showAction("Recording gif, please wait");
+                    BufferedImage b = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+                    emulator.getMainWindow().getGamePanel().paintComponent(b.getGraphics());
+                    images.add(b);
+                    for (int i = 1; i < n && emulator.getSavestates().getNode().hasParent(); i++){
+                        emulator.getSavestates().rewind();
+                        emulator.getLevel().load(emulator.getSavestates().getSavestate());
+                        window.repaint(emulator.getLevel(), false);
+                        emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                        b = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+                        emulator.getMainWindow().getGamePanel().paintComponent(b.getGraphics());
+                        images.add(b);
+                    }
+                    System.out.println(images.size());
+                    ImageOutputStream output = new FileImageOutputStream(new File("out.gif"));
+                    GifSequenceWriter writer = new GifSequenceWriter(output, b.getType(), 100, true);
+                    for (int i = images.size() - 1; i >= 0; i--) {
+                        writer.writeToSequence(images.get(i));
+                    }
+    
+                    writer.close();
+                    output.close();
+                    emulator.getSavestates().load(-1, emulator.getLevel());
+                    emulator.showAction("Recorded out.gif");
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(window, "Not a number");
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
+            });
+            addIcon(gif, "/resources/icons/video.gif");
+            add(gif);
+        }
+    }
+    
+    private class CheatMenu extends JMenu{
+        public CheatMenu() {
+            super("Cheats");
+            
+            JMenuItem inventory = new JMenuItem("Change inventory");
+            inventory.addActionListener(e -> {
+                ChangeInventory c = new ChangeInventory(emulator);
+            });
+            add(inventory);
+        }
+    }
+    
     public MenuBar(Gui window, SuperCC emulator){
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
@@ -312,6 +380,8 @@ public class MenuBar extends JMenuBar{
         add(new SolutionMenu());
         add(new TWSMenu());
         add(new ViewMenu());
+        add(new ToolMenu());
+        add(new CheatMenu());
         this.window = window;
         this.emulator = emulator;
     }
