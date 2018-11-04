@@ -4,6 +4,7 @@ import game.Tile;
 import util.ByteList;
 import util.TreeNode;
 
+import javax.sound.midi.Soundbank;
 import java.util.Stack;
 
 import static game.SaveState.COMPRESSED;
@@ -12,7 +13,7 @@ import static game.SaveState.RLE_MULTIPLE;
 
 public class SavestateCompressor {
     
-    private static final int LAYER_BG_LOCATION = 4,
+    private static final int LAYER_BG_LOCATION = 3,
                              LAYER_FG_LOCATION = LAYER_BG_LOCATION + 32 * 32,
                              LAYER_FG_END = LAYER_FG_LOCATION + 32 * 32;
     
@@ -24,21 +25,23 @@ public class SavestateCompressor {
     }
     
     private void run(){
-        try {
-            if (stateStack.isEmpty()) {
-                Thread.sleep(1);
+        while (true) {
+            try {
+                if (stateStack.isEmpty()) {
+                    Thread.sleep(1);
+                }
+                else {
+                    compress(stateStack.pop());
+                }
             }
-            else {
-                compress(stateStack.pop());
+            catch (Exception e) {
+                e.printStackTrace();
             }
-        }
-        catch (Exception e){
-            e.printStackTrace();
         }
     }
     
     private void rleCompress(byte[] uncompressed, ByteList out, int startIndex, int length){
-        int lastOrdinal = uncompressed[0];
+        int lastOrdinal = uncompressed[startIndex];
         int ordinal;
         int copyCount = -1;
         for (int i = startIndex; i < startIndex + length; i++) {
@@ -75,16 +78,13 @@ public class SavestateCompressor {
         byte[] uncompressedState = n.getData();
         rleCompress(uncompressedState, list, LAYER_BG_LOCATION, 32*32);
         rleCompress(uncompressedState, list, LAYER_FG_LOCATION, 32*32);
-        byte[] out = new byte[uncompressedState.length - 32*32 + list.size()];
+        byte[] out = new byte[uncompressedState.length - 2 * 32 * 32 + list.size()];
         out[0] = COMPRESSED;
         out[1] = uncompressedState[1];
         out[2] = uncompressedState[2];
         list.copy(out, 3);
-        System.arraycopy(uncompressedState, LAYER_FG_END, out, 3, uncompressedState.length - LAYER_FG_END);
+        System.arraycopy(uncompressedState, LAYER_FG_END, out, 3 + list.size(), uncompressedState.length - LAYER_FG_END);
         n.setData(out);
-    }
-    
-    private void Layer(Tile[] layer){
     }
 
     public SavestateCompressor(){

@@ -51,15 +51,15 @@ public class SaveState {
     }
     
     public static Creature getChip(byte[] savestate){
-        return new Creature(((savestate[2] & 0xFF) << 8) | (savestate[3] & 0xFF));
+        return new Creature(((savestate[1] & 0xFF) << 8) | (savestate[2] & 0xFF));
     }
 
     public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         chip = new Creature(reader.readShort());
-        layerBG = reader.readLayer(32*32);
-        layerFG = reader.readLayer(32*32);
+        layerBG = reader.readLayer(version);
+        layerFG = reader.readLayer(version);
         timer = (short) reader.readShort();
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);

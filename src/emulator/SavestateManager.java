@@ -19,15 +19,8 @@ public class SavestateManager {
     private SavestateCompressor compressor;
 
     public void addRewindState(Level level){
-        long t1, t2, t3;
-        t1 = System.nanoTime();
         currentNode = new TreeNode<>(level.save(), currentNode);
-        t2 = System.nanoTime();
         compressor.add(currentNode);
-        t3 = System.nanoTime();
-        System.out.println(t2-t1);
-        System.out.println(t3-t2);
-        System.out.println("");
     }
     
     public void rewind(){
