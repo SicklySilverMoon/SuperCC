@@ -79,8 +79,9 @@ public class MenuBar extends JMenuBar{
             JMenuItem goTo = new JMenuItem("Go to...");
             goTo.addActionListener(e -> {
                 String s = JOptionPane.showInputDialog(window, "Choose a level number");
-                if (s == "") return;
-                try{
+                if (s.length() == 0) return;
+                System.out.println(s);
+                try {
                     int n = Integer.parseInt(s);
                     emulator.loadLevel(n, 0, Step.EVEN);
                 } catch (NumberFormatException nfe){

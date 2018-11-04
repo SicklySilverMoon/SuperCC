@@ -2,26 +2,28 @@ package graphics;
 
 import game.Level;
 
-import javax.swing.*;
+import javax.sound.midi.Soundbank;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
 
-public class MovePanel extends TextPanel {
+public class LastActionPanel extends TextPanel {
     
+    private String lastAction = "";
+    
+    public void update(String s){
+        lastAction = s;
+    }
+
     @Override
     public void paintComponent(Graphics g){
-        
-        if (emulator == null) return;
-        Level level = emulator.getLevel();
-        if (level == null) return;
-        
-        textHeight = 0;
+    
+        textHeight = 28;
     
         g.setColor(Color.DARK_GRAY);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        drawText(g, level.getMoves().toString(StandardCharsets.ISO_8859_1), Integer.MAX_VALUE);
+        drawText(g, lastAction, 1);
     }
-    
+
 }

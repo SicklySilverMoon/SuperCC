@@ -11,7 +11,7 @@ import java.util.EmptyStackException;
 
 public abstract class TextPanel extends JPanel{
 
-    public static final int BORDER_HORIZONTAL = 20;
+    public static final int BORDER_HORIZONTAL = 16;
     
     public void setEmulator(SuperCC emulator) {
         this.emulator = emulator;

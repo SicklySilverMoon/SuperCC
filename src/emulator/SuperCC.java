@@ -3,7 +3,7 @@ package emulator;
 import game.Creature;
 import game.Level;
 import game.Step;
-import graphics.MainWindow;
+import graphics.Gui;
 import game.Position;
 import io.DatParser;
 import io.Solution;
@@ -29,7 +29,7 @@ public class SuperCC implements KeyListener{
 
     private SavestateManager savestates;
     private Level level;
-    private MainWindow window;
+    private Gui window;
     private DatParser dat;
     public TWSReader twsReader;
 
@@ -38,7 +38,7 @@ public class SuperCC implements KeyListener{
             this.twsReader = new TWSReader(twsFile);
         }
         catch (IOException e){
-            JOptionPane.showMessageDialog(window, "Could not read file:\n"+e.getLocalizedMessage());
+            JOptionPane.showMessageDialog(null, "Could not read file:\n"+e.getLocalizedMessage());
         }
     }
 
@@ -48,12 +48,12 @@ public class SuperCC implements KeyListener{
     public SavestateManager getSavestates(){
         return savestates;
     }
-    public MainWindow getMainWindow(){
+    public Gui getMainWindow(){
         return window;
     }
 
     public SuperCC() throws IOException {
-        this.window = new MainWindow(this);
+        this.window = new Gui(this);
     }
 
     public void openLevelset(File levelset){
@@ -61,7 +61,7 @@ public class SuperCC implements KeyListener{
             dat = new DatParser(levelset);
         }
         catch (IOException e){
-            JOptionPane.showMessageDialog(window, "Could not read file:\n"+e.getLocalizedMessage());
+            throwError("Could not read file:\n"+e.getLocalizedMessage());
         }
         loadLevel(1);
     }
@@ -71,9 +71,10 @@ public class SuperCC implements KeyListener{
             level = dat.parseLevel(levelNumber, rngSeed, step);
             savestates = new SavestateManager(level);
             window.repaint(level, true);
+            window.setTitle("SuperCC - " + new String(level.title));
         }
-        catch (IOException e){
-            JOptionPane.showMessageDialog(window, "Could not load level");
+        catch (Exception e){
+            throwError("Could not load level: "+e.getMessage());
         }
     }
 
@@ -83,9 +84,19 @@ public class SuperCC implements KeyListener{
 
     public synchronized boolean tick(byte b, int[] directions, boolean repaint){
         if (level == null) return false;
+        long startTime = System.nanoTime();
         boolean tickedTwice = level.tick(b, directions);
+        long endTime = System.nanoTime();
+        System.out.println(endTime-startTime);
+        startTime = System.nanoTime();
         if (repaint) window.repaint(level, false);
+        endTime = System.nanoTime();
+        System.out.println(endTime-startTime);
+        startTime = System.nanoTime();
         savestates.addRewindState(level.save());
+        endTime = System.nanoTime();
+        System.out.println(endTime-startTime);
+        System.out.println("--------------");
         return tickedTwice;
     }
     
@@ -137,16 +148,27 @@ public class SuperCC implements KeyListener{
         if (key == KeyEvent.VK_BACK_SPACE) {
             savestates.rewind();
             level.load(savestates.getSavestate());
+            showAction("Rewind");
             window.repaint(level, false);
             return;
         }
 
-        if (shiftPressed) savestates.addSavestate(key);
-        else {
-            savestates.load(key, level);
+        if (shiftPressed) {
+            savestates.addSavestate(key);
+            showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
             window.repaint(level, false);
         }
+        else {
+            if (savestates.load(key, level)) {
+                showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
+                window.repaint(level, false);
+            }
+        }
 
+    }
+    
+    public void showAction(String s){
+        getMainWindow().getLastActionPanel().update(s);
     }
     
     private void runBenchmark(int levelNumber, int runs){
@@ -184,7 +206,7 @@ public class SuperCC implements KeyListener{
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
-            //emulator.runBenchmark(116, 1000);
+            //emulator.runBenchmark(89, 1);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -193,7 +215,7 @@ public class SuperCC implements KeyListener{
     }
 
     public void throwError(String s){
-        JOptionPane.showMessageDialog(window, s, "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void main(String[] args){

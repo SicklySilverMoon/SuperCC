@@ -18,6 +18,7 @@ public class Gui extends JFrame{
     private JPanel levelPanel;
     private JPanel inventoryPanel;
     private JPanel movePanel;
+    private JPanel lastActionPanel;
     
     private final SuperCC emulator;
     
@@ -35,6 +36,10 @@ public class Gui extends JFrame{
         return (MovePanel) movePanel;
     }
     
+    public LastActionPanel getLastActionPanel() {
+        return (LastActionPanel) lastActionPanel;
+    }
+    
     public InventoryPanel getInventoryPanel() {
         return (InventoryPanel) inventoryPanel;
     }
@@ -48,6 +53,7 @@ public class Gui extends JFrame{
         inventoryPanel = new InventoryPanel();
         movePanel = new MovePanel();
         gamePanel = new GamePanel();
+        lastActionPanel = new LastActionPanel();
         try {
             ((GamePanel) gamePanel).initialise(ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
         }
@@ -88,11 +94,13 @@ public class Gui extends JFrame{
         levelPanel.setBackground(Color.DARK_GRAY);
         inventoryPanel.setBackground(Color.DARK_GRAY);
         movePanel.setBackground(Color.DARK_GRAY);
+        lastActionPanel.setBackground(Color.DARK_GRAY);
     }
     
     public void repaintRightContainer(){
         levelPanel.repaint();
         inventoryPanel.repaint();
+        lastActionPanel.repaint();
         movePanel.repaint();
     }
     

@@ -6,6 +6,7 @@ import game.SaveState;
 import util.ByteList;
 import util.TreeNode;
 
+import java.security.KeyException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -16,7 +17,7 @@ public class SavestateManager {
     private TreeNode<byte[]> currentNode;
     private ByteList currentMoves;
 
-    public void addRewindState(byte[] savestate){
+    public synchronized void addRewindState(byte[] savestate){
         currentNode = new TreeNode<>(savestate, currentNode);
     }
     
@@ -32,11 +33,14 @@ public class SavestateManager {
         savestateMoves.put(key, currentMoves.clone());
     }
     
-    public void load(int key, Level level){
-        currentNode = savestates.getOrDefault(key, currentNode);
-        currentMoves = savestateMoves.getOrDefault(key, currentMoves).clone();
+    public boolean load(int key, Level level){
+        TreeNode<byte[]> loadedNode = savestates.get(key);
+        if (loadedNode == null) return false;
+        currentNode = loadedNode;
+        currentMoves = savestateMoves.get(key).clone();
         level.load(currentNode.getData());
         level.setMoves(currentMoves);
+        return true;
     }
     
     public byte[] getSavestate(){

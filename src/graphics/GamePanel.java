@@ -175,12 +175,6 @@ class GamePanel extends JPanel{
     public void setHistoryVisible(boolean visible){
         showHistory = visible;
     }
-    public int[][] getTileGraphics(){
-        return tileImage;
-    }
-    public int[][] getBlackDigits(){
-        return blackDigits;
-    }
     
     public void initialiseTileGraphics(BufferedImage allTiles) throws IOException{
         for (int i = 0; i < 16 * 7; i++) {
@@ -246,8 +240,9 @@ class GamePanel extends JPanel{
         public void mouseClicked(MouseEvent e) {
             Position clickPosition = new Position(e);
             Creature chip = emulator.getLevel().getChip();
-            byte b = (byte) clickPosition.clickByte(chip.getPosition());
+            byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
+            emulator.showAction("Clicked " + clickPosition);
             emulator.getLevel().setClick(clickPosition.getIndex());
             int[] directions = chip.seek(clickPosition);
             emulator.tick(b, directions, true);
