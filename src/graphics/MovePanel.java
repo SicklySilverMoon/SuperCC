@@ -15,12 +15,12 @@ public class MovePanel extends TextPanel {
         Level level = emulator.getLevel();
         if (level == null) return;
         
-        textHeight = 0;
+        textHeight = 32;
     
         g.setColor(Color.DARK_GRAY);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
-        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
+        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 24));
         drawText(g, level.getMoves().toString(StandardCharsets.ISO_8859_1), Integer.MAX_VALUE);
     }
     
