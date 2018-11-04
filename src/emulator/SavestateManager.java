@@ -16,9 +16,18 @@ public class SavestateManager {
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
     private ByteList currentMoves;
+    private SavestateCompressor compressor;
 
-    public synchronized void addRewindState(byte[] savestate){
-        currentNode = new TreeNode<>(savestate, currentNode);
+    public void addRewindState(Level level){
+        long t1, t2, t3;
+        t1 = System.nanoTime();
+        currentNode = new TreeNode<>(level.save(), currentNode);
+        t2 = System.nanoTime();
+        compressor.add(currentNode);
+        t3 = System.nanoTime();
+        System.out.println(t2-t1);
+        System.out.println(t3-t2);
+        System.out.println("");
     }
     
     public void rewind(){
@@ -58,6 +67,7 @@ public class SavestateManager {
     public SavestateManager(Level level){
         currentNode = new TreeNode<>(level.save(), null);
         currentMoves = level.getMoves();
+        compressor = new SavestateCompressor();
     }
     
     public LinkedList<Position> getChipHistory(){

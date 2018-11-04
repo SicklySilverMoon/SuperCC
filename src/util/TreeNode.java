@@ -9,6 +9,10 @@ public class TreeNode<T> {
         return object;
     }
     
+    public void setData(T object){
+        this.object = object;
+    }
+    
     public TreeNode<T> getParent(){
         return parent;
     }

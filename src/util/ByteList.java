@@ -3,6 +3,7 @@ package util;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.RandomAccess;
 
 /**
  * This class is basically an ArrayList for the byte primitive, used for
@@ -12,7 +13,7 @@ import java.util.Iterator;
  * The initial capacity is set to 200. This doubles when it is reached. The
  * capacity never decreases.
  */
-public class ByteList implements Iterable<Byte> {
+public class ByteList implements Iterable<Byte>, RandomAccess {
     
     private static final int INITIAL_CAPACITY = 200;
     
@@ -30,6 +31,22 @@ public class ByteList implements Iterable<Byte> {
             capacity *= 2;
             bytes = Arrays.copyOf(bytes, capacity);
         }
+    }
+    
+    /**
+     * Appends the specified element to the end of this list.
+     * @param n int to be appended to this list
+     */
+    public void add(int n){
+        add((byte) n);
+    }
+    
+    public byte get(int index) {
+        return bytes[index];
+    }
+    
+    public void set(int index, byte b) {
+        bytes[index] = b;
     }
     
     /**
@@ -56,6 +73,10 @@ public class ByteList implements Iterable<Byte> {
         return Arrays.copyOf(bytes, size);
     }
     
+    public void copy(byte[] dest, int destPos){
+        System.arraycopy(bytes, 0, dest, destPos, size);
+    }
+    
     /**
      * Returns the number of elements in this list.
      * @return the number of elements in this list
@@ -78,12 +99,20 @@ public class ByteList implements Iterable<Byte> {
     }
     
     /**
+     * Removes all of the elements from this list (optional operation). The
+     * list will be empty after this call returns.
+     */
+    public void clear(){
+        size = 0;
+    }
+    
+    /**
      * Returns an iterator over the elements in this list in proper sequence.
      * @return an iterator over the elements in this list in proper sequence
      */
     @Override
     public Iterator<Byte> iterator() {
-        Iterator<Byte> it = new Iterator<>() {
+        Iterator<Byte> it = new Iterator<Byte>() {
             
             private int i = 0;
             
