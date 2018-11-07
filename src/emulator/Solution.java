@@ -1,11 +1,13 @@
-package io;
+package emulator;
 
 import emulator.SuperCC;
 import game.Level;
 import game.Position;
 import game.Step;
+import org.json.simple.parser.JSONParser;
 import util.ByteList;
 
+import org.json.simple.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -13,6 +15,8 @@ import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
 
 public class Solution{
 
+    public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves";
+    
     public static final int QUARTER_MOVES = 0,
                             HALF_MOVES = 1,
                             SUCC_MOVES = 2;
@@ -21,39 +25,34 @@ public class Solution{
     public int rngSeed;
     public Step step;
     
-    public void play(SuperCC emulator){
-        emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
-        Level level = emulator.getLevel();
-        try{
-            for (int move = 0; move < halfMoves.length; move++){
-                byte b = halfMoves[move];
-                if (b == CHIP_RELATIVE_CLICK){
-                    int x = halfMoves[++move] - 9;
-                    int y = halfMoves[++move] - 9;
-                    if (x == 0 && y == 0){                      // idk about this but it fixes thief street
-                        b = '-';
-                    }
-                    else {
-                        Position chipPosition = level.getChip().getPosition();
-                        Position clickPosition = chipPosition.add(x, y);
-                        level.setClick(clickPosition.getIndex());
-                        b = clickPosition.clickByte(chipPosition);
-                    }
-                }
-                boolean tickedTwice = emulator.tick(b, false);
-                if (tickedTwice) move++;
-                if (level.getChip().isDead()){
-                    break;
-                }
-            }
-        }
-        catch (Exception e){
-            emulator.throwError("Something went wrong:\n"+e.getMessage());
-        }
-        emulator.getMainWindow().repaint(level, true);
+    private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
+    
+    private int playbackWaitTime = STANDARD_WAIT_TIME;
+    
+    private static final int[] waitTimes = new int[]{
+        STANDARD_WAIT_TIME * 8,
+        STANDARD_WAIT_TIME * 4,
+        STANDARD_WAIT_TIME * 2,
+        STANDARD_WAIT_TIME,
+        STANDARD_WAIT_TIME / 2,
+        STANDARD_WAIT_TIME / 4,
+        STANDARD_WAIT_TIME / 8
+    };
+    public static final int NUM_SPEEDS = waitTimes.length;
+    
+    public void setPlaybackSpeed(int i) {
+        playbackWaitTime = waitTimes[i];
     }
     
-    public void play(SuperCC emulator, long waitTime){
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put(STEP, step.toString());
+        json.put(SEED, Integer.toString(rngSeed));
+        json.put(MOVES, new String(halfMoves, StandardCharsets.ISO_8859_1));
+        return json;
+    }
+    
+    public void play(SuperCC emulator, boolean instantPlayBack){
         emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
         Level level = emulator.getLevel();
         try{
@@ -72,13 +71,15 @@ public class Solution{
                         b = clickPosition.clickByte(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(b, true);
-                if (tickedTwice){
-                    move++;
-                    Thread.sleep(waitTime*2);
+                boolean tickedTwice = emulator.tick(b, !instantPlayBack);
+                if (!instantPlayBack) {
+                    if (tickedTwice) {
+                        move++;
+                        Thread.sleep(playbackWaitTime * 2);
+                    }
+                    else Thread.sleep(playbackWaitTime);
                 }
-                else Thread.sleep(waitTime);
-                if (level.getChip().isDead()){
+                if (level.getChip().isDead()) {
                     break;
                 }
             }
@@ -152,13 +153,14 @@ public class Solution{
         return writer.toByteArray();
     }
     
-    public Solution(String s){
+    public static Solution fromJSON(String s){
         try {
-            String[] lines = s.split("\n");
-            step = Step.valueOf(lines[0].substring(5));
-            rngSeed = Integer.valueOf(lines[1].substring(5));
-            if (lines.length > 2) halfMoves = lines[2].getBytes(StandardCharsets.ISO_8859_1);
-            else halfMoves = new byte[0];
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(s);
+            Step step = Step.valueOf((String) json.get(STEP));
+            int rngSeed = Integer.parseInt((String) json.get(SEED));
+            byte[] halfMoves = ((String) json.get(MOVES)).getBytes(StandardCharsets.ISO_8859_1);
+            return new Solution(halfMoves, rngSeed, step, HALF_MOVES);
         }
         catch (Exception e){
             throw new IllegalArgumentException("Invalid solution file:\n" + s);
@@ -167,9 +169,7 @@ public class Solution{
     
     @Override
     public String toString(){
-        return "Step " + step + "\n"
-            + "Seed " + rngSeed + "\n"
-            + new String(halfMoves, StandardCharsets.ISO_8859_1);
+        return toJSON().toJSONString();
     }
     
     public Solution(byte[] moves, int rngSeed, Step step, int format){
@@ -178,7 +178,6 @@ public class Solution{
         else if (format == HALF_MOVES) this.halfMoves = moves;
         this.rngSeed = rngSeed;
         this.step = step;
-        //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
     }
     
     public Solution(ByteList moves, int rngSeed, Step step){
