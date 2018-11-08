@@ -10,6 +10,8 @@ import util.TreeNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +27,7 @@ public class Gui extends JFrame{
     private JPanel leftPanel;
     private JSlider timeSlider;
     private JSlider speedSlider;
+    private JPanel sliderPanel;
     
     public JSlider getTimeSlider(){
         return timeSlider;
@@ -107,6 +110,7 @@ public class Gui extends JFrame{
         });
         this.emulator = emulator;
         leftPanel.setBackground(DARK_GREY);
+        sliderPanel.setBackground(DARK_GREY);
         getMovePanel().setEmulator(emulator);
         getLevelPanel().setEmulator(emulator);
         getInventoryPanel().initialise(emulator);
