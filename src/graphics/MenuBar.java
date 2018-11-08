@@ -4,9 +4,8 @@ import emulator.SuperCC;
 import game.Level;
 import game.Step;
 import graphics.popup.ChangeInventory;
-import io.GifSequenceWriter;
-import io.Solution;
-import util.TreeNode;
+import tools.GifSequenceWriter;
+import emulator.Solution;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
@@ -21,7 +20,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
@@ -203,7 +201,7 @@ public class MenuBar extends JMenuBar{
                 Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
                 Solution s;
                 try {
-                    new Solution((String) t.getTransferData(DataFlavor.stringFlavor)).play(emulator);
+                    Solution.fromJSON((String) t.getTransferData(DataFlavor.stringFlavor)).play(emulator, true);
                     emulator.showAction("Pasted solution");
                     emulator.getMainWindow().repaint(emulator.getLevel(), false);
                 }
@@ -245,7 +243,7 @@ public class MenuBar extends JMenuBar{
             playSolution.addActionListener(event -> {
                 Thread t = new Thread(() -> {
                     try {
-                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, 10);
+                        emulator.twsReader.readSolution(emulator.getLevel()).play(emulator, false);
                     } catch (IOException e) {
                         emulator.throwError("Error while loading solution");
                     }

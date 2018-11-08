@@ -1,6 +1,7 @@
 package graphics;
 
 import com.sun.java.swing.plaf.windows.WindowsSliderUI;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import emulator.SavestateManager;
 import emulator.SuperCC;
 import game.Level;
@@ -12,6 +13,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.plaf.basic.BasicArrowButton;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +30,7 @@ public class Gui extends JFrame{
     private JSlider timeSlider;
     private JSlider speedSlider;
     private JPanel sliderPanel;
+    private JButton playButton;
     
     public JSlider getTimeSlider(){
         return timeSlider;
@@ -63,13 +66,20 @@ public class Gui extends JFrame{
         return rightContainer;
     }
     
+    public JButton getPlayButton() {
+        return playButton;
+    }
+    
     private void createUIComponents() {
+        playButton = new JButton();
+        playButton.setOpaque(false);
+        playButton.setBorder(null);
         levelPanel = new LevelPanel();
         inventoryPanel = new InventoryPanel();
         movePanel = new MovePanel();
         gamePanel = new GamePanel();
         lastActionPanel = new LastActionPanel();
-        speedSlider = new JSlider(0, Solution.NUM_SPEEDS - 1);
+        speedSlider = new JSlider(0, SavestateManager.NUM_SPEEDS - 1);
         speedSlider.setBackground(DARK_GREY);
         speedSlider.setUI(new WindowsSliderUI(speedSlider));
         timeSlider = new JSlider(0, 0);
@@ -77,6 +87,7 @@ public class Gui extends JFrame{
         timeSlider.setUI(new WindowsSliderUI(timeSlider));
         try {
             ((GamePanel) gamePanel).initialise(ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
+            playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
@@ -98,7 +109,28 @@ public class Gui extends JFrame{
             setIconImage(ImageIO.read(getClass().getResource("/resources/icons/windowIcon.png")));
         }
         catch (IOException e){}
-        speedSlider.addChangeListener((e) -> emulator.getSolution().setPlaybackSpeed(speedSlider.getValue()));
+        playButton.addActionListener((e) -> {
+            emulator.getMainWindow().requestFocus();
+            emulator.getSavestates().togglePause();
+            try {
+                if (emulator.getSavestates().isPaused()) {
+                    emulator.showAction("Pausing solution playback");
+                    playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
+                }
+                else {
+                    emulator.showAction("Playing solution");
+                    playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
+                    new Thread(() -> emulator.getSavestates().play(emulator)).start();
+                }
+            }
+            catch (IOException exc) {
+                exc.printStackTrace();
+            }
+        });
+        speedSlider.addChangeListener((e) -> {
+            emulator.getSavestates().setPlaybackSpeed(speedSlider.getValue());
+            emulator.getMainWindow().requestFocus();
+        });
         timeSlider.addChangeListener((e) -> {
             if (timeSlider.getValueIsAdjusting()) {
                 emulator.getSavestates().playbackRewind(timeSlider.getValue());
