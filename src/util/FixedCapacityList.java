@@ -39,7 +39,7 @@ public class FixedCapacityList<E> extends AbstractList<E> implements List<E>, Ra
     
     @Override
     public Iterator<E> iterator() {
-        return new Iterator<>() {
+        return new Iterator<E>() {
         
             private int i = 0;
         
@@ -74,11 +74,6 @@ public class FixedCapacityList<E> extends AbstractList<E> implements List<E>, Ra
     public <T> T[] toArray(T[] a) {
         System.arraycopy(list, 0, a, 0, size);
         return a;
-    }
-    
-    @Override
-    public <T> T[] toArray(IntFunction<T[]> generator) {
-        throw new UnsupportedOperationException("Not implemented");
     }
     
     @Override
