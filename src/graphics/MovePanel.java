@@ -28,7 +28,7 @@ public class MovePanel extends TextPanel implements MouseWheelListener {
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 24));
-        drawText(g, level.getMoves().toString(StandardCharsets.ISO_8859_1), Integer.MAX_VALUE);
+        drawText(g, emulator.getSavestates().movesToString(), Integer.MAX_VALUE);
     }
     
     @Override
