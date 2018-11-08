@@ -6,9 +6,9 @@ import game.SaveState;
 import util.ByteList;
 import util.TreeNode;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Stack;
+import javax.sound.midi.Soundbank;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static game.SaveState.COMPRESSED;
 import static game.SaveState.RLE_END;
@@ -21,17 +21,31 @@ public class SavestateManager {
     private TreeNode<byte[]> currentNode;
     private ByteList currentMoves;
     private SavestateCompressor compressor;
+    private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
+    private int playbackIndex = 1;
 
     public void addRewindState(Level level){
+        while (playbackNodes.get(playbackNodes.size()-1) != currentNode) {
+            playbackNodes.remove(playbackNodes.size()-1);
+            currentMoves.removeLast();
+        }
+        System.out.println(currentMoves.size());
         currentNode = new TreeNode<>(level.save(), currentNode);
         compressor.add(currentNode);
+        playbackNodes.add(currentNode);
+        playbackIndex = playbackNodes.size() - 1;
     }
     
     public void rewind(){
         if (currentNode.hasParent()) {
-            if (!SaveState.getChip(currentNode.getData()).isDead()) currentMoves.removeLast();
             currentNode = currentNode.getParent();
+            playbackIndex--;
         }
+    }
+    
+    public void playbackRewind(int index){
+        currentNode = playbackNodes.get(index);
+        playbackIndex = index;
     }
     
     public void addSavestate(int key){
@@ -43,10 +57,25 @@ public class SavestateManager {
         TreeNode<byte[]> loadedNode = savestates.get(key);
         if (loadedNode == null) return false;
         currentNode = loadedNode;
-        currentMoves = savestateMoves.get(key).clone();
         level.load(currentNode.getData());
         level.setMoves(currentMoves);
+        if (!playbackNodes.contains(currentNode)) {
+            playbackNodes = currentNode.getHistory();
+            playbackIndex = playbackNodes.size();
+            currentMoves = savestateMoves.get(key).clone();
+        }
+        else {
+            playbackIndex = playbackNodes.indexOf(currentNode);
+        }
         return true;
+    }
+    
+    public List<TreeNode<byte[]>> getPlaybackNodes() {
+        return playbackNodes;
+    }
+    
+    public int getPlaybackIndex() {
+        return playbackIndex;
     }
     
     public byte[] getSavestate(){
@@ -59,8 +88,14 @@ public class SavestateManager {
         return state.getData();
     }
     
-    public ByteList getMoves(){
-        return currentMoves;
+    public byte[] getMoves(){
+        byte[] moves = new byte[playbackIndex];
+        currentMoves.copy(0, moves, 0, playbackIndex);
+        return moves;
+    }
+    
+    public String movesToString() {
+        return currentMoves.toString(StandardCharsets.ISO_8859_1, playbackIndex);
     }
 
     public TreeNode<byte[]> getNode(){
@@ -69,19 +104,15 @@ public class SavestateManager {
     
     public SavestateManager(Level level){
         currentNode = new TreeNode<>(level.save(), null);
+        playbackNodes.add(currentNode);
         currentMoves = level.getMoves();
         compressor = new SavestateCompressor();
     }
     
     public LinkedList<Position> getChipHistory(){
-        TreeNode<byte[]> n = currentNode;
-        LinkedList<Position> history = new LinkedList<>();
-        history.add(SaveState.getChip(n.getData()).getPosition());
-        while (n.hasParent()){
-            n = n.getParent();
-            history.add(SaveState.getChip(n.getData()).getPosition());
-        }
-        return history;
+        LinkedList<Position> chipHistory = new LinkedList<>();
+        for (TreeNode<byte[]> node : currentNode.getHistory()) chipHistory.add(SaveState.getChip(node.getData()).getPosition());
+        return chipHistory;
     }
     
     private class SavestateCompressor implements Runnable{
@@ -177,6 +208,5 @@ public class SavestateManager {
         }
         
     }
-    
     
 }
