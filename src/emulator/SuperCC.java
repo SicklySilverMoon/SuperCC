@@ -151,11 +151,19 @@ public class SuperCC implements KeyListener{
                 return;
             }
         }
-
+    
         if (key == KeyEvent.VK_BACK_SPACE) {
             savestates.rewind();
             level.load(savestates.getSavestate());
             showAction("Rewind");
+            window.repaint(level, false);
+            return;
+        }
+        
+        if (key == KeyEvent.VK_ENTER) {
+            savestates.replay();
+            level.load(savestates.getSavestate());
+            showAction("Replay");
             window.repaint(level, false);
             return;
         }

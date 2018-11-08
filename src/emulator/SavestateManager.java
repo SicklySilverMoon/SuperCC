@@ -49,6 +49,10 @@ public class SavestateManager {
         playbackIndex = index;
     }
     
+    public void replay(){
+        if (playbackIndex + 1 < playbackNodes.size()) currentNode = playbackNodes.get(++playbackIndex);
+    }
+    
     public void addSavestate(int key){
         savestates.put(key, currentNode);
         savestateMoves.put(key, currentMoves.clone());
