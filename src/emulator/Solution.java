@@ -1,6 +1,5 @@
 package emulator;
 
-import emulator.SuperCC;
 import game.Level;
 import game.Position;
 import game.Step;
@@ -8,6 +7,7 @@ import org.json.simple.parser.JSONParser;
 import util.ByteList;
 
 import org.json.simple.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -25,25 +25,6 @@ public class Solution{
     public int rngSeed;
     public Step step;
     
-    private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
-    
-    private int playbackWaitTime = STANDARD_WAIT_TIME;
-    
-    private static final int[] waitTimes = new int[]{
-        STANDARD_WAIT_TIME * 8,
-        STANDARD_WAIT_TIME * 4,
-        STANDARD_WAIT_TIME * 2,
-        STANDARD_WAIT_TIME,
-        STANDARD_WAIT_TIME / 2,
-        STANDARD_WAIT_TIME / 4,
-        STANDARD_WAIT_TIME / 8
-    };
-    public static final int NUM_SPEEDS = waitTimes.length;
-    
-    public void setPlaybackSpeed(int i) {
-        playbackWaitTime = waitTimes[i];
-    }
-    
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());
@@ -52,7 +33,7 @@ public class Solution{
         return json;
     }
     
-    public void play(SuperCC emulator, boolean instantPlayBack){
+    public void load(SuperCC emulator){
         emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
         Level level = emulator.getLevel();
         try{
@@ -71,14 +52,8 @@ public class Solution{
                         b = clickPosition.clickByte(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(b, TickFlags.REPLAY);
-                if (!instantPlayBack) {
-                    if (tickedTwice) {
-                        move++;
-                        Thread.sleep(playbackWaitTime * 2);
-                    }
-                    else Thread.sleep(playbackWaitTime);
-                }
+                boolean tickedTwice = emulator.tick(b, TickFlags.PRELOADING);
+                if (tickedTwice) move++;
                 if (level.getChip().isDead()) {
                     break;
                 }
