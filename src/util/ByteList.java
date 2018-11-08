@@ -77,6 +77,10 @@ public class ByteList implements Iterable<Byte>, RandomAccess {
         System.arraycopy(bytes, 0, dest, destPos, size);
     }
     
+    public void copy(int srcPos, byte[] dest, int destPos, int length){
+        System.arraycopy(bytes, srcPos, dest, destPos, length);
+    }
+    
     /**
      * Returns the number of elements in this list.
      * @return the number of elements in this list
