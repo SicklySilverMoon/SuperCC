@@ -1,5 +1,7 @@
 package util;
 
+import java.util.ArrayList;
+
 public class TreeNode<T> {
     
     private T object;
@@ -19,6 +21,15 @@ public class TreeNode<T> {
     
     public boolean hasParent(){
         return parent != null;
+    }
+    
+    public ArrayList<TreeNode<T>> getHistory() {
+        getHistoryRecursion(this, new ArrayList<TreeNode<T>>());
+    }
+    
+    private ArrayList<TreeNode<T>> getHistoryRecursion(TreeNode<T> state, ArrayList<TreeNode<T>> list) {
+        if (state.hasParent()) getHistoryRecursion(state, list);
+        list.add(state);
     }
     
     public TreeNode(T object, TreeNode<T> parent){
