@@ -6,7 +6,6 @@ import game.SaveState;
 import util.ByteList;
 import util.TreeNode;
 
-import javax.sound.midi.Soundbank;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -19,21 +18,39 @@ public class SavestateManager {
     private HashMap<Integer, TreeNode<byte[]>> savestates = new HashMap<>();
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
-    private ByteList currentMoves;
+    private ByteList moves;
     private SavestateCompressor compressor;
     private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private int playbackIndex = 1;
+    
+    private boolean pause = true;
+    private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
+    private int playbackWaitTime = STANDARD_WAIT_TIME;
+    private static final int[] waitTimes = new int[]{
+        STANDARD_WAIT_TIME * 8,
+        STANDARD_WAIT_TIME * 4,
+        STANDARD_WAIT_TIME * 2,
+        STANDARD_WAIT_TIME,
+        STANDARD_WAIT_TIME / 2,
+        STANDARD_WAIT_TIME / 4,
+        STANDARD_WAIT_TIME / 8
+    };
+    public static final int NUM_SPEEDS = waitTimes.length;
+    
+    public void setPlaybackSpeed(int i) {
+        playbackWaitTime = waitTimes[i];
+    }
 
     public void addRewindState(Level level, byte b){
         while (playbackNodes.get(playbackNodes.size()-1) != currentNode) {
             playbackNodes.remove(playbackNodes.size()-1);
-            currentMoves.removeLast();
+            moves.removeLast();
         }
-        System.out.println(currentMoves.size());
+        System.out.println(moves.size());
         currentNode = new TreeNode<>(level.save(), currentNode);
         compressor.add(currentNode);
         playbackNodes.add(currentNode);
-        currentMoves.add(b);
+        moves.add(b);
         playbackIndex = playbackNodes.size() - 1;
     }
     
@@ -53,9 +70,42 @@ public class SavestateManager {
         if (playbackIndex + 1 < playbackNodes.size()) currentNode = playbackNodes.get(++playbackIndex);
     }
     
+    public void togglePause() {
+        pause = !pause;
+    }
+    
+    public boolean isPaused() {
+        return pause;
+    }
+    
+    public void play(SuperCC emulator) {
+        final TickFlags replayNoSave = new TickFlags(true, false, false);
+        pause = false;
+        try {
+            while (!pause && playbackIndex + 1 < playbackNodes.size()) {
+                byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
+                boolean tickTwice = emulator.tick(b, replayNoSave);
+                Thread.sleep(playbackWaitTime);
+                if (tickTwice) {
+                    emulator.tick((byte) '-', replayNoSave);
+                    Thread.sleep(playbackWaitTime);
+                }
+                replay();
+            }
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (!pause) {
+            emulator.getMainWindow().getPlayButton().doClick();
+            emulator.showAction("Playback finished");
+        }
+        emulator.repaint(false);
+    }
+    
     public void addSavestate(int key){
         savestates.put(key, currentNode);
-        savestateMoves.put(key, currentMoves.clone());
+        savestateMoves.put(key, moves.clone());
     }
     
     public boolean load(int key, Level level){
@@ -63,11 +113,11 @@ public class SavestateManager {
         if (loadedNode == null) return false;
         currentNode = loadedNode;
         level.load(currentNode.getData());
-        level.setMoves(currentMoves);
+        level.setMoves(moves);
         if (!playbackNodes.contains(currentNode)) {
             playbackNodes = currentNode.getHistory();
             playbackIndex = playbackNodes.size();
-            currentMoves = savestateMoves.get(key).clone();
+            moves = savestateMoves.get(key).clone();
         }
         else {
             playbackIndex = playbackNodes.indexOf(currentNode);
@@ -95,12 +145,12 @@ public class SavestateManager {
     
     public byte[] getMoves(){
         byte[] moves = new byte[playbackIndex];
-        currentMoves.copy(0, moves, 0, playbackIndex);
+        this.moves.copy(0, moves, 0, playbackIndex);
         return moves;
     }
     
     public String movesToString() {
-        return currentMoves.toString(StandardCharsets.ISO_8859_1, playbackIndex);
+        return moves.toString(StandardCharsets.ISO_8859_1, playbackIndex);
     }
 
     public TreeNode<byte[]> getNode(){
@@ -110,7 +160,7 @@ public class SavestateManager {
     public SavestateManager(Level level){
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
-        currentMoves = level.getMoves();
+        moves = level.getMoves();
         compressor = new SavestateCompressor();
     }
     
