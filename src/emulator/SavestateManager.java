@@ -24,7 +24,7 @@ public class SavestateManager {
     private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private int playbackIndex = 1;
 
-    public void addRewindState(Level level){
+    public void addRewindState(Level level, byte b){
         while (playbackNodes.get(playbackNodes.size()-1) != currentNode) {
             playbackNodes.remove(playbackNodes.size()-1);
             currentMoves.removeLast();
@@ -33,6 +33,7 @@ public class SavestateManager {
         currentNode = new TreeNode<>(level.save(), currentNode);
         compressor.add(currentNode);
         playbackNodes.add(currentNode);
+        currentMoves.add(b);
         playbackIndex = playbackNodes.size() - 1;
     }
     

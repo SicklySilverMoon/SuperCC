@@ -6,7 +6,6 @@ import game.Step;
 import graphics.Gui;
 import game.Position;
 import io.DatParser;
-import io.Solution;
 import io.TWSReader;
 
 import javax.swing.*;
@@ -31,8 +30,18 @@ public class SuperCC implements KeyListener{
     private Level level;
     private Gui window;
     private DatParser dat;
+    private Solution solution;
     public TWSReader twsReader;
-
+    
+    public void repaint(boolean fromScratch) {
+        window.repaint(level, fromScratch);
+    }
+    
+    private static byte capital(byte b){
+        if (b == '-') return '_';
+        return (byte) Character.toUpperCase((char) b);
+    }
+    
     public void setTWSFile(File twsFile){
         try{
             this.twsReader = new TWSReader(twsFile);
@@ -44,6 +53,9 @@ public class SuperCC implements KeyListener{
 
     public Level getLevel(){
         return level;
+    }
+    public Solution getSolution() {
+        return solution;
     }
     public SavestateManager getSavestates(){
         return savestates;
@@ -70,6 +82,7 @@ public class SuperCC implements KeyListener{
         try{
             level = dat.parseLevel(levelNumber, rngSeed, step);
             savestates = new SavestateManager(level);
+            solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
             window.repaint(level, true);
             window.setTitle("SuperCC - " + new String(level.title));
         }
@@ -82,29 +95,23 @@ public class SuperCC implements KeyListener{
         loadLevel(levelNumber, 0, Step.EVEN);
     }
 
-    public synchronized boolean tick(byte b, int[] directions, boolean repaint){
+    public boolean tick(byte b, int[] directions, boolean repaint){
         if (level == null) return false;
-        long startTime = System.nanoTime();
-        boolean tickedTwice = level.tick(b, directions);
-        long endTime = System.nanoTime();
-        System.out.println(endTime-startTime);
-        startTime = System.nanoTime();
+        boolean tickTwice = level.tick(b, directions);
+        if (tickTwice) {
+            b = capital(b);
+            level.tick(b, DIRECTIONS[4]);
+        }
+        savestates.addRewindState(level, b);
         if (repaint) window.repaint(level, false);
-        endTime = System.nanoTime();
-        System.out.println(endTime-startTime);
-        startTime = System.nanoTime();
-        savestates.addRewindState(level.save());
-        endTime = System.nanoTime();
-        System.out.println(endTime-startTime);
-        System.out.println("--------------");
-        return tickedTwice;
+        return tickTwice;
     }
     
     public boolean isClick(byte b){
         return b <= 0;
     }
     
-    public synchronized boolean tick(byte b, boolean repaint){
+    public boolean tick(byte b, boolean repaint){
         if (level == null) return false;
         int[] directions;
         if (isClick(b)){
@@ -177,13 +184,13 @@ public class SuperCC implements KeyListener{
         try {
             s = twsReader.readSolution(level);
             long startTime = System.nanoTime();
-            for (int i = 0; i < runs; i++) s.play(this);
+            for (int i = 0; i < runs; i++) s.play(this, true);
             long endTime = System.nanoTime();
             double timePerIteration = (endTime - startTime) / (double) runs;
             System.out.println("Time per iteration:");
             System.out.println((timePerIteration / 1000000)+"ms");
             System.out.println((timePerIteration / 1000000000)+"s");
-            double numMoves = savestates.getMoves().size();
+            double numMoves = savestates.getMoves().length;
             int size = savestates.getSavestate().length;
             while (savestates.getNode().hasParent()){
                 savestates.rewind();
@@ -206,7 +213,7 @@ public class SuperCC implements KeyListener{
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
-            //emulator.runBenchmark(89, 1);
+            //emulator.runBenchmark(134, 1);
         }
         catch (IOException e){
             e.printStackTrace();

@@ -60,6 +60,9 @@ public class Level extends SaveState {
     public int getChipsLeft(){
         return chipsLeft;
     }
+    public void setChipsLeft(int chipsLeft){
+        this.chipsLeft = chipsLeft;
+    }
     public Creature getChip(){
         return chip;
     }
@@ -72,8 +75,14 @@ public class Level extends SaveState {
     public short[] getKeys(){
         return keys;
     }
+    public void setKeys(short[] keys){
+        this.keys = keys;
+    }
     public short[] getBoots(){
         return boots;
+    }
+    public void setBoots(short[] boots){
+        this.boots = boots;
     }
     public CreatureList getMonsterList(){
         return monsterList;
@@ -165,11 +174,6 @@ public class Level extends SaveState {
         for (Creature m : slipList) m.setSliding(true);
     }
 
-    private static byte capital(byte b){
-        if (b == '-') return '_';
-        return (byte) Character.toUpperCase((char) b);
-    }
-
     private int tickNumber(byte b){
         if (startTime == timer){
             int t = 0;
@@ -212,12 +216,7 @@ public class Level extends SaveState {
         finaliseTraps();
         if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
     
-        if (moveType == KEY && !isHalfMove && !chip.isSliding()){
-            tick(capital(b), null);
-            return true;
-        }
-        moves.add(b);
-        return false;
+        return moveType == KEY && !isHalfMove && !chip.isSliding();
     }
     
 }
