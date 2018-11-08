@@ -1,6 +1,7 @@
 package graphics;
 
 import emulator.SuperCC;
+import emulator.TickFlags;
 import game.*;
 
 import javax.imageio.ImageIO;
@@ -245,7 +246,7 @@ class GamePanel extends JPanel{
             emulator.showAction("Clicked " + clickPosition);
             emulator.getLevel().setClick(clickPosition.getIndex());
             int[] directions = chip.seek(clickPosition);
-            emulator.tick(b, directions, true);
+            emulator.tick(b, directions, TickFlags.GAME_PLAY);
         }
         
         @Override

@@ -71,7 +71,7 @@ public class Solution{
                         b = clickPosition.clickByte(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(b, !instantPlayBack);
+                boolean tickedTwice = emulator.tick(b, TickFlags.REPLAY);
                 if (!instantPlayBack) {
                     if (tickedTwice) {
                         move++;

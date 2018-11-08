@@ -95,15 +95,15 @@ public class SuperCC implements KeyListener{
         loadLevel(levelNumber, 0, Step.EVEN);
     }
 
-    public boolean tick(byte b, int[] directions, boolean repaint){
+    public boolean tick(byte b, int[] directions, TickFlags flags){
         if (level == null) return false;
         boolean tickTwice = level.tick(b, directions);
-        if (tickTwice) {
+        if (flags.doubleTick && tickTwice) {
             b = capital(b);
             level.tick(b, DIRECTIONS[4]);
         }
-        savestates.addRewindState(level, b);
-        if (repaint) window.repaint(level, false);
+        if (flags.save) savestates.addRewindState(level, b);
+        if (flags.repaint) window.repaint(level, false);
         return tickTwice;
     }
     
@@ -111,7 +111,7 @@ public class SuperCC implements KeyListener{
         return b <= 0;
     }
     
-    public boolean tick(byte b, boolean repaint){
+    public boolean tick(byte b, TickFlags flags){
         if (level == null) return false;
         int[] directions;
         if (isClick(b)){
@@ -119,13 +119,13 @@ public class SuperCC implements KeyListener{
             Position clickedPosition = Position.clickPosition(screenPosition, b);
             directions = level.getChip().getPosition().seek(clickedPosition);
             level.setClick(clickedPosition.getIndex());
-            return tick(b, directions, repaint);
+            return tick(b, directions, flags);
         }
         else{
             for (int i = 0; i < BYTE_MOVEMENT_KEYS.length; i++) {
                 if (BYTE_MOVEMENT_KEYS[i] == b) {
                     directions = DIRECTIONS[i];
-                    return tick(b, directions, repaint);
+                    return tick(b, directions, flags);
                 }
             }
         }
@@ -147,7 +147,7 @@ public class SuperCC implements KeyListener{
         for (int i = 0; i < 5; i++){
             if (key == MOVEMENT_KEYS[i]){
                 if (level.getChip().isDead()) return;
-                tick(BYTE_MOVEMENT_KEYS[i], DIRECTIONS[i], true);
+                tick(BYTE_MOVEMENT_KEYS[i], DIRECTIONS[i], TickFlags.GAME_PLAY);
                 return;
             }
         }

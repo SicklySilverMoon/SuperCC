@@ -1,5 +1,6 @@
 package io;
 
+import emulator.Solution;
 import game.Level;
 import game.Step;
 
