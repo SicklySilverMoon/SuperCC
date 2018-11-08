@@ -158,9 +158,10 @@ public class ByteList implements Iterable<Byte>, RandomAccess {
     /**
      * Converts the bytes into a String, using a user-defined charset encoding.
      * @param charset The charset to encode to
+     * @param size The length of the list to copy
      * @return The bytes as a string
      */
-    public String toString(Charset charset){
+    public String toString(Charset charset, int size){
         return new String(bytes, 0, size, charset);
     }
     
