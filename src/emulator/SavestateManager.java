@@ -42,11 +42,11 @@ public class SavestateManager {
     }
 
     public void addRewindState(Level level, byte b){
+        pause = true;
         while (playbackNodes.get(playbackNodes.size()-1) != currentNode) {
             playbackNodes.remove(playbackNodes.size()-1);
             moves.removeLast();
         }
-        System.out.println(moves.size());
         currentNode = new TreeNode<>(level.save(), currentNode);
         compressor.add(currentNode);
         playbackNodes.add(currentNode);
@@ -62,6 +62,7 @@ public class SavestateManager {
     }
     
     public void playbackRewind(int index){
+        // pause = true;
         currentNode = playbackNodes.get(index);
         playbackIndex = index;
     }
@@ -250,7 +251,7 @@ public class SavestateManager {
             out[1] = uncompressedState[1];
             out[2] = uncompressedState[2];
             list.copy(out, 3);
-            System.arraycopy(uncompressedState, LAYER_FG_END, out, 3 + list.size(), uncompressedState.length - LAYER_FG_END);
+            System.arraycopy(uncompressedState, LAYER_FG_END, out, 3+list.size(), uncompressedState.length - 2 * 32 * 32 - 3);
             n.setData(out);
         }
         
