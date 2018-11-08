@@ -24,12 +24,13 @@ public class TreeNode<T> {
     }
     
     public ArrayList<TreeNode<T>> getHistory() {
-        getHistoryRecursion(this, new ArrayList<TreeNode<T>>());
+        return getHistoryRecursion(this, new ArrayList<TreeNode<T>>());
     }
     
     private ArrayList<TreeNode<T>> getHistoryRecursion(TreeNode<T> state, ArrayList<TreeNode<T>> list) {
         if (state.hasParent()) getHistoryRecursion(state, list);
         list.add(state);
+        return list;
     }
     
     public TreeNode(T object, TreeNode<T> parent){
