@@ -22,6 +22,7 @@ public class SavestateManager {
     private SavestateCompressor compressor;
     private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private int playbackIndex = 1;
+    private int tickNumber = 0;
     
     private boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
@@ -52,19 +53,37 @@ public class SavestateManager {
         playbackNodes.add(currentNode);
         moves.add(b);
         playbackIndex = playbackNodes.size() - 1;
+        if (SuperCC.isDoubleMove(b)) tickNumber += 2;
+        else tickNumber++;
+        System.out.println(tickNumber);
     }
     
     public void rewind(){
         if (currentNode.hasParent()) {
             currentNode = currentNode.getParent();
             playbackIndex--;
+            if (SuperCC.isDoubleMove(moves.get(playbackIndex))) tickNumber -= 2;
+            else tickNumber--;
         }
     }
     
+    private void recalculateTickNumber() {
+        tickNumber = 0;
+        for (int i = 0; i < playbackIndex; i++) {
+            if (SuperCC.isDoubleMove(moves.get(i))) tickNumber += 2;
+            else tickNumber++;
+        }
+    }
+    
+    public int getTickNumber() {
+        return tickNumber;
+    }
+    
     public void playbackRewind(int index){
-        // pause = true;
+        pause = true;
         currentNode = playbackNodes.get(index);
         playbackIndex = index;
+        recalculateTickNumber();
     }
     
     public void replay(){
@@ -123,6 +142,7 @@ public class SavestateManager {
         else {
             playbackIndex = playbackNodes.indexOf(currentNode);
         }
+        recalculateTickNumber();
         return true;
     }
     
