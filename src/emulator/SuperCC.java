@@ -37,9 +37,21 @@ public class SuperCC implements KeyListener{
         window.repaint(level, fromScratch);
     }
     
+    public static boolean isDoubleMove(byte b) {
+        return b == 'U' || b == 'L' || b == 'D' || b == 'R' || b == '_';
+    }
+    
     private static byte capital(byte b){
         if (b == '-') return '_';
         return (byte) Character.toUpperCase((char) b);
+    }
+    
+    public static byte[] lowerCase(byte b) {
+        if (b == 'U') return new byte[] {'u', '-'};
+        else if (b == 'L') return new byte[] {'l', '-'};
+        else if (b == 'D') return new byte[] {'d', '-'};
+        else if (b == 'R') return new byte[] {'r', '-'};
+        else return new byte[] {b};
     }
     
     public void setTWSFile(File twsFile){
@@ -192,7 +204,7 @@ public class SuperCC implements KeyListener{
         try {
             s = twsReader.readSolution(level);
             long startTime = System.nanoTime();
-            for (int i = 0; i < runs; i++) s.play(this, true);
+            for (int i = 0; i < runs; i++) s.load(this);
             long endTime = System.nanoTime();
             double timePerIteration = (endTime - startTime) / (double) runs;
             System.out.println("Time per iteration:");
