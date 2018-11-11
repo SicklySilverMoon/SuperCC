@@ -56,7 +56,7 @@ public class InventoryPanel extends JPanel {
         g.fillRect(0, 0, getWidth(), getHeight());
         
         WritableRaster r = bg.getRaster();
-        for (int i = 0; i < NUM_KEYS; i++){
+        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++){
             GamePanel.drawNumber(emulator.getLevel().getKeys()[i], GamePanel.blackDigits, r, TILE_SIZE * i,  TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2);
             GamePanel.drawNumber(emulator.getLevel().getBoots()[i], GamePanel.blackDigits, r, TILE_SIZE * i, 2 * TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2);
         }
