@@ -87,7 +87,11 @@ public class SavestateManager {
     }
     
     public void replay(){
-        if (playbackIndex + 1 < playbackNodes.size()) currentNode = playbackNodes.get(++playbackIndex);
+        if (playbackIndex + 1 < playbackNodes.size()) {
+            if (SuperCC.isDoubleMove(moves.get(playbackIndex))) tickNumber += 2;
+            else tickNumber++;
+            currentNode = playbackNodes.get(++playbackIndex);
+        }
     }
     
     public void togglePause() {
