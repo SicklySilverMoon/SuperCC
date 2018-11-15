@@ -54,12 +54,12 @@ public class Level extends SaveState {
         return layerFG;
     }
     public int getTimer(){
-        System.out.println("----");
-        System.out.println(startTime);
-        System.out.println(tickNumber);
-        System.out.println("----");
         if (tickNumber == 0) return startTime;
         else return startTime - tickNumber + 1;                     // The first tick does not change the timer
+    }
+    public int getTChipTime() {
+        if (tickNumber == 0) return 9999;
+        else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
     }
     public int getChipsLeft(){
         return chipsLeft;

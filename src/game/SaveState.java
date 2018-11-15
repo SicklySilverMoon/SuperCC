@@ -37,7 +37,6 @@ public class SaveState {
         writer.writeBytes(layerBG.getLayer());
         writer.writeBytes(layerFG.getLayer());
         writer.writeShort(tickNumber);
-        System.out.println(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
         writer.writeShorts(boots);

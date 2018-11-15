@@ -7,8 +7,12 @@ import java.nio.charset.StandardCharsets;
 
 public class LevelPanel extends TextPanel {
     
-    private static String timerToString(int time){
-        if (time < 0) return "---";
+    private static String timerToString(Level level){
+        int time = level.getTimer();
+        if (time < 0) {
+            time = level.getTChipTime();
+            return "("+Integer.toString(time/10)+"."+Integer.toString(Math.abs(time%10))+")";
+        }
         return Integer.toString(time/10)+"."+Integer.toString(time%10);
     }
     
@@ -32,7 +36,7 @@ public class LevelPanel extends TextPanel {
         drawText(g, level.getStep().toString()+" step, seed: "+level.getRngSeed(), 1);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
         drawText(g, "", 1);
-        drawText(g, "Time: "+ timerToString(level.getTimer()), 1);
+        drawText(g, "Time: "+ timerToString(level), 1);
         drawText(g, "Chips left: "+level.getChipsLeft(), 1);
         
         if (textHeight != getHeight()){
