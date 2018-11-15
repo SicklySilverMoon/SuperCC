@@ -29,7 +29,7 @@ public class CreatureList{
 
     void tick(){
 
-        blobStep = (level.getStep() == Step.EVEN) == (level.tickNumber % 4 == 0);
+        blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 3);
 
         direction = NO_DIRECTION;
         for(Creature monster : list){

@@ -177,10 +177,11 @@ public class Level extends SaveState {
     public boolean tick(byte b, int[] directions){
         
         initialiseSlidingMonsters();
-        boolean isHalfMove = tickNumber % 2 == 1;
+        tickNumber++;
+        boolean isHalfMove = tickNumber % 2 == 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
     
-        if (tickNumber > 1 && !isHalfMove) monsterList.tick();
+        if (tickNumber > 2 && !isHalfMove) monsterList.tick();
         
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
@@ -196,7 +197,6 @@ public class Level extends SaveState {
         monsterList.finalise();
         finaliseTraps();
         if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
-        tickNumber++;
     
         return moveType == KEY && !isHalfMove && !chip.isSliding();
     }
