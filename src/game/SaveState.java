@@ -19,7 +19,7 @@ public class SaveState {
     Layer layerBG;
     Layer layerFG;
     Creature chip;
-    int timer;
+    int tickNumber;
     int chipsLeft;
     short[] keys;
     short[] boots;
@@ -36,7 +36,8 @@ public class SaveState {
         writer.writeShort((short) chip.bits());
         writer.writeBytes(layerBG.getLayer());
         writer.writeBytes(layerFG.getLayer());
-        writer.writeShort(timer);
+        writer.writeShort(tickNumber);
+        System.out.println(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
         writer.writeShorts(boots);
@@ -62,7 +63,7 @@ public class SaveState {
         chip = new Creature(reader.readShort());
         layerBG = reader.readLayer(version);
         layerFG = reader.readLayer(version);
-        timer = (short) reader.readShort();
+        tickNumber = (short) reader.readShort();
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);
         boots = reader.readShorts(4);
@@ -80,7 +81,7 @@ public class SaveState {
         this.monsterList = monsterList;
         this.slipList = slipList;
         this.chip = chip;
-        this.timer = timer;
+        this.tickNumber = 0;
         this.chipsLeft = chipsLeft;
         this.keys = keys;
         this.boots = boots;

@@ -83,7 +83,7 @@ public class LevelFactory {
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
-        return (timeLimit*10+8);
+        return (timeLimit*10+9);
     }
     private static int getSliplistCapacity(Layer layerFG, Layer layerBG){
         int counter = 0;
