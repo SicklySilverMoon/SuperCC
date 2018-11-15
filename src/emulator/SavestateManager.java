@@ -62,7 +62,6 @@ public class SavestateManager {
     }
     
     public void playbackRewind(int index){
-        pause = true;
         currentNode = playbackNodes.get(index);
         playbackIndex = index;
     }
@@ -84,8 +83,10 @@ public class SavestateManager {
     public void play(SuperCC emulator) {
         final TickFlags replayNoSave = new TickFlags(true, false, false);
         pause = false;
+        int levelNumber = emulator.getLevel().levelNumber;
         try {
-            while (!pause && playbackIndex + 1 < playbackNodes.size()) {
+            while (emulator.getLevel().levelNumber == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
+                emulator.getLevel().load(currentNode.getData());
                 byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
                 boolean tickTwice = emulator.tick(b, replayNoSave);
                 Thread.sleep(playbackWaitTime);
