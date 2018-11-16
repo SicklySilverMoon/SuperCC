@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import static graphics.Gui.TILE_SIZE;
 import static game.Position.UNCLICKABLE;
@@ -134,16 +135,14 @@ class GamePanel extends JPanel{
     }
     
     private void drawChipHistory(Position currentPosition, Graphics2D g){
-        LinkedList<Position> history = emulator.getSavestates().getChipHistory();
-        history.addFirst(currentPosition);
+        List<Position> history = emulator.getSavestates().getChipHistory();
+        history.add(currentPosition);
         float length = history.size();
         int i = 0;
-        Position previousPos = history.getLast();
+        Position previousPos = history.get(0);
         boolean[][] tileEnterCount = new boolean[32*32][21];
         int oldOffset = 0, offset = 0;
-        Iterator iter = history.descendingIterator();
-        while(iter.hasNext()){
-            Position pos = (Position) iter.next();
+        for(Position pos : history) {
             int tile = pos.getIndex();
             if (tile == previousPos.getIndex()) continue;
             if (tileEnterCount[tile][oldOffset]){
@@ -153,7 +152,7 @@ class GamePanel extends JPanel{
             if (offset == 21) offset = 0;
             float hue = (float) (0.5 + i++ / length / 1);
             g.setColor(Color.getHSBColor(hue, (float) 0.9, (float) 0.8));
-            //g.setColor(Color.WHITE);
+            g.setColor(Color.BLACK);
             g.drawLine(previousPos.getGraphicX(oldOffset), previousPos.getGraphicY(oldOffset), pos.getGraphicX(offset), pos.getGraphicY(offset));
             previousPos = pos;
             oldOffset = offset;

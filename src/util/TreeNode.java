@@ -1,6 +1,6 @@
 package util;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class TreeNode<T> {
     
@@ -23,13 +23,14 @@ public class TreeNode<T> {
         return parent != null;
     }
     
-    public ArrayList<TreeNode<T>> getHistory() {
-        return getHistoryRecursion(this, new ArrayList<TreeNode<T>>());
-    }
-    
-    private ArrayList<TreeNode<T>> getHistoryRecursion(TreeNode<T> state, ArrayList<TreeNode<T>> list) {
-        if (state.hasParent()) getHistoryRecursion(state, list);
-        list.add(state);
+    public LinkedList<TreeNode<T>> getHistory() {
+        TreeNode<T> state = this;
+        LinkedList<TreeNode<T>> list = new LinkedList<>();
+        list.add(this);
+        while (state.hasParent()) {
+            state = state.getParent();
+            list.addFirst(state);
+        }
         return list;
     }
     
