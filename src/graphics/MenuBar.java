@@ -18,6 +18,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -129,25 +130,29 @@ public class MenuBar extends JMenuBar{
             super("Solution");
     
             JMenuItem saveAs = new JMenuItem("Save as");
+            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK + SHIFT_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
-                    fc.setCurrentDirectory(new File("."));
+                    fc.setFileFilter(new FileNameExtensionFilter("", "json"));
+                    fc.setCurrentDirectory(new File(emulator.getJSONPath()));
+                    fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        FileOutputStream fos = new FileOutputStream(fc.getSelectedFile());
+                        File file = fc.getSelectedFile();
+                        String filename = file.toString();
+                        if (!filename .endsWith(".json")) filename += ".json";
+                        FileOutputStream fos = new FileOutputStream(filename);
                         fos.write(solution.toString().getBytes());
                         fos.close();
                     }
                 }
                 catch (IOException e){
                     e.printStackTrace();
-                    emulator.throwError("Could not save file");
+                    emulator.throwError("Could not save file: "+e.getMessage());
                 }
             });
-            saveAs.setEnabled(false);
             addIcon(saveAs, "/resources/icons/saveAs.gif");
             add(saveAs);
     
@@ -172,27 +177,25 @@ public class MenuBar extends JMenuBar{
             JMenuItem open = new JMenuItem("Open");
             open.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
             open.addActionListener(event -> {
-                /*
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "sol"));
-                    fc.setCurrentDirectory(new File("."));
+                    fc.setFileFilter(new FileNameExtensionFilter("", "json"));
+                    fc.setCurrentDirectory(new File(emulator.getJSONPath()));
+                    fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        FileInputStream fis = new FileInputStream(fc.getSelectedFile());
-                        Solution solution = new Solution(new String(fis.readAllBytes()));
+                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath())));
                         solution.load(emulator);
-                        fis.close();
                     }
                 }
                 catch (IOException e){
                     e.printStackTrace();
                     emulator.throwError("Could not load file:\n" + e.getMessage());
                 }
-                */
             });
             addIcon(open, "/resources/icons/open.gif");
             add(open);
-            open.setEnabled(false);
+            
+            addSeparator();
     
             JMenuItem copy = new JMenuItem("Copy solution");
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
@@ -241,7 +244,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("", "dat"));
+                fc.setFileFilter(new FileNameExtensionFilter("", "tws"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     emulator.getPaths().setTwsPath(fc.getSelectedFile().getParent());
