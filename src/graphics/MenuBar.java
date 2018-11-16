@@ -240,6 +240,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem newTWS = new JMenuItem("Create new tws");
             newTWS.setEnabled(false);
             add(newTWS);
+            addIcon(newTWS, "/resources/icons/new.gif");
 
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
@@ -252,11 +253,12 @@ public class MenuBar extends JMenuBar{
                 }
             });
             add(openTWS);
+            addIcon(openTWS, "/resources/icons/open.gif");
 
             add(new JSeparator());
 
-            JMenuItem playSolution = new JMenuItem("Load solution");
-            playSolution.addActionListener(event -> {
+            JMenuItem loadSolution = new JMenuItem("Load solution");
+            loadSolution.addActionListener(event -> {
                 Thread t = new Thread(() -> {
                     try {
                         emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
@@ -266,11 +268,13 @@ public class MenuBar extends JMenuBar{
                 });
                 t.start();
             });
-            add(playSolution);
+            add(loadSolution);
+            addIcon(loadSolution, "/resources/icons/skip.gif");
 
             JMenuItem saveSolution = new JMenuItem("Save solution");
             saveSolution.setEnabled(false);
             add(saveSolution);
+            addIcon(saveSolution, "/resources/icons/save.gif");
 
         }
     }
