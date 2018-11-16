@@ -1,12 +1,10 @@
-package graphics.popup;
+package tools;
 
 import emulator.SuperCC;
 
 import javax.swing.*;
-import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeListener;
 
 public class ChangeInventory extends JPanel {
     private JPanel mainPanel;

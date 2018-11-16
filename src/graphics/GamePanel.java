@@ -21,7 +21,7 @@ import java.util.List;
 import static graphics.Gui.TILE_SIZE;
 import static game.Position.UNCLICKABLE;
 
-class GamePanel extends JPanel{
+public class GamePanel extends JPanel{
 
     // The background image
     private BufferedImage bg = new BufferedImage(32*TILE_SIZE, 32*TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);

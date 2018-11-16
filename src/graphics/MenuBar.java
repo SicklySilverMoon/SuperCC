@@ -3,7 +3,8 @@ package graphics;
 import emulator.SuperCC;
 import game.Level;
 import game.Step;
-import graphics.popup.ChangeInventory;
+import tools.ChangeInventory;
+import tools.GameGifRecorder;
 import tools.GifSequenceWriter;
 import emulator.Solution;
 
@@ -338,41 +339,7 @@ public class MenuBar extends JMenuBar{
     
             JMenuItem gif = new JMenuItem("Record gif");
             gif.addActionListener(e -> {
-                String s = JOptionPane.showInputDialog(window, "Choose gif length");
-                if (s.length() == 0) return;
-                try {
-                    int n = Integer.parseInt(s);
-                    ArrayList<BufferedImage> images = new ArrayList<>();
-                    emulator.getSavestates().addSavestate(-1);
-                    emulator.showAction("Recording gif, please wait");
-                    BufferedImage b = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-                    emulator.getMainWindow().getGamePanel().paintComponent(b.getGraphics());
-                    images.add(b);
-                    for (int i = 1; i < n && emulator.getSavestates().getNode().hasParent(); i++){
-                        emulator.getSavestates().rewind();
-                        emulator.getLevel().load(emulator.getSavestates().getSavestate());
-                        window.repaint(emulator.getLevel(), false);
-                        emulator.getMainWindow().repaint(emulator.getLevel(), false);
-                        b = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-                        emulator.getMainWindow().getGamePanel().paintComponent(b.getGraphics());
-                        images.add(b);
-                    }
-                    System.out.println(images.size());
-                    ImageOutputStream output = new FileImageOutputStream(new File("out.gif"));
-                    GifSequenceWriter writer = new GifSequenceWriter(output, b.getType(), 100, true);
-                    for (int i = images.size() - 1; i >= 0; i--) {
-                        writer.writeToSequence(images.get(i));
-                    }
-    
-                    writer.close();
-                    output.close();
-                    emulator.getSavestates().load(-1, emulator.getLevel());
-                    emulator.showAction("Recorded out.gif");
-                } catch (NumberFormatException nfe) {
-                    JOptionPane.showMessageDialog(window, "Not a number");
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
+                GameGifRecorder c = new GameGifRecorder(emulator);
             });
             addIcon(gif, "/resources/icons/video.gif");
             add(gif);

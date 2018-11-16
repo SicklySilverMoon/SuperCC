@@ -6,6 +6,7 @@ import game.SaveState;
 import util.ByteList;
 import util.TreeNode;
 
+import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -105,6 +106,33 @@ public class SavestateManager {
             emulator.showAction("Playback finished");
         }
         emulator.repaint(false);
+    }
+    
+    public List<BufferedImage> play(SuperCC emulator, int numHalfTicks) {
+        ArrayList<BufferedImage> images = new ArrayList<>();
+        BufferedImage img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+        emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+        images.add(img);
+        final TickFlags replayNoSave = new TickFlags(true, false, false);
+        while (numHalfTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
+            byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
+            boolean tickTwice = emulator.tick(b, replayNoSave);
+            img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+            emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+            images.add(img);
+            if (tickTwice && numHalfTicks-- > 0) {
+                emulator.tick((byte) '-', replayNoSave);
+                img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+                emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+                images.add(img);
+            }
+            replay();
+        }
+        if (!pause) {
+            emulator.getMainWindow().getPlayButton().doClick();
+        }
+        emulator.repaint(false);
+        return images;
     }
     
     public void addSavestate(int key){
