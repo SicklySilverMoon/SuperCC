@@ -18,6 +18,10 @@ public class DatParser{
 
     private final File file;
     private long[] levelStart;
+    
+    public String getLevelsetName() {
+        return file.getName().replaceFirst("[.][^.]+$", "");
+    }
 
     /**
      * Reads either layer 1 or layer 2 of the .dat file. Only call this if the

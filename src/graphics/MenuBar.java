@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class MenuBar extends JMenuBar{
 
@@ -146,14 +147,27 @@ public class MenuBar extends JMenuBar{
                     emulator.throwError("Could not save file");
                 }
             });
+            saveAs.setEnabled(false);
             addIcon(saveAs, "/resources/icons/saveAs.gif");
             add(saveAs);
     
             JMenuItem save = new JMenuItem("Save");
-            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
+            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
+            save.addActionListener(event -> {
+                Level l = emulator.getLevel();
+                Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
+                try{
+                    FileOutputStream fos = new FileOutputStream(emulator.getJSONPath());
+                    fos.write(solution.toString().getBytes(ISO_8859_1));
+                    fos.close();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                    emulator.throwError("Could not save file: "+e.getMessage());
+                }
+            });
             addIcon(save, "/resources/icons/save.gif");
             add(save);
-            save.setEnabled(false);
 
             JMenuItem open = new JMenuItem("Open");
             open.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));

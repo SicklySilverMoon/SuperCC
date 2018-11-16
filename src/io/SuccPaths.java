@@ -2,6 +2,7 @@ package io;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class SuccPaths {
     
@@ -35,6 +36,13 @@ public class SuccPaths {
     }
     public String getSuccPath() {
         return succPath;
+    }
+    public String getJSONPath(String levelsetName, int levelNumber, String levelName) {
+        new File(Paths.get(succPath, levelsetName).toString()).mkdirs();
+        return Paths.get(succPath, levelsetName, Integer.toString(levelNumber)+"_"+levelName+".json").toString();
+    }
+    public String getSccPath(String levelsetName, int levelNumber, String levelName) {
+        return Paths.get(succPath, levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();
     }
     public void setTilesetPath(String tilesetPath) {
         this.tilesetPath = tilesetPath;

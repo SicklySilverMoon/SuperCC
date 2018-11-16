@@ -15,6 +15,9 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class SuperCC implements KeyListener{
 
     private static final int[] MOVEMENT_KEYS = {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
@@ -37,6 +40,12 @@ public class SuperCC implements KeyListener{
     
     public SuccPaths getPaths() {
         return paths;
+    }
+    
+    public String getJSONPath() {
+        String levelName = new String(level.title);
+        levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_");
+        return paths.getJSONPath(dat.getLevelsetName(), level.levelNumber, levelName);
     }
     
     public void repaint(boolean fromScratch) {
