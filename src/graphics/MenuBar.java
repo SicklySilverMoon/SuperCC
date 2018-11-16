@@ -27,8 +27,6 @@ import static java.awt.event.KeyEvent.*;
 
 public class MenuBar extends JMenuBar{
 
-    private static final String FILE_PATH = "C:\\Users\\Markus\\Games\\tworld-2.1.0\\sets";
-
     private SuperCC emulator;
     Gui window;
     
@@ -47,8 +45,9 @@ public class MenuBar extends JMenuBar{
             openLevelset.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(new FileNameExtensionFilter("", "dat"));
-                fc.setCurrentDirectory(new File(FILE_PATH));
+                fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
                     emulator.openLevelset(fc.getSelectedFile());
                 }
             });
@@ -229,8 +228,9 @@ public class MenuBar extends JMenuBar{
             openTWS.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(new FileNameExtensionFilter("", "dat"));
-                fc.setCurrentDirectory(new File(FILE_PATH));
+                fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    emulator.getPaths().setTwsPath(fc.getSelectedFile().getParent());
                     emulator.setTWSFile(fc.getSelectedFile());
                 }
             });
