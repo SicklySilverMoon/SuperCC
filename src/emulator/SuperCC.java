@@ -6,6 +6,7 @@ import game.Step;
 import graphics.Gui;
 import game.Position;
 import io.DatParser;
+import io.SuccPaths;
 import io.TWSReader;
 
 import javax.swing.*;
@@ -32,6 +33,11 @@ public class SuperCC implements KeyListener{
     private DatParser dat;
     private Solution solution;
     public TWSReader twsReader;
+    private SuccPaths paths;
+    
+    public SuccPaths getPaths() {
+        return paths;
+    }
     
     public void repaint(boolean fromScratch) {
         window.repaint(level, fromScratch);
@@ -77,7 +83,8 @@ public class SuperCC implements KeyListener{
     }
 
     public SuperCC() throws IOException {
-        this.window = new Gui(this);
+        paths = new SuccPaths(new File(getClass().getResource("/emulator/settings.txt").getFile()));
+        window = new Gui(this);
     }
 
     public void openLevelset(File levelset){
