@@ -1,10 +1,14 @@
 Monsters kill swimming chip (?)
 Partial post sliding blocks
 Two clones one tick
+rewinding monster clones
+
+blocks on traps ALWAYS added to sliplist
+chip on trap button -> trap, trap stays held down
 
 CC1
 45 monster lab (cloning flags)
-99 Catacombs (rng)
+116 Block Buster II (unknown)
 120 Alphabet Soup (unknown)
 
 CCLP3
@@ -19,12 +23,10 @@ CCLP1
 112 Carousel (cloning flags)
 116 Communism (unknown)
 117 blobs on a plane (blob cloning?)
-145 chance time (rng)
+139 (JAMES)
 
 CCLP4
 4 Oasis (unknown)
-37 Tropical Hibiscus (rng)
 55 If I ran the zoo (teleports)
-58 Ruinous Plaza (rng)
 91 How to retune your harp (unknown)
 100 One tanks adventure (unknown)
