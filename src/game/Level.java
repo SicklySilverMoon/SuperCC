@@ -141,8 +141,8 @@ public class Level extends SaveState {
     private void moveChipSliding(){
         int direction = chip.getDirection();
         Tile bgTile = layerBG.get(chip.getPosition());
-        if (bgTile.isFF()) chip.tick(new int[] {direction}, this);
-        else chip.tick(chip.getSlideDirectionPriority(bgTile, rng), this);
+        if (bgTile.isFF()) chip.tick(new int[] {direction}, this, true);
+        else chip.tick(chip.getSlideDirectionPriority(bgTile, rng, true), this, true);
     }
     
     private void moveChip(int[] directions){
@@ -152,7 +152,7 @@ public class Level extends SaveState {
                 if (!layerBG.get(chip.getPosition()).isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
-            chip.tick(new int[] {direction}, this);
+            chip.tick(new int[] {direction}, this, false);
             if (chip.getIndex() != oldPosition) break;
         }
     }

@@ -12,7 +12,7 @@ public class SlipList extends FixedCapacityList<Creature> {
         // Iterating like this causes slide delay.
         for (int i = size(); i > 0; i--){
             Creature monster = get(size()-i);
-            monster.tick(monster.getSlideDirectionPriority(level.layerBG.get(monster.getPosition()), level.rng), level);
+            monster.tick(monster.getSlideDirectionPriority(level.layerBG.get(monster.getPosition()), level.rng, false), level, true);
         }
     }
 

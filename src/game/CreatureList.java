@@ -61,9 +61,9 @@ public class CreatureList{
         if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
             if (monster.getMonsterType() == Creature.BLOB){
                 int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
-                monster.tick(directions, level);
+                monster.tick(directions, level, false);
             }
-            else monster.tick(new int[] {direction}, level);
+            else monster.tick(new int[] {direction}, level, false);
             level.insertTile(clonerPosition, tile);
         }
     }
@@ -74,14 +74,14 @@ public class CreatureList{
         if (monster.getMonsterType() == Creature.TANK_STATIONARY) monster.setMonsterType(Creature.TANK_MOVING);
         if (monster.getMonsterType() == Creature.BLOB){
             int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
-            monster.tick(directions, level);
+            monster.tick(directions, level, false);
         }
-        else monster.tick(new int[] {direction}, level);
+        else monster.tick(new int[] {direction}, level, false);
     }
 
     private void tickFreeMonster(Creature monster){
         int[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
-        monster.tick(directionPriorities, level);
+        monster.tick(directionPriorities, level, false);
     }
 
     void addClone(int position){

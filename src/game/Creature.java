@@ -123,7 +123,7 @@ public class Creature{
         }
         return direction;
     }
-    int[] getSlideDirectionPriority(Tile tile, RNG rng){
+    int[] getSlideDirectionPriority(Tile tile, RNG rng, boolean changeOnRFF){
         if (tile.isIce() || (isChip() && tile == TELEPORT)){
             int[] directions = turnFromDir(new int[]{TURN_FORWARD, TURN_AROUND});
             directions[0] = applySlidingTile(directions[0], tile, rng);
@@ -131,9 +131,8 @@ public class Creature{
             return directions;
         }
         else if (tile == TELEPORT) return new int[] {direction};
-        else{
-            return new int[] {applySlidingTile(getDirection(), tile, rng)};
-        }
+        else if (tile == FF_RANDOM && !changeOnRFF) return new int[] {direction};
+        else return new int[] {applySlidingTile(getDirection(), tile, rng)};
     }
     
     // MonsterType-related methods
@@ -234,7 +233,7 @@ public class Creature{
                 return MoveFlags.FAIL;
         }
         Position newChipPosition = block.position.clone();
-        MoveFlags blockFlags = block.tryMove(direction, level);
+        MoveFlags blockFlags = block.tryMove(direction, level, false);
         if (blockFlags.moved){
             MoveFlags chipFlags = tryEnter(direction, level, newChipPosition, level.layerFG.get(newChipPosition));
             if (chipFlags.moved) {
@@ -627,8 +626,9 @@ public class Creature{
                 return MoveFlags.FAIL;
         }
     }
-    private MoveFlags tryMove(int direction, Level level){
+    private MoveFlags tryMove(int direction, Level level, boolean slidingMove){
         if (direction == -1) return MoveFlags.FAIL;
+        int oldDirection = this.direction;
         setDirection(direction);
         if ((direction == DIRECTION_LEFT && getX() == 0) ||
             (direction == DIRECTION_RIGHT && getX() == 31) ||
@@ -691,7 +691,10 @@ public class Creature{
             if (level.layerBG.get(newPosition) == POP_UP_WALL) level.layerBG.set(newPosition, WALL);
         }
         else{
-            if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerBG.get(position), level.rng);
+            if (sliding && !isMonster()) {
+                if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) this.direction = oldDirection;
+                else this.direction = applySlidingTile(direction, level.layerBG.get(position), level.rng);
+            }
         }
     
         setSliding(flags.sliding, level);
@@ -704,13 +707,13 @@ public class Creature{
         return flags;
     }
 
-    void tick(int[] directions, Level level){
+    void tick(int[] directions, Level level, boolean slidingMove){
         Creature copy = clone();
         for (int newDirection : directions){
             
             CreatureList.direction = newDirection;
             
-            MoveFlags flags = tryMove(newDirection, level);
+            MoveFlags flags = tryMove(newDirection, level, slidingMove);
             
             if (flags.pressedGreenButton){
                 for (int i : level.toggleDoors) {
