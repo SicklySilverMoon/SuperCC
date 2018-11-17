@@ -38,41 +38,42 @@ public class GameGifRecorder {
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() throws Exception {
-                    try {
-                        Gui window = emulator.getMainWindow();
-                        SavestateManager savestates = emulator.getSavestates();
-                        int numHalfTicks = (int) (((Number) spinner.getValue()).doubleValue() * 10);
- 
-                        savestates.addSavestate(GIF_RECORDING_STATE);
-                        emulator.showAction("Recording gif, please wait");
-                        List<BufferedImage> images = savestates.play(emulator, numHalfTicks);
-                        int i = 1;
-                        File outFile = new File("out.gif");
-                        while (outFile.exists()) outFile = new File("out" + (i++) + ".gif");
-                        ImageOutputStream output = new FileImageOutputStream(outFile);
-                        int imageSkip = 1;
-                        if (a5FpsRadioButton.isSelected()) imageSkip = 2;
-                        int timePerFrame = 100 * imageSkip;
-                        GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timePerFrame, true);
- 
-                        progressBar.setMinimum(0);
-                        progressBar.setMaximum(numHalfTicks);
-                        for (i = 0; i < numHalfTicks; i += imageSkip) {
-                            writer.writeToSequence(images.get(i));
-                            progressBar.setValue(i);
-                            progressBar.repaint();
-                        }
+                try {
+                    Gui window = emulator.getMainWindow();
+                    SavestateManager savestates = emulator.getSavestates();
+                    int numHalfTicks = (int) (((Number) spinner.getValue()).doubleValue() * 10);
 
-                        writer.close();
-                        output.close();
-                        emulator.getSavestates().load(GIF_RECORDING_STATE, emulator.getLevel());
-                        emulator.showAction("Recorded " + outFile.getName());
+                    savestates.addSavestate(GIF_RECORDING_STATE);
+                    emulator.showAction("Recording gif, please wait");
+                    List<BufferedImage> images = savestates.play(emulator, numHalfTicks);
+                    int i = 1;
+                    File outFile = new File("out.gif");
+                    while (outFile.exists()) outFile = new File("out" + (i++) + ".gif");
+                    ImageOutputStream output = new FileImageOutputStream(outFile);
+                    int imageSkip = 1;
+                    if (a5FpsRadioButton.isSelected()) imageSkip = 2;
+                    int timePerFrame = 100 * imageSkip;
+                    GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timePerFrame, true);
+
+                    progressBar.setMinimum(0);
+                    progressBar.setMaximum(numHalfTicks);
+                    for (i = 0; i < numHalfTicks; i += imageSkip) {
+                        writer.writeToSequence(images.get(i));
+                        progressBar.setValue(i);
+                        progressBar.repaint();
                     }
-                    catch (IOException exc) {
-                        exc.printStackTrace();
-                    }
-                    SwingUtilities.getWindowAncestor(mainPanel).dispose();
-                    return null;
+
+                    writer.close();
+                    output.close();
+                    emulator.getSavestates().load(GIF_RECORDING_STATE, emulator.getLevel());
+                    emulator.showAction("Recorded " + outFile.getName());
+                }
+                catch (IOException exc) {
+                    exc.printStackTrace();
+                }
+                SwingUtilities.getWindowAncestor(mainPanel).dispose();
+                emulator.repaint(false);
+                return null;
                 }
             };
             worker.execute();
