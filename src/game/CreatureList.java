@@ -1,5 +1,7 @@
 package game;
 
+import javafx.geometry.Pos;
+import org.omg.CORBA.ARG_OUT;
 import util.FixedCapacityList;
 
 import java.text.BreakIterator;
@@ -58,12 +60,14 @@ public class CreatureList{
         if (monster.isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + (monster.getDirection() >>> 14));
         if (!monster.isAffectedByCB()) direction = monster.getDirection();
         if (direction == NO_DIRECTION) return;
-        if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
-            if (monster.getMonsterType() == Creature.BLOB){
-                int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
-                monster.tick(directions, level, false);
-            }
-            else monster.tick(new int[] {direction}, level, false);
+        if (monster.getMonsterType() == Creature.BLOB){
+            Position p = monster.getPosition().clone();
+            int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
+            monster.tick(directions, level, false);
+            if (!monster.getPosition().equals(p)) level.insertTile(clonerPosition, tile);
+        }
+        else if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
+            monster.tick(new int[] {direction}, level, false);
             level.insertTile(clonerPosition, tile);
         }
     }
@@ -107,6 +111,10 @@ public class CreatureList{
     }
 
     void finalise(){
+    
+        //System.out.println(this);
+        
+        if (numDeadMonsters == 0 && newClones.size() == 0) return;
 
         int length = list.length - numDeadMonsters + newClones.size();
         Creature[] newMonsterList = new Creature[length];
