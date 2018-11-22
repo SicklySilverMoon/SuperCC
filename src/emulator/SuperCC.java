@@ -1,10 +1,7 @@
 package emulator;
 
-import game.Creature;
-import game.Level;
-import game.Step;
+import game.*;
 import graphics.Gui;
-import game.Position;
 import io.DatParser;
 import io.SuccPaths;
 import io.TWSReader;
@@ -92,7 +89,8 @@ public class SuperCC implements KeyListener{
     }
 
     public SuperCC() throws IOException {
-        paths = new SuccPaths(new File(getClass().getResource("/emulator/settings.txt").getFile()));
+        System.out.println(Thread.currentThread().getContextClassLoader().getResource("emulator/settings.txt"));
+        paths = new SuccPaths(new File(Thread.currentThread().getContextClassLoader().getResource("emulator/settings.txt").getFile()));
         window = new Gui(this);
     }
 
@@ -214,6 +212,47 @@ public class SuperCC implements KeyListener{
         getMainWindow().getLastActionPanel().update(s);
     }
     
+    private void runTests() {
+        String[] levelsets = new String[] {
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat",
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat",
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat"
+        };
+        String[] twss = new String[] {
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws",
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws",
+            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"
+        };
+        
+        for (int i = 0; i < levelsets.length; i++) {
+            openLevelset(new File(levelsets[i]));
+            setTWSFile(new File(twss[i]));
+            System.out.println(new File(levelsets[i]).getName());
+            
+            for (int j = 1; j <= 149; j++) {
+                loadLevel(j);
+                try {
+                    twsReader.readSolution(level).load(this);
+                    for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
+                        level.tick(WAIT, new int[] {});
+                    }
+                    if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP) {
+                        System.out.println("failed level "+level.levelNumber+" "+new String(level.title));
+                    }
+                }
+                catch (Exception exc) {
+                    System.out.println("Error loading "+level.levelNumber+" "+new String(level.title));
+                    exc.printStackTrace();
+                }
+            }
+            System.out.println();
+            
+        }
+        
+    }
+    
     private void runBenchmark(int levelNumber, int runs){
         loadLevel(levelNumber);
         Solution s;
@@ -250,6 +289,7 @@ public class SuperCC implements KeyListener{
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
             //emulator.runBenchmark(134, 1);
+            //emulator.runTests();
         }
         catch (IOException e){
             e.printStackTrace();
