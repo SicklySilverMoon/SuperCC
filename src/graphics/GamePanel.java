@@ -2,24 +2,22 @@ package graphics;
 
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.*;
+import game.Creature;
+import game.Level;
+import game.Position;
+import game.SlipList;
 
-import javax.imageio.ImageIO;
-import javax.sound.midi.Soundbank;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
-import static graphics.Gui.TILE_SIZE;
 import static game.Position.UNCLICKABLE;
+import static graphics.Gui.TILE_SIZE;
 
 public class GamePanel extends JPanel{
 

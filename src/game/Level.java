@@ -1,16 +1,15 @@
 package game;
 
-import emulator.SuperCC;
 import util.ByteList;
 
 import java.util.BitSet;
-import java.util.LinkedList;
 
 import static game.Tile.*;
 
 public class Level extends SaveState {
     
     private static final int HALF_WAIT = 0, KEY = 1, CLICK = 2;
+    public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     
     public final int levelNumber, startTime;
     public final byte[] title, password, hint;
@@ -110,14 +109,6 @@ public class Level extends SaveState {
         this.mouseClick = position;
     }
     
-    public void reset(int rngSeed, Step step){
-        load(startingState);
-        this.rngSeed = rngSeed;
-        rng.setRNG(rngSeed);
-        this.step = step;
-        moves = new ByteList();
-    }
-    
     protected void popTile(Position position){
         layerFG.set(position, layerBG.get(position));
         layerBG.set(position, FLOOR);
@@ -128,11 +119,11 @@ public class Level extends SaveState {
     }
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
-        if (b <= 0 || b == SuperCC.WAIT){
+        if (b <= 0 || b == WAIT){
             if (mouseClick != NO_CLICK && (chipSliding || halfMove)) return CLICK;
             else return HALF_WAIT;
         }
-        else if (b == SuperCC.UP || b == SuperCC.LEFT || b == SuperCC.DOWN || b == SuperCC.RIGHT){
+        else if (b == UP || b == LEFT || b == DOWN || b == RIGHT){
             return KEY;
         }
         else return HALF_WAIT;
@@ -186,7 +177,7 @@ public class Level extends SaveState {
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (chip.isDead()) return false;
-        if (chip.isSliding() && !layerBG.get(chip.getPosition()).isFF()) b = SuperCC.WAIT;
+        if (chip.isSliding() && !layerBG.get(chip.getPosition()).isFF()) b = WAIT;
         if (moveType == CLICK) moveChip(chip.seek(new Position(mouseClick)));
         if (chip.isDead()) return false;
         slipList.tick();

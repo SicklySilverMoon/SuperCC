@@ -1,10 +1,6 @@
 package graphics;
 
-import game.Level;
-
-import javax.sound.midi.Soundbank;
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 
 public class LastActionPanel extends TextPanel {
     

@@ -2,11 +2,9 @@ package graphics;
 
 import game.Level;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.nio.charset.StandardCharsets;
 
 public class MovePanel extends TextPanel implements MouseWheelListener {
     

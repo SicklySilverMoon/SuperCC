@@ -10,9 +10,7 @@ import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static game.SaveState.COMPRESSED;
-import static game.SaveState.RLE_END;
-import static game.SaveState.RLE_MULTIPLE;
+import static game.SaveState.*;
 
 public class SavestateManager {
     

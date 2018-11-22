@@ -1,10 +1,7 @@
 package game;
 
-import javafx.geometry.Pos;
-import org.omg.CORBA.ARG_OUT;
-import util.FixedCapacityList;
-
-import java.text.BreakIterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import static game.Tile.*;
 
@@ -19,7 +16,7 @@ public class CreatureList{
 
     public Creature[] list;
     int numDeadMonsters;
-    private FixedCapacityList<Creature> newClones;
+    private List<Creature> newClones;
     public static int direction;
     boolean blobStep;
     
@@ -138,7 +135,7 @@ public class CreatureList{
 
     void setLevel(Level level){
         this.level = level;
-        newClones = new FixedCapacityList<>(this.level.cloneConnections.length);
+        newClones = new ArrayList<>();
     }
 
     public CreatureList(Creature[] monsters){

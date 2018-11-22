@@ -4,7 +4,6 @@ import emulator.SuperCC;
 import game.Tile;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;

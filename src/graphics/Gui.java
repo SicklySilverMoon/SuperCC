@@ -1,19 +1,13 @@
 package graphics;
 
 import com.sun.java.swing.plaf.windows.WindowsSliderUI;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import emulator.SavestateManager;
 import emulator.SuperCC;
 import game.Level;
-import emulator.Solution;
-import game.SaveState;
 import util.TreeNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.plaf.basic.BasicArrowButton;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;

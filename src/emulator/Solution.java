@@ -3,10 +3,9 @@ package emulator;
 import game.Level;
 import game.Position;
 import game.Step;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import util.ByteList;
-
-import org.json.simple.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;

@@ -1,6 +1,5 @@
 package tools;
 
-import com.sun.java.accessibility.util.GUIInitializedListener;
 import emulator.SavestateManager;
 import emulator.SuperCC;
 import graphics.Gui;
@@ -8,14 +7,9 @@ import graphics.Gui;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameGifRecorder {

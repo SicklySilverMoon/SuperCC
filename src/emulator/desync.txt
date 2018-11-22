@@ -6,6 +6,8 @@ rewinding monster clones
 blocks on traps ALWAYS added to sliplist
 chip on trap button -> trap, trap stays held down
 
+blocks through teleports move instantly
+
 CC1
 45 monster lab (cloning flags)
 116 Block Buster II (unknown)
@@ -28,5 +30,4 @@ CCLP1
 CCLP4
 4 Oasis (unknown)
 55 If I ran the zoo (teleports)
-91 How to retune your harp (unknown)
 100 One tanks adventure (unknown)

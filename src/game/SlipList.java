@@ -1,10 +1,8 @@
 package game;
 
-import util.FixedCapacityList;
+import java.util.ArrayList;
 
-import java.util.Objects;
-
-public class SlipList extends FixedCapacityList<Creature> {
+public class SlipList extends ArrayList<Creature> {
 
     private Level level;
     

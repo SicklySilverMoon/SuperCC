@@ -12,9 +12,6 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class SuperCC implements KeyListener{
 
     private static final int[] MOVEMENT_KEYS = {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,

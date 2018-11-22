@@ -1,13 +1,9 @@
 package graphics;
 
 import emulator.SuperCC;
-import game.Level;
 
 import javax.swing.*;
 import java.awt.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.EmptyStackException;
 
 public abstract class TextPanel extends JPanel{
 

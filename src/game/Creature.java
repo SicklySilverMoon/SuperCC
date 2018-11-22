@@ -1,7 +1,6 @@
 package game;
 
 import static game.Tile.*;
-import static java.lang.Math.abs;
 
 /**
  * Creatures are encoded as follows:

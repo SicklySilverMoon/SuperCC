@@ -1,26 +1,24 @@
 package graphics;
 
+import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
 import game.Step;
 import tools.ChangeInventory;
 import tools.GameGifRecorder;
-import tools.GifSequenceWriter;
-import emulator.Solution;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 

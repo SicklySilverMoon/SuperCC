@@ -3,7 +3,6 @@ package graphics;
 import game.Level;
 
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 
 public class LevelPanel extends TextPanel {
     
