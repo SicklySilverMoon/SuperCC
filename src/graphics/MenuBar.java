@@ -132,7 +132,7 @@ public class MenuBar extends JMenuBar{
             saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK + SHIFT_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("", "json"));
@@ -159,7 +159,7 @@ public class MenuBar extends JMenuBar{
             save.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
             save.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(l.getMoves(), l.getRngSeed(), l.getStep());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 try{
                     FileOutputStream fos = new FileOutputStream(emulator.getJSONPath());
                     fos.write(solution.toString().getBytes(ISO_8859_1));
@@ -200,7 +200,7 @@ public class MenuBar extends JMenuBar{
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
-                Solution solution = new Solution(level.getMoves(), level.getRngSeed(), level.getStep());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
                 emulator.showAction("Copied solution");
                 emulator.getMainWindow().repaint(emulator.getLevel(), false);

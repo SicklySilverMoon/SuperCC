@@ -15,11 +15,9 @@ public class Level extends SaveState {
     public final byte[] title, password, hint;
     public final short[] toggleDoors, portals;
     public final int[][] trapConnections, cloneConnections;
-    private final byte[] startingState;
 
     private int rngSeed;
     private Step step;
-    private ByteList moves = new ByteList();
 
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
                  int[][] trapConnections, BitSet traps, int[][] cloneConnections,
@@ -40,7 +38,6 @@ public class Level extends SaveState {
         this.cloneConnections = cloneConnections;
         this.rngSeed = rngSeed;
         this.step = step;
-        this.startingState = save();
 
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
@@ -98,12 +95,6 @@ public class Level extends SaveState {
     }
     public int[][] getCloneConnections(){
         return cloneConnections;
-    }
-    public ByteList getMoves(){
-        return moves;
-    }
-    public void setMoves(ByteList moves){
-        this.moves = moves;
     }
     public void setClick(int position){
         this.mouseClick = position;

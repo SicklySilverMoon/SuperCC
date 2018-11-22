@@ -143,7 +143,6 @@ public class SavestateManager {
         if (loadedNode == null) return false;
         currentNode = loadedNode;
         level.load(currentNode.getData());
-        level.setMoves(moves);
         if (!playbackNodes.contains(currentNode)) {
             playbackNodes = currentNode.getHistory();
             playbackIndex = playbackNodes.size();
@@ -173,6 +172,10 @@ public class SavestateManager {
         return state.getData();
     }
     
+    public ByteList getMoveList(){
+        return moves;
+    }
+    
     public byte[] getMoves(){
         byte[] moves = new byte[playbackIndex];
         this.moves.copy(0, moves, 0, playbackIndex);
@@ -190,7 +193,7 @@ public class SavestateManager {
     public SavestateManager(Level level){
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
-        moves = level.getMoves();
+        moves = new ByteList();
         compressor = new SavestateCompressor();
     }
     
