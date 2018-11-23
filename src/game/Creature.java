@@ -292,7 +292,13 @@ public class Creature{
             case THIN_WALL_DOWN: return direction != DIRECTION_DOWN;
             case THIN_WALL_LEFT: return direction != DIRECTION_LEFT;
             case THIN_WALL_DOWN_RIGHT: return direction != DIRECTION_DOWN && direction != DIRECTION_RIGHT;
-            case TRAP: return level.getOpenTraps().get(level.getTrapButton(position).getTrapIndex());
+            case TRAP:
+                try{
+                    return level.getOpenTraps().get(level.getTrapButton(position).getTrapIndex());
+                }
+                catch (RuntimeException e) {
+                    return false;
+                }
             default: return true;
         }
     }
@@ -715,7 +721,6 @@ public class Creature{
     
             if (tryMove(newDirection, level, slidingMove, pressedButtons)){
                 for (Button b : pressedButtons) b.press(level);
-                //for (int i = 0; i < pressedButtons.size(); i++)  pressedButtons.get(i).press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
                     if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) b.release(level);
