@@ -661,6 +661,7 @@ public class Creature{
         if (direction == -1) return false;
         int oldDirection = this.direction;
         boolean wasSliding = sliding;
+        boolean isMonster = isMonster();
         setDirection(direction);
         if ((direction == DIRECTION_LEFT && getX() == 0) ||
             (direction == DIRECTION_RIGHT && getX() == 31) ||
@@ -680,7 +681,9 @@ public class Creature{
             if (sliding && !isMonster()) this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);
             
             if (!isDead()) level.insertTile(getPosition(), toTile());
-            else if (isMonster()) level.monsterList.numDeadMonsters++;
+            else if (isMonster) {
+                level.monsterList.numDeadMonsters++;
+            }
     
             if (level.layerBG.get(newPosition) == POP_UP_WALL) level.layerBG.set(newPosition, WALL);
             return true;
