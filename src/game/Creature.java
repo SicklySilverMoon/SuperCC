@@ -249,7 +249,7 @@ public class Creature{
     private void teleport(int direction, Level level, Position position) {
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
-            if (level.portals[portalIndex] == getIndex()){
+            if (level.portals[portalIndex] == position.getIndex()){
                 break;
             }
         }
@@ -376,6 +376,7 @@ public class Creature{
         }
     }
     private boolean tryEnter(int direction, Level level, Position newPosition, Tile tile){
+        sliding = false;
         switch (tile) {
             case FLOOR: return true;
             case WALL: return false;
@@ -547,6 +548,7 @@ public class Creature{
                 pressedButtons.add(level.getButton(newPosition, BlueButton.class));
                 return true;
             case TELEPORT:
+                sliding = true;
                 teleport(direction, level, newPosition);
                 return true;
             case BOMB:
@@ -709,7 +711,7 @@ public class Creature{
                 for (Button b : pressedButtons) b.press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
-                    if (level.getLayerFG().get(b.getTrapIndex()) == BUTTON_BROWN) b.release(level);
+                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP) b.release(level);
                 }
                 if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
                 return;
