@@ -108,8 +108,6 @@ public class CreatureList{
     }
 
     void finalise(){
-    
-        //System.out.println(this);
         
         if (numDeadMonsters == 0 && newClones.size() == 0) return;
 
@@ -149,7 +147,7 @@ public class CreatureList{
         for (int i = 0; i < list.length; i++){
             sb.append(i);
             sb.append('\t');
-            sb.append(list[i]);
+            if (!list[i].isDead()) sb.append(list[i]);
             sb.append('\n');
         }
         return sb.toString();
