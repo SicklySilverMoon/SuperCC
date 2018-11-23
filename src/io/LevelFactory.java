@@ -1,6 +1,7 @@
 package io;
 
 import game.*;
+import game.button.*;
 
 import java.util.BitSet;
 
@@ -91,6 +92,48 @@ public class LevelFactory {
         for (Tile t : layerFG) if (t.isSliding()) counter++;
         return counter;
     }
+    private static GreenButton[] getGreenButtons(Layer layerFG, Layer layerBG) {
+        int l = 0;
+        for (int i = 0; i < 32*32; i++){
+            if (layerFG.get(i) == Tile.BUTTON_GREEN || layerBG.get(i) == Tile.BUTTON_GREEN) l++;
+        }
+        GreenButton[] buttons = new GreenButton[l];
+        l = 0;
+        for (short i = 0; i < 32*32; i++){
+            if (layerFG.get(i) == Tile.BUTTON_GREEN || layerBG.get(i) == Tile.BUTTON_GREEN){
+                buttons[l++] = new GreenButton(new Position(i));
+            }
+        }
+        return buttons;
+    }
+    private static BlueButton[] getBlueButtons(Layer layerFG, Layer layerBG) {
+        int l = 0;
+        for (int i = 0; i < 32*32; i++){
+            if (layerFG.get(i) == Tile.BUTTON_BLUE || layerBG.get(i) == Tile.BUTTON_BLUE) l++;
+        }
+        BlueButton[] buttons = new BlueButton[l];
+        l = 0;
+        for (short i = 0; i < 32*32; i++){
+            if (layerFG.get(i) == Tile.BUTTON_BLUE || layerBG.get(i) == Tile.BUTTON_BLUE){
+                buttons[l++] = new BlueButton(new Position(i));
+            }
+        }
+        return buttons;
+    }
+    private static BrownButton[] getBrownButtons(int[][] trapConnections) {
+        BrownButton[] buttons = new BrownButton[trapConnections.length];
+        for (int i = 0; i < trapConnections.length; i++) {
+            buttons[i] = new BrownButton(new Position(trapConnections[i][0]), new Position(trapConnections[i][1]), i);
+        }
+        return buttons;
+    }
+    private static RedButton[] getRedButtons(int[][] cloneConnections) {
+        RedButton[] buttons = new RedButton[cloneConnections.length];
+        for (int i = 0; i < cloneConnections.length; i++) {
+            buttons[i] = new RedButton(new Position(cloneConnections[i][0]), new Position(cloneConnections[i][1]));
+        }
+        return buttons;
+    }
 
     /**
      * Convert the raw data of the .dat file into a level
@@ -122,22 +165,30 @@ public class LevelFactory {
 
         Layer layerBG = new Layer(byteLayerBG);
         Layer layerFG = new Layer(byteLayerFG);
-        short[] toggleDoors = getToggleDoors(layerFG, layerBG);
-        short[] portals = getPortals(layerFG, layerBG);
-        CreatureList monsterList = getMonsterList(monsterPositions, layerFG, layerBG);
-        SlipList slipList = new SlipList(getSliplistCapacity(layerFG, layerBG));
-        if (trapConnections == null) trapConnections = new int[][] {};
-        BitSet traps = new BitSet(trapConnections.length);
-        if (cloneConnections == null) cloneConnections = new int[][] {};
 
-        Creature chip = findPlayer(layerFG);
-        int timer = getTimer(timeLimit);
-        RNG rng = new RNG();
-        rng.setRNG(rngSeed);
-
-        return new Level(levelNumber, title, password, hint, toggleDoors, portals, trapConnections, traps,
-                cloneConnections, layerBG, layerFG, monsterList, slipList, chip, timer, chips, rng,
-                rngSeed, step);
+        return new Level(
+            levelNumber,
+            title,
+            password,
+            hint,
+            getToggleDoors(layerFG, layerBG),
+            getPortals(layerFG, layerBG),
+            getGreenButtons(layerFG, layerBG),
+            getRedButtons(cloneConnections),
+            getBrownButtons(trapConnections),
+            getBlueButtons(layerFG, layerBG),
+            new BitSet(trapConnections.length),
+            layerBG,
+            layerFG,
+            getMonsterList(monsterPositions, layerFG, layerBG),
+            new SlipList(),
+            findPlayer(layerFG),
+            getTimer(timeLimit),
+            chips,
+            new RNG(rngSeed),
+            rngSeed,
+            step
+        );
     }
 
 }

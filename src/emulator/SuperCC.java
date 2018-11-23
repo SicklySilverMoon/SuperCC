@@ -110,6 +110,7 @@ public class SuperCC implements KeyListener{
             window.setTitle("SuperCC - " + new String(level.title));
         }
         catch (Exception e){
+            e.printStackTrace();
             throwError("Could not load level: "+e.getMessage());
         }
     }

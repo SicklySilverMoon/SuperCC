@@ -55,5 +55,10 @@ public class RNG{
         n = (currentValue >>> 28) & 3;                                              // 0, 1, 2 or 3
         swap = a[n]; a[n] = a[3]; a[3] = swap;
     }
+    
+    public RNG(){}
+    public RNG(int startingSeed) {
+        currentValue = startingSeed;
+    }
 
 }

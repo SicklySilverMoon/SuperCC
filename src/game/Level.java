@@ -1,6 +1,6 @@
 package game;
 
-import util.ByteList;
+import game.button.*;
 
 import java.util.BitSet;
 
@@ -14,13 +14,17 @@ public class Level extends SaveState {
     public final int levelNumber, startTime;
     public final byte[] title, password, hint;
     public final short[] toggleDoors, portals;
-    public final int[][] trapConnections, cloneConnections;
+    private GreenButton[] greenButtons;
+    private RedButton[] redButtons;
+    private BrownButton[] brownButtons;
+    private BlueButton[] blueButtons;
 
     private int rngSeed;
     private Step step;
 
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
-                 int[][] trapConnections, BitSet traps, int[][] cloneConnections,
+                 GreenButton[] greenButtons, RedButton[] redButtons,
+                 BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
                  Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
                  Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
 
@@ -34,8 +38,10 @@ public class Level extends SaveState {
         this.hint = hint;
         this.toggleDoors = toggleDoors;
         this.portals = portals;
-        this.trapConnections = trapConnections;
-        this.cloneConnections = cloneConnections;
+        this.greenButtons = greenButtons;
+        this.redButtons = redButtons;
+        this.brownButtons = brownButtons;
+        this.blueButtons = blueButtons;
         this.rngSeed = rngSeed;
         this.step = step;
 
@@ -90,11 +96,20 @@ public class Level extends SaveState {
     public SlipList getSlipList(){
         return slipList;
     }
-    public int[][] getTrapConnections(){
-        return trapConnections;
+    public GreenButton[] getGreenButtons() {
+        return greenButtons;
     }
-    public int[][] getCloneConnections(){
-        return cloneConnections;
+    public RedButton[] getRedButtons() {
+        return redButtons;
+    }
+    public BrownButton[] getBrownButtons() {
+        return brownButtons;
+    }
+    public BlueButton[] getBlueButtons() {
+        return blueButtons;
+    }
+    public BitSet getOpenTraps(){
+        return traps;
     }
     public void setClick(int position){
         this.mouseClick = position;
@@ -107,6 +122,25 @@ public class Level extends SaveState {
     protected void insertTile(Position position, Tile tile){
         layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
+    }
+    
+    Button getButton(Position position, Class buttonType) {
+        Button[] buttons;
+        if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
+        else if (buttonType.equals(RedButton.class)) buttons = redButtons;
+        else if (buttonType.equals(BrownButton.class)) buttons = brownButtons;
+        else if (buttonType.equals(BlueButton.class)) buttons = blueButtons;
+        else throw new RuntimeException("Invalid class");
+        for (Button b : buttons) {
+            if (b.getButtonPosition().equals(position)) return b;
+        }
+        throw new RuntimeException("Attempting to press a button not in allButtons");
+    }
+    BrownButton getTrapButton(Position trapPosition) {
+        for (BrownButton b : brownButtons) {
+            if (b.getTargetPosition().equals(trapPosition)) return b;
+        }
+        throw new RuntimeException("Attempting to press a button not in allButtons");
     }
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
@@ -140,13 +174,8 @@ public class Level extends SaveState {
     }
 
     private void finaliseTraps(){
-        for (int i = 0; i < trapConnections.length; i++){
-            if (layerBG.get(trapConnections[i][0]) == BUTTON_BROWN){
-                traps.set(i, true);
-            }
-            else if (layerBG.get(trapConnections[i][1]) != TRAP){
-                traps.set(i, false);
-            }
+        for (BrownButton b : brownButtons) {
+            traps.set(b.getTrapIndex(), layerBG.get(b.getButtonPosition()) == BUTTON_BROWN);
         }
     }
 

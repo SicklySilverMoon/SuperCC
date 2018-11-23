@@ -24,7 +24,6 @@ CCLP3
 CCLP1
 112 Carousel (cloning flags)
 116 Communism (unknown)
-117 blobs on a plane (blob cloning?)
 139 (JAMES)
 
 CCLP4

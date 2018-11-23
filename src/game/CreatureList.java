@@ -85,17 +85,17 @@ public class CreatureList{
         monster.tick(directionPriorities, level, false);
     }
 
-    void addClone(int position){
+    public void addClone(Position position){
     
         for (Creature c: list){
-            if (c.getIndex() == position) return;
+            if (c.getPosition().equals(position)) return;
         }
         for (Creature c: newClones){
-            if (c.getIndex() == position) return;
+            if (c.getPosition().equals(position)) return;
         }
         Tile tile = level.layerFG.get(position);
         if (!tile.isCreature()) return;
-        Creature clone = new Creature(new Position(position), tile);
+        Creature clone = new Creature(position, tile);
         direction = clone.getDirection();
         Position newPosition = clone.move(direction);
         Tile newTile = level.layerFG.get(newPosition);

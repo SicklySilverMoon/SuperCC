@@ -7,7 +7,7 @@ public abstract class Button {
     
     private final Position buttonLocation;
     
-    public Position getButtonLocation() {
+    public Position getButtonPosition() {
         return buttonLocation;
     }
     

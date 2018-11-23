@@ -6,6 +6,7 @@ import game.Creature;
 import game.Level;
 import game.Position;
 import game.SlipList;
+import game.button.ConnectionButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -94,8 +95,8 @@ public class GamePanel extends JPanel{
         if (showMonsterList) drawMonsterList(level.getMonsterList().list, r);
         if (showSlipList) drawSlipList(level.getSlipList(), r);
         Graphics2D g = overlay.createGraphics();
-        if (showCloneConnections) drawButtonConnections(level.getCloneConnections(), g);
-        if (showTrapConnections) drawButtonConnections(level.getTrapConnections(), g);
+        if (showCloneConnections) drawButtonConnections(level.getBrownButtons(), g);
+        if (showTrapConnections) drawButtonConnections(level.getRedButtons(), g);
         if (showHistory) drawChipHistory(level.getChip().getPosition(), g);
     }
     
@@ -124,10 +125,10 @@ public class GamePanel extends JPanel{
         }
     }
     
-    private void drawButtonConnections(int[][] connections, Graphics2D g){
+    private void drawButtonConnections(ConnectionButton[] connections, Graphics2D g){
         g.setColor(Color.BLACK);
-        for (int[] connection : connections){
-            Position pos1 = new Position(connection[0]), pos2 = new Position(connection[1]);
+        for (ConnectionButton connection : connections){
+            Position pos1 = connection.getButtonPosition(), pos2 = connection.getTargetPosition();
             g.drawLine(pos1.getGraphicX(), pos1.getGraphicY(), pos2.getGraphicX(), pos2.getGraphicY());
         }
     }

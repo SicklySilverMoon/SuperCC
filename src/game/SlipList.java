@@ -29,9 +29,6 @@ public class SlipList extends ArrayList<Creature> {
             add(c);                // Blocks are not in the monster list, so they are added separately
         }
     }
-    public SlipList(int capacity) {
-        super(capacity);
-    }
 
     @Override
     public String toString(){

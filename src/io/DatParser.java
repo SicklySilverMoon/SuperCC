@@ -95,8 +95,8 @@ public class DatParser{
             final byte[] layerFG = readLayer(reader);
             final byte[] layerBG = readLayer(reader);
             byte[] title = null;
-            int[][] trapConnections = null;
-            int[][] cloneConnections = null;
+            int[][] trapConnections = new int[][] {};
+            int[][] cloneConnections = new int[][] {};
             byte[] password = null;
             byte[] hint = null;
             int[][] monsterPositions = null;
