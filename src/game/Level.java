@@ -136,11 +136,11 @@ public class Level extends SaveState {
         }
         throw new RuntimeException("Attempting to press a button not in allButtons");
     }
-    BrownButton getTrapButton(Position trapPosition) {
+    boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
-            if (b.getTargetPosition().equals(trapPosition)) return b;
+            if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex())) return true;
         }
-        throw new RuntimeException("Attempting to press a button not in allButtons");
+        return false;
     }
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
