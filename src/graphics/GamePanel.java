@@ -95,8 +95,8 @@ public class GamePanel extends JPanel{
         if (showMonsterList) drawMonsterList(level.getMonsterList().list, r);
         if (showSlipList) drawSlipList(level.getSlipList(), r);
         Graphics2D g = overlay.createGraphics();
-        if (showCloneConnections) drawButtonConnections(level.getBrownButtons(), g);
-        if (showTrapConnections) drawButtonConnections(level.getRedButtons(), g);
+        if (showCloneConnections) drawButtonConnections(level.getRedButtons(), g);
+        if (showTrapConnections) drawButtonConnections(level.getBrownButtons(), g);
         if (showHistory) drawChipHistory(level.getChip().getPosition(), g);
     }
     
