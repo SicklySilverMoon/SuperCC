@@ -203,20 +203,24 @@ public class Creature{
         this.sliding = sliding;
     }
     void setSliding(boolean sliding, Level level){
-        if (this.sliding && !sliding){
+        setSliding(this.sliding, sliding, level);
+    }
+    void setSliding(boolean wasSliding, boolean isSliding, Level level) {
+    
+        if (wasSliding && !isSliding){
             if (isChip()) setMonsterType(CHIP);
             else level.slipList.remove(this);
         }
-        else if (!this.sliding && sliding){
+        else if (!wasSliding && isSliding){
             if (isChip()) setMonsterType(CHIP_SLIDING);
             else level.slipList.add(this);
         }
         if (isBlock() && level.layerBG.get(getIndex()) == TRAP){
             level.slipList.remove(this);
             level.slipList.add(this);
-            this.sliding = sliding = true;
+            this.sliding = true;
         }
-        this.sliding = sliding;
+        this.sliding = isSliding;
     }
 
     /**
@@ -566,6 +570,7 @@ public class Creature{
             case GRAVEL: return !isMonster();
             case POP_UP_WALL:
                 if (isChip()) {
+                    level.layerFG.set(newPosition, WALL);
                     return true;
                 }
                 return false;
@@ -687,9 +692,12 @@ public class Creature{
                 level.monsterList.numDeadMonsters++;
             }
     
-            if (level.layerBG.get(newPosition) == POP_UP_WALL) level.layerBG.set(newPosition, WALL);
+            setSliding(wasSliding, sliding, level);
+            
             return true;
         }
+        
+        setSliding(wasSliding, sliding, level);
         
         if (wasSliding && !isMonster()) {
             if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) this.direction = oldDirection;
@@ -711,7 +719,7 @@ public class Creature{
                 for (Button b : pressedButtons) b.press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
-                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP) b.release(level);
+                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) b.release(level);
                 }
                 if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
                 return;
