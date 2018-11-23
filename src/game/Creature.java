@@ -206,7 +206,7 @@ public class Creature{
     void setSliding(boolean wasSliding, boolean isSliding, Level level) {
     
         if (wasSliding && !isSliding){
-            if (isChip()) setMonsterType(CHIP);
+            if (!isDead() && isChip()) setMonsterType(CHIP);
             else level.slipList.remove(this);
         }
         else if (!wasSliding && isSliding){
