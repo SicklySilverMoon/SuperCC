@@ -38,8 +38,6 @@ public class Creature{
     
     public static final int TURN_LEFT = DIRECTION_LEFT, TURN_RIGHT = DIRECTION_RIGHT,
                              TURN_AROUND = DIRECTION_DOWN, TURN_FORWARD = DIRECTION_UP;
-    
-    private static List<Button> pressedButtons = new ArrayList<>();
 
     private Position position;
     private int monsterType;
@@ -236,21 +234,21 @@ public class Creature{
         }
     }
 
-    private boolean pushBlock(Creature block, Level level){
+    private boolean pushBlock(Creature block, Level level, List<Button> pressedButtons){
         if (block.sliding) {
             int blockDirection = block.getDirection();
             if (blockDirection == direction || turnFromDir(blockDirection, TURN_AROUND) == direction)
                 return false;
         }
         Position newChipPosition = block.position.clone();
-        if (block.tryMove(direction, level, false)){
-            return tryEnter(direction, level, newChipPosition, level.layerFG.get(newChipPosition));
+        if (block.tryMove(direction, level, false, pressedButtons)){
+            return tryEnter(direction, level, newChipPosition, level.layerFG.get(newChipPosition), pressedButtons);
         }
         return false;
     }
     
     
-    private void teleport(int direction, Level level, Position position) {
+    private void teleport(int direction, Level level, Position position, List<Button> pressedButtons) {
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
             if (level.portals[portalIndex] == position.getIndex()){
@@ -280,7 +278,7 @@ public class Creature{
                         break;
                     }
                 }
-                pushBlock(block, level);
+                pushBlock(block, level, pressedButtons);
             }
             if (canEnter(direction, exitTile, level)) break;
         }
@@ -379,7 +377,7 @@ public class Creature{
             case CHIP_DOWN: return !isChip();
         }
     }
-    private boolean tryEnter(int direction, Level level, Position newPosition, Tile tile){
+    private boolean tryEnter(int direction, Level level, Position newPosition, Tile tile, List<Button> pressedButtons){
         sliding = false;
         switch (tile) {
             case FLOOR: return true;
@@ -430,9 +428,9 @@ public class Creature{
             case THIN_WALL_LEFT: return direction != DIRECTION_RIGHT;
             case BLOCK:
                 if (isChip()){
-                    for (Creature m : level.slipList) if (m.position.equals(newPosition)) return pushBlock(m, level);
+                    for (Creature m : level.slipList) if (m.position.equals(newPosition)) return pushBlock(m, level, pressedButtons);
                     Creature block = new Creature(newPosition, Tile.BLOCK);
-                    return pushBlock(block, level);
+                    return pushBlock(block, level, pressedButtons);
                 }
                 return false;
             case DIRT:
@@ -553,7 +551,7 @@ public class Creature{
                 return true;
             case TELEPORT:
                 sliding = true;
-                teleport(direction, level, newPosition);
+                teleport(direction, level, newPosition, pressedButtons);
                 return true;
             case BOMB:
                 if (!isChip()) {
@@ -664,7 +662,7 @@ public class Creature{
                 return false;
         }
     }
-    private boolean tryMove(int direction, Level level, boolean slidingMove){
+    private boolean tryMove(int direction, Level level, boolean slidingMove, List<Button> pressedButtons){
         if (direction == -1) return false;
         int oldDirection = this.direction;
         boolean wasSliding = sliding;
@@ -681,7 +679,7 @@ public class Creature{
         if (!isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level)) return false;
         
-        if (tryEnter(direction, level, newPosition, newTile)) {
+        if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
             level.popTile(position);
             position = newPosition;
     
@@ -710,13 +708,14 @@ public class Creature{
     void tick(int[] directions, Level level, boolean slidingMove){
         Creature oldCreature = clone();
         for (int newDirection : directions){
-    
-            pressedButtons.clear();
+            
+            List<Button> pressedButtons = new ArrayList<>();
             
             CreatureList.direction = newDirection;
     
-            if (tryMove(newDirection, level, slidingMove)){
+            if (tryMove(newDirection, level, slidingMove, pressedButtons)){
                 for (Button b : pressedButtons) b.press(level);
+                //for (int i = 0; i < pressedButtons.size(); i++)  pressedButtons.get(i).press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
                     if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) b.release(level);
