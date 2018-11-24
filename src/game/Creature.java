@@ -213,7 +213,7 @@ public class Creature{
             if (isChip()) setMonsterType(CHIP_SLIDING);
             else level.slipList.add(this);
         }
-        if (wasSliding && level.layerBG.get(getIndex()) == TRAP){
+        if (isBlock() && wasSliding && level.layerBG.get(getIndex()) == TRAP){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
