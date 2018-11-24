@@ -365,7 +365,7 @@ public class Creature{
             case KEY_BLUE:
             case KEY_RED:
             case KEY_GREEN:
-            case KEY_YELLOW:
+            case KEY_YELLOW: return true;
             case BOOTS_WATER:
             case BOOTS_FIRE:
             case BOOTS_ICE:
