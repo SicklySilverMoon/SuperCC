@@ -3,6 +3,7 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 
+import static game.Creature.TEETH;
 import static game.Tile.*;
 
 /**
@@ -37,7 +38,7 @@ public class CreatureList{
                 numDeadMonsters++;
                 continue;
             }
-            if (!blobStep && (monster.getMonsterType() == Creature.TEETH || monster.getMonsterType() == Creature.BLOB)){
+            if (!blobStep && (monster.getMonsterType() == TEETH || monster.getMonsterType() == Creature.BLOB)){
                 continue;
             }
 
@@ -82,6 +83,11 @@ public class CreatureList{
     private void tickFreeMonster(Creature monster){
         int[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
         monster.tick(directionPriorities, level, false);
+        if (monster.getMonsterType() == TEETH && !monster.isSliding()){
+            monster.setDirection(directionPriorities[0]);
+            direction = directionPriorities[0];
+            level.layerFG.set(monster.getPosition(), monster.toTile());
+        }
     }
 
     public void addClone(Position position){

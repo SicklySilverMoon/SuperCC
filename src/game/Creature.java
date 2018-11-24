@@ -730,11 +730,7 @@ public class Creature{
         }
         setSliding(oldCreature.sliding, level);
         if (isTank() && !isSliding()) setMonsterType(TANK_STATIONARY);
-        else if (monsterType == TEETH){
-            direction = directions[0];
-            level.layerFG.set(position, toTile());
-        }
-        else if (!isChip() && !isBlock()) setDirection(oldCreature.direction);
+        if (!isChip() && !isBlock()) setDirection(oldCreature.direction);
     }
     
     public Creature(int direction, int monsterType, Position position){
