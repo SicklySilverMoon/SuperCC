@@ -151,7 +151,7 @@ public class CreatureList{
     public String toString(){
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < list.length; i++){
-            sb.append(i);
+            sb.append(i+1);
             sb.append('\t');
             if (!list[i].isDead()) sb.append(list[i]);
             sb.append('\n');

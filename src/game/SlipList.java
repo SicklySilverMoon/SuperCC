@@ -34,7 +34,7 @@ public class SlipList extends ArrayList<Creature> {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < size(); i++){
-            sb.append(i);
+            sb.append(i+1);
             sb.append('\t');
             sb.append(get(i));
             sb.append('\n');
