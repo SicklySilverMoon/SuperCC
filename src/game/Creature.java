@@ -730,7 +730,7 @@ public class Creature{
         }
         setSliding(oldCreature.sliding, level);
         if (isTank() && !isSliding()) setMonsterType(TANK_STATIONARY);
-        if (!isChip() && !isBlock()) setDirection(oldCreature.direction);
+        if (!isChip()) setDirection(oldCreature.direction);
     }
     
     public Creature(int direction, int monsterType, Position position){
