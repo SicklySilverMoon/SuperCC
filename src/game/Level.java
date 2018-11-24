@@ -134,7 +134,7 @@ public class Level extends SaveState {
         for (Button b : buttons) {
             if (b.getButtonPosition().equals(position)) return b;
         }
-        throw new RuntimeException("Attempting to press a button not in allButtons");
+        return null;
     }
     boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {

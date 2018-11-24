@@ -539,12 +539,14 @@ public class Creature{
                 pressedButtons.add(level.getButton(newPosition, GreenButton.class));
                 return true;
             case BUTTON_RED:
-                pressedButtons.add(level.getButton(newPosition, RedButton.class));
+                Button b = level.getButton(newPosition, RedButton.class);
+                if (b != null) pressedButtons.add(b);
                 return true;
             case TOGGLE_CLOSED: return false;
             case TOGGLE_OPEN: return true;
             case BUTTON_BROWN:
-                pressedButtons.add(level.getButton(newPosition, BrownButton.class));
+                Button b2 = level.getButton(newPosition, BrownButton.class);
+                if (b2 != null) pressedButtons.add(b2);
                 return true;
             case BUTTON_BLUE:
                 pressedButtons.add(level.getButton(newPosition, BlueButton.class));
@@ -717,7 +719,7 @@ public class Creature{
                 for (Button b : pressedButtons) b.press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
-                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
+                    if (b != null && level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
                         b.release(level);
                     }
                 }
