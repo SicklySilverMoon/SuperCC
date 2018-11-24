@@ -175,7 +175,12 @@ public class Level extends SaveState {
 
     private void finaliseTraps(){
         for (BrownButton b : brownButtons) {
-            traps.set(b.getTrapIndex(), layerBG.get(b.getButtonPosition()) == BUTTON_BROWN);
+            if (layerBG.get(b.getButtonPosition()) == BUTTON_BROWN){
+                traps.set(b.getTrapIndex(), true);
+            }
+            else if (layerFG.get(b.getTargetPosition()) == TRAP){
+                traps.set(b.getTrapIndex(), false);
+            }
         }
     }
 

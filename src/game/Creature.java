@@ -266,7 +266,7 @@ public class Creature{
             if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                 exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
             Tile exitTile = level.layerFG.get(exitPosition);
-            if (exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
+            if (isChip() && exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
             if (isChip() && exitTile == Tile.BLOCK){
                 Creature block = new Creature(direction, BLOCK, exitPosition);
                 if (canEnter(direction, level.layerBG.get(exitPosition), level) &&
@@ -715,10 +715,11 @@ public class Creature{
     
             if (tryMove(newDirection, level, slidingMove, pressedButtons)){
                 for (Button b : pressedButtons) b.press(level);
-                //for (int i = 0; i < pressedButtons.size(); i++)  pressedButtons.get(i).press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
-                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) b.release(level);
+                    if (level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
+                        b.release(level);
+                    }
                 }
                 if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
                 return;
@@ -773,6 +774,7 @@ public class Creature{
     @Override
     public String toString(){
         if (monsterType == BLOCK) return "Monster BLOCK "+direction+" at position "+position;
+        if (monsterType == DEAD) return "Dead monster at position "+position;
         return "Monster "+toTile()+" at position "+position;
     }
 
