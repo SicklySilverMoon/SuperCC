@@ -234,13 +234,12 @@ public class Creature{
         }
     }
 
-    private boolean pushBlock(Creature block, Level level, List<Button> pressedButtons){
+    private boolean pushBlock(Position newChipPosition, Creature block, Level level, List<Button> pressedButtons){
         if (block.sliding) {
             int blockDirection = block.getDirection();
             if (blockDirection == direction || turnFromDir(blockDirection, TURN_AROUND) == direction)
                 return false;
         }
-        Position newChipPosition = block.position.clone();
         if (block.tryMove(direction, level, false, pressedButtons)){
             return tryEnter(direction, level, newChipPosition, level.layerFG.get(newChipPosition), pressedButtons);
         }
@@ -278,7 +277,7 @@ public class Creature{
                         break;
                     }
                 }
-                pushBlock(block, level, pressedButtons);
+                pushBlock(position, block, level, pressedButtons);
             }
             if (canEnter(direction, exitTile, level)) break;
         }
@@ -428,9 +427,11 @@ public class Creature{
             case THIN_WALL_LEFT: return direction != DIRECTION_RIGHT;
             case BLOCK:
                 if (isChip()){
-                    for (Creature m : level.slipList) if (m.position.equals(newPosition)) return pushBlock(m, level, pressedButtons);
+                    for (Creature m : level.slipList) {
+                        if (m.position.equals(newPosition)) return pushBlock(newPosition, m, level, pressedButtons);
+                    }
                     Creature block = new Creature(newPosition, Tile.BLOCK);
-                    return pushBlock(block, level, pressedButtons);
+                    return pushBlock(newPosition, block, level, pressedButtons);
                 }
                 return false;
             case DIRT:
