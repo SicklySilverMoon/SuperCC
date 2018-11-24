@@ -268,6 +268,12 @@ public class Creature{
             if (isChip() && exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
             if (isChip() && exitTile == Tile.BLOCK){
                 Creature block = new Creature(direction, BLOCK, exitPosition);
+                for (Creature m : level.slipList) {
+                    if (m.position.equals(exitPosition)){
+                        block = m;
+                        break;
+                    }
+                }
                 if (canEnter(direction, level.layerBG.get(exitPosition), level) &&
                     block.canLeave(direction, level.layerBG.get(exitPosition), level)){
                     Position blockPushPosition = exitPosition.move(direction);
