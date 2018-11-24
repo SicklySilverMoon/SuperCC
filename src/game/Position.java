@@ -158,6 +158,11 @@ public class Position {
         return new Position(index);
     }
     
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Position && ((Position) o).equals(this);
+    }
+    
     public boolean equals(Position p){
         return index == p.index;
     }
