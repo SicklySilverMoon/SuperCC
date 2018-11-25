@@ -8,7 +8,7 @@ import static game.Tile.*;
 
 public class Level extends SaveState {
     
-    private static final int HALF_WAIT = 0, KEY = 1, CLICK = 2;
+    private static final int HALF_WAIT = 0, KEY = 1, CLICK_EARLY = 2, CLICK_LATE = 3;
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     
     public final int levelNumber, startTime;
@@ -145,13 +145,16 @@ public class Level extends SaveState {
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
         if (b <= 0 || b == WAIT){
-            if (mouseClick != NO_CLICK && (chipSliding || halfMove)) return CLICK;
+            if (mouseClick != NO_CLICK) {
+                if (chipSliding) return CLICK_EARLY;
+                if (halfMove) return CLICK_LATE;
+            }
             else return HALF_WAIT;
         }
         else if (b == UP || b == LEFT || b == DOWN || b == RIGHT){
             return KEY;
         }
-        else return HALF_WAIT;
+        return HALF_WAIT;
     }
     
     private void moveChipSliding(){
@@ -202,12 +205,12 @@ public class Level extends SaveState {
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (chip.isDead()) return false;
-        if (chip.isSliding() && !layerBG.get(chip.getPosition()).isFF()) b = WAIT;
-        if (moveType == CLICK) moveChip(chip.seek(new Position(mouseClick)));
+        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick)));
         if (chip.isDead()) return false;
         slipList.tick();
         if (chip.isDead()) return false;
         if (moveType == KEY) moveChip(directions);
+        else if (moveType == CLICK_LATE) moveChip(chip.seek(new Position(mouseClick)));
         if (chip.isDead()) return false;
 
         monsterList.finalise();
