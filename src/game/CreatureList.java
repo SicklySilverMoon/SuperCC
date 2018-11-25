@@ -56,7 +56,8 @@ public class CreatureList{
         Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
         if (monster.isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + (monster.getDirection() >>> 14));
-        direction = monster.getDirection();
+        if (!monster.isAffectedByCB()) direction = monster.getDirection();
+        if (direction == NO_DIRECTION) return;
         if (monster.getMonsterType() == Creature.BLOB){
             Position p = monster.getPosition().clone();
             int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
@@ -64,8 +65,7 @@ public class CreatureList{
             if (!monster.getPosition().equals(p)) level.insertTile(clonerPosition, tile);
         }
         else if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
-            monster.tick(new int[] {direction}, level, false);
-            level.insertTile(clonerPosition, tile);
+            if (monster.tick(new int[] {direction}, level, false)) level.insertTile(clonerPosition, tile);
         }
     }
 

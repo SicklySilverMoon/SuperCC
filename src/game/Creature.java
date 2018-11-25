@@ -709,14 +709,14 @@ public class Creature{
         return false;
     }
 
-    void tick(int[] directions, Level level, boolean slidingMove){
+    boolean tick(int[] directions, Level level, boolean slidingMove){
         Creature oldCreature = clone();
         for (int newDirection : directions){
             
             List<Button> pressedButtons = new ArrayList<>();
             
-            if (!isChip()) CreatureList.direction = newDirection;
-    
+            if (!isChip() && !isSliding()) CreatureList.direction = newDirection;
+            
             if (tryMove(newDirection, level, slidingMove, pressedButtons)){
                 for (Button b : pressedButtons) b.press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
@@ -726,13 +726,14 @@ public class Creature{
                     }
                 }
                 if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
-                return;
+                return true;
             }
             
         }
         setSliding(oldCreature.sliding, level);
         if (isTank() && !isSliding()) setMonsterType(TANK_STATIONARY);
         if (!isChip()) setDirection(oldCreature.direction);
+        return false;
     }
     
     public Creature(int direction, int monsterType, Position position){

@@ -2,6 +2,7 @@ Monsters kill swimming chip (?)
 Partial post sliding blocks
 Two clones one tick
 rewinding monster clones
+cloner c/b monsters are not using the final monster - using previous monster instead!
 
 blocks on traps ALWAYS added to sliplist
 chip on trap button -> trap, trap stays held down
@@ -45,20 +46,16 @@ failed level 116 Communism (unknown)
 CCLP3.dat
 failed level 8 Pigeonholed (last move of tws read incorrectly)
 failed level 10 Annoying Wall (tws clicks)
-failed level 16 Two Sets of Rules (unknown)
 failed level 33 Vague Dream (unknown)
 failed level 60 Red, Green and Blue (unknown)
 failed level 63 Pocket Puzzle (teeth cloning)
 failed level 102 Triple Alarm (unknown)
-failed level 104 Civilization of Creatures
 failed level 109 Hidden Depths (unknown)
 failed level 116 Mini Challenges (tws clicks)
 failed level 134 We'll Be Right Back
 
 CCLP4.dat
-failed level 18 Inferno Dynamics (teeth cloning?)
 failed level 53 Protect Your Fortress (trapped blocks cause slide delay)
-failed level 70 Science Museum (teeth cloning)
 failed level 100 One Tank's Adventure (unknown)
 failed level 113 Half of You, Half of Me (trapped teeth release direction)
 failed level 143 Color Coordination (unknown)
