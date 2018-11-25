@@ -30,7 +30,6 @@ NEW VERSION
 CHIPS.dat
 EENY MINY MOE
 failed level 116 BLOCK BUSTER II (unknown)
-failed level 120 ALPHABET SOUP (trapped teeth release direction)
 failed level 149 SPECIAL (last move of tws read incorrectly)
 
 CCLP1.dat
@@ -39,7 +38,6 @@ failed level 116 Communism (unknown)
 CCLP3.dat
 failed level 8 Pigeonholed (last move of tws read incorrectly)
 failed level 10 Annoying Wall (tws clicks)
-failed level 33 Vague Dream (unknown)
 failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
 failed level 109 Hidden Depths (unknown)
