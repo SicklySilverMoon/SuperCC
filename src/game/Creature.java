@@ -253,6 +253,7 @@ public class Creature{
             if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                 exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
             Tile exitTile = level.layerFG.get(exitPosition);
+            if (!isChip() && exitTile.isChip()) exitTile = level.layerBG.get(exitPosition);
             if (isChip() && exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
             if (isChip() && exitTile == Tile.BLOCK){
                 Creature block = new Creature(direction, BLOCK, exitPosition);

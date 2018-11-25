@@ -42,7 +42,6 @@ failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
 failed level 109 Hidden Depths (unknown)
 failed level 116 Mini Challenges (tws clicks)
-failed level 134 We'll Be Right Back
 
 CCLP4.dat
 failed level 53 Protect Your Fortress (trapped blocks cause slide delay)
