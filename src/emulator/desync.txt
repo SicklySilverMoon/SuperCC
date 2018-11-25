@@ -1,47 +1,32 @@
-Two clones one tick
-rewinding monster clones
+Known issues
 
-CC1
-45 monster lab (cloning flags)
-116 Block Buster II (unknown)
-120 Alphabet Soup (unknown)
+Gameplay related:
 
-CCLP3
-10 Annoying Wall (unknown)
-60 Red, Blue and Green (unknown)
-78 Slide Show (boosting with block)
-102 Triple Alarm (unknown)
-116 Mini Challenges (tws clicks)
-140 YAYAP (boosting with block)
-
-CCLP1
-112 Carousel (cloning flags)
-116 Communism (unknown)
-139 (JAMES)
-
-CCLP4
-4 Oasis (unknown)
-55 If I ran the zoo (teleports)
-100 One tanks adventure (unknown)
+Sliding blocks leaving traps onto sliding tiles cause slide delay when they shouldn't
 
 
-NEW VERSION
+TWS playback:
+
+- TWS Clicks are sometimes read incorrectly
+- TWS playback sometimes ends one input prematurely
+
+
+Levels where the public tws does not play back correctly (+reason):
 
 CHIPS.dat
-EENY MINY MOE
 failed level 116 BLOCK BUSTER II (unknown)
-failed level 149 SPECIAL (last move of tws read incorrectly)
+failed level 149 SPECIAL (tws playback)
 
 CCLP1.dat
 failed level 116 Communism (unknown)
 
 CCLP3.dat
-failed level 8 Pigeonholed (last move of tws read incorrectly)
-failed level 10 Annoying Wall (tws clicks)
+failed level 8 Pigeonholed (tws playback)
+failed level 10 Annoying Wall (tws playback)
 failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
 failed level 109 Hidden Depths (unknown)
-failed level 116 Mini Challenges (tws clicks)
+failed level 116 Mini Challenges (tws playback)
 
 CCLP4.dat
 failed level 53 Protect Your Fortress (trapped blocks cause slide delay)
