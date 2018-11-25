@@ -82,8 +82,8 @@ public class CreatureList{
 
     private void tickFreeMonster(Creature monster){
         int[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
-        monster.tick(directionPriorities, level, false);
-        if (monster.getMonsterType() == TEETH && !monster.isSliding()){
+        boolean success = monster.tick(directionPriorities, level, false);
+        if (!success && monster.getMonsterType() == TEETH && !monster.isSliding()){
             monster.setDirection(directionPriorities[0]);
             direction = directionPriorities[0];
             level.layerFG.set(monster.getPosition(), monster.toTile());

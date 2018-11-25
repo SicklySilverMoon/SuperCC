@@ -57,5 +57,4 @@ failed level 134 We'll Be Right Back
 CCLP4.dat
 failed level 53 Protect Your Fortress (trapped blocks cause slide delay)
 failed level 100 One Tank's Adventure (unknown)
-failed level 113 Half of You, Half of Me (trapped teeth release direction)
 failed level 143 Color Coordination (unknown)
