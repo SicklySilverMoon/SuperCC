@@ -715,7 +715,7 @@ public class Creature{
             
             List<Button> pressedButtons = new ArrayList<>();
             
-            if (!isChip() && !isSliding()) CreatureList.direction = newDirection;
+            if (!isChip()) CreatureList.direction = newDirection;
             
             if (tryMove(newDirection, level, slidingMove, pressedButtons)){
                 for (Button b : pressedButtons) b.press(level);

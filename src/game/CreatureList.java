@@ -101,8 +101,7 @@ public class CreatureList{
         Tile tile = level.layerFG.get(position);
         if (!tile.isCreature()) return;
         Creature clone = new Creature(position, tile);
-        if (!clone.isAffectedByCB()) direction = clone.getDirection();
-        if (direction == NO_DIRECTION) return;
+        direction = clone.getDirection();
         Position newPosition = clone.move(direction);
         Tile newTile = level.layerFG.get(newPosition);
 
