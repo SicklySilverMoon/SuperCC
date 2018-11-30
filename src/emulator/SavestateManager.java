@@ -53,6 +53,13 @@ public class SavestateManager {
         playbackIndex = playbackNodes.size() - 1;
     }
     
+    public void restart() {
+        while (currentNode.hasParent()) {
+            currentNode = currentNode.getParent();
+            playbackIndex--;
+        }
+    }
+    
     public void rewind(){
         if (currentNode.hasParent()) {
             currentNode = currentNode.getParent();

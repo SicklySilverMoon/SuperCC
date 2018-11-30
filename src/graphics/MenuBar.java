@@ -56,6 +56,25 @@ public class MenuBar extends JMenuBar{
             add(openLevelset);
 
             add(new JSeparator());
+    
+            JMenuItem restart = new JMenuItem("Restart");
+            restart.addActionListener(e -> {
+                emulator.getSavestates().restart();
+                emulator.getLevel().load(emulator.getSavestates().getSavestate());
+                emulator.showAction("Restarted Level");
+                window.repaint(emulator.getLevel(), false);
+            });
+            restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, CTRL_MASK));
+            addIcon(restart, "/resources/icons/restart.gif");
+            add(restart);
+    
+            JMenuItem next = new JMenuItem("Next");
+            next.addActionListener(e ->
+                                       emulator.loadLevel(emulator.getLevel().levelNumber + 1)
+            );
+            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
+            addIcon(next, "/resources/icons/right.gif");
+            add(next);
 
             JMenuItem previous = new JMenuItem("Previous");
             previous.addActionListener(e ->
@@ -64,20 +83,6 @@ public class MenuBar extends JMenuBar{
             previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, CTRL_MASK));
             addIcon(previous, "/resources/icons/left.gif");
             add(previous);
-
-            JMenuItem next = new JMenuItem("Next");
-            next.addActionListener(e ->{
-                emulator.loadLevel(emulator.getLevel().levelNumber + 1);
-                try {
-                    //emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
-                }
-                catch (Exception ex){
-                    ex.printStackTrace();
-                }
-                });
-            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
-            addIcon(next, "/resources/icons/right.gif");
-            add(next);
 
             JMenuItem goTo = new JMenuItem("Go to...");
             goTo.addActionListener(e -> {
