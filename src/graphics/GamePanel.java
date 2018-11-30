@@ -2,10 +2,7 @@ package graphics;
 
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.Creature;
-import game.Level;
-import game.Position;
-import game.SlipList;
+import game.*;
 import game.button.ConnectionButton;
 
 import javax.swing.*;
@@ -21,6 +18,8 @@ import static game.Position.UNCLICKABLE;
 import static graphics.Gui.TILE_SIZE;
 
 public class GamePanel extends JPanel{
+    
+    public static final int BG_BORDER = 4;
 
     // The background image
     private BufferedImage bg = new BufferedImage(32*TILE_SIZE, 32*TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
@@ -38,6 +37,7 @@ public class GamePanel extends JPanel{
     private static final int CHANNELS = 4;
     public static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
     public static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
+        bgTileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     
@@ -86,6 +86,10 @@ public class GamePanel extends JPanel{
                 int x = TILE_SIZE*(i%32), y = TILE_SIZE*(i/32);
                 rasterBG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerBG[i]]);
                 rasterFG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerFG[i]]);
+                if (!Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
+                    rasterFG.setPixels(x + BG_BORDER, y + BG_BORDER,
+                                       TILE_SIZE - 2 * BG_BORDER, TILE_SIZE - 2 * BG_BORDER, bgTileImage[layerBG[i]]);
+                }
             }
         }
         previousFG = layerFG.clone();
@@ -175,11 +179,20 @@ public class GamePanel extends JPanel{
         showHistory = visible;
     }
     
-    public void initialiseTileGraphics(BufferedImage allTiles) throws IOException{
+    public void initialiseTileGraphics(BufferedImage allTiles) {
         for (int i = 0; i < 16 * 7; i++) {
             int x = i / 16;
             int y = i % 16;
             allTiles.getRaster().getPixels(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, tileImage[i]);
+        }
+    }
+    
+    public void initialiseBGTileGraphics(BufferedImage allTiles) {
+        for (int i = 0; i < 16 * 7; i++) {
+            int x = i / 16;
+            int y = i % 16;
+            allTiles.getRaster().getPixels(x * TILE_SIZE + BG_BORDER, y * TILE_SIZE + BG_BORDER,
+                                           TILE_SIZE - 2 * BG_BORDER, TILE_SIZE - 2 * BG_BORDER, bgTileImage[i]);
         }
     }
     
@@ -225,6 +238,7 @@ public class GamePanel extends JPanel{
     
     public void initialise(Image tilespng) throws IOException{
         initialiseTileGraphics((BufferedImage) tilespng);
+        initialiseBGTileGraphics((BufferedImage) tilespng);
         initialiseDigits();
         initialiseBBG();
     }
