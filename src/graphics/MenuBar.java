@@ -90,7 +90,7 @@ public class MenuBar extends JMenuBar{
                 if (s.length() == 0) return;
                 try {
                     int n = Integer.parseInt(s);
-                    emulator.loadLevel(n, 0, Step.EVEN);
+                    emulator.loadLevel(n, 0, Step.EVEN, true);
                 } catch (NumberFormatException nfe){
                     JOptionPane.showMessageDialog(window, "Not a number");
                 }
@@ -106,7 +106,7 @@ public class MenuBar extends JMenuBar{
                 Level oldLevel = emulator.getLevel();
                 Step newStep = Step.EVEN;
                 if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
-                emulator.loadLevel(oldLevel.levelNumber, oldLevel.getRngSeed(), newStep);
+                emulator.loadLevel(oldLevel.levelNumber, oldLevel.getRngSeed(), newStep, true);
             });
             add(toggleStep);
 
@@ -117,7 +117,7 @@ public class MenuBar extends JMenuBar{
                 try{
                     Level oldLevel = emulator.getLevel();
                     int n = Integer.parseInt(s);
-                    emulator.loadLevel(oldLevel.levelNumber, n, oldLevel.getStep());
+                    emulator.loadLevel(oldLevel.levelNumber, n, oldLevel.getStep(), true);
                 }
                 catch (NumberFormatException nfe){
                     JOptionPane.showMessageDialog(window, "Not a number");

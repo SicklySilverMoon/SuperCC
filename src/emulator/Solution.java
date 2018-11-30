@@ -33,7 +33,7 @@ public class Solution{
     }
     
     public void load(SuperCC emulator){
-        emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step);
+        emulator.loadLevel(emulator.getLevel().levelNumber, rngSeed, step, false);
         Level level = emulator.getLevel();
         try{
             for (int move = 0; move < halfMoves.length; move++){

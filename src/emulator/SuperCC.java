@@ -103,13 +103,19 @@ public class SuperCC implements KeyListener{
         loadLevel(1);
     }
 
-    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step){
+    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves){
         try{
-            level = dat.parseLevel(levelNumber, rngSeed, step);
-            savestates = new SavestateManager(level);
-            solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
-            window.repaint(level, true);
-            window.setTitle("SuperCC - " + new String(level.title));
+            if (keepMoves && level != null && levelNumber == level.levelNumber) {
+                solution = new Solution(getSavestates().getMoveList(), rngSeed, step);
+                solution.load(this);
+            }
+            else {
+                level = dat.parseLevel(levelNumber, rngSeed, step);
+                savestates = new SavestateManager(level);
+                solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
+                window.repaint(level, true);
+                window.setTitle("SuperCC - " + new String(level.title));
+            }
         }
         catch (Exception e){
             e.printStackTrace();
@@ -118,7 +124,7 @@ public class SuperCC implements KeyListener{
     }
 
     public synchronized void loadLevel(int levelNumber){
-        loadLevel(levelNumber, 0, Step.EVEN);
+        loadLevel(levelNumber, 0, Step.EVEN, true);
     }
 
     public boolean tick(byte b, int[] directions, TickFlags flags){
@@ -284,10 +290,10 @@ public class SuperCC implements KeyListener{
     public static void initialise(){
         try{
             SuperCC emulator = new SuperCC();
-            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
-            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
+            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
             //emulator.runBenchmark(134, 1);
             //emulator.runTests();
         }
