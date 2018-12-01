@@ -17,6 +17,7 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -187,7 +188,7 @@ public class MenuBar extends JMenuBar{
                     fc.setCurrentDirectory(new File(emulator.getJSONPath()));
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath())));
+                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath()), StandardCharsets.ISO_8859_1));
                         solution.load(emulator);
                     }
                 }
