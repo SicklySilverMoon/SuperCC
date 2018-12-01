@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
@@ -246,6 +247,18 @@ public class GamePanel extends JPanel{
     GamePanel() {
         setPreferredSize(new Dimension(32*TILE_SIZE, 32*TILE_SIZE));
         addMouseListener(new GameMouseListener());
+        addMouseMotionListener(new GameMouseSensor());
+    }
+    
+    private class GameMouseSensor implements MouseMotionListener {
+    
+        @Override
+        public void mouseDragged(MouseEvent e) {}
+    
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            emulator.showAction(new Position(e).toString());
+        }
     }
     
     private class GameMouseListener implements MouseListener{
