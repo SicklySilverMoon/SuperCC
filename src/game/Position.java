@@ -2,7 +2,7 @@ package game;
 
 import java.awt.event.MouseEvent;
 
-import static game.Creature.*;
+import static game.Direction.*;
 import static graphics.Gui.TILE_SIZE;
 import static java.lang.Math.abs;
 
@@ -54,13 +54,13 @@ public class Position {
         x++;
         index += MOVE_RIGHT;
     }
-    public Position move(int direction){
+    public Position move(Direction direction){
         Position p = clone();
         switch (direction){
-            case DIRECTION_UP:    p.moveUp(); break;
-            case DIRECTION_LEFT:  p.moveLeft(); break;
-            case DIRECTION_DOWN:  p.moveDown(); break;
-            case DIRECTION_RIGHT: p.moveRight(); break;
+            case UP:    p.moveUp(); break;
+            case LEFT:  p.moveLeft(); break;
+            case DOWN:  p.moveDown(); break;
+            case RIGHT: p.moveRight(); break;
         }
         return p;
     }
@@ -115,21 +115,21 @@ public class Position {
         return UNCLICKABLE;
     }
     
-    public int[] seek(Position seekedPosition){
+    public Direction[] seek(Position seekedPosition){
         int verticalDifference = y - seekedPosition.y;
         int horizontalDifference = x - seekedPosition.x;
-        
-        int verticalDirection = -1;
-        if (verticalDifference > 0) verticalDirection = DIRECTION_UP;
-        else if (verticalDifference < 0) verticalDirection = DIRECTION_DOWN;
-        
-        int horizontalDirection = -1;
-        if (horizontalDifference > 0) horizontalDirection = DIRECTION_LEFT;
-        else if (horizontalDifference < 0) horizontalDirection = DIRECTION_RIGHT;
+    
+        Direction verticalDirection = null;
+        if (verticalDifference > 0) verticalDirection = UP;
+        else if (verticalDifference < 0) verticalDirection = DOWN;
+    
+        Direction horizontalDirection = null;
+        if (horizontalDifference > 0) horizontalDirection = LEFT;
+        else if (horizontalDifference < 0) horizontalDirection = RIGHT;
         
         if (abs(verticalDifference) >= abs(horizontalDifference))
-            return new int[] {verticalDirection, horizontalDirection};
-        else return new int[] {horizontalDirection, verticalDirection};
+            return new Direction[] {verticalDirection, horizontalDirection};
+        else return new Direction[] {horizontalDirection, verticalDirection};
     }
     
     public Position(MouseEvent e){

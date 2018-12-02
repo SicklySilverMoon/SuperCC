@@ -21,13 +21,17 @@ public class SaveState {
     int tickNumber;
     int chipsLeft;
     short[] keys;
-    short[] boots;
+    byte[] boots;
     RNG rng;
     int mouseClick;
     BitSet traps;
     CreatureList monsterList;
     SlipList slipList;
-
+    
+    /**
+     * Write a savestate
+     * @return a savestate
+     */
     public byte[] save(){
         byte[] traps = this.traps.toByteArray();
         SavestateWriter writer = new SavestateWriter();
@@ -38,7 +42,7 @@ public class SaveState {
         writer.writeShort(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
-        writer.writeShorts(boots);
+        writer.writeBytes(boots);
         writer.writeInt(rng.currentValue);
         writer.writeShort(mouseClick);
         writer.writeShort(traps.length);
@@ -51,10 +55,10 @@ public class SaveState {
         return writer.toByteArray();
     }
     
-    public static Creature getChip(byte[] savestate){
-        return new Creature(((savestate[1] & 0xFF) << 8) | (savestate[2] & 0xFF));
-    }
-
+    /**
+     * load a savestate
+     * @param savestate the savestate to load
+     */
     public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
@@ -64,16 +68,25 @@ public class SaveState {
         tickNumber = (short) reader.readShort();
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);
-        boots = reader.readShorts(4);
+        boots = reader.readBytes(4);
         rng.currentValue = (reader.readInt());
         mouseClick = reader.readShort();
         traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
         monsterList.list = reader.readMonsterArray(reader.readShort());
         slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
     }
+    
+    /**
+     * Get chip from a savestate
+     * @param savestate a byte[] savestate
+     * @return A creature containing chip
+     */
+    public static Creature getChip(byte[] savestate){
+        return new Creature(((savestate[1] & 0xFF) << 8) | (savestate[2] & 0xFF));
+    }
 
-    public SaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
-                     int timer, int chipsLeft, short[] keys, short[] boots, RNG rng, int mouseClick, BitSet traps){
+    SaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
+                     int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseClick, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
         this.monsterList = monsterList;

@@ -71,7 +71,7 @@ public class MenuBar extends JMenuBar{
     
             JMenuItem next = new JMenuItem("Next");
             next.addActionListener(e ->
-                                       emulator.loadLevel(emulator.getLevel().levelNumber + 1)
+                                       emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1)
             );
             next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
             addIcon(next, "/resources/icons/right.gif");
@@ -79,7 +79,7 @@ public class MenuBar extends JMenuBar{
 
             JMenuItem previous = new JMenuItem("Previous");
             previous.addActionListener(e ->
-                emulator.loadLevel(emulator.getLevel().levelNumber - 1)
+                emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1)
             );
             previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, CTRL_MASK));
             addIcon(previous, "/resources/icons/left.gif");
@@ -107,7 +107,7 @@ public class MenuBar extends JMenuBar{
                 Level oldLevel = emulator.getLevel();
                 Step newStep = Step.EVEN;
                 if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
-                emulator.loadLevel(oldLevel.levelNumber, oldLevel.getRngSeed(), newStep, true);
+                emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true);
             });
             add(toggleStep);
 
@@ -118,7 +118,7 @@ public class MenuBar extends JMenuBar{
                 try{
                     Level oldLevel = emulator.getLevel();
                     int n = Integer.parseInt(s);
-                    emulator.loadLevel(oldLevel.levelNumber, n, oldLevel.getStep(), true);
+                    emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true);
                 }
                 catch (NumberFormatException nfe){
                     JOptionPane.showMessageDialog(window, "Not a number");

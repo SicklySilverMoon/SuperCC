@@ -13,11 +13,11 @@ public class TWSWriter{
     private final File twsFile;
 
     public void readSolution(Level level) throws IOException{
-        byte[] password = level.password;
+        byte[] password = level.getPassword();
         Long pass = Integer.toUnsignedLong(
                 password[0] + 256 * password[1] + 65536 * password[2] + 16777216 * password[3]
         );
-        long lpass = pass + (Integer.toUnsignedLong(level.levelNumber) << 32);
+        long lpass = pass + (Integer.toUnsignedLong(level.getLevelNumber()) << 32);
         long solutionOffset;
         if (lPassLevelOffsets.containsKey(lpass)) solutionOffset = lPassLevelOffsets.get(lpass);
         else if (passLevelOffsets.containsKey(pass)) solutionOffset = passLevelOffsets.get(pass);

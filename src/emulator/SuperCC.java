@@ -11,8 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
 
 public class SuperCC implements KeyListener{
 
@@ -20,8 +18,8 @@ public class SuperCC implements KeyListener{
             KeyEvent.VK_SPACE};
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     private static final byte[] BYTE_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
-    private static final int[][] DIRECTIONS = new int[][] {{Creature.DIRECTION_UP}, {Creature.DIRECTION_LEFT},
-        {Creature.DIRECTION_DOWN}, {Creature.DIRECTION_RIGHT}, {}};
+    private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
+        {Direction.DOWN}, {Direction.RIGHT}, {}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private boolean shiftPressed = false;
@@ -39,9 +37,9 @@ public class SuperCC implements KeyListener{
     }
     
     public String getJSONPath() {
-        String levelName = new String(level.title);
+        String levelName = new String(level.getTitle());
         levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_");
-        return paths.getJSONPath(dat.getLevelsetName(), level.levelNumber, levelName);
+        return paths.getJSONPath(dat.getLevelsetName(), level.getLevelNumber(), levelName);
     }
     
     public void repaint(boolean fromScratch) {
@@ -105,7 +103,7 @@ public class SuperCC implements KeyListener{
 
     public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves){
         try{
-            if (keepMoves && level != null && levelNumber == level.levelNumber) {
+            if (keepMoves && level != null && levelNumber == level.getLevelNumber()) {
                 solution = new Solution(getSavestates().getMoveList(), rngSeed, step);
                 solution.load(this);
             }
@@ -114,7 +112,7 @@ public class SuperCC implements KeyListener{
                 savestates = new SavestateManager(level);
                 solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
                 window.repaint(level, true);
-                window.setTitle("SuperCC - " + new String(level.title));
+                window.setTitle("SuperCC - " + new String(level.getTitle()));
             }
         }
         catch (Exception e){
@@ -127,7 +125,7 @@ public class SuperCC implements KeyListener{
         loadLevel(levelNumber, 0, Step.EVEN, true);
     }
 
-    public boolean tick(byte b, int[] directions, TickFlags flags){
+    public boolean tick(byte b, Direction[] directions, TickFlags flags){
         if (level == null) return false;
         boolean tickTwice = level.tick(b, directions);
         if (flags.doubleTick && tickTwice) {
@@ -145,7 +143,7 @@ public class SuperCC implements KeyListener{
     
     public boolean tick(byte b, TickFlags flags){
         if (level == null) return false;
-        int[] directions;
+        Direction[] directions;
         if (isClick(b)){
             Position screenPosition = Position.screenPosition(level.getChip().getPosition());
             Position clickedPosition = Position.clickPosition(screenPosition, b);
@@ -221,16 +219,16 @@ public class SuperCC implements KeyListener{
     
     private void runTests() {
         String[] levelsets = new String[] {
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat",
             "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat",
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat",
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat"
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat"
         };
         String[] twss = new String[] {
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws",
             "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws",
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws",
-            //"C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws",
+            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"
         };
         
         for (int i = 0; i < levelsets.length; i++) {
@@ -243,18 +241,17 @@ public class SuperCC implements KeyListener{
                 try {
                     twsReader.readSolution(level).load(this);
                     for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
-                        level.tick(WAIT, new int[] {});
+                        level.tick(WAIT, new Direction[] {});
                     }
                     if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP) {
-                        System.out.println("failed level "+level.levelNumber+" "+new String(level.title));
+                        System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
                     }
                 }
                 catch (Exception exc) {
-                    System.out.println("Error loading "+level.levelNumber+" "+new String(level.title));
+                    System.out.println("Error loading "+level.getLevelNumber()+" "+new String(level.getTitle()));
                     exc.printStackTrace();
                 }
             }
-            System.out.println();
             
         }
         

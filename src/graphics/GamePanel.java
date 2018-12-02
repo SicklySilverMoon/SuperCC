@@ -116,7 +116,7 @@ public class GamePanel extends JPanel{
     private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
         for (int i = 0; i < monsterList.length; i++){
             Creature monster = monsterList[i];
-            int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE;
+            int x = monster.getPosition().getX()*TILE_SIZE, y = monster.getPosition().getY()*TILE_SIZE;
             drawNumber(i+1, blackDigits, raster, x, y);
         }
     }
@@ -125,7 +125,7 @@ public class GamePanel extends JPanel{
         int yOffset = TILE_SIZE - SMALL_NUMERAL_HEIGHT - 2;
         for (int i = 0; i < slipList.size(); i++){
             Creature monster = slipList.get(i);
-            int x = monster.getX()*TILE_SIZE, y = monster.getY()*TILE_SIZE + yOffset;
+            int x = monster.getPosition().getX()*TILE_SIZE, y = monster.getPosition().getY()*TILE_SIZE + yOffset;
             drawNumber(i+1, blueDigits, raster, x, y);
         }
     }
@@ -270,7 +270,7 @@ public class GamePanel extends JPanel{
             if (b == UNCLICKABLE) return;
             emulator.showAction("Clicked " + clickPosition);
             emulator.getLevel().setClick(clickPosition.getIndex());
-            int[] directions = chip.seek(clickPosition);
+            Direction[] directions = chip.seek(clickPosition);
             emulator.tick(b, directions, TickFlags.GAME_PLAY);
         }
         

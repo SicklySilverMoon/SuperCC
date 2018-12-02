@@ -89,9 +89,9 @@ public class SavestateManager {
     public void play(SuperCC emulator) {
         final TickFlags replayNoSave = new TickFlags(true, false, false);
         pause = false;
-        int levelNumber = emulator.getLevel().levelNumber;
+        int levelNumber = emulator.getLevel().getLevelNumber();
         try {
-            while (emulator.getLevel().levelNumber == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
+            while (emulator.getLevel().getLevelNumber() == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
                 emulator.getLevel().load(currentNode.getData());
                 byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
                 boolean tickTwice = emulator.tick(b, replayNoSave);

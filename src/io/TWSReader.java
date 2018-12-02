@@ -17,11 +17,11 @@ public class TWSReader{
     private final File twsFile;
 
     public Solution readSolution(Level level) throws IOException{
-        byte[] password = level.password;
+        byte[] password = level.getPassword();
         Long pass = Integer.toUnsignedLong(
                 password[0] + 0x100 * password[1] + 0x10000 * password[2] + 0x1000000 * password[3]
         );
-        long lpass = pass + (Integer.toUnsignedLong(level.levelNumber) << 32);
+        long lpass = pass + (Integer.toUnsignedLong(level.getLevelNumber()) << 32);
         long solutionOffset;
         if (lPassLevelOffsets.containsKey(lpass)) solutionOffset = lPassLevelOffsets.get(lpass);
         else if (passLevelOffsets.containsKey(pass)) solutionOffset = passLevelOffsets.get(pass);
@@ -35,10 +35,7 @@ public class TWSReader{
         reader.readInt();                       // Password
         reader.readByte();                      // Other Flags (always 0)
 
-        int stepN = reader.readByte() >>> 5;
-        Step step;
-        if (stepN == 1) step = Step.ODD;
-        else step = Step.EVEN;
+        Step step = Step.fromTWS(reader.readByte());
 
         int rngSeed = reader.readInt();
         int solutionLength = reader.readInt();

@@ -30,7 +30,7 @@ public class LevelPanel extends TextPanel {
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
-        drawText(g, new String(level.title), 3);
+        drawText(g, new String(level.getTitle()), 3);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         drawText(g, level.getStep().toString()+" step, seed: "+level.getRngSeed(), 1);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));

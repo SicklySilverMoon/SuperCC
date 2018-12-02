@@ -1,29 +1,29 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
-import static game.Creature.TEETH;
+import static game.CreatureID.*;
 import static game.Tile.*;
 
 /**
  * The monster list. The list attribute is the actual list.
  */
-public class CreatureList{
-
-    private static int NO_DIRECTION = -1;
+public class CreatureList implements Iterable<Creature> {
     
     private Level level;
 
     public Creature[] list;
     int numDeadMonsters;
     private List<Creature> newClones;
-    public static int direction;
+    public static Direction direction;
     boolean blobStep;
     
     public Creature creatureAt(Position position){
-        int index = position.getIndex();
-        for (Creature c : list) if (c.getIndex() == index) return c;
+        for (Creature c : list) if (c.getPosition().equals(position)) return c;
         return null;
     }
 
@@ -31,19 +31,19 @@ public class CreatureList{
 
         blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 3);
 
-        direction = NO_DIRECTION;
+        direction = null;
         for(Creature monster : list){
 
-            if (monster.isBlock()){
+            if (monster.getCreatureType().isBlock()){
                 numDeadMonsters++;
                 continue;
             }
-            if (!blobStep && (monster.getMonsterType() == TEETH || monster.getMonsterType() == Creature.BLOB)){
+            if (!blobStep && (monster.getCreatureType() == TEETH || monster.getCreatureType() == BLOB)){
                 continue;
             }
 
             if (!monster.isSliding()){
-                if (!monster.isAffectedByCB()) direction = monster.getDirection();
+                if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
                 Tile bgTile = level.layerBG.get(monster.getPosition());
                 if (bgTile == CLONE_MACHINE) tickClonedMonster(monster);
                 else if (bgTile == TRAP) tickTrappedMonster(monster);
@@ -55,35 +55,35 @@ public class CreatureList{
     private void tickClonedMonster(Creature monster){
         Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
-        if (monster.isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + (monster.getDirection() >>> 14));
-        if (!monster.isAffectedByCB()) direction = monster.getDirection();
-        if (direction == NO_DIRECTION) return;
-        if (monster.getMonsterType() == Creature.BLOB){
+        if (monster.getCreatureType().isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + monster.getDirection().ordinal());
+        if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
+        if (direction == null) return;
+        if (monster.getCreatureType() == BLOB){
             Position p = monster.getPosition().clone();
-            int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
+            Direction[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
             monster.tick(directions, level, false);
             if (!monster.getPosition().equals(p)) level.insertTile(clonerPosition, tile);
         }
-        else if (monster.canEnter(direction, level.layerFG.get(monster.move(direction)), level)){
-            if (monster.tick(new int[] {direction}, level, false)) level.insertTile(clonerPosition, tile);
+        else if (monster.canEnter(direction, level.layerFG.get(monster.getPosition().move(direction)), level)){
+            if (monster.tick(new Direction[] {direction}, level, false)) level.insertTile(clonerPosition, tile);
         }
     }
 
     private void tickTrappedMonster(Creature monster){
-        if (!monster.isAffectedByCB()) direction = monster.getDirection();
-        if (direction == NO_DIRECTION) return;
-        if (monster.getMonsterType() == Creature.TANK_STATIONARY) monster.setMonsterType(Creature.TANK_MOVING);
-        if (monster.getMonsterType() == Creature.BLOB){
-            int[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
+        if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
+        if (direction == null) return;
+        if (monster.getCreatureType() == TANK_STATIONARY) monster.setCreatureType(TANK_MOVING);
+        if (monster.getCreatureType() == BLOB){
+            Direction[] directions = monster.getDirectionPriority(level.getChip(), level.rng);
             monster.tick(directions, level, false);
         }
-        else monster.tick(new int[] {direction}, level, false);
+        else monster.tick(new Direction[] {direction}, level, false);
     }
 
     private void tickFreeMonster(Creature monster){
-        int[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
+        Direction[] directionPriorities = monster.getDirectionPriority(level.getChip(), level.rng);
         boolean success = monster.tick(directionPriorities, level, false);
-        if (!success && monster.getMonsterType() == TEETH && !monster.isSliding()){
+        if (!success && monster.getCreatureType() == TEETH && !monster.isSliding()){
             monster.setDirection(directionPriorities[0]);
             direction = directionPriorities[0];
             level.layerFG.set(monster.getPosition(), monster.toTile());
@@ -102,11 +102,11 @@ public class CreatureList{
         if (!tile.isCreature()) return;
         Creature clone = new Creature(position, tile);
         direction = clone.getDirection();
-        Position newPosition = clone.move(direction);
+        Position newPosition = clone.getPosition().move(direction);
         Tile newTile = level.layerFG.get(newPosition);
 
         if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()){
-            if (clone.isBlock()) tickClonedMonster(clone);
+            if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
             else newClones.add(clone);
         }
 
@@ -122,7 +122,7 @@ public class CreatureList{
         // Re-add everything except dead monsters. Non-sliding blocks count as dead.
         int index = 0;
         for (Creature monster : list){
-            if (!monster.isDead() && !(monster.isBlock() && !monster.isSliding())) newMonsterList[index++] = monster;
+            if (!monster.isDead() && !(monster.getCreatureType().isBlock() && !monster.isSliding())) newMonsterList[index++] = monster;
         }
 
         // Add all cloned monsters
@@ -152,10 +152,37 @@ public class CreatureList{
         for (int i = 0; i < list.length; i++){
             sb.append(i+1);
             sb.append('\t');
-            if (!list[i].isDead()) sb.append(list[i]);
+            sb.append(list[i]);
             sb.append('\n');
         }
         return sb.toString();
     }
-
+    
+    @Override
+    public Iterator<Creature> iterator() {
+        return new Iterator<Creature>() {
+            
+            private int i = 0;
+            
+            @Override
+            public boolean hasNext() {
+                return i < list.length;
+            }
+    
+            @Override
+            public Creature next() {
+                return list[i++];
+            }
+        };
+    }
+    
+    @Override
+    public void forEach(Consumer<? super Creature> action) {
+        for (Creature c : list) action.accept(c);
+    }
+    
+    @Override
+    public Spliterator<Creature> spliterator() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }

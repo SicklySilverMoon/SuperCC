@@ -25,9 +25,10 @@ public class RNG{
      * once.
      * @param a The array to permute
      */
-    public void randomPermutation3(int[] a){
+    public void randomPermutation3(Object[] a){
         nextValue();
-        int swap, n;
+        Object swap;
+        int n;
 
         n = currentValue >>> 30;                                                    // 0 or 1
         swap = a[n]; a[n] = a[1]; a[1] = swap;
@@ -42,9 +43,10 @@ public class RNG{
      * rng once.
      * @param a The array to permute
      */
-    public void randomPermutation4(int[] a){
+    public void randomPermutation4(Object[] a){
         nextValue();
-        int swap, n;
+        Object swap;
+        int n;
 
         n = currentValue >>> 30;                                                    // 0 or 1
         swap = a[n]; a[n] = a[1]; a[1] = swap;

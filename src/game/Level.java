@@ -11,90 +11,36 @@ public class Level extends SaveState {
     private static final int HALF_WAIT = 0, KEY = 1, CLICK_EARLY = 2, CLICK_LATE = 3;
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     
-    public final int levelNumber, startTime;
-    public final byte[] title, password, hint;
-    public final short[] toggleDoors, portals;
+    private final int levelNumber, startTime;
+    private final byte[] title, password, hint;
+    final Position[] toggleDoors, portals;
     private GreenButton[] greenButtons;
     private RedButton[] redButtons;
     private BrownButton[] brownButtons;
     private BlueButton[] blueButtons;
-
     private int rngSeed;
     private Step step;
-
-    public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, short[] toggleDoors, short[] portals,
-                 GreenButton[] greenButtons, RedButton[] redButtons,
-                 BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
-                 Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
-                 Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
-
-        super(layerBG, layerFG, monsterList, slipList, chip,
-                time, chips, new short[4], new short[4], rng, NO_CLICK, traps);
-
-        this.levelNumber = levelNumber;
-        this.startTime = time;
-        this.title = title;
-        this.password = password;
-        this.hint = hint;
-        this.toggleDoors = toggleDoors;
-        this.portals = portals;
-        this.greenButtons = greenButtons;
-        this.redButtons = redButtons;
-        this.brownButtons = brownButtons;
-        this.blueButtons = blueButtons;
-        this.rngSeed = rngSeed;
-        this.step = step;
-
-        this.slipList.setLevel(this);
-        this.monsterList.setLevel(this);
+    
+    public int getLevelNumber() {
+        return levelNumber;
     }
-
-    public Layer getLayerBG() {
-        return layerBG;
+    public int getStartTime() {
+        return startTime;
     }
-    public Layer getLayerFG() {
-        return layerFG;
+    public byte[] getTitle() {
+        return title;
     }
-    public int getTimer(){
-        if (tickNumber == 0) return startTime;
-        else return startTime - tickNumber + 1;                     // The first tick does not change the timer
+    public byte[] getPassword() {
+        return password;
     }
-    public int getTChipTime() {
-        if (tickNumber == 0) return 9999;
-        else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
+    public byte[] getHint() {
+        return hint;
     }
-    public int getChipsLeft(){
-        return chipsLeft;
+    public Position[] getToggleDoors() {
+        return toggleDoors;
     }
-    public void setChipsLeft(int chipsLeft){
-        this.chipsLeft = chipsLeft;
-    }
-    public Creature getChip(){
-        return chip;
-    }
-    public int getRngSeed(){
-        return rngSeed;
-    }
-    public Step getStep(){
-        return step;
-    }
-    public short[] getKeys(){
-        return keys;
-    }
-    public void setKeys(short[] keys){
-        this.keys = keys;
-    }
-    public short[] getBoots(){
-        return boots;
-    }
-    public void setBoots(short[] boots){
-        this.boots = boots;
-    }
-    public CreatureList getMonsterList(){
-        return monsterList;
-    }
-    public SlipList getSlipList(){
-        return slipList;
+    public Position[] getPortals() {
+        return portals;
     }
     public GreenButton[] getGreenButtons() {
         return greenButtons;
@@ -108,18 +54,136 @@ public class Level extends SaveState {
     public BlueButton[] getBlueButtons() {
         return blueButtons;
     }
+    public int getRngSeed(){
+        return rngSeed;
+    }
+    public Step getStep(){
+        return step;
+    }
+    
+    public Layer getLayerBG() {
+        return layerBG;
+    }
+    public Layer getLayerFG() {
+        return layerFG;
+    }
+    /**
+     *
+     * @return The current value of the timer that is displayed on screen.
+     * Returns a negative value on untimed levels.
+     */
+    public int getTimer(){
+        if (tickNumber == 0) return startTime;
+        else return startTime - tickNumber + 1;                     // The first tick does not change the timer
+    }
+    /**
+     *
+     * @return The current value of the timer if we are using TChip timing
+     * (where the time starts at 999.9).
+     */
+    public int getTChipTime() {
+        if (tickNumber == 0) return 9999;
+        else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
+    }
+    public int getChipsLeft(){
+        return chipsLeft;
+    }
+    public void setChipsLeft(int chipsLeft){
+        this.chipsLeft = chipsLeft;
+    }
+    public Creature getChip(){
+        return chip;
+    }
+    /**
+     * Returns chip's keys
+     * <p>
+     * Chip's keys are short array with 4 entries containing the number of
+     * blue, red, green and yellow keys in that order.
+     * </p>
+     * @return chip's keys
+     */
+    public short[] getKeys(){
+        return keys;
+    }
+    /**
+     * Set chip's keys
+     * <p>
+     * Chip's keys are short array with 4 entries containing the number of
+     * blue, red, green and yellow keys in that order.
+     * </p>
+     */
+    public void setKeys(short[] keys){
+        this.keys = keys;
+    }
+    /**
+     * Returns chip's boots
+     * <p>
+     * Chip's boots are byte array with 4 entries containing the number of
+     * flippers, fire boots, skates and suction boots in that order.
+     * </p>
+     * @return chip's boots
+     */
+    public byte[] getBoots(){
+        return boots;
+    }
+    /**
+     * Sets chip's boots
+     * <p>
+     * Chip's boots are byte array with 4 entries containing the number of
+     * flippers, fire boots, skates and suction boots in that order.
+     * </p>
+     */
+    public void setBoots(byte[] boots){
+        this.boots = boots;
+    }
+    public CreatureList getMonsterList(){
+        return monsterList;
+    }
+    public SlipList getSlipList(){
+        return slipList;
+    }
     public BitSet getOpenTraps(){
         return traps;
     }
+    /**
+     * @param position the last clicked position.
+     */
     public void setClick(int position){
         this.mouseClick = position;
     }
     
-    protected void popTile(Position position){
+    public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] portals,
+                 GreenButton[] greenButtons, RedButton[] redButtons,
+                 BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
+                 Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
+                 Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
+        
+        super(layerBG, layerFG, monsterList, slipList, chip,
+              time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+        
+        this.levelNumber = levelNumber;
+        this.startTime = time;
+        this.title = title;
+        this.password = password;
+        this.hint = hint;
+        this.toggleDoors = toggleDoors;
+        this.portals = portals;
+        this.greenButtons = greenButtons;
+        this.redButtons = redButtons;
+        this.brownButtons = brownButtons;
+        this.blueButtons = blueButtons;
+        this.rngSeed = rngSeed;
+        this.step = step;
+        
+        this.slipList.setLevel(this);
+        this.monsterList.setLevel(this);
+    }
+    
+    void popTile(Position position){
         layerFG.set(position, layerBG.get(position));
         layerBG.set(position, FLOOR);
     }
-    protected void insertTile(Position position, Tile tile){
+    void insertTile(Position position, Tile tile){
         layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
     }
@@ -158,21 +222,21 @@ public class Level extends SaveState {
     }
     
     private void moveChipSliding(){
-        int direction = chip.getDirection();
+        Direction direction = chip.getDirection();
         Tile bgTile = layerBG.get(chip.getPosition());
-        if (bgTile.isFF()) chip.tick(new int[] {direction}, this, true);
+        if (bgTile.isFF()) chip.tick(new Direction[] {direction}, this, true);
         else chip.tick(chip.getSlideDirectionPriority(bgTile, rng, true), this, true);
     }
     
-    private void moveChip(int[] directions){
-        int oldPosition = chip.getIndex();
-        for (int direction : directions) {
+    private void moveChip(Direction[] directions){
+        Position oldPosition = chip.getPosition().clone();
+        for (Direction direction : directions) {
             if (chip.isSliding()) {
                 if (!layerBG.get(chip.getPosition()).isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
-            chip.tick(new int[] {direction}, this, false);
-            if (chip.getIndex() != oldPosition) break;
+            chip.tick(new Direction[] {direction}, this, false);
+            if (!chip.getPosition().equals(oldPosition)) break;
         }
     }
 
@@ -188,12 +252,25 @@ public class Level extends SaveState {
     }
 
     private void initialiseSlidingMonsters(){
-        for (Creature m : monsterList.list) m.setSliding(false);
+        for (Creature m : monsterList) m.setSliding(false);
         for (Creature m : slipList) m.setSliding(true);
     }
     
-    // return: did it tick twice?
-    public boolean tick(byte b, int[] directions){
+    /**
+     * Advances a tick (10th of a second).
+     * <p>
+     *     This method is not responsible for setting the click position, or
+     *     for checking whether chip can move (in case chip moved the previous
+     *     tick).
+     * </p>
+     * @param b The direction in which to move. If b is positive it should be
+     *          one of UP, LEFT, DOWN, RIGHT and WAIT. If b is negative, it is
+     *          interpreted as a mouse click. Note that the click itself is not
+     *          set here - use {@link #setClick(int)} for that.
+     * @param directions The directions in which chip should try to move
+     * @return true if the next move should be made automatically without input
+     */
+    public boolean tick(byte b, Direction[] directions){
         
         initialiseSlidingMonsters();
         tickNumber++;
@@ -215,7 +292,7 @@ public class Level extends SaveState {
 
         monsterList.finalise();
         finaliseTraps();
-        if (moveType == KEY || chip.getIndex() == mouseClick) mouseClick = NO_CLICK;
+        if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;
     
         return moveType == KEY && !isHalfMove && !chip.isSliding();
     }

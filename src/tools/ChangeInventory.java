@@ -25,8 +25,7 @@ public class ChangeInventory extends JPanel {
     private final JSpinner[] allKeySpinners = new JSpinner[] {spinnerBlue, spinnerRed, spinnerGreen, spinnerYellow};
     private final JSpinner[] allBootSpinners = new JSpinner[] {spinnerFlippers, spinnerFire, spinnerIce, spinnerSuction};
     
-    public static final int INVENTORY_MAX_VALUE = 2 * 32 * 32 - 1;
-    
+    public static final int KEYS_MAX_VALUE = 2 * 32 * 32 - 1;
     
     public static void main(String[] args) {
         JFrame frame = new JFrame();
@@ -40,17 +39,20 @@ public class ChangeInventory extends JPanel {
     
     public void updateChanges(SuperCC emulator){
         short[] keys = emulator.getLevel().getKeys();
-        for (int i = 0; i < allKeySpinners.length; i++) keys[i] = (short) (INVENTORY_MAX_VALUE & ((java.lang.Number) allKeySpinners[i].getValue()).intValue());
-        short[] boots = emulator.getLevel().getBoots();
-        for (int i = 0; i < allKeySpinners.length; i++) boots[i] = (short) (INVENTORY_MAX_VALUE & ((java.lang.Number) allBootSpinners[i].getValue()).intValue());
-        emulator.getLevel().setChipsLeft((short) (INVENTORY_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
+        for (int i = 0; i < allKeySpinners.length; i++) keys[i] = (short) (KEYS_MAX_VALUE & ((java.lang.Number) allKeySpinners[i].getValue()).intValue());
+        byte[] boots = emulator.getLevel().getBoots();
+        for (int i = 0; i < allKeySpinners.length; i++) {
+            if (((java.lang.Number) allBootSpinners[i].getValue()).intValue() == 0) boots[i] = 0;
+            else boots[i] = 1;
+        }
+        emulator.getLevel().setChipsLeft((short) (KEYS_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
         emulator.getMainWindow().repaint(emulator.getLevel(), false);
     }
     
     public ChangeInventory(SuperCC emulator){
         short[] keys = emulator.getLevel().getKeys();
         for (int i = 0; i < allKeySpinners.length; i++) allKeySpinners[i].setValue(keys[i]);
-        short[] boots = emulator.getLevel().getBoots();
+        byte[] boots = emulator.getLevel().getBoots();
         for (int i = 0; i < allBootSpinners.length; i++) allBootSpinners[i].setValue(boots[i]);
         spinnerChips.setValue(emulator.getLevel().getChipsLeft());
         JFrame frame = new JFrame("Inventory");
