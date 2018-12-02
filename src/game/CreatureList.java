@@ -29,6 +29,8 @@ public class CreatureList implements Iterable<Creature> {
 
     void tick(){
 
+        newClones.clear();
+        numDeadMonsters = 0;
         blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 3);
 
         direction = null;
