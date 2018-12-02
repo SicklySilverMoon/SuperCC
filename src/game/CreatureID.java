@@ -19,7 +19,7 @@ public enum CreatureID {
     
     private final int bits;
     
-    public int getBits () {
+    int getBits () {
         return bits;
     }
     

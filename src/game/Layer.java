@@ -16,7 +16,7 @@ public class Layer implements Iterable<Tile> {
         return get(p.getIndex());
     }
     
-    public byte[] getLayer(){
+    public byte[] getBytes(){
         return layer;
     }
     
@@ -30,10 +30,6 @@ public class Layer implements Iterable<Tile> {
     
     public Layer(byte[] layer){
         this.layer = layer;
-    }
-    
-    public Layer(){
-        this.layer = new byte[32*32];
     }
     
     @Override
@@ -56,11 +52,12 @@ public class Layer implements Iterable<Tile> {
     
     @Override
     public void forEach(Consumer<? super Tile> action) {
-        throw new UnsupportedOperationException("not implemented");
+        for (byte b : layer) action.accept(Tile.fromOrdinal(b));
     }
     
     @Override
     public Spliterator<Tile> spliterator() {
         throw new UnsupportedOperationException("not implemented");
     }
+    
 }

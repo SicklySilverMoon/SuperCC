@@ -2,12 +2,15 @@ package game;
 
 public class RNG{
 
-    public int currentValue = 0;
+    private int currentValue;
     private int nextValue(){
         return currentValue = (currentValue * 1103515245 + 12345) & 0x7FFFFFFF;
     }
-    public void setRNG(int value){
+    public void setCurrentValue(int value){
         currentValue = value & 0x7FFFFFFF;
+    }
+    public int getCurrentValue() {
+        return currentValue;
     }
 
     /**
@@ -15,7 +18,7 @@ public class RNG{
      * force floors. This advances the RNG once.
      * @return An int from 0-3 .
      */
-    public int random4(){
+    int random4(){
         return nextValue() >>> 29;
     }
 
@@ -25,7 +28,7 @@ public class RNG{
      * once.
      * @param a The array to permute
      */
-    public void randomPermutation3(Object[] a){
+    void randomPermutation3(Object[] a){
         nextValue();
         Object swap;
         int n;
@@ -43,7 +46,7 @@ public class RNG{
      * rng once.
      * @param a The array to permute
      */
-    public void randomPermutation4(Object[] a){
+    void randomPermutation4(Object[] a){
         nextValue();
         Object swap;
         int n;
@@ -58,7 +61,6 @@ public class RNG{
         swap = a[n]; a[n] = a[3]; a[3] = swap;
     }
     
-    public RNG(){}
     public RNG(int startingSeed) {
         currentValue = startingSeed;
     }

@@ -29,7 +29,7 @@ public class SaveState {
     SlipList slipList;
     
     /**
-     * Write a savestate
+     * Write an uncompressed savestate
      * @return a savestate
      */
     public byte[] save(){
@@ -37,13 +37,13 @@ public class SaveState {
         SavestateWriter writer = new SavestateWriter();
         writer.write(UNCOMPRESSED);                                        // Version
         writer.writeShort((short) chip.bits());
-        writer.writeBytes(layerBG.getLayer());
-        writer.writeBytes(layerFG.getLayer());
+        writer.writeBytes(layerBG.getBytes());
+        writer.writeBytes(layerFG.getBytes());
         writer.writeShort(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
         writer.writeBytes(boots);
-        writer.writeInt(rng.currentValue);
+        writer.writeInt(rng.getCurrentValue());
         writer.writeShort(mouseClick);
         writer.writeShort(traps.length);
         writer.writeBytes(traps);
@@ -69,7 +69,7 @@ public class SaveState {
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);
         boots = reader.readBytes(4);
-        rng.currentValue = (reader.readInt());
+        rng.setCurrentValue(reader.readInt());
         mouseClick = reader.readShort();
         traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
         monsterList.list = reader.readMonsterArray(reader.readShort());
@@ -159,15 +159,8 @@ public class SaveState {
             }
             return monsters;
         }
-        ArrayList<Creature> readMonsterList(int length){
-            ArrayList<Creature> monsters = new ArrayList<Creature>();
-            for (int i = 0; i < length; i++){
-                monsters.add(new Creature(readShort()));
-            }
-            return monsters;
-        }
 
-        public SavestateReader(byte[] b){
+        SavestateReader(byte[] b){
             super(b);
         }
 
@@ -185,7 +178,7 @@ public class SaveState {
             write(n >>> 8);
             write(n);
         }
-        public void writeBytes(byte[] a){
+        void writeBytes(byte[] a){
             try {
                 write(a);
             }
@@ -194,8 +187,8 @@ public class SaveState {
             }
         }
         void writeShorts(short[] a){
-            for (int i = 0; i < a.length; i++){
-                writeShort(a[i]);
+            for (short s : a){
+                writeShort(s);
             }
         }
         void writeMonsterArray(Creature[] monsters){

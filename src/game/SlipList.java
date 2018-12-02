@@ -21,7 +21,7 @@ public class SlipList extends ArrayList<Creature> {
         return level;
     }
 
-    public void setSliplist(Creature[] slidingCreatures){
+    void setSliplist(Creature[] slidingCreatures){
         clear();
         for (Creature slider : slidingCreatures){
             Creature c = level.monsterList.creatureAt(slider.getPosition());

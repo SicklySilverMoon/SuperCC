@@ -16,11 +16,11 @@ public class CreatureList implements Iterable<Creature> {
     
     private Level level;
 
-    public Creature[] list;
+    Creature[] list;
     int numDeadMonsters;
     private List<Creature> newClones;
     public static Direction direction;
-    boolean blobStep;
+    private boolean blobStep;
     
     public Creature creatureAt(Position position){
         for (Creature c : list) if (c.getPosition().equals(position)) return c;

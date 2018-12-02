@@ -72,8 +72,8 @@ public class GamePanel extends JPanel{
         byte[] layerFG;
 
         try{
-            layerFG = level.getLayerFG().getLayer();
-            layerBG = level.getLayerBG().getLayer();
+            layerFG = level.getLayerFG().getBytes();
+            layerBG = level.getLayerBG().getBytes();
         }
         catch (NullPointerException npe){
             return;
@@ -97,7 +97,7 @@ public class GamePanel extends JPanel{
         
         overlay = new BufferedImage(32 * TILE_SIZE, 32 * TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
         WritableRaster r = overlay.getRaster();
-        if (showMonsterList) drawMonsterList(level.getMonsterList().list, r);
+        if (showMonsterList) drawMonsterList(level.getMonsterList(), r);
         if (showSlipList) drawSlipList(level.getSlipList(), r);
         Graphics2D g = overlay.createGraphics();
         if (showCloneConnections) drawButtonConnections(level.getRedButtons(), g);
@@ -113,11 +113,11 @@ public class GamePanel extends JPanel{
         }
     }
     
-    private void drawMonsterList(Creature[] monsterList, WritableRaster raster){
-        for (int i = 0; i < monsterList.length; i++){
-            Creature monster = monsterList[i];
-            int x = monster.getPosition().getX()*TILE_SIZE, y = monster.getPosition().getY()*TILE_SIZE;
-            drawNumber(i+1, blackDigits, raster, x, y);
+    private void drawMonsterList(CreatureList monsterList, WritableRaster raster){
+        int i = 0;
+        for (Creature c : monsterList){
+            int x = c.getPosition().getX()*TILE_SIZE, y = c.getPosition().getY()*TILE_SIZE;
+            drawNumber(++i, blackDigits, raster, x, y);
         }
     }
     
