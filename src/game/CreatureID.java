@@ -14,7 +14,9 @@ public enum CreatureID {
     TANK_STATIONARY (0b00_1001_0000000000),
     BLOCK           (0b00_1010_0000000000),
     CHIP            (0b00_1011_0000000000),
+    UNUSED          (0b00_1100_0000000000),
     CHIP_SLIDING    (0b00_1101_0000000000),
+    UNUSED_2        (0b00_1110_0000000000),
     DEAD            (0b00_1111_0000000000);
     
     private final int bits;
