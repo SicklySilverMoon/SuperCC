@@ -4,6 +4,8 @@ import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
 import game.Step;
+import game.button.BlueButton;
+import game.button.GreenButton;
 import tools.ChangeInventory;
 import tools.ChangeTimer;
 import tools.GameGifRecorder;
@@ -357,16 +359,30 @@ public class MenuBar extends JMenuBar{
             super("Cheats");
     
             JMenuItem inventory = new JMenuItem("Change inventory");
-            inventory.addActionListener(e -> {
-                new ChangeInventory(emulator);
-            });
+            inventory.addActionListener(e -> new ChangeInventory(emulator));
             add(inventory);
     
             JMenuItem time = new JMenuItem("Change timer");
-            time.addActionListener(e -> {
-                new ChangeTimer(emulator);
-            });
+            time.addActionListener(e -> new ChangeTimer(emulator));
             add(time);
+            
+            add(new JSeparator());
+    
+            JMenuItem toggle = new JMenuItem("Press Green Button");
+            toggle.addActionListener(e -> {
+                new GreenButton(null).press(emulator.getLevel());
+                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+            });
+            add(toggle);
+            
+            JMenuItem tank = new JMenuItem("Press Blue Button");
+            tank.addActionListener(e -> {
+                new BlueButton(null).press(emulator.getLevel());
+                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+            });
+            add(tank);
+            
+            
         }
     }
     
