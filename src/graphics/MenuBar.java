@@ -144,7 +144,7 @@ public class MenuBar extends JMenuBar{
                     fc.setFileFilter(new FileNameExtensionFilter("", "json"));
                     fc.setCurrentDirectory(new File(emulator.getJSONPath()));
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
-                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
                         File file = fc.getSelectedFile();
                         String filename = file.toString();
                         if (!filename .endsWith(".json")) filename += ".json";
