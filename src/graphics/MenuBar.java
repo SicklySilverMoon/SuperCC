@@ -5,6 +5,7 @@ import emulator.SuperCC;
 import game.Level;
 import game.Step;
 import tools.ChangeInventory;
+import tools.ChangeTimer;
 import tools.GameGifRecorder;
 
 import javax.imageio.ImageIO;
@@ -354,12 +355,18 @@ public class MenuBar extends JMenuBar{
     private class CheatMenu extends JMenu{
         public CheatMenu() {
             super("Cheats");
-            
+    
             JMenuItem inventory = new JMenuItem("Change inventory");
             inventory.addActionListener(e -> {
-                ChangeInventory c = new ChangeInventory(emulator);
+                new ChangeInventory(emulator);
             });
             add(inventory);
+    
+            JMenuItem time = new JMenuItem("Change timer");
+            time.addActionListener(e -> {
+                new ChangeTimer(emulator);
+            });
+            add(time);
         }
     }
     

@@ -11,7 +11,7 @@ public class Level extends SaveState {
     private static final int HALF_WAIT = 0, KEY = 1, CLICK_EARLY = 2, CLICK_LATE = 3;
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     
-    private final int levelNumber, startTime;
+    private int levelNumber, startTime;
     private final byte[] title, password, hint;
     final Position[] toggleDoors, portals;
     private GreenButton[] greenButtons;
@@ -84,6 +84,9 @@ public class Level extends SaveState {
     public int getTChipTime() {
         if (tickNumber == 0) return 9999;
         else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
+    }
+    public void setTimer(int n) {
+        startTime = n + tickNumber - 1;
     }
     public int getChipsLeft(){
         return chipsLeft;
