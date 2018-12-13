@@ -360,6 +360,7 @@ public class MenuBar extends JMenuBar{
     
             JMenuItem inventory = new JMenuItem("Change inventory");
             inventory.addActionListener(e -> new ChangeInventory(emulator));
+            addIcon(inventory, "/resources/icons/green_key.gif");
             add(inventory);
     
             JMenuItem time = new JMenuItem("Change timer");
@@ -373,6 +374,7 @@ public class MenuBar extends JMenuBar{
                 new GreenButton(null).press(emulator.getLevel());
                 emulator.getMainWindow().repaint(emulator.getLevel(), false);
             });
+            addIcon(toggle, "/resources/icons/green_button.gif");
             add(toggle);
             
             JMenuItem tank = new JMenuItem("Press Blue Button");
@@ -380,6 +382,7 @@ public class MenuBar extends JMenuBar{
                 new BlueButton(null).press(emulator.getLevel());
                 emulator.getMainWindow().repaint(emulator.getLevel(), false);
             });
+            addIcon(tank, "/resources/icons/blue_button.gif");
             add(tank);
             
             
