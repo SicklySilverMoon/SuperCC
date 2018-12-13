@@ -19,7 +19,7 @@ public class LastActionPanel extends TextPanel {
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        drawText(g, lastAction, 2);
+        drawText(g, lastAction, 1);
     }
 
 }
