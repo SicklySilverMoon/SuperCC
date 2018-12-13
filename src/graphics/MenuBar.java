@@ -46,7 +46,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("", "dat"));
+                fc.setFileFilter(new FileNameExtensionFilter("", "dat", "ccl"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
