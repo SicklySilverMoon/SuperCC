@@ -168,7 +168,7 @@ public class Creature{
         switch (creatureType){
             case BLOCK: return Tile.BLOCK;
             case CHIP_SLIDING: return Tile.fromOrdinal(Tile.CHIP_UP.ordinal() | direction.ordinal());
-            case TANK_STATIONARY: return Tile.fromOrdinal(TANK_NORTH.ordinal() | direction.ordinal());
+            case TANK_STATIONARY: return Tile.fromOrdinal(TANK_UP.ordinal() | direction.ordinal());
             default: return Tile.fromOrdinal((creatureType.ordinal() << 2) + 0x40 | direction.ordinal());
         }
     }
@@ -235,7 +235,7 @@ public class Creature{
             case CHIP: return creatureType.isChip();
             case WATER: return true;
             case FIRE: return getCreatureType() != BUG && getCreatureType() != WALKER;
-            case HIDDENWALL_PERM: return false;
+            case INVSIBLE_WALL: return false;
             case THIN_WALL_UP: return direction != DOWN;
             case THIN_WALL_RIGHT: return direction != LEFT;
             case THIN_WALL_DOWN: return direction != UP;
@@ -289,10 +289,10 @@ public class Creature{
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
-            case CHIP_SWIMMING_NORTH:
-            case CHIP_SWIMMING_WEST:
-            case CHIP_SWIMMING_SOUTH:
-            case CHIP_SWIMMING_EAST: return !creatureType.isChip();
+            case CHIP_SWIMMING_UP:
+            case CHIP_SWIMMING_LEFT:
+            case CHIP_SWIMMING_DOWN:
+            case CHIP_SWIMMING_RIGHT: return !creatureType.isChip();
             //monsters
             default: return creatureType.isChip();
             case KEY_BLUE:
@@ -353,7 +353,7 @@ public class Creature{
                         kill();
                         return true;
                 }
-            case HIDDENWALL_PERM: return false;
+            case INVSIBLE_WALL: return false;
             case THIN_WALL_UP: return direction != DOWN;
             case THIN_WALL_RIGHT: return direction != LEFT;
             case THIN_WALL_DOWN: return direction != UP;
@@ -532,10 +532,10 @@ public class Creature{
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
-            case CHIP_SWIMMING_NORTH:
-            case CHIP_SWIMMING_WEST:
-            case CHIP_SWIMMING_SOUTH:
-            case CHIP_SWIMMING_EAST:
+            case CHIP_SWIMMING_UP:
+            case CHIP_SWIMMING_LEFT:
+            case CHIP_SWIMMING_DOWN:
+            case CHIP_SWIMMING_RIGHT:
                 if (!creatureType.isChip()) {
                     level.chip.kill();
                     return true;

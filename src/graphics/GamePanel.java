@@ -257,8 +257,14 @@ public class GamePanel extends JPanel{
     
         @Override
         public void mouseMoved(MouseEvent e) {
-            emulator.showAction(new Position(e).toString());
+            Position pos = new Position(e);
+            Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
+                fgTile = emulator.getLevel().getLayerFG().get(pos);
+            String str = pos.toString() + " " + fgTile;
+            if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+            emulator.showAction(str);
         }
+        
     }
     
     private class GameMouseListener implements MouseListener{
