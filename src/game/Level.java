@@ -276,6 +276,7 @@ public class Level extends SaveState {
         tickNumber++;
         boolean isHalfMove = tickNumber % 2 == 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
+        monsterList.initialise();                                   // must be called after the tick Number is updated
     
         if (tickNumber > 2 && !isHalfMove) monsterList.tick();
         

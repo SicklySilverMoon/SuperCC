@@ -26,12 +26,14 @@ public class CreatureList implements Iterable<Creature> {
         for (Creature c : list) if (c.getPosition().equals(position)) return c;
         return null;
     }
-
-    void tick(){
-
+    
+    void initialise() {
         newClones.clear();
         numDeadMonsters = 0;
         blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 3);
+    }
+
+    void tick(){
 
         direction = null;
         for(Creature monster : list){
