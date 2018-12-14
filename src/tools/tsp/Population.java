@@ -45,24 +45,11 @@ public class Population {
         });
     }
     
-    public void shuffle() {
-        for (int i = population.length - 1; i > 0; i--) {
-            int swapIndex = ThreadLocalRandom.current().nextInt(i + 1);
-            Route swap = population[swapIndex];
-            population[swapIndex] = population[i];
-            population[i] = swap;
-        }
-    }
-    
     public Population(int populationSize, int chromosomeLength) {
         this.population = new Route[populationSize];
         for (int i = 0; i < populationSize; i++) {
             this.population[i] = new Route(chromosomeLength);
         }
-    }
-    
-    public Population(Route[] population) {
-        this.population = population;
     }
     
     @Override

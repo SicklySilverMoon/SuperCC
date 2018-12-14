@@ -34,7 +34,7 @@ public class Route {
     }
     
     public int getRouteLength(DistanceMatrix dm) {
-        if (routeLength < 0) calculateRouteLength(dm);
+        calculateRouteLength(dm);
         return routeLength;
     }
     
@@ -43,7 +43,7 @@ public class Route {
     }
     
     public double getFitness(DistanceMatrix dm) {
-        if (fitness < 0) calculateFitness(dm);
+        calculateFitness(dm);
         return fitness;
     }
     

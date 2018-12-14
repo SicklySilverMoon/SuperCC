@@ -18,19 +18,17 @@ public class GeneticAlgorithm {
     }
     
     public Population initPopulation(int chromosomeLength){
+        System.out.println(new Population(this.populationSize, chromosomeLength));
         return new Population(this.populationSize, chromosomeLength);
     }
     
     public Route selectParent(Population population, DistanceMatrix dm) {
-        Route[] routes = new Route[tournamentSize];
-        population.shuffle();
+        int min = populationSize;
         for (int i = 0; i < this.tournamentSize; i++) {
-            Route tournamentRoute = population.get(i);
-            routes[i] = tournamentRoute;
+            int n = ThreadLocalRandom.current().nextInt(this.tournamentSize-1);
+            if (n < min) min = n;
         }
-        Population tournament = new Population(routes);
-        tournament.sort(dm);
-        return tournament.get(0);
+        return population.get(min);
     }
     
     public Population crossoverPopulation(Population population, DistanceMatrix dm, int chromosomeLength){
@@ -40,7 +38,7 @@ public class GeneticAlgorithm {
         for (int childIndex = 0; childIndex < population.size(); childIndex++) {
             
             Route parent1 = population.get(childIndex);
-            if (childIndex >= this.elitismCount && this.crossoverRate > Math.random()) {
+            if (childIndex >= elitismCount && crossoverRate > Math.random()) {
                 Route parent2 = this.selectParent(population, dm);
                 int[] offspringChromosome = new int[chromosomeLength];
                 Arrays.fill(offspringChromosome, -1);
@@ -72,11 +70,8 @@ public class GeneticAlgorithm {
                     parentGeneIndex++;
                     if (parentGeneIndex >= chromosomeLength) parentGeneIndex -= chromosomeLength;
                 }
-                
-                // Add child
                 newPopulation.set(childIndex, offspring);
             } else {
-                // Add individual to new population without applying crossover
                 newPopulation.set(childIndex, parent1);
             }
         }

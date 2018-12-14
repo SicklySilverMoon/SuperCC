@@ -14,7 +14,7 @@ public class ChangeTimer {
         short[] keys = emulator.getLevel().getKeys();
         SpinnerModel sm = new SpinnerNumberModel(((double) emulator.getLevel().getTimer()) / 10, 0.1, Short.MAX_VALUE, 0.1);
         spinner.setModel(sm);
-        JFrame frame = new JFrame("Inventory");
+        JFrame frame = new JFrame("Timer");
         frame.setContentPane(mainPanel);
         frame.pack();
         frame.setLocationRelativeTo(emulator.getMainWindow());
