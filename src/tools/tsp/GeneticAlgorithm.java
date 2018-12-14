@@ -44,6 +44,8 @@ public class GeneticAlgorithm {
                 Route parent2 = this.selectParent(population, dm);
                 int[] offspringChromosome = new int[chromosomeLength];
                 Arrays.fill(offspringChromosome, -1);
+                offspringChromosome[0] = 0;
+                offspringChromosome[chromosomeLength-1] = chromosomeLength-1;
                 Route offspring = new Route(offspringChromosome);
                 
                 // Get subset of parent chromosomes
@@ -86,9 +88,9 @@ public class GeneticAlgorithm {
         population.sort(dm);
         for (int i = elitismCount; i < population.size(); i++) {
             Route route = population.get(i);
-            for (int j = 0; j < route.getChromosomeLength(); j++) {
+            for (int j = 1; j < route.getChromosomeLength()-1; j++) {
                 if (mutationRate > Math.random()) {
-                    int newGenePos = ThreadLocalRandom.current().nextInt(route.getChromosomeLength());
+                    int newGenePos = 1 + ThreadLocalRandom.current().nextInt(route.getChromosomeLength()-2);
                     int swap = route.get(j);
                     route.set(j, route.get(newGenePos));
                     route.set(newGenePos, swap);
