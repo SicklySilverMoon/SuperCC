@@ -33,6 +33,10 @@ public class Solution{
     }
     
     public void load(SuperCC emulator){
+        load(emulator, TickFlags.PRELOADING);
+    }
+    
+    public void load(SuperCC emulator, TickFlags tickFlags){
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false);
         Level level = emulator.getLevel();
         try{
@@ -51,7 +55,7 @@ public class Solution{
                         b = clickPosition.clickByte(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(b, TickFlags.PRELOADING);
+                boolean tickedTwice = emulator.tick(b, tickFlags);
                 if (tickedTwice) move++;
                 if (level.getChip().isDead()) {
                     break;
