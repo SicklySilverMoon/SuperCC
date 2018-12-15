@@ -166,8 +166,8 @@ public class LevelFactory {
                            byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
                            byte[] hint, int[][] monsterPositions, int rngSeed, Step step){
 
-        Layer layerBG = new Layer(byteLayerBG);
-        Layer layerFG = new Layer(byteLayerFG);
+        Layer layerBG = new ByteLayer(byteLayerBG);
+        Layer layerFG = new ByteLayer(byteLayerFG);
 
         return new Level(
             levelNumber,

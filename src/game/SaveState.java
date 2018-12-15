@@ -63,8 +63,8 @@ public class SaveState {
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         chip = new Creature(reader.readShort());
-        layerBG = reader.readLayer(version);
-        layerFG = reader.readLayer(version);
+        layerBG.load(reader.readLayer(version));
+        layerFG.load(reader.readLayer(version));
         tickNumber = (short) reader.readShort();
         chipsLeft = reader.readShort();
         keys = reader.readShorts(4);
@@ -130,8 +130,8 @@ public class SaveState {
             }
             return out;
         }
-        Layer readLayerRLE(){
-            byte[] layer = new byte[32*32];
+        byte[] readLayerRLE(){
+            byte[] layerBytes = new byte[32*32];
             int tileIndex = 0;
             byte b;
             while ((b = (byte) read()) != RLE_END){
@@ -139,18 +139,16 @@ public class SaveState {
                     int rleLength = readUnsignedByte() + 1;
                     byte t = (byte) read();
                     for (int i = 0; i < rleLength; i++){
-                        layer[tileIndex++] = t;
+                        layerBytes[tileIndex++] = t;
                     }
                 }
-                else layer[tileIndex++] = b;
+                else layerBytes[tileIndex++] = b;
             }
-            return new Layer(layer);
+            return layerBytes;
         }
-        Layer readLayer(int version){
-            if (version == COMPRESSED) {
-                return readLayerRLE();
-            }
-            else return new Layer(readBytes(32*32));
+        byte[] readLayer(int version){
+            if (version == COMPRESSED) return readLayerRLE();
+            else return readBytes(32*32);
         }
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];

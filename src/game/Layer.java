@@ -1,63 +1,34 @@
 package game;
 
-import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.function.Consumer;
+/**
+ *
+ *
+ * Benchmarks:
+ *
+ * Time taken to run pain, without writing savesates:
+ * ByteLayer: 12.42920485ms
+ * TileLayer: 12.07655951ms
+ *
+ * Time taken to run pain, with writing savesates:
+ * ByteLayer: 20.73663555ms
+ * TileLayer: 26.42774384ms
+ *
+ */
 
-public class Layer implements Iterable<Tile> {
+public interface Layer extends Iterable<Tile> {
     
-    private final byte[] layer;
+    public Tile get(int i);
     
-    public Tile get(int i){
-        return Tile.fromOrdinal(layer[i]);
-    }
+    public Tile get(Position p);
     
-    public Tile get(Position p){
-        return get(p.getIndex());
-    }
+    public void set(int i, Tile t);
     
-    public byte[] getBytes(){
-        return layer;
-    }
+    public void set(Position p, Tile t);
     
-    public void set(int i, Tile t){
-        layer[i] = (byte) t.ordinal();
-    }
+    public byte[] getBytes();
     
-    public void set(Position p, Tile t){
-        set(p.getIndex(), t);
-    }
+    public Tile[] getTiles();
     
-    public Layer(byte[] layer){
-        this.layer = layer;
-    }
-    
-    @Override
-    public Iterator<Tile> iterator() {
-        return new Iterator<Tile>() {
-            
-            private int i;
-            
-            @Override
-            public boolean hasNext() {
-                return i < 32*32;
-            }
-    
-            @Override
-            public Tile next() {
-                return get(i++);
-            }
-        };
-    }
-    
-    @Override
-    public void forEach(Consumer<? super Tile> action) {
-        for (byte b : layer) action.accept(Tile.fromOrdinal(b));
-    }
-    
-    @Override
-    public Spliterator<Tile> spliterator() {
-        throw new UnsupportedOperationException("not implemented");
-    }
+    public void load(byte[] b);
     
 }
