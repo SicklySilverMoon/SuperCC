@@ -314,6 +314,7 @@ public class MenuBar extends JMenuBar{
             add(tileset);
     
             String[] setterNames = new String[] {
+                "Show Background Tiles",
                 "Show Monster List",
                 "Show Slip List",
                 "Show Clone connections",
@@ -322,6 +323,7 @@ public class MenuBar extends JMenuBar{
             };
             
             List<Consumer<Boolean>> setters = Arrays.asList(
+                b -> window.getGamePanel().setBGVisible(b),
                 b -> window.getGamePanel().setMonsterListVisible(b),
                 b -> window.getGamePanel().setSlipListVisible(b),
                 b -> window.getGamePanel().setClonesVisible(b),

@@ -32,7 +32,7 @@ public class GamePanel extends JPanel{
 
     private byte[] previousFG = new byte[32*32];
     private SuperCC emulator;
-    private boolean showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
+    private boolean showBG, showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
 
     // All 7*16 tile types are preloaded and stored here for fast access.
     private static final int CHANNELS = 4;
@@ -87,7 +87,7 @@ public class GamePanel extends JPanel{
                 int x = TILE_SIZE*(i%32), y = TILE_SIZE*(i/32);
                 rasterBG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerBG[i]]);
                 rasterFG.setPixels(x, y, TILE_SIZE, TILE_SIZE, tileImage[layerFG[i]]);
-                if (!Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
+                if (showBG && !Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
                     rasterFG.setPixels(x + BG_BORDER, y + BG_BORDER,
                                        TILE_SIZE - 2 * BG_BORDER, TILE_SIZE - 2 * BG_BORDER, bgTileImage[layerBG[i]]);
                 }
@@ -164,6 +164,9 @@ public class GamePanel extends JPanel{
         drawPositionList(history, g);
     }
     
+    public void setBGVisible(boolean visible) {
+        showBG = visible;
+    }
     public void setMonsterListVisible(boolean visible){
         showMonsterList = visible;
     }
