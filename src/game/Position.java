@@ -1,9 +1,6 @@
 package game;
 
-import java.awt.event.MouseEvent;
-
 import static game.Direction.*;
-import static graphics.Gui.TILE_SIZE;
 import static java.lang.Math.abs;
 
 public class Position {
@@ -15,13 +12,9 @@ public class Position {
     
     public static final byte UNCLICKABLE = 127;
     
-    private int index;
-    private int x;
-    private int y;
-    
-    private static final int[] OFFSETS = new int[] {
-        10, 13, 7, 16, 4, 19, 1, 11, 14, 8, 17, 5, 20, 2, 9, 12, 6, 15, 3, 18, 0, 10
-    };
+    protected int index;
+    protected int x;
+    protected int y;
     
     public int getX(){
         return x;
@@ -69,26 +62,10 @@ public class Position {
         return new Position(this.x + x, this.y + y);
     }
     
-    public int getGraphicX(){
-        return x*TILE_SIZE + TILE_SIZE/2;
-    }
-    public int getGraphicY(){
-        return y*TILE_SIZE + TILE_SIZE/2;
-    }
-    
-    public int getGraphicX(int offset){
-        if (offset >= OFFSETS.length) offset = OFFSETS.length - 1;
-        return x*TILE_SIZE + OFFSETS[offset];
-    }
-    public int getGraphicY(int offset){
-        if (offset >= OFFSETS.length) offset = OFFSETS.length - 1;
-        return y*TILE_SIZE + OFFSETS[offset];
-    }
-    
     public static Position screenPosition(Position chipPosition){
         int screenX, screenY;
-        int chipX = chipPosition.x;
-        int chipY = chipPosition.y;
+        int chipX = chipPosition.getX();
+        int chipY = chipPosition.getY();
         
         if (chipX < 5) screenX = 0;
         else if (chipX >= 27) screenX = 23;
@@ -103,14 +80,14 @@ public class Position {
     
     public static Position clickPosition(Position screenPosition, byte clickByte){
         int n = -clickByte - 1;
-        return new Position(screenPosition.x + n % 9, screenPosition.y + n / 9);
+        return new Position(screenPosition.getX() + n % 9, screenPosition.getY() + n / 9);
     }
     
     public byte clickByte(Position chipPosition){
         Position screen = screenPosition(chipPosition);
-        if (y - screen.y < 9 && y - screen.y >= 0 &&
-            x - screen.x < 9 && x - screen.x >= 0){
-            return (byte) -(9 * (y - screen.y) + (x - screen.x) + 1);
+        if (y - screen.getY() < 9 && y - screen.getY() >= 0 &&
+            x - screen.getX() < 9 && x - screen.getX() >= 0){
+            return (byte) -(9 * (y - screen.getY()) + (x - screen.getX()) + 1);
         }
         return UNCLICKABLE;
     }
@@ -132,12 +109,6 @@ public class Position {
         else return new Direction[] {horizontalDirection, verticalDirection};
     }
     
-    public Position(MouseEvent e){
-        this.x = e.getX() / TILE_SIZE;
-        this.y = e.getY() / TILE_SIZE;
-        index = (y << 5) | x;
-    }
-    
     public Position(int x, int y){
         this.x = x;
         this.y = y;
@@ -146,6 +117,12 @@ public class Position {
     
     public Position(int index){
         setIndex(index);
+    }
+    
+    public Position(int x, int y, int index) {
+        this.x = x;
+        this.y = y;
+        this.index = index;
     }
     
     @Override

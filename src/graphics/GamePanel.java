@@ -133,17 +133,18 @@ public class GamePanel extends JPanel{
     private void drawButtonConnections(ConnectionButton[] connections, Graphics2D g){
         g.setColor(Color.BLACK);
         for (ConnectionButton connection : connections){
-            Position pos1 = connection.getButtonPosition(), pos2 = connection.getTargetPosition();
-            g.drawLine(pos1.getGraphicX(), pos1.getGraphicY(), pos2.getGraphicX(), pos2.getGraphicY());
+            GameGraphicPosition pos1 = new GameGraphicPosition(connection.getButtonPosition()), pos2 = new GameGraphicPosition(connection.getTargetPosition());
+            g.drawLine(pos1.getGraphicX(0), pos1.getGraphicY(0), pos2.getGraphicX(0), pos2.getGraphicY(0));
         }
     }
     
     public void drawPositionList(List<Position> positionList, Graphics2D g) {
-        Position previousPos = positionList.get(0);
+        GameGraphicPosition previousPos = new GameGraphicPosition(positionList.get(0));
         boolean[][] tileEnterCount = new boolean[32*32][21];
         int oldOffset = 0, offset = 0;
         for(Position pos : positionList) {
-            int tile = pos.getIndex();
+            GameGraphicPosition gp = new GameGraphicPosition(pos);
+            int tile = gp.getIndex();
             if (tile == previousPos.getIndex()) continue;
             if (tileEnterCount[tile][oldOffset]){
                 for (offset = 0; offset < 21; offset++) if (!tileEnterCount[tile][offset]) break;
@@ -151,8 +152,8 @@ public class GamePanel extends JPanel{
             else offset = oldOffset;
             if (offset == 21) offset = 0;
             g.setColor(Color.BLACK);
-            g.drawLine(previousPos.getGraphicX(oldOffset), previousPos.getGraphicY(oldOffset), pos.getGraphicX(offset), pos.getGraphicY(offset));
-            previousPos = pos;
+            g.drawLine(previousPos.getGraphicX(oldOffset), previousPos.getGraphicY(oldOffset), gp.getGraphicX(offset), gp.getGraphicY(offset));
+            previousPos = gp;
             oldOffset = offset;
             tileEnterCount[tile][offset] = true;
         }
@@ -260,7 +261,7 @@ public class GamePanel extends JPanel{
     
         @Override
         public void mouseMoved(MouseEvent e) {
-            Position pos = new Position(e);
+            GameGraphicPosition pos = new GameGraphicPosition(e);
             Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
                 fgTile = emulator.getLevel().getLayerFG().get(pos);
             String str = pos.toString() + " " + fgTile;
@@ -273,7 +274,7 @@ public class GamePanel extends JPanel{
     public class GameMouseListener implements MouseListener{
         @Override
         public void mouseClicked(MouseEvent e) {
-            Position clickPosition = new Position(e);
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e);
             Creature chip = emulator.getLevel().getChip();
             byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
