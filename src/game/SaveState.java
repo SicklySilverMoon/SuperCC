@@ -1,9 +1,6 @@
 package game;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -34,21 +31,40 @@ public class SaveState {
      */
     public byte[] save(){
         byte[] traps = this.traps.toByteArray();
-        SavestateWriter writer = new SavestateWriter();
-        writer.write(UNCOMPRESSED);                                        // Version
+        
+        int length =
+            1 +                             // version
+            2 +                             // chip
+            1024 +                          // layerBG
+            1024 +                          // layerFG
+            2 +                             // tick number
+            2 +                             // chips left
+            4 * 2 +                         // keys
+            4 * 1 +                         // boots
+            4 +                             // rng
+            2 +                             // mouse click
+            2 +                             // traps length
+            traps.length +                  // traps
+            2 +                             // monsterlist size
+            monsterList.size() * 2 +        // monsterlist
+            2 +                             // sliplist size
+            slipList.size() * 2;            // sliplist
+        
+        SavestateWriter writer = new SavestateWriter(length);
+        writer.write(UNCOMPRESSED);
         writer.writeShort((short) chip.bits());
-        writer.writeBytes(layerBG.getBytes());
-        writer.writeBytes(layerFG.getBytes());
+        writer.write(layerBG.getBytes());
+        writer.write(layerFG.getBytes());
         writer.writeShort(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
-        writer.writeBytes(boots);
+        writer.write(boots);
         writer.writeInt(rng.getCurrentValue());
         writer.writeShort(mouseClick);
         writer.writeShort(traps.length);
-        writer.writeBytes(traps);
-        writer.writeShort(monsterList.list.length);
-        writer.writeMonsterArray(monsterList.list);
+        writer.write(traps);
+        writer.writeShort(monsterList.size());
+        writer.writeMonsterArray(monsterList.getCreatures());
         writer.writeShort(slipList.size());
         writer.writeMonsterList(slipList);
         
@@ -72,7 +88,7 @@ public class SaveState {
         rng.setCurrentValue(reader.readInt());
         mouseClick = reader.readShort();
         traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-        monsterList.list = reader.readMonsterArray(reader.readShort());
+        monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
         slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
     }
     
@@ -164,8 +180,19 @@ public class SaveState {
 
     }
 
-    private class SavestateWriter extends ByteArrayOutputStream{
+    private class SavestateWriter {
 
+        private final byte[] bytes;
+        private int index;
+        
+        void write(int n) {
+            bytes[index] = (byte) n;
+            index++;
+        }
+        void write(byte[] b) {
+            System.arraycopy(b, 0, bytes, index, b.length);
+            index += b.length;
+        }
         void writeShort(int n){
             write(n >>> 8);
             write(n);
@@ -175,14 +202,6 @@ public class SaveState {
             write(n >>> 16);
             write(n >>> 8);
             write(n);
-        }
-        void writeBytes(byte[] a){
-            try {
-                write(a);
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
         }
         void writeShorts(short[] a){
             for (short s : a){
@@ -195,12 +214,13 @@ public class SaveState {
         void writeMonsterList(List<Creature> monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
+        
+        byte[] toByteArray() {
+            return bytes;
+        }
     
-        /**
-         * Creates a savestate writer with an initial capacity of 4096 bytes.
-         */
-        SavestateWriter() {
-            super(4096);
+        SavestateWriter(int size) {
+            bytes = new byte[size];
         }
 
     }
