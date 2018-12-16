@@ -21,6 +21,8 @@ public class Level extends SaveState {
     private int rngSeed;
     private Step step;
     
+    public final Cheats cheats;
+    
     public int getLevelNumber() {
         return levelNumber;
     }
@@ -85,13 +87,13 @@ public class Level extends SaveState {
         if (tickNumber == 0) return 9999;
         else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
     }
-    public void setTimer(int n) {
+    void setTimer(int n) {
         startTime = n + tickNumber - 1;
     }
     public int getChipsLeft(){
         return chipsLeft;
     }
-    public void setChipsLeft(int chipsLeft){
+    void setChipsLeft(int chipsLeft){
         this.chipsLeft = chipsLeft;
     }
     public Creature getChip(){
@@ -115,7 +117,7 @@ public class Level extends SaveState {
      * blue, red, green and yellow keys in that order.
      * </p>
      */
-    public void setKeys(short[] keys){
+    void setKeys(short[] keys){
         this.keys = keys;
     }
     /**
@@ -136,7 +138,7 @@ public class Level extends SaveState {
      * flippers, fire boots, skates and suction boots in that order.
      * </p>
      */
-    public void setBoots(byte[] boots){
+    void setBoots(byte[] boots){
         this.boots = boots;
     }
     public CreatureList getMonsterList(){
@@ -177,6 +179,7 @@ public class Level extends SaveState {
         this.blueButtons = blueButtons;
         this.rngSeed = rngSeed;
         this.step = step;
+        this.cheats = new Cheats(this);
         
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);

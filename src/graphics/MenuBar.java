@@ -385,7 +385,7 @@ public class MenuBar extends JMenuBar{
     
             JMenuItem toggle = new JMenuItem("Press Green Button");
             toggle.addActionListener(e -> {
-                new GreenButton(null).press(emulator.getLevel());
+                emulator.getLevel().cheats.pressGreenButton();
                 emulator.getMainWindow().repaint(emulator.getLevel(), false);
             });
             addIcon(toggle, "/resources/icons/green_button.gif");
@@ -393,7 +393,7 @@ public class MenuBar extends JMenuBar{
             
             JMenuItem tank = new JMenuItem("Press Blue Button");
             tank.addActionListener(e -> {
-                new BlueButton(null).press(emulator.getLevel());
+                emulator.getLevel().cheats.pressBlueButton();
                 emulator.getMainWindow().repaint(emulator.getLevel(), false);
             });
             addIcon(tank, "/resources/icons/blue_button.gif");
