@@ -195,6 +195,13 @@ public class SaveState {
         void writeMonsterList(List<Creature> monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
+    
+        /**
+         * Creates a savestate writer with an initial capacity of 4096 bytes.
+         */
+        SavestateWriter() {
+            super(4096);
+        }
 
     }
 
