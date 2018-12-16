@@ -45,7 +45,7 @@ public class ChangeInventory extends JPanel {
             if (((java.lang.Number) allBootSpinners[i].getValue()).intValue() == 0) boots[i] = 0;
             else boots[i] = 1;
         }
-        emulator.getLevel().setChipsLeft((short) (KEYS_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
+        emulator.getLevel().cheats.setChipsLeft((short) (KEYS_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
         emulator.getMainWindow().repaint(emulator.getLevel(), false);
     }
     

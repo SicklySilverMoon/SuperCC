@@ -25,7 +25,7 @@ public class ChangeTimer {
             
             @Override
             public void windowClosing(WindowEvent e) {
-                emulator.getLevel().setTimer((int) Math.round(10 * ((java.lang.Number) spinner.getValue()).doubleValue()));
+                emulator.getLevel().cheats.setTimer((int) Math.round(10 * ((java.lang.Number) spinner.getValue()).doubleValue()));
                 emulator.getMainWindow().getLevelPanel().repaint();
             }
             
