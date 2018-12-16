@@ -16,7 +16,7 @@ public class CreatureList implements Iterable<Creature> {
     
     private Level level;
 
-    Creature[] list;
+    private Creature[] list;
     int numDeadMonsters;
     private List<Creature> newClones;
     public static Direction direction;
@@ -25,6 +25,22 @@ public class CreatureList implements Iterable<Creature> {
     public Creature creatureAt(Position position){
         for (Creature c : list) if (c.getPosition().equals(position)) return c;
         return null;
+    }
+    
+    public int size() {
+        return list.length;
+    }
+    
+    public Creature get(int i) {
+        return list[i];
+    }
+    
+    public Creature[] getCreatures() {
+        return list;
+    }
+    
+    public void setCreatures(Creature[] creatures) {
+        list = creatures;
     }
     
     void initialise() {
