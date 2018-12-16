@@ -172,7 +172,7 @@ public class Gui extends JFrame{
     
     public void repaint(Level level, boolean fromSratch){
         updateTimeSlider(emulator.getSavestates());
-        getGamePanel().updateGraphics(level, fromSratch);
+        getGamePanel().updateGraphics(fromSratch);
         gamePanel.repaint();
         repaintRightContainer();
     }

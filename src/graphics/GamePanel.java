@@ -7,6 +7,7 @@ import game.button.ConnectionButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -66,7 +67,9 @@ public class GamePanel extends JPanel{
      * @param fromScratch Whether to recreate the entire image (slow) or only
      *                    update where the level changed.
      */
-    void updateGraphics(Level level, boolean fromScratch){
+    void updateGraphics(boolean fromScratch){
+        
+        Level level = emulator.getLevel();
     
         byte[] layerBG;
         byte[] layerFG;
@@ -271,10 +274,9 @@ public class GamePanel extends JPanel{
         
     }
     
-    public class GameMouseListener implements MouseListener{
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            GameGraphicPosition clickPosition = new GameGraphicPosition(e);
+    public class GameMouseListener extends MouseAdapter {
+        
+        void leftClick(GameGraphicPosition clickPosition) {
             Creature chip = emulator.getLevel().getChip();
             byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
@@ -284,17 +286,120 @@ public class GamePanel extends JPanel{
             emulator.tick(b, directions, TickFlags.GAME_PLAY);
         }
         
+        void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
+            GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
+            popupMenu.show(e.getComponent(), e.getX(), e.getY());
+        }
+        
         @Override
-        public void mousePressed(MouseEvent e) {}
+        public void mouseReleased(MouseEvent e) {
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e);
+            if (e.isPopupTrigger()) rightClick(clickPosition, e);
+            else leftClick(clickPosition);
+        }
+        
+    }
     
-        @Override
-        public void mouseReleased(MouseEvent e) {}
+    class GamePopupMenu extends JPopupMenu {
+        
+        public GamePopupMenu(GameGraphicPosition position) {
+            add(new JLabel("Cheats", SwingConstants.CENTER));
+            Cheats cheats = emulator.getLevel().cheats;
+            
+            Tile tileFG = emulator.getLevel().getLayerFG().get(position);
+            Tile tileBG = emulator.getLevel().getLayerBG().get(position);
+            for (Tile tile : new Tile[] {tileFG, tileBG}) {
+                
+                if (tile.isButton()) {
+                    JMenuItem press = new JMenuItem("Press button");
+                    press.addActionListener((e) -> {
+                        cheats.pressButton(position);
+                        updateGraphics(false);
+                        GamePanel.this.repaint();
+                    });
+                    add(press);
+                }
+                
+                if (tile == Tile.TRAP) {
+                    JMenuItem open = new JMenuItem("Open Trap");
+                    open.addActionListener((e) -> cheats.setTrap(position, true));
+                    add(open);
+                    JMenuItem close = new JMenuItem("Close Trap");
+                    close.addActionListener((e) -> cheats.setTrap(position, true));
+                    add(close);
+                }
+                
+            }
+            
+            Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+            if (c != null) {
+                JMenu setDirection = new JMenu("Change Creature's Direction");
+                for (Direction d : Direction.values()) {
+                    JMenuItem menuItem = new JMenuItem(d.toString());
+                    menuItem.addActionListener((e) -> {
+                        cheats.setDirection(c, d);
+                        updateGraphics(false);
+                        GamePanel.this.repaint();
+                    });
+                    setDirection.add(menuItem);
+                }
+                add(setDirection);
+                JMenuItem kill = new JMenuItem("Kill Creature");
+                kill.addActionListener((e) -> {
+                    cheats.kill(c);
+                    updateGraphics(false);
+                    GamePanel.this.repaint();
+                });
+                add(kill);
+            }
     
-        @Override
-        public void mouseEntered(MouseEvent e) {}
+            if (position.equals(emulator.getLevel().getChip().getPosition()) && emulator.getLevel().getChip().isDead()) {
+                JMenuItem revive = new JMenuItem("Revive Chip");
+                revive.addActionListener((e) -> {
+                    cheats.reviveChip();
+                    updateGraphics(false);
+                    GamePanel.this.repaint();
+                });
+                add(revive);
+            }
     
-        @Override
-        public void mouseExited(MouseEvent e) {}
+            JMenuItem teleportChip = new JMenuItem("Move Chip Here");
+            teleportChip.addActionListener((e) -> {
+                cheats.moveChip(position);
+                updateGraphics(false);
+                GamePanel.this.repaint();
+            });
+            add(teleportChip);
+    
+            JMenuItem pop = new JMenuItem("Remove Tile: "+tileFG.toString());
+            pop.addActionListener((e) -> {
+                cheats.popTile(position);
+                updateGraphics(false);
+                GamePanel.this.repaint();
+            });
+            add(pop);
+            
+            JMenu insert = new JMenu("Insert Tile");
+            Tile[] allTiles = Tile.values();
+            for (int i = 0; i < 0x70; i+= 0x10) {
+                JMenu tileSubsetMenu = new JMenu(i + " - " + (i+0XF));
+                for (int j = i; j < i + 0x10; j++) {
+                    Tile t = allTiles[j];
+                    JMenuItem menuItem = new JMenuItem(t.toString());
+                    menuItem.addActionListener((e) -> {
+                        cheats.insertTile(position, t);
+                        updateGraphics(false);
+                        GamePanel.this.repaint();
+                    });
+                    tileSubsetMenu.add(menuItem);
+                }
+                insert.add(tileSubsetMenu);
+            }
+            
+            add(insert);
+            
+        }
+        
     }
 
 }

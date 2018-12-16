@@ -206,6 +206,14 @@ public class Level extends SaveState {
         }
         return null;
     }
+    Button getButton(Position position) {
+        for (Button[] buttons : new Button[][] {greenButtons, redButtons, brownButtons, blueButtons}) {
+            for (Button b : buttons) {
+                if (b.getButtonPosition().equals(position)) return b;
+            }
+        }
+        return null;
+    }
     boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
             if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex())) return true;

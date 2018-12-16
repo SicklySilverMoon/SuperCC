@@ -27,10 +27,10 @@ public class Cheats {
     public void pressBrownButton(BrownButton button) {
         button.press(level);
     }
-    public void open(Position trapPosition) {
+    public void setTrap(Position trapPosition, boolean open) {
         for (int i = 0; i < level.getBrownButtons().length; i++) {
             if (level.getBrownButtons()[i].getTargetPosition().equals(trapPosition)) {
-                level.getOpenTraps().set(i, true);
+                level.getOpenTraps().set(i, open);
             }
         }
     }
@@ -46,14 +46,22 @@ public class Cheats {
         if (button instanceof BrownButton) pressBrownButton((BrownButton) button);
         if (button instanceof BlueButton) button.press(level);
     }
+    public void pressButton(Position position) {
+        Button button = level.getButton(position);
+        if (button != null) pressButton(button);
+    }
     
     // Monster related cheats
     
     public void setDirection(Creature creature, Direction direction) {
+        level.popTile(creature.getPosition());
         creature.setDirection(direction);
+        level.insertTile(creature.getPosition(), creature.toTile());
     }
     public void setPosition(Creature creature, Position position) {
+        level.popTile(creature.getPosition());
         creature.getPosition().setIndex(position.getIndex());
+        level.insertTile(creature.getPosition(), creature.toTile());
     }
     public void setSliding(Creature creature, boolean sliding) {
         creature.setSliding(sliding, level);
@@ -61,15 +69,17 @@ public class Cheats {
     public void kill(Creature creature) {
         level.getMonsterList().initialise();
         creature.kill();
+        level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
     public void reviveChip() {
         level.getChip().setCreatureType(CreatureID.CHIP);
+        level.getLayerFG().set(level.getChip().getPosition(), Tile.CHIP_DOWN);
     }
     public void moveChip(Position position) {
         level.popTile(level.getChip().getPosition());
         level.getChip().getPosition().setIndex(position.getIndex());
-        level.insertTile(position, Tile.CHIP_DOWN);
+        level.insertTile(position, level.getChip().toTile());
     }
     
     // Layer related cheats
@@ -79,6 +89,12 @@ public class Cheats {
     }
     public void setLayerFG(Position position, Tile tile) {
         level.getLayerBG().set(position, tile);
+    }
+    public void popTile(Position position) {
+        level.popTile(position);
+    }
+    public void insertTile(Position position, Tile tile) {
+        level.insertTile(position, tile);
     }
     
     // Level related cheats

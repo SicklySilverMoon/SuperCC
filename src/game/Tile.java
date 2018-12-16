@@ -148,6 +148,9 @@ public enum Tile {
     public boolean isTransparent(){
         return ordinal() >= BUG_UP.ordinal();
     }
+    public boolean isButton() {
+        return this == BUTTON_BROWN || this == BUTTON_BLUE || this == BUTTON_RED || this == BUTTON_GREEN;
+    }
     
     private String str;
     @Override public String toString() {
