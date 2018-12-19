@@ -189,7 +189,7 @@ public class MenuBar extends JMenuBar{
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("", "json"));
-                    fc.setCurrentDirectory(new File(emulator.getJSONPath()));
+                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                         Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath()), StandardCharsets.ISO_8859_1));
