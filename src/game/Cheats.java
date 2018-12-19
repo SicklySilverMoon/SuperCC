@@ -69,6 +69,8 @@ public class Cheats {
     public void kill(Creature creature) {
         level.getMonsterList().initialise();
         creature.kill();
+        level.getSlipList().remove(creature);
+        level.getMonsterList().numDeadMonsters++;
         level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
