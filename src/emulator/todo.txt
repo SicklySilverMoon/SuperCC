@@ -1,0 +1,10 @@
+timer should change after chip's sliding move
+shift + arrows to click
+"lynx" timing mode
+response from oof - either sound or visual
+chip waiting timer
+monster cheats
+reload dat when changing level
+brute force
+travelling salesman
+invalid tiles
