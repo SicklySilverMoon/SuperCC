@@ -8,6 +8,7 @@ import game.button.BlueButton;
 import game.button.GreenButton;
 import tools.ChangeInventory;
 import tools.ChangeTimer;
+import tools.ControlGUI;
 import tools.GameGifRecorder;
 import tools.tsp.TSPGUI;
 
@@ -348,13 +349,23 @@ public class MenuBar extends JMenuBar{
         public ToolMenu() {
             super("Tools");
     
+            JMenuItem controls = new JMenuItem("Controls");
+            controls.addActionListener(e -> new SwingWorker<Void, Void>(){
+                @Override
+                protected Void doInBackground() throws Exception {
+                    new ControlGUI(emulator);
+                    return null;
+                }
+            }.execute()) ;
+            add(controls);
+    
             JMenuItem gif = new JMenuItem("Record gif");
             gif.addActionListener(e -> {
                 GameGifRecorder c = new GameGifRecorder(emulator);
             });
             addIcon(gif, "/resources/icons/video.gif");
             add(gif);
-            
+    
             JMenuItem tsp = new JMenuItem("TSP Solver");
             tsp.addActionListener(e -> new SwingWorker<Void, Void>(){
                 @Override
@@ -364,6 +375,7 @@ public class MenuBar extends JMenuBar{
                 }
             }.execute()) ;
             add(tsp);
+            tsp.setEnabled(false);
             
         }
     }

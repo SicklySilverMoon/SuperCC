@@ -1,7 +1,12 @@
 package io;
 
+import util.ByteList;
+
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SuccPaths {
     
@@ -9,14 +14,17 @@ public class SuccPaths {
     private String levelsetPath;
     private String twsPath;
     private String succPath;
+    private int[] controls;
     private final File settingsFile;
     
     private void updateSettingsFile() {
-        try (PrintWriter writer = new PrintWriter(settingsFile, "UTF-8")) {
+        try (PrintWriter writer = new PrintWriter(settingsFile, "ISO_8859_1")) {
             String[] allPaths = new String[] {tilesetPath, levelsetPath, twsPath, succPath};
             for (String path : allPaths) {
                 writer.println(path);
-                System.out.println(path);
+            }
+            for (int b : controls) {
+                writer.println(b);
             }
         }
         catch (IOException e) {
@@ -35,6 +43,9 @@ public class SuccPaths {
     }
     public String getSuccPath() {
         return succPath;
+    }
+    public int[] getControls() {
+        return controls;
     }
     public String getJSONPath(String levelsetName, int levelNumber, String levelName) {
         new File(Paths.get(succPath, levelsetName).toString()).mkdirs();
@@ -57,6 +68,10 @@ public class SuccPaths {
     }
     public void setSuccPath(String succPath) {
         this.succPath = succPath;
+        updateSettingsFile();
+    }
+    public void setControls(int[] controls) {
+        this.controls = controls;
         updateSettingsFile();
     }
     
@@ -93,6 +108,14 @@ public class SuccPaths {
                     succPath = "";
                 }
             }
+            int[] controlsList = new int[16];
+            String line;
+            int i = 0;
+            while ((line = reader.readLine()) != null) {
+                controlsList[i++] = Integer.parseInt(line);
+            }
+            controls = new int[i];
+            System.arraycopy(controlsList, 0, controls, 0, i);
             
         }
     }

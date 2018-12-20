@@ -2,3 +2,11 @@
 data
 save
 succsave
+38
+37
+40
+39
+32
+27
+8
+10

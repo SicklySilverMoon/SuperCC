@@ -1,6 +1,7 @@
 package graphics;
 
 import com.sun.java.swing.plaf.windows.WindowsSliderUI;
+import emulator.EmulatorKeyListener;
 import emulator.SavestateManager;
 import emulator.SuperCC;
 import game.Level;
@@ -9,6 +10,7 @@ import util.TreeNode;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.List;
 
@@ -154,7 +156,9 @@ public class Gui extends JFrame{
         lastActionPanel.setBackground(Color.DARK_GRAY);
         setFocusable(true);
         gamePanel.setFocusable(true);
-        addKeyListener(emulator);
+        EmulatorKeyListener keyListener = new EmulatorKeyListener(emulator);
+        addKeyListener(keyListener);
+        emulator.setControls(keyListener);
     }
     
     public void updateTimeSlider(SavestateManager manager) {

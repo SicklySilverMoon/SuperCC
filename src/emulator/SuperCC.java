@@ -12,10 +12,8 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 
-public class SuperCC implements KeyListener{
+public class SuperCC {
 
-    private static final int[] MOVEMENT_KEYS = {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
-            KeyEvent.VK_SPACE};
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
     private static final byte[] BYTE_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
@@ -31,6 +29,14 @@ public class SuperCC implements KeyListener{
     private Solution solution;
     public TWSReader twsReader;
     private SuccPaths paths;
+    private EmulatorKeyListener controls;
+    
+    public void setControls(EmulatorKeyListener l) {
+        controls = l;
+    }
+    public EmulatorKeyListener getControls() {
+        return controls;
+    }
     
     public SuccPaths getPaths() {
         return paths;
@@ -161,56 +167,6 @@ public class SuperCC implements KeyListener{
         }
         return false;
     }
-
-    public void keyTyped(KeyEvent e){}
-    public void keyReleased(KeyEvent e){
-        int key = e.getKeyCode();
-        if (key == KeyEvent.VK_SHIFT) shiftPressed = false;
-    }
-    public void keyPressed(KeyEvent e){
-        int key = e.getKeyCode();
-        if (key == KeyEvent.VK_SHIFT){
-            shiftPressed = true;
-            return;
-        }
-
-        for (int i = 0; i < 5; i++){
-            if (key == MOVEMENT_KEYS[i]){
-                if (level.getChip().isDead()) return;
-                tick(BYTE_MOVEMENT_KEYS[i], DIRECTIONS[i], TickFlags.GAME_PLAY);
-                return;
-            }
-        }
-    
-        if (key == KeyEvent.VK_BACK_SPACE) {
-            savestates.rewind();
-            level.load(savestates.getSavestate());
-            showAction("Rewind");
-            window.repaint(level, false);
-            return;
-        }
-        
-        if (key == KeyEvent.VK_ENTER) {
-            savestates.replay();
-            level.load(savestates.getSavestate());
-            showAction("Replay");
-            window.repaint(level, false);
-            return;
-        }
-
-        if (shiftPressed) {
-            savestates.addSavestate(key);
-            showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
-            window.repaint(level, false);
-        }
-        else {
-            if (savestates.load(key, level)) {
-                showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
-                window.repaint(level, false);
-            }
-        }
-
-    }
     
     public void showAction(String s){
         getMainWindow().getLastActionPanel().update(s);
@@ -297,11 +253,11 @@ public class SuperCC implements KeyListener{
     public static void initialise(){
         try{
             SuperCC emulator = new SuperCC();
-            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
-            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
+            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
-            emulator.runBenchmark(134, 200);
+            //emulator.runBenchmark(134, 200);
             //emulator.runTests();
         }
         catch (IOException e){

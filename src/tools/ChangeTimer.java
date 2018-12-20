@@ -3,6 +3,7 @@ package tools;
 import emulator.SuperCC;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
@@ -19,30 +20,12 @@ public class ChangeTimer {
         frame.pack();
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setVisible(true);
-        frame.addWindowListener(new WindowListener() {
-            @Override
-            public void windowOpened(WindowEvent e) {}
-            
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 emulator.getLevel().cheats.setTimer((int) Math.round(10 * ((java.lang.Number) spinner.getValue()).doubleValue()));
                 emulator.getMainWindow().getLevelPanel().repaint();
             }
-            
-            @Override
-            public void windowClosed(WindowEvent e) {}
-            
-            @Override
-            public void windowIconified(WindowEvent e) {}
-            
-            @Override
-            public void windowDeiconified(WindowEvent e) {}
-            
-            @Override
-            public void windowActivated(WindowEvent e) {}
-            
-            @Override
-            public void windowDeactivated(WindowEvent e) {}
         });
     }
 }
