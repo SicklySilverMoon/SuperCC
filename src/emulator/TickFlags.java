@@ -3,7 +3,7 @@ package emulator;
 public class TickFlags {
     
     public static final TickFlags GAME_PLAY = new TickFlags(true, true, true),
-        REPLAY = new TickFlags(true, true, false),
+        REPLAY = new TickFlags(true, false, false),
         LIGHT = new TickFlags(false, false, true),
         PRELOADING = new TickFlags(false, true, true);
     

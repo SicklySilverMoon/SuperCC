@@ -118,15 +118,14 @@ public class SavestateManager {
         BufferedImage img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
         emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
         images.add(img);
-        final TickFlags replayNoSave = new TickFlags(true, false, false);
         while (numHalfTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
             byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
-            boolean tickTwice = emulator.tick(b, replayNoSave);
+            boolean tickTwice = emulator.tick(b, TickFlags.REPLAY);
             img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
             emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
             images.add(img);
             if (tickTwice && numHalfTicks-- > 0) {
-                emulator.tick((byte) '-', replayNoSave);
+                emulator.tick((byte) '-', TickFlags.REPLAY);
                 img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
                 emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
                 images.add(img);
