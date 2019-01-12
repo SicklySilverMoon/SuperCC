@@ -664,6 +664,13 @@ public class Creature{
                         b.release(level);
                     }
                 }
+                if (level.getLayerFG().get(oldCreature.position) == TRAP){
+                    for (BrownButton b : level.getBrownButtons()) {
+                        if (b.getTargetPosition().equals(oldCreature.position) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
+                            b.release(level);
+                        }
+                    }
+                }
                 if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
                 if (!creatureType.isChip() && !isSliding()) CreatureList.direction = newDirection;
                 return true;

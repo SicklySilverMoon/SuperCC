@@ -5,6 +5,7 @@ import emulator.TickFlags;
 import game.Creature;
 import game.Direction;
 import game.Position;
+import graphics.GameGraphicPosition;
 import graphics.GamePanel;
 
 import javax.swing.*;
@@ -126,7 +127,7 @@ public class TSPGUI {
         private SuperCC emulator;
         @Override
         public void mouseClicked(MouseEvent e) {
-            Position clickPosition = new Position(e);
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e);
             emulator.showAction("Clicked " + clickPosition);
             emulator.getMainWindow().getGamePanel().repaint();
             int listIndex = nodeList.getSelectedIndex() + 1;

@@ -12,6 +12,10 @@ public class BrownButton extends ConnectionButton {
         level.getOpenTraps().set(trapIndex);
     }
     
+    public boolean isOpen (Level level) {
+        return level.getOpenTraps().get(trapIndex);
+    }
+    
     public void release(Level level) {
         level.getOpenTraps().set(trapIndex, false);
     }
