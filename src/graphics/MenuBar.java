@@ -6,6 +6,7 @@ import game.Level;
 import game.Step;
 import game.button.BlueButton;
 import game.button.GreenButton;
+import io.TWSWriter;
 import tools.ChangeInventory;
 import tools.ChangeTimer;
 import tools.ControlGUI;
@@ -247,8 +248,24 @@ public class MenuBar extends JMenuBar{
         public TWSMenu(){
             super("TWS");
 
-            JMenuItem newTWS = new JMenuItem("Create new tws");
-            newTWS.setEnabled(false);
+            JMenuItem newTWS = new JMenuItem("Write solution to new tws");
+            newTWS.addActionListener(event -> {
+                Level l = emulator.getLevel();
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
+                JFileChooser fc = new JFileChooser();
+                fc.setFileFilter(new FileNameExtensionFilter("", "tws"));
+                fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
+                fc.setSelectedFile(new File(emulator.getPaths().getTwsPath()));
+                if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    String filename = file.toString();
+                    if (!filename .endsWith(".tws")) filename += ".tws";
+                    file = new File(filename);
+                    TWSWriter.write(file, emulator.getLevel(), new Solution(emulator.getSavestates().getMoveList(),
+                                                                            emulator.getLevel().getRngSeed(),
+                                                                            emulator.getLevel().getStep()));
+                }
+            });
             add(newTWS);
             addIcon(newTWS, "/resources/icons/new.gif");
 

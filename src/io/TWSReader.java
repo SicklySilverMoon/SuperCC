@@ -81,7 +81,7 @@ public class TWSReader{
             long offset = 8 + length;
             int levelOffset;
 
-            while (offset != twsFile.length()){
+            while (offset < twsFile.length()){
                 levelOffset = reader.readInt();
                 int levelNumber = reader.readShort();
                 int password = reader.readInt();
