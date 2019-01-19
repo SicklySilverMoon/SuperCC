@@ -82,7 +82,7 @@ public class SaveState {
         layerBG.load(reader.readLayer(version));
         layerFG.load(reader.readLayer(version));
         tickNumber = (short) reader.readShort();
-        chipsLeft = reader.readShort();
+        chipsLeft = (short) reader.readShort();
         keys = reader.readShorts(4);
         boots = reader.readBytes(4);
         rng.setCurrentValue(reader.readInt());
