@@ -45,7 +45,7 @@ public class EmulatorKeyListener extends KeyAdapter {
         int keyCode = e.getKeyCode();
         Key k = keyMap.getOrDefault(e.getKeyCode(), null);
         if (k == null) {
-            if (e.isShiftDown()) {
+            if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
                 emulator.getSavestates().addSavestate(keyCode);
                 emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
             }
