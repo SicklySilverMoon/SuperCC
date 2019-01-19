@@ -7,24 +7,26 @@ import util.ByteList;
 import util.TreeNode;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static game.SaveState.*;
 
-public class SavestateManager {
+public class SavestateManager implements Serializable {
     
     private HashMap<Integer, TreeNode<byte[]>> savestates = new HashMap<>();
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
     private ByteList moves;
-    private SavestateCompressor compressor;
+    private transient SavestateCompressor compressor;
     private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private int playbackIndex = 1;
     
-    private boolean pause = true;
+    private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
-    private int playbackWaitTime = STANDARD_WAIT_TIME;
+    private transient int playbackWaitTime = STANDARD_WAIT_TIME;
     private static final int[] waitTimes = new int[]{
         STANDARD_WAIT_TIME * 8,
         STANDARD_WAIT_TIME * 4,
@@ -38,6 +40,18 @@ public class SavestateManager {
     
     public void setPlaybackSpeed(int i) {
         playbackWaitTime = waitTimes[i];
+    }
+    
+    public void setNode(TreeNode<byte[]> node) {
+        currentNode = node;
+    }
+    
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        compressor = new SavestateCompressor();
+        pause = false;
+        playbackWaitTime = STANDARD_WAIT_TIME;
     }
 
     public void addRewindState(Level level, byte b){

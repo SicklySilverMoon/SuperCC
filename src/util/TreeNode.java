@@ -1,8 +1,9 @@
 package util;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class TreeNode<T> {
+public class TreeNode<T> implements Serializable {
     
     private T object;
     private TreeNode<T> parent;

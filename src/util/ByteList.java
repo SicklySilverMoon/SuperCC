@@ -1,5 +1,6 @@
 package util;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -13,7 +14,7 @@ import java.util.RandomAccess;
  * The initial capacity is set to 200. This doubles when it is reached. The
  * capacity never decreases.
  */
-public class ByteList implements Iterable<Byte>, RandomAccess {
+public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
     
     private static final int INITIAL_CAPACITY = 200;
     
