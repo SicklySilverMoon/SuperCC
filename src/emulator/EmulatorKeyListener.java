@@ -35,6 +35,7 @@ public class EmulatorKeyListener extends KeyAdapter {
     private HashMap<Integer, Key> keyMap = new HashMap<>();
     
     public void setKeyCode(Key key, int keyCode) {
+        keyMap.remove(key.keyCode);
         key.keyCode = keyCode;
         keyMap.put(keyCode, key);
     }
@@ -74,11 +75,13 @@ public class EmulatorKeyListener extends KeyAdapter {
                     emulator.getSavestates().rewind();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Rewind");
+                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
                     break;
                 case FORWARD:
                     emulator.getSavestates().replay();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Replay");
+                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
                     break;
             }
         }
