@@ -13,36 +13,22 @@ public class TWSWriter{
     private HashMap<Long, Long> passLevelOffsets = new HashMap<Long, Long>();
 
     private File twsFile;
-
-    public void readSolution(Level level) throws IOException{
-        byte[] password = level.getPassword();
-        Long pass = Integer.toUnsignedLong(
-                password[0] + 256 * password[1] + 65536 * password[2] + 16777216 * password[3]
-        );
-        long lpass = pass + (Integer.toUnsignedLong(level.getLevelNumber()) << 32);
-        long solutionOffset;
-        if (lPassLevelOffsets.containsKey(lpass)) solutionOffset = lPassLevelOffsets.get(lpass);
-        else if (passLevelOffsets.containsKey(pass)) solutionOffset = passLevelOffsets.get(pass);
-        else throw new IOException("Level not found in tws");
-
-        twsInputStream reader = new twsInputStream(twsFile);
-        reader.skip(solutionOffset);
-
-        int offset = reader.readInt();
-        reader.readInt();                       // Level number
-        reader.readInt();                       // Password
-        reader.readByte();                      // Other Flags (always 0)
-        reader.readByte();                      // Random slide direction
-        int prng = reader.readInt();
-        int solutionLength = reader.readInt();
-    }
     
     public static void write(File twsFile, Level level, Solution solution) {
         try(TWSOutputStream writer = new TWSOutputStream(twsFile)) {
             writer.writeTWSHeader(level);
             writer.writeInt(writer.solutionLength(solution));
             writer.writeLevelHeader(level, solution);
-            for (byte b : solution.halfMoves) writer.writeMove(b, null);
+            int timeBetween = 0;
+            boolean firstMove = true;
+            for (byte b : solution.halfMoves) {
+                if (b == '-') timeBetween += 2;
+                else {
+                    writer.writeMove(b, timeBetween, firstMove);
+                    timeBetween = 2;
+                    firstMove = false;
+                }
+            }
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -54,36 +40,34 @@ public class TWSWriter{
         /*
         98765432 10987654 32109876 54321098 76543210
         000TTTTT TTTTTTTT TTTTTTTT TTDDDDDD DDD1NN11
-        WAIT:                      01011000 10011111
-        UP:                        01000000 00011111
-        LEFT:                      01000000 00111111
-        DOWN:                      01000000 01011111
-        RIGHT:                     01000000 01111111
+        WAIT:                      00011000 10011111
+        UP:                        00000000 00011111
+        LEFT:                      00000000 00111111
+        DOWN:                      00000000 01011111
+        RIGHT:                     00000000 01111111
          */
-        private final byte[] WAIT = new byte[] {-97, 88, 0, 0, 0};
-        private final byte[] UP = new byte[] {31, 64, 0, 0, 0};
-        private final byte[] LEFT = new byte[] {63, 64, 0, 0, 0};
-        private final byte[] DOWN = new byte[] {95, 64, 0, 0, 0};
-        private final byte[] RIGHT = new byte[] {127, 64, 0, 0, 0};
+        private final byte[] WAIT = new byte[] {-97, 24, 0, 0, 0};
+        /*private final byte[] UP = new byte[] {31, 0, 0, 0, 0};
+        private final byte[] LEFT = new byte[] {63, 0, 0, 0, 0};
+        private final byte[] DOWN = new byte[] {95, 0, 0, 0, 0};
+        private final byte[] RIGHT = new byte[] {127, 0, 0, 0, 0};*/
+        private final byte UP = 3, LEFT = 7, DOWN = 11, RIGHT = 15;
         
-        void writeMove (byte b, Position chipPosition) throws IOException {
+        void writeMove (byte b, int time, boolean firstMove) throws IOException {
+            if (!firstMove) time -= 1;
+            byte twsMoveByte;
             switch (b) {
-                case '-': write(WAIT); break;
-                case 'u': write(UP); break;
-                case 'l': write(LEFT); break;
-                case 'd': write(DOWN); break;
-                case 'r': write(RIGHT); break;
+                case 'u': twsMoveByte = UP; break;
+                case 'l': twsMoveByte = LEFT; break;
+                case 'd': twsMoveByte = DOWN; break;
+                case 'r': twsMoveByte = RIGHT; break;
                 default:
-                    Position clickPosition = Position.clickPosition(Position.screenPosition(chipPosition), b);
-                    int x = chipPosition.getX() - clickPosition.getX();
-                    int y = chipPosition.getY() - clickPosition.getY();
-                    int value = 16 + ((y + 9) * 19) + (x + 9);
-                    write((value << 6) | 0b11111);
-                    write(0b01000000 | (value >>> 3));
-                    write(0);
-                    write(0);
-                    write(0);
+                    throw new RuntimeException("Solutions with clicks are not supported!");
             }
+            write(twsMoveByte | (time & 0b111) << 5);
+            write((time >> 3) & 0xFF);
+            write((time >> 11) & 0xFF);
+            write((time >> 19) & 0xFF);
         }
         void writeTWSHeader (Level level) throws IOException {
             writeInt(0x999B3335);                        // Signature
@@ -97,8 +81,9 @@ public class TWSWriter{
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(solution.halfMoves.length << 2 - 1);
+            writeInt(2 * solution.halfMoves.length-1);
         }
+        private static final int LEVEL_HEADER_SIZE = 16;
     
         void writeShort(int i) throws IOException{
             write(i);
@@ -114,33 +99,9 @@ public class TWSWriter{
             super(file);
         }
         public int solutionLength(Solution s) {
-            return 16 + s.halfMoves.length * 5;
-        }
-    }
-
-    private class twsInputStream extends FileInputStream{
-        public twsInputStream (File file) throws FileNotFoundException{
-            super(file);
-        }
-        int readByte() throws IOException{
-            return read();
-        }
-        int readShort() throws IOException{
-            return read() + 256*read();
-        }
-        int readInt() throws IOException{
-            return read() + 256 * read() + 65536 * read() + 16777216 * read();
-        }
-        byte[] readAscii(int length) throws IOException{
-            byte[] asciiBytes = new byte[length];
-            read(asciiBytes);
-            return asciiBytes;
-        }
-        byte[] readEncodedAscii(int length) throws IOException{
-            byte[] asciiBytes = new byte[length];
-            read(asciiBytes);
-            for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99b);
-            return asciiBytes;
+            int c = LEVEL_HEADER_SIZE;
+            for (byte b : s.halfMoves) if (b != '-') c += 4;
+            return c;
         }
     }
 
