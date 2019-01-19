@@ -1,6 +1,8 @@
 package io;
 
+import emulator.Solution;
 import game.Level;
+import game.Position;
 
 import java.io.*;
 import java.util.HashMap;
@@ -10,7 +12,7 @@ public class TWSWriter{
     private HashMap<Long, Long> lPassLevelOffsets = new HashMap<Long, Long>();
     private HashMap<Long, Long> passLevelOffsets = new HashMap<Long, Long>();
 
-    private final File twsFile;
+    private File twsFile;
 
     public void readSolution(Level level) throws IOException{
         byte[] password = level.getPassword();
@@ -33,70 +35,86 @@ public class TWSWriter{
         reader.readByte();                      // Random slide direction
         int prng = reader.readInt();
         int solutionLength = reader.readInt();
-
-
-
+    }
+    
+    public static void write(File twsFile, Level level, Solution solution) {
+        try(TWSOutputStream writer = new TWSOutputStream(twsFile)) {
+            writer.writeTWSHeader(level);
+            writer.writeInt(writer.solutionLength(solution));
+            writer.writeLevelHeader(level, solution);
+            for (byte b : solution.halfMoves) writer.writeMove(b, null);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public TWSWriter(File twsFile) throws IOException{
-        this.twsFile = twsFile;
-        twsInputStream reader = new twsInputStream(twsFile);
-        try{
-            if (reader.readInt() != -1717882059) throw new IOException("Invalid signature");
-            if (reader.readByte() != 2) throw new IOException("Incorrect ruleset");
-            reader.readByte();
-            reader.readByte();
-            int length = reader.readByte();
-            reader.skip(length);
-            long offset = 8 + length;
-            int levelOffset;
-
-            while (offset != twsFile.length()){
-                levelOffset = reader.readInt();
-                int levelNumber = reader.readShort();
-                int password = reader.readInt();
-                passLevelOffsets.put(Integer.toUnsignedLong(password), offset);
-                lPassLevelOffsets.put(Integer.toUnsignedLong(password) + (Integer.toUnsignedLong(levelNumber) << 32), offset);
-                reader.skip(levelOffset - 6);       // 10: bytes read since levelOffset
-                offset += levelOffset + 4;              // 4: length of levelOffset
+    private static class TWSOutputStream extends FileOutputStream{
+        // direction = 196
+        /*
+        98765432 10987654 32109876 54321098 76543210
+        000TTTTT TTTTTTTT TTTTTTTT TTDDDDDD DDD1NN11
+        WAIT:                      01011000 10011111
+        UP:                        01000000 00011111
+        LEFT:                      01000000 00111111
+        DOWN:                      01000000 01011111
+        RIGHT:                     01000000 01111111
+         */
+        private final byte[] WAIT = new byte[] {-97, 88, 0, 0, 0};
+        private final byte[] UP = new byte[] {31, 64, 0, 0, 0};
+        private final byte[] LEFT = new byte[] {63, 64, 0, 0, 0};
+        private final byte[] DOWN = new byte[] {95, 64, 0, 0, 0};
+        private final byte[] RIGHT = new byte[] {127, 64, 0, 0, 0};
+        
+        void writeMove (byte b, Position chipPosition) throws IOException {
+            switch (b) {
+                case '-': write(WAIT); break;
+                case 'u': write(UP); break;
+                case 'l': write(LEFT); break;
+                case 'd': write(DOWN); break;
+                case 'r': write(RIGHT); break;
+                default:
+                    Position clickPosition = Position.clickPosition(Position.screenPosition(chipPosition), b);
+                    int x = chipPosition.getX() - clickPosition.getX();
+                    int y = chipPosition.getY() - clickPosition.getY();
+                    int value = 16 + ((y + 9) * 19) + (x + 9);
+                    write((value << 6) | 0b11111);
+                    write(0b01000000 | (value >>> 3));
+                    write(0);
+                    write(0);
+                    write(0);
             }
         }
-        catch (IOException e){
-            reader.close();
-            throw e;
+        void writeTWSHeader (Level level) throws IOException {
+            writeInt(0x999B3335);                        // Signature
+            write(2);                                   // Ruleset
+            writeShort(level.getLevelNumber());
+            write(0);
         }
-        reader.close();
-    }
-
-    private class nativeSolutionWriter extends ByteArrayOutputStream{
-        /*
-         * 0 = NORTH	    = 0001 = 1
-         * 1 = WEST	    = 0010 = 2
-         * 2 = SOUTH	    = 0100 = 4
-         * 3 = EAST	    = 1000 = 8
-         */
-
-        /*
-         * The first format can be either one or two bytes long. The two-byte
-         * form is shown here:
-         *
-         * #1: 01234567 89012345
-         *     NNDDDTTT TTTTTTTT
-         *
-         * The two lowest bits, marked with Ns, contain either one (01) or two
-         * (10), and indicate how many bytes are used. The next three bits,
-         * marked with Ds, contain the direction of the move. The remaining
-         * bits are marked with Ts, and these indicate the amount of time, in
-         * ticks, between this move and the prior move, less one. (Thus, a
-         * value of T=0 indicates a move that occurs on the tick immediately
-         * following the previous move.) The very first move of a solution is
-         * an exception: it is not decremented, as that would sometimes
-         * require a negative value to be stored. If the one-byte version is
-         * used, then T is only three bits in size; otherwise T is 11 bits
-         * long.
-         */
-        void writeFormat1(byte byte1, byte byte2){
-
+        void writeLevelHeader (Level level, Solution solution) throws IOException {
+            writeShort(level.getLevelNumber());
+            for (int i = 0; i < 4; i++) write(level.getPassword()[i]);
+            write(0);                                   // Other flags
+            write(solution.step.toTWS());
+            writeInt(solution.rngSeed);
+            writeInt(solution.halfMoves.length << 2 - 1);
+        }
+    
+        void writeShort(int i) throws IOException{
+            write(i);
+            write(i >> 8);
+        }
+        void writeInt(int i) throws IOException{
+            write(i);
+            write(i >> 8);
+            write(i >> 16);
+            write(i >> 24);
+        }
+        public TWSOutputStream(File file) throws IOException {
+            super(file);
+        }
+        public int solutionLength(Solution s) {
+            return 16 + s.halfMoves.length * 5;
         }
     }
 
@@ -124,10 +142,6 @@ public class TWSWriter{
             for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99b);
             return asciiBytes;
         }
-    }
-
-    public static void main(String[] args) throws IOException{
-        new TWSWriter(new File("resources/CHIPS - Copy.tws"));
     }
 
 }

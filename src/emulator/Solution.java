@@ -24,6 +24,8 @@ public class Solution{
     public int rngSeed;
     public Step step;
     
+    public double efficiency = -1;
+    
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());

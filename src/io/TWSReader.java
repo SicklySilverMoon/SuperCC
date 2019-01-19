@@ -63,7 +63,9 @@ public class TWSReader{
                 break;                              // slides at the end of a level
             }
         }
-        return new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);
+        Solution s = new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);
+        s.efficiency = (double) solutionLength / offset;
+        return s;
     }
 
     public TWSReader (File twsFile) throws IOException{
@@ -137,7 +139,7 @@ public class TWSReader{
             writer.write(DIRECTIONS[(b >>> 6) & 0b11]);
         }
         public void readFormat4(int b, ByteArrayOutputStream writer) throws IOException{
-            int length = ((b >>> 2) & 0b11) + 1;
+            int length = ((b >>> 2) & 0b11) + 2;
             counter += length;
             int b2 = readByte();
             int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
@@ -152,8 +154,6 @@ public class TWSReader{
                 d -= 16;
                 int x9 = d % 19;
                 int y9 = (d - x9) / 19;
-                //System.out.println(x9);
-                //System.out.println(y9);
                 writer.write(CHIP_RELATIVE_CLICK);
                 writer.write(x9);
                 writer.write(y9);
