@@ -216,7 +216,7 @@ public class Level extends SaveState {
     }
     boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
-            if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex())) return true;
+            if (b.getTargetPosition().equals(position) && b.isOpen(this)) return true;
         }
         return false;
     }
@@ -287,16 +287,16 @@ public class Level extends SaveState {
     public boolean tick(byte b, Direction[] directions){
         
         initialiseSlidingMonsters();
-        tickNumber++;
-        boolean isHalfMove = tickNumber % 2 == 0;
+        boolean isHalfMove = tickNumber % 2 != 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
-        monsterList.initialise();                                   // must be called after the tick Number is updated
+        monsterList.initialise();
     
-        if (tickNumber > 2 && !isHalfMove) monsterList.tick();
+        if (tickNumber > 0 && !isHalfMove) monsterList.tick();
         
         if (chip.isDead()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (chip.isDead()) return false;
+        tickNumber++;
         if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick)));
         if (chip.isDead()) return false;
         slipList.tick();

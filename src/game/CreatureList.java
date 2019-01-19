@@ -46,7 +46,7 @@ public class CreatureList implements Iterable<Creature> {
     void initialise() {
         newClones.clear();
         numDeadMonsters = 0;
-        blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 3);
+        blobStep = (level.getStep() == Step.EVEN) != (level.tickNumber % 4 == 2);
     }
 
     void tick(){
