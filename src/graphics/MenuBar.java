@@ -119,7 +119,7 @@ public class MenuBar extends JMenuBar{
 
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
             rngSeed.addActionListener(e -> {
-                String s = JOptionPane.showInputDialog(window, "Choose a starting seed (Will reset the level");
+                String s = JOptionPane.showInputDialog(window, "Choose a starting seed");
                 if (s == "") return;
                 try{
                     Level oldLevel = emulator.getLevel();
