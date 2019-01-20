@@ -144,7 +144,7 @@ public class TWSReader{
             int b2 = readByte();
             int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
             int time = (b2 & 0b11000000) >> 6;
-            for (int i = 2; i < length; i++) time = time | readByte() << (2 + 8*i);
+            for (int i = 0; i < length - 2; i++) time = time | readByte() << (2 + 8*i);
             for (int i = 0; i < time; i++) writer.write('-');
             if (d < 4){
                 byte direction = DIRECTIONS[d];

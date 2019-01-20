@@ -8,7 +8,6 @@ Sliding blocks leaving traps onto sliding tiles cause slide delay when they shou
 TWS playback:
 
 - TWS Clicks are sometimes read incorrectly
-- TWS playback sometimes ends one input prematurely
 
 
 Levels where the public tws does not play back correctly (+reason):
@@ -19,10 +18,8 @@ failed level 116 BLOCK BUSTER II (unknown)
 CCLP1.dat
 
 CCLP3.dat
-failed level 10 Annoying Wall (tws playback)
 failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
-failed level 116 Mini Challenges (tws playback)
 
 CCLP4.dat
 failed level 143 Color Coordination (unknown)
