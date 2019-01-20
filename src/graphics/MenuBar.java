@@ -5,8 +5,6 @@ import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
 import game.Step;
-import game.button.BlueButton;
-import game.button.GreenButton;
 import io.TWSWriter;
 import tools.ChangeInventory;
 import tools.ChangeTimer;
@@ -51,7 +49,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("", "dat", "ccl"));
+                fc.setFileFilter(new FileNameExtensionFilter("dat, ccl", "dat", "ccl"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
@@ -146,7 +144,7 @@ public class MenuBar extends JMenuBar{
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "json"));
+                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
                     fc.setCurrentDirectory(new File(emulator.getJSONPath()));
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -189,7 +187,7 @@ public class MenuBar extends JMenuBar{
             open.addActionListener(event -> {
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "json"));
+                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
                     fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -248,7 +246,7 @@ public class MenuBar extends JMenuBar{
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "ser"));
+                    fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
                     fc.setCurrentDirectory(new File(emulator.getSerPath()));
                     fc.setSelectedFile(new File(emulator.getSerPath()));
                     if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -274,7 +272,7 @@ public class MenuBar extends JMenuBar{
             loadStates.addActionListener(event -> {
                 try{
                     JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("", "ser"));
+                    fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
                     fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
                     fc.setSelectedFile(new File(emulator.getJSONPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -305,7 +303,7 @@ public class MenuBar extends JMenuBar{
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("", "tws"));
+                fc.setFileFilter(new FileNameExtensionFilter("tws", "tws"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
                 fc.setSelectedFile(new File(emulator.getPaths().getTwsPath()));
                 if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
@@ -324,7 +322,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("", "tws"));
+                fc.setFileFilter(new FileNameExtensionFilter("tws", "tws"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
                 if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                     emulator.getPaths().setTwsPath(fc.getSelectedFile().getParent());
