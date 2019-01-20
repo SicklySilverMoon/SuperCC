@@ -18,17 +18,13 @@ failed level 116 BLOCK BUSTER II (unknown)
 failed level 149 SPECIAL (tws playback)
 
 CCLP1.dat
-failed level 116 Communism (unknown)
 
 CCLP3.dat
 failed level 8 Pigeonholed (tws playback)
 failed level 10 Annoying Wall (tws playback)
 failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
-failed level 109 Hidden Depths (unknown)
 failed level 116 Mini Challenges (tws playback)
 
 CCLP4.dat
-failed level 53 Protect Your Fortress (trapped blocks cause slide delay)
-failed level 100 One Tank's Adventure (unknown)
 failed level 143 Color Coordination (unknown)
