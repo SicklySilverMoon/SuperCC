@@ -52,6 +52,7 @@ public class EmulatorKeyListener extends KeyAdapter {
             else {
                 if (emulator.getSavestates().load(keyCode, emulator.getLevel())) {
                     emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
+                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
                 }
             }
         }
