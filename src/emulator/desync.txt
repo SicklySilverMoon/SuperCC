@@ -15,12 +15,10 @@ Levels where the public tws does not play back correctly (+reason):
 
 CHIPS.dat
 failed level 116 BLOCK BUSTER II (unknown)
-failed level 149 SPECIAL (tws playback)
 
 CCLP1.dat
 
 CCLP3.dat
-failed level 8 Pigeonholed (tws playback)
 failed level 10 Annoying Wall (tws playback)
 failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
