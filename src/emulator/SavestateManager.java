@@ -21,8 +21,8 @@ public class SavestateManager implements Serializable {
     private TreeNode<byte[]> currentNode;
     private ByteList moves;
     private transient SavestateCompressor compressor;
-    private List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
-    private int playbackIndex = 1;
+    private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
+    private transient int playbackIndex = 1;
     
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
@@ -52,6 +52,10 @@ public class SavestateManager implements Serializable {
         compressor = new SavestateCompressor();
         pause = false;
         playbackWaitTime = STANDARD_WAIT_TIME;
+        playbackIndex = currentNode.depth();
+        playbackNodes = new ArrayList<>(playbackIndex*2);
+        for (TreeNode<byte[]> node : currentNode.getHistory()) playbackNodes.add(node);
+        System.out.println(currentNode.depth());
     }
 
     public void addRewindState(Level level, byte b){

@@ -1,5 +1,6 @@
 package graphics;
 
+import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
@@ -20,9 +21,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -240,6 +239,59 @@ public class MenuBar extends JMenuBar{
             });
             addIcon(paste, "/resources/icons/paste.gif");
             add(paste);
+    
+            addSeparator();
+    
+            JMenuItem saveSavestates = new JMenuItem("Save all states");
+            saveSavestates.addActionListener(event -> {
+                Level l = emulator.getLevel();
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
+                try{
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("", "ser"));
+                    fc.setCurrentDirectory(new File(emulator.getSerPath()));
+                    fc.setSelectedFile(new File(emulator.getSerPath()));
+                    if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        File file = fc.getSelectedFile();
+                        String filename = file.toString();
+                        if (!filename .endsWith(".ser")) filename += ".ser";
+                        FileOutputStream fos = new FileOutputStream(filename);
+                        ObjectOutputStream out = new ObjectOutputStream(fos);
+                        out.writeObject(emulator.getSavestates());
+                        out.close();
+                        fos.close();
+                    }
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                    emulator.throwError("Could not save file: "+e.getMessage());
+                }
+            });
+            addIcon(saveSavestates, "/resources/icons/saveAs.gif");
+            add(saveSavestates);
+    
+            JMenuItem loadStates = new JMenuItem("Load states");
+            loadStates.addActionListener(event -> {
+                try{
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("", "ser"));
+                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
+                    fc.setSelectedFile(new File(emulator.getJSONPath()));
+                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        FileInputStream fis = new FileInputStream(fc.getSelectedFile());
+                        ObjectInputStream ois = new ObjectInputStream(fis);
+                        emulator.setSavestates((SavestateManager) ois.readObject());
+                        ois.close();
+                        fis.close();
+                    }
+                }
+                catch (IOException | ClassNotFoundException e){
+                    e.printStackTrace();
+                }
+            });
+            addIcon(loadStates, "/resources/icons/open.gif");
+            add(loadStates);
+            
         }
     }
 
