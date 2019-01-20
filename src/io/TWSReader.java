@@ -64,7 +64,7 @@ public class TWSReader{
             }
         }
         Solution s = new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);
-        s.efficiency = (double) solutionLength / offset;
+        s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
         return s;
     }
 
@@ -103,6 +103,8 @@ public class TWSReader{
         
         public int solutionLengthOffset = 0;
 
+        public int ineffiencies = 0;
+        
         public int counter;
         public void readFormat1(int b, ByteArrayOutputStream writer) throws IOException{
             int length = b & 0b11;
@@ -124,7 +126,7 @@ public class TWSReader{
             counter += 4;
             byte direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
-
+            if (time < 2047) ineffiencies += 1;
             for (int i = 0; i < time; i++) writer.write('-');
             writer.write(direction);
         }

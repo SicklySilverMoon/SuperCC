@@ -81,7 +81,7 @@ public class TWSWriter{
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.halfMoves.length-1);
+            writeInt(2 * solution.halfMoves.length);
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     
