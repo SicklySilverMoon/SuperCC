@@ -42,7 +42,7 @@ public class TWSReader{
 
         reader.counter = 0;
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
-        while (writer.size() + reader.solutionLengthOffset < solutionLength){
+        while (writer.size() + reader.solutionLengthOffset <= solutionLength){
             int b = reader.readByte();
             try {
                 switch (b & 0b11) {
