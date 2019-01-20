@@ -681,6 +681,7 @@ public class Creature{
         setSliding(oldCreature.sliding, level);
         if (creatureType.isTank() && !isSliding()) setCreatureType(TANK_STATIONARY);
         if (!creatureType.isChip()) setDirection(oldCreature.direction);
+        else level.getLayerFG().set(position, toTile());
         return false;
     }
     
