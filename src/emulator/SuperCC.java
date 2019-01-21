@@ -67,6 +67,10 @@ public class SuperCC {
         else return new byte[] {b};
     }
     
+    public int lastLevelNumber() {
+        return dat.lastLevel();
+    }
+    
     public void setTWSFile(File twsFile){
         try{
             this.twsReader = new TWSReader(twsFile);
@@ -196,9 +200,10 @@ public class SuperCC {
             
             for (int j = 1; j <= 149; j++) {
                 loadLevel(j);
-                if (new String(level.getTitle()).contains("Mini Challenges")) continue;
                 try {
-                    twsReader.readSolution(level).load(this);
+                    Solution s = twsReader.readSolution(level);
+                    // System.out.println(s.efficiency);
+                    s.load(this);
                     for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
                         level.tick(WAIT, new Direction[] {});
                     }
@@ -261,7 +266,7 @@ public class SuperCC {
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
             //emulator.runBenchmark(134, 200);
-            emulator.runTests();
+            //emulator.runTests();
         }
         catch (IOException e){
             e.printStackTrace();

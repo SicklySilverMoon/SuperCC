@@ -6,10 +6,7 @@ import emulator.SuperCC;
 import game.Level;
 import game.Step;
 import io.TWSWriter;
-import tools.ChangeInventory;
-import tools.ChangeTimer;
-import tools.ControlGUI;
-import tools.GameGifRecorder;
+import tools.*;
 import tools.tsp.TSPGUI;
 
 import javax.imageio.ImageIO;
@@ -352,6 +349,12 @@ public class MenuBar extends JMenuBar{
             saveSolution.setEnabled(false);
             add(saveSolution);
             addIcon(saveSolution, "/resources/icons/save.gif");
+    
+            JMenuItem verify = new JMenuItem("Verify tws");
+            verify.addActionListener(e -> {
+                new VerifyTWS(emulator);
+            });
+            add(verify);
 
         }
     }

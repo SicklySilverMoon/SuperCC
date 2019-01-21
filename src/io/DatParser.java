@@ -19,6 +19,10 @@ public class DatParser{
     private final File file;
     private long[] levelStart;
     
+    public int lastLevel() {
+        return levelStart.length;
+    }
+    
     public String getLevelsetName() {
         return file.getName().replaceFirst("[.][^.]+$", "");
     }
