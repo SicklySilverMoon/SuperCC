@@ -1,14 +1,6 @@
 Known issues
 
-Gameplay related:
-
-Sliding blocks leaving traps onto sliding tiles cause slide delay when they shouldn't
-
-
-TWS playback:
-
-- TWS Clicks are sometimes read incorrectly
-
+trap stays open if a block is pushed off of it
 
 Levels where the public tws does not play back correctly (+reason):
 
@@ -22,4 +14,4 @@ failed level 60 Red, Green and Blue (unknown)
 failed level 102 Triple Alarm (unknown)
 
 CCLP4.dat
-failed level 143 Color Coordination (unknown)
+failed level 143 Color Coordination (trap stays open if a block leaves it)
