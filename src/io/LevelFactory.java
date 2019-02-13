@@ -80,8 +80,6 @@ public class LevelFactory {
         for (int i = 32*32-1; i >= 0; i--){
             Tile tile = layerFG.get(i);
             if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new Creature(new Position(i), tile);
-            if (Tile.CHIP_SWIMMING_UP.ordinal() <= tile.ordinal() && tile.ordinal() <= Tile.CHIP_SWIMMING_RIGHT.ordinal())
-                return new Creature(new Position(i), tile);
         }
         return new Creature(new Position(0), Tile.CHIP_DOWN);
     }
