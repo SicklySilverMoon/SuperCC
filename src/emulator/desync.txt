@@ -11,13 +11,9 @@ CCLP1.dat
 
 CCLP2.dat
 failed level 81 Just Enough
-failed level 93 Exit Chip
-failed level 98 Loop
 failed level 103 Island Hopping
 failed level 111 Monster Factory
 failed level 124 Paramecia
-failed level 130 Frozen Birdbath
-failed level 132 Captured
 failed level 140 Keep Trying
 
 CCLP3.dat

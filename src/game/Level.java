@@ -191,7 +191,7 @@ public class Level extends SaveState {
     }
     void insertTile(Position position, Tile tile){
         Tile fgTile = layerFG.get(position);
-        if (!(fgTile.equals(FLOOR) && tile.isChip())) layerBG.set(position, layerFG.get(position));
+        if (!(fgTile.equals(FLOOR) && !tile.isMonster())) layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
     }
     
