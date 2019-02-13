@@ -671,8 +671,10 @@ public class Creature{
                         }
                     }
                 }
-                if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
-                if (!creatureType.isChip() && !isSliding()) CreatureList.direction = newDirection;
+                if (!creatureType.isChip()) {
+                    if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
+                    if (!isSliding()) CreatureList.direction = newDirection;
+                }
                 return true;
             }
             if (!creatureType.isChip() && !isSliding()) CreatureList.direction = newDirection;
