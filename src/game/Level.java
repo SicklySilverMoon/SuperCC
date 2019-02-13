@@ -190,7 +190,8 @@ public class Level extends SaveState {
         layerBG.set(position, FLOOR);
     }
     void insertTile(Position position, Tile tile){
-        layerBG.set(position, layerFG.get(position));
+        Tile fgTile = layerFG.get(position);
+        if (!fgTile.equals(FLOOR)) layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
     }
     
@@ -270,6 +271,14 @@ public class Level extends SaveState {
         for (Creature m : slipList) m.setSliding(true);
     }
     
+    private boolean endTick() {
+        if (layerBG.get(chip.getPosition()).equals(EXIT)){
+            layerFG.set(chip.getPosition(), EXITED_CHIP);
+            chip.kill();
+        }
+        return chip.isDead();
+    }
+    
     /**
      * Advances a tick (10th of a second).
      * <p>
@@ -293,17 +302,17 @@ public class Level extends SaveState {
     
         if (tickNumber > 0 && !isHalfMove) monsterList.tick();
         
-        if (chip.isDead()) return false;
+        if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
-        if (chip.isDead()) return false;
+        if (endTick()) return false;
         tickNumber++;
         if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick)));
-        if (chip.isDead()) return false;
+        if (endTick()) return false;
         slipList.tick();
-        if (chip.isDead()) return false;
+        if (endTick()) return false;
         if (moveType == KEY) moveChip(directions);
         else if (moveType == CLICK_LATE) moveChip(chip.seek(new Position(mouseClick)));
-        if (chip.isDead()) return false;
+        if (endTick()) return false;
 
         monsterList.finalise();
         finaliseTraps();
