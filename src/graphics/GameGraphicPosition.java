@@ -6,36 +6,38 @@ import java.awt.event.MouseEvent;
 
 public class GameGraphicPosition extends Position {
     
-    private final int tileSize;
+    private final int tileWidth, tileHeight;
     
     private static final int[] PATH_DISPLAY_OFFSETS = new int[] {
         10, 13, 7, 16, 4, 19, 1, 11, 14, 8, 17, 5, 20, 2, 9, 12, 6, 15, 3, 18, 0, 10
     };
     
     public int getGraphicXCentered(){
-        return x * tileSize + tileSize / 2;
+        return x * tileWidth + tileWidth / 2;
     }
     public int getGraphicYCentered(){
-        return y * tileSize + tileSize / 2;
+        return y * tileHeight + tileHeight / 2;
     }
     
     public int getGraphicX(int offsetIndex){
         if (offsetIndex >= PATH_DISPLAY_OFFSETS.length) offsetIndex = PATH_DISPLAY_OFFSETS.length - 1;
-        return x * tileSize + PATH_DISPLAY_OFFSETS[offsetIndex];
+        return x * tileWidth + PATH_DISPLAY_OFFSETS[offsetIndex];
     }
     public int getGraphicY(int offsetIndex){
         if (offsetIndex >= PATH_DISPLAY_OFFSETS.length) offsetIndex = PATH_DISPLAY_OFFSETS.length - 1;
-        return y * tileSize + PATH_DISPLAY_OFFSETS[offsetIndex];
+        return y * tileHeight + PATH_DISPLAY_OFFSETS[offsetIndex];
     }
     
-    public GameGraphicPosition(Position p, int tileSize) {
+    public GameGraphicPosition(Position p, int tileWidth, int tileHeight) {
         super(p.getX(), p.getY(), p.getIndex());
-        this.tileSize = tileSize;
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
     }
     
-    public GameGraphicPosition(MouseEvent e, int tileSize){
-        super(e.getX() / tileSize, e.getY() / tileSize);
-        this.tileSize = tileSize;
+    public GameGraphicPosition(MouseEvent e, int tileWidth, int tileHeight){
+        super(e.getX() / tileWidth, e.getY() / tileHeight);
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
     }
     
 }

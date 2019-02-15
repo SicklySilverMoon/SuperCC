@@ -20,7 +20,7 @@ public abstract class GamePanel extends JPanel
     implements MouseMotionListener, MouseListener {
     
     static final int BG_BORDER = 4, CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
-    private int tileSize;
+    protected int tileHeight, tileWidth;
     
     protected static final int[][]
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
@@ -43,11 +43,12 @@ public abstract class GamePanel extends JPanel
         this.emulator = emulator;
     }
     
-    public void setTileSize(int tileSize) {
-        this.tileSize = tileSize;
+    int getTileWidth() {
+        return tileWidth;
     }
-    public int getTileSize() {
-        return tileSize;
+    
+    int getTileHeight() {
+        return tileHeight;
     }
     
     @Override
@@ -75,7 +76,7 @@ public abstract class GamePanel extends JPanel
     void updateGraphics(boolean fromScratch) {
         Level level = emulator.getLevel();
         drawLevel(level, fromScratch);
-        overlay = new BufferedImage(32 * tileSize, 32 * tileSize, BufferedImage.TYPE_4BYTE_ABGR);
+        overlay = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterList) drawMonsterList(level.getMonsterList(), overlay);
         if (showSlipList) drawSlipList(level.getSlipList(), overlay);
         if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlay);
@@ -138,9 +139,10 @@ public abstract class GamePanel extends JPanel
     protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseLayers();
     
-    public void initialise(SuperCC emulator, Image tilespng, int tileSize) {
+    public void initialise(SuperCC emulator, Image tilespng, int tileWidth, int tileHeight) {
         this.emulator = emulator;
-        this.tileSize = tileSize;
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
         initialiseDigits();
         initialiseTileGraphics((BufferedImage) tilespng);
         initialiseBGTileGraphics((BufferedImage) tilespng);
@@ -267,7 +269,7 @@ public abstract class GamePanel extends JPanel
         popupMenu.show(e.getComponent(), e.getX(), e.getY());
     }
     public void mouseReleased(MouseEvent e) {
-        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileSize);
+        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight);
         if (e.isPopupTrigger()) rightClick(clickPosition, e);
         else leftClick(clickPosition);
     }
@@ -275,7 +277,7 @@ public abstract class GamePanel extends JPanel
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {
-        GameGraphicPosition pos = new GameGraphicPosition(e, tileSize);
+        GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight);
         Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
             fgTile = emulator.getLevel().getLayerFG().get(pos);
         String str = pos.toString() + " " + fgTile;
