@@ -16,12 +16,10 @@ import java.util.List;
 
 import static game.Position.UNCLICKABLE;
 
-public abstract class AbstractGamePanel extends JPanel
+public abstract class GamePanel extends JPanel
     implements MouseMotionListener, MouseListener {
     
-    public static final int BG_BORDER = 4;
-    private static final int CHANNELS = 4;
-    private static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
+    static final int BG_BORDER = 4, CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
     private int tileSize;
     
     protected static final int[][]
@@ -71,7 +69,7 @@ public abstract class AbstractGamePanel extends JPanel
     protected abstract void drawMonsterList(CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipList(SlipList monsterList, BufferedImage overlay);
     protected abstract void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay);
-    protected abstract void drawPositionList(List<Position> positionList, Graphics2D g);
+    public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
     
     void updateGraphics(boolean fromScratch) {

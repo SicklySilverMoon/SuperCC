@@ -8,13 +8,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-public class FullscreenGamePanel extends AbstractGamePanel {
+public class FullscreenGamePanel extends GamePanel {
 
     private byte[] previousFG = new byte[32*32];
-
-    // All 7*16 tile types are preloaded and stored here for fast access.
-    private static final int CHANNELS = 4;
-    static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
     
     @Override
     protected void drawLevel(Level level, boolean fromScratch) {
@@ -98,6 +94,7 @@ public class FullscreenGamePanel extends AbstractGamePanel {
         }
     }
     
+    @Override
     protected void drawChipHistory(Position currentPosition, BufferedImage overlay){
         List<Position> history = emulator.getSavestates().getChipHistory();
         history.add(currentPosition);

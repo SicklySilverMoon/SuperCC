@@ -35,8 +35,8 @@ public class Gui extends JFrame{
     
     public static final Color DARK_GREY = new Color(0x3C3F41);
     
-    public FullscreenGamePanel getGamePanel() {
-        return (FullscreenGamePanel) gamePanel;
+    public GamePanel getGamePanel() {
+        return (GamePanel) gamePanel;
     }
     
     public LevelPanel getLevelPanel() {
@@ -70,7 +70,8 @@ public class Gui extends JFrame{
         levelPanel = new LevelPanel();
         inventoryPanel = new InventoryPanel();
         movePanel = new MovePanel();
-        gamePanel = new FullscreenGamePanel();
+        gamePanel = new SmallGamePanel(12, 18);
+        gamePanel.setPreferredSize(new Dimension(400, 400));
         lastActionPanel = new LastActionPanel();
         speedSlider = new JSlider(0, SavestateManager.NUM_SPEEDS - 1);
         speedSlider.setBackground(DARK_GREY);
@@ -79,13 +80,13 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new WindowsSliderUI(timeSlider));
         try {
-            ((FullscreenGamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
+            ((GamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
-                ((FullscreenGamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
+                ((GamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
             }
             catch (IOException e2){ }
         }
