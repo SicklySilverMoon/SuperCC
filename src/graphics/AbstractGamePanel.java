@@ -1,51 +1,73 @@
 package graphics;
 
 import emulator.SuperCC;
-import game.CreatureList;
-import game.Level;
-import game.Position;
-import game.SlipList;
+import emulator.TickFlags;
+import game.*;
 import game.button.ConnectionButton;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-import static graphics.Gui.TILE_SIZE;
+import static game.Position.UNCLICKABLE;
 
-public abstract class AbstractGamePanel implements MouseMotionListener {
+public abstract class AbstractGamePanel extends JPanel
+    implements MouseMotionListener, MouseListener {
     
     public static final int BG_BORDER = 4;
     private static final int CHANNELS = 4;
     private static final int SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
+    private int tileSize;
     
-    protected static final int[][] tileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
-        bgTileImage = new int[7*16][TILE_SIZE*TILE_SIZE*CHANNELS],
+    protected static final int[][]
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
-    
-    private SuperCC emulator;
+    static int[][] tileImage, bgTileImage;
     
     protected boolean showBG, showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
     
     // The background image
-    private BufferedImage bg;
+    protected BufferedImage bg;
     // The foreground image
-    private BufferedImage fg;
+    protected BufferedImage fg;
     // The image behind the background (32*32 floor tiles)
-    private BufferedImage bbg;
-    private BufferedImage overlay;
+    protected BufferedImage bbg;
+    protected BufferedImage overlay;
     
-    public static void drawNumber(int n, int[][] digitRaster, WritableRaster raster, int x, int y){
+    protected SuperCC emulator;
+    
+    public void setEmulator(SuperCC emulator){
+        this.emulator = emulator;
+    }
+    
+    public void setTileSize(int tileSize) {
+        this.tileSize = tileSize;
+    }
+    public int getTileSize() {
+        return tileSize;
+    }
+    
+    @Override
+    public void paintComponent(Graphics g){
+        g.drawImage(bbg, 0, 0, null);
+        g.drawImage(bg, 0, 0, null);
+        g.drawImage(fg, 0, 0, null);
+        g.drawImage(overlay, 0, 0, null);
+    }
+    
+    public static void drawNumber(int n, int[][] digitRaster, int x, int y, WritableRaster raster){
         char[] chars = (String.valueOf(n)).toCharArray();
         for (int j = 0; j < chars.length; j++){
             int digit = Character.digit(chars[j], 10);
             raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, digitRaster[digit]);
         }
     }
-    protected abstract void drawLevel(Level level);
+    protected abstract void drawLevel(Level level, boolean fromScratch);
     protected abstract void drawMonsterList(CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipList(SlipList monsterList, BufferedImage overlay);
     protected abstract void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay);
@@ -53,7 +75,9 @@ public abstract class AbstractGamePanel implements MouseMotionListener {
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
     
     void updateGraphics(boolean fromScratch) {
-        overlay = new BufferedImage(32 * TILE_SIZE, 32 * TILE_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
+        Level level = emulator.getLevel();
+        drawLevel(level, fromScratch);
+        overlay = new BufferedImage(32 * tileSize, 32 * tileSize, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterList) drawMonsterList(level.getMonsterList(), overlay);
         if (showSlipList) drawSlipList(level.getSlipList(), overlay);
         if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlay);
@@ -81,7 +105,7 @@ public abstract class AbstractGamePanel implements MouseMotionListener {
         showHistory = visible;
     }
     
-    private static BufferedImage drawDigit(int n, Color colorBG, Color colorFG){
+    protected static BufferedImage drawDigit(int n, Color colorBG, Color colorFG){
         int[] smallNumeralBitmap = new int[] {
             0b111_010_111_111_101_111_111_111_111_111_00,
             0b101_010_001_001_101_100_100_001_101_101_00,
@@ -111,6 +135,154 @@ public abstract class AbstractGamePanel implements MouseMotionListener {
             BufferedImage digitBlack = drawDigit(n, Color.BLACK, Color.WHITE);
             digitBlack.getRaster().getPixels(0, 0, digitBlue.getWidth(), digitBlue.getHeight(), blackDigits[n]);
         }
+    }
+    protected abstract void initialiseTileGraphics(BufferedImage tilespng);
+    protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
+    protected abstract void initialiseLayers();
+    
+    public void initialise(SuperCC emulator, Image tilespng, int tileSize) {
+        this.emulator = emulator;
+        this.tileSize = tileSize;
+        initialiseDigits();
+        initialiseTileGraphics((BufferedImage) tilespng);
+        initialiseBGTileGraphics((BufferedImage) tilespng);
+        initialiseLayers();
+        addMouseListener(this);
+        addMouseMotionListener(this);
+    }
+    
+    class GamePopupMenu extends JPopupMenu {
+        
+        GamePopupMenu(GameGraphicPosition position) {
+            add(new JLabel("Cheats", SwingConstants.CENTER));
+            Cheats cheats = emulator.getLevel().cheats;
+            
+            Tile tileFG = emulator.getLevel().getLayerFG().get(position);
+            Tile tileBG = emulator.getLevel().getLayerBG().get(position);
+            for (Tile tile : new Tile[] {tileFG, tileBG}) {
+                
+                if (tile.isButton()) {
+                    JMenuItem press = new JMenuItem("Press button");
+                    press.addActionListener((e) -> {
+                        cheats.pressButton(position);
+                        updateGraphics(false);
+                        this.repaint();
+                    });
+                    add(press);
+                }
+                
+                if (tile == Tile.TRAP) {
+                    JMenuItem open = new JMenuItem("Open Trap");
+                    open.addActionListener((e) -> cheats.setTrap(position, true));
+                    add(open);
+                    JMenuItem close = new JMenuItem("Close Trap");
+                    close.addActionListener((e) -> cheats.setTrap(position, true));
+                    add(close);
+                }
+                
+            }
+            
+            Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+            if (c != null) {
+                JMenu setDirection = new JMenu("Change Creature's Direction");
+                for (Direction d : Direction.values()) {
+                    JMenuItem menuItem = new JMenuItem(d.toString());
+                    menuItem.addActionListener((e) -> {
+                        cheats.setDirection(c, d);
+                        updateGraphics(false);
+                        this.repaint();
+                    });
+                    setDirection.add(menuItem);
+                }
+                add(setDirection);
+                JMenuItem kill = new JMenuItem("Kill Creature");
+                kill.addActionListener((e) -> {
+                    cheats.kill(c);
+                    updateGraphics(false);
+                    this.repaint();
+                });
+                add(kill);
+            }
+            
+            if (position.equals(emulator.getLevel().getChip().getPosition()) && emulator.getLevel().getChip().isDead()) {
+                JMenuItem revive = new JMenuItem("Revive Chip");
+                revive.addActionListener((e) -> {
+                    cheats.reviveChip();
+                    updateGraphics(false);
+                    this.repaint();
+                });
+                add(revive);
+            }
+            
+            JMenuItem teleportChip = new JMenuItem("Move Chip Here");
+            teleportChip.addActionListener((e) -> {
+                cheats.moveChip(position);
+                updateGraphics(false);
+                this.repaint();
+            });
+            add(teleportChip);
+            
+            JMenuItem pop = new JMenuItem("Remove Tile: "+tileFG.toString());
+            pop.addActionListener((e) -> {
+                cheats.popTile(position);
+                updateGraphics(false);
+                this.repaint();
+            });
+            add(pop);
+            
+            JMenu insert = new JMenu("Insert Tile");
+            Tile[] allTiles = Tile.values();
+            for (int i = 0; i < 0x70; i+= 0x10) {
+                JMenu tileSubsetMenu = new JMenu(i + " - " + (i+0XF));
+                for (int j = i; j < i + 0x10; j++) {
+                    Tile t = allTiles[j];
+                    JMenuItem menuItem = new JMenuItem(t.toString());
+                    menuItem.addActionListener((e) -> {
+                        cheats.insertTile(position, t);
+                        updateGraphics(false);
+                        this.repaint();
+                    });
+                    tileSubsetMenu.add(menuItem);
+                }
+                insert.add(tileSubsetMenu);
+            }
+            
+            add(insert);
+            
+        }
+        
+    }
+    
+    public void mouseClicked(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {}
+    private void leftClick(GameGraphicPosition clickPosition) {
+        Creature chip = emulator.getLevel().getChip();
+        byte b = clickPosition.clickByte(chip.getPosition());
+        if (b == UNCLICKABLE) return;
+        emulator.showAction("Clicked " + clickPosition);
+        emulator.getLevel().setClick(clickPosition.getIndex());
+        Direction[] directions = chip.seek(clickPosition);
+        emulator.tick(b, directions, TickFlags.GAME_PLAY);
+    }
+    private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
+        FullscreenGamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
+        popupMenu.show(e.getComponent(), e.getX(), e.getY());
+    }
+    public void mouseReleased(MouseEvent e) {
+        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileSize);
+        if (e.isPopupTrigger()) rightClick(clickPosition, e);
+        else leftClick(clickPosition);
+    }
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
+    public void mouseDragged(MouseEvent e) {}
+    public void mouseMoved(MouseEvent e) {
+        GameGraphicPosition pos = new GameGraphicPosition(e, tileSize);
+        Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
+            fgTile = emulator.getLevel().getLayerFG().get(pos);
+        String str = pos.toString() + " " + fgTile;
+        if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+        emulator.showAction(str);
     }
     
 }

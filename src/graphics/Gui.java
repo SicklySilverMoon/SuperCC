@@ -10,7 +10,6 @@ import util.TreeNode;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,12 +33,10 @@ public class Gui extends JFrame{
     
     private final SuperCC emulator;
     
-    public static final int TILE_SIZE = 20;
-    
     public static final Color DARK_GREY = new Color(0x3C3F41);
     
-    public GamePanel getGamePanel() {
-        return (GamePanel) gamePanel;
+    public FullscreenGamePanel getGamePanel() {
+        return (FullscreenGamePanel) gamePanel;
     }
     
     public LevelPanel getLevelPanel() {
@@ -73,7 +70,7 @@ public class Gui extends JFrame{
         levelPanel = new LevelPanel();
         inventoryPanel = new InventoryPanel();
         movePanel = new MovePanel();
-        gamePanel = new GamePanel();
+        gamePanel = new FullscreenGamePanel();
         lastActionPanel = new LastActionPanel();
         speedSlider = new JSlider(0, SavestateManager.NUM_SPEEDS - 1);
         speedSlider.setBackground(DARK_GREY);
@@ -82,13 +79,13 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new WindowsSliderUI(timeSlider));
         try {
-            ((GamePanel) gamePanel).initialise(ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
+            ((FullscreenGamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
-                ((GamePanel) gamePanel).initialise(ImageIO.read(getClass().getResource("/resources/tw-editor.png")));
+                ((FullscreenGamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), 20);
             }
             catch (IOException e2){ }
         }

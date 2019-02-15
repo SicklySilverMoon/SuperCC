@@ -1,26 +1,16 @@
 package tools.tsp;
 
 import emulator.SuperCC;
-import emulator.TickFlags;
-import game.Creature;
-import game.Direction;
 import game.Position;
 import graphics.GameGraphicPosition;
-import graphics.GamePanel;
+import graphics.FullscreenGamePanel;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
-import javax.swing.plaf.basic.BasicListUI;
-import javax.swing.plaf.multi.MultiListUI;
-import javax.swing.plaf.synth.SynthListUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import static game.Position.UNCLICKABLE;
 
 public class TSPGUI {
     private JPanel panel1;
@@ -48,7 +38,7 @@ public class TSPGUI {
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setAlwaysOnTop(true);
         frame.setVisible(true);
-        GamePanel gamePanel = emulator.getMainWindow().getGamePanel();
+        FullscreenGamePanel gamePanel = emulator.getMainWindow().getGamePanel();
         gameMouseListener = gamePanel.getMouseListeners()[0];
         gamePanel.removeMouseListener(gamePanel.getMouseListeners()[0]);
         gamePanel.addMouseListener(new TSPGamePanelListener(emulator));
@@ -95,7 +85,7 @@ public class TSPGUI {
             
             population.sort(dm);
             Route route = population.get(0);
-            GamePanel gp = emulator.getMainWindow().getGamePanel();
+            FullscreenGamePanel gp = emulator.getMainWindow().getGamePanel();
             ArrayList<Position> routePositions = new ArrayList<>(route.getChromosome().length);
             for (int i = 0; i < populationSize; i++) {
                 System.out.println(population.get(i).getFitness(dm));
@@ -127,7 +117,7 @@ public class TSPGUI {
         private SuperCC emulator;
         @Override
         public void mouseClicked(MouseEvent e) {
-            GameGraphicPosition clickPosition = new GameGraphicPosition(e);
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e, emulator.getMainWindow().getGamePanel().getTileSize());
             emulator.showAction("Clicked " + clickPosition);
             emulator.getMainWindow().getGamePanel().repaint();
             int listIndex = nodeList.getSelectedIndex() + 1;
@@ -160,7 +150,7 @@ public class TSPGUI {
     
         @Override
         public void windowClosing(WindowEvent e) {
-            GamePanel gp = emulator.getMainWindow().getGamePanel();
+            FullscreenGamePanel gp = emulator.getMainWindow().getGamePanel();
             gp.removeMouseListener(gp.getMouseListeners()[0]);
             gp.addMouseListener(gameMouseListener);
         }
