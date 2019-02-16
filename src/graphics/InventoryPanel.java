@@ -24,8 +24,15 @@ public class InventoryPanel extends JPanel {
     public void initialise(SuperCC emulator){
         this.emulator = emulator;
         tileImage = FullscreenGamePanel.tileImage;
-        int tileWidth = Gui.DEFAULT_TILE_WIDTH;
-        int tileHeight = Gui.DEFAULT_TILE_HEIGHT;
+        int tileWidth, tileHeight;
+        try {
+            tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
+            tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();
+        }
+        catch (NullPointerException npe) {
+            tileWidth = Gui.DEFAULT_TILE_WIDTH;
+            tileHeight = Gui.DEFAULT_TILE_HEIGHT;
+        }
         BufferedImage bbg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         bg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         WritableRaster r1 = bbg.getRaster();

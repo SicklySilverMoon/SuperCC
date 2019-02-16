@@ -4,6 +4,7 @@ import emulator.SuperCC;
 import game.Position;
 import graphics.GameGraphicPosition;
 import graphics.FullscreenGamePanel;
+import graphics.GamePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +39,7 @@ public class TSPGUI {
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setAlwaysOnTop(true);
         frame.setVisible(true);
-        FullscreenGamePanel gamePanel = emulator.getMainWindow().getGamePanel();
+        GamePanel gamePanel = emulator.getMainWindow().getGamePanel();
         gameMouseListener = gamePanel.getMouseListeners()[0];
         gamePanel.removeMouseListener(gamePanel.getMouseListeners()[0]);
         gamePanel.addMouseListener(new TSPGamePanelListener(emulator));
@@ -85,7 +86,7 @@ public class TSPGUI {
             
             population.sort(dm);
             Route route = population.get(0);
-            FullscreenGamePanel gp = emulator.getMainWindow().getGamePanel();
+            GamePanel gp = emulator.getMainWindow().getGamePanel();
             ArrayList<Position> routePositions = new ArrayList<>(route.getChromosome().length);
             for (int i = 0; i < populationSize; i++) {
                 System.out.println(population.get(i).getFitness(dm));
@@ -117,7 +118,7 @@ public class TSPGUI {
         private SuperCC emulator;
         @Override
         public void mouseClicked(MouseEvent e) {
-            GameGraphicPosition clickPosition = new GameGraphicPosition(e, emulator.getMainWindow().getGamePanel().getTileSize());
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e, -1, -1);
             emulator.showAction("Clicked " + clickPosition);
             emulator.getMainWindow().getGamePanel().repaint();
             int listIndex = nodeList.getSelectedIndex() + 1;
@@ -150,7 +151,7 @@ public class TSPGUI {
     
         @Override
         public void windowClosing(WindowEvent e) {
-            FullscreenGamePanel gp = emulator.getMainWindow().getGamePanel();
+            GamePanel gp = emulator.getMainWindow().getGamePanel();
             gp.removeMouseListener(gp.getMouseListeners()[0]);
             gp.addMouseListener(gameMouseListener);
         }

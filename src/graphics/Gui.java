@@ -29,7 +29,8 @@ public class Gui extends JFrame{
     private JButton playButton;
     
     static final int DEFAULT_TILE_WIDTH = 20;
-    static final int DEFAULT_TILE_HEIGHT = 14;
+    static final int DEFAULT_TILE_HEIGHT = 20;
+    public static final TileSheet DEFAULT_TILESHEET = TileSheet.CCEDIT_TW;
     
     public JSlider getTimeSlider(){
         return timeSlider;
@@ -74,7 +75,7 @@ public class Gui extends JFrame{
         levelPanel = new LevelPanel();
         inventoryPanel = new InventoryPanel();
         movePanel = new MovePanel();
-        gamePanel = new FullscreenGamePanel();
+        gamePanel = new SmallGamePanel(32, 32);
         gamePanel.setPreferredSize(new Dimension(32*DEFAULT_TILE_WIDTH, 32*DEFAULT_TILE_HEIGHT));
         lastActionPanel = new LastActionPanel();
         speedSlider = new JSlider(0, SavestateManager.NUM_SPEEDS - 1);
@@ -84,13 +85,13 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new WindowsSliderUI(timeSlider));
         try {
-            ((GamePanel) gamePanel).initialise(emulator, TileSheet.TW.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+            ((GamePanel) gamePanel).initialise(emulator, TileSheet.TW.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
-                ((GamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+                ((GamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             }
             catch (IOException e2){ }
         }

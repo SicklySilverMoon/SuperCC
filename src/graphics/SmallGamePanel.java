@@ -6,13 +6,33 @@ import game.button.ConnectionButton;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.List;
 
 public class SmallGamePanel extends GamePanel {
     
     private Position screenTopLeft;                     // included
     private Position screenBottomRight;                 // not included
-    private final int WINDOW_SIZE_X, WINDOW_SIZE_Y;
+    private int windowSizeX, windowSizeY;
+    private byte[] previousFG = new byte[32*32];
+    private byte[] previousBG = new byte[32*32];
+    private Position previousScreenTopLeft = new Position(-1, -1);
+    
+    public void setWindowSize(int windowSizeX, int windowSizeY) {
+        this.windowSizeX = windowSizeX;
+        this.windowSizeY = windowSizeY;
+        try {
+            super.initialise(emulator, getTileSheet().getTileSheet(tileWidth, tileHeight), getTileSheet(), tileWidth, tileHeight);
+        }
+        catch (IOException e) {}
+    }
+    
+    public int getWindowSizeX() {
+        return windowSizeX;
+    }
+    public int getWindowSizeY() {
+        return windowSizeY;
+    }
     
     private boolean onScreen(Position p) {
         return screenTopLeft.getX() <= p.getX() && p.getX() <= screenBottomRight.getX()
@@ -26,19 +46,16 @@ public class SmallGamePanel extends GamePanel {
         int chipX = chipPosition.getX();
         int chipY = chipPosition.getY();
     
-        screenX = chipX - (WINDOW_SIZE_X)/2;
+        screenX = chipX - (windowSizeX) / 2;
         if (screenX < 0) screenX = 0;
-        if (screenX + WINDOW_SIZE_X > 32) screenX = 32-WINDOW_SIZE_X;
+        if (screenX + windowSizeX > 32) screenX = 32 - windowSizeX;
         
-        screenY = chipY - (WINDOW_SIZE_Y)/2;
+        screenY = chipY - (windowSizeY) / 2;
         if (screenY < 0) screenY = 0;
-        if (screenY + WINDOW_SIZE_Y > 32) screenY = 32-WINDOW_SIZE_Y;
+        if (screenY + windowSizeY > 32) screenY = 32 - windowSizeY;
     
         screenTopLeft = new Position(screenX, screenY);
-        screenBottomRight = screenTopLeft.add(WINDOW_SIZE_X, WINDOW_SIZE_Y);
-        System.out.println(screenTopLeft);
-        System.out.println(screenBottomRight);
-        System.out.println("");
+        screenBottomRight = screenTopLeft.add(windowSizeX, windowSizeY);
         super.updateGraphics(fromScratch);
     }
     
@@ -58,17 +75,25 @@ public class SmallGamePanel extends GamePanel {
         WritableRaster rasterFG = fg.getRaster();
         WritableRaster rasterBG = bg.getRaster();
     
-        for (int xPos = 0; xPos < WINDOW_SIZE_X ; xPos++){
-            for (int yPos = 0; yPos < WINDOW_SIZE_Y ; yPos++) {
+        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
+    
+        for (int xPos = 0; xPos < windowSizeX; xPos++){
+            for (int yPos = 0; yPos < windowSizeY; yPos++) {
                 Position p = new Position(screenTopLeft.getX() + xPos, screenTopLeft.getY() + yPos);
-                int x = tileWidth * xPos, y = tileHeight * yPos;
-                rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[p.getIndex()]]);
-                rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[p.getIndex()]]);
-                if (showBG && !Tile.fromOrdinal(layerFG[p.getIndex()]).isTransparent() && layerBG[p.getIndex()] != 0) {
-                    rasterFG.setPixels(x + BG_BORDER, y + BG_BORDER, tileWidth - 2 * BG_BORDER, tileHeight - 2 * BG_BORDER, bgTileImage[layerBG[p.getIndex()]]);
+                int i = p.getIndex();
+                if (fromScratch || layerFG[i] != previousFG[i-screenMotion] || layerBG[i] != previousBG[i-screenMotion]) {
+                    int x = tileWidth * xPos, y = tileHeight * yPos;
+                    rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[i]]);
+                    rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
+                    if (showBG && !Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
+                        rasterFG.setPixels(x + BG_BORDER, y + BG_BORDER, tileWidth - 2 * BG_BORDER, tileHeight - 2 * BG_BORDER, bgTileImage[layerBG[i]]);
+                    }
                 }
             }
         }
+        previousBG = layerBG.clone();
+        previousFG = layerFG.clone();
+        previousScreenTopLeft = screenTopLeft.clone();
     }
     
     @Override
@@ -157,19 +182,19 @@ public class SmallGamePanel extends GamePanel {
     
     @Override
     protected void initialiseLayers() {
-        bg = new BufferedImage(WINDOW_SIZE_X*tileWidth, WINDOW_SIZE_Y*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        fg = new BufferedImage(WINDOW_SIZE_X*tileWidth, WINDOW_SIZE_Y*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        bbg = new BufferedImage(WINDOW_SIZE_X*tileWidth, WINDOW_SIZE_Y*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        bg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        fg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        bbg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         WritableRaster bbgRaster = bbg.getRaster();
-        for (int i = 0; i < WINDOW_SIZE_X*WINDOW_SIZE_Y; i++){
-            int x = tileWidth * (i % WINDOW_SIZE_X), y = tileHeight * (i / WINDOW_SIZE_X);
+        for (int i = 0; i < windowSizeX * windowSizeY; i++){
+            int x = tileWidth * (i % windowSizeX), y = tileHeight * (i / windowSizeX);
             bbgRaster.setPixels(x, y, tileWidth, tileHeight, tileImage[0]);
         }
     }
     
     SmallGamePanel(int windowSizeX, int windowSizeY) {
-        this.WINDOW_SIZE_X = windowSizeX;
-        this.WINDOW_SIZE_Y = windowSizeY;
+        this.windowSizeX = windowSizeX;
+        this.windowSizeY = windowSizeY;
     }
     
 }

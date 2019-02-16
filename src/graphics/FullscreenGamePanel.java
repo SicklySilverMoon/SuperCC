@@ -8,6 +8,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
+/*
+ * This class is no longer used. Use SmallGamePanel instead. It aloows you to
+ * choose the number of tiles in view.
+ */
 public class FullscreenGamePanel extends GamePanel {
 
     private byte[] previousFG = new byte[32*32];

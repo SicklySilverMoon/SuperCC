@@ -21,6 +21,7 @@ public abstract class GamePanel extends JPanel
     
     static final int BG_BORDER = 4, CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
     protected int tileHeight, tileWidth;
+    private TileSheet tileSheet;
     
     protected static final int[][]
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
@@ -43,11 +44,19 @@ public abstract class GamePanel extends JPanel
         this.emulator = emulator;
     }
     
-    int getTileWidth() {
+    public void setTileSheet(TileSheet ts) {
+        this.tileSheet = ts;
+    }
+    
+    public TileSheet getTileSheet() {
+        return tileSheet;
+    }
+    
+    public int getTileWidth() {
         return tileWidth;
     }
     
-    int getTileHeight() {
+    public int getTileHeight() {
         return tileHeight;
     }
     
@@ -139,10 +148,11 @@ public abstract class GamePanel extends JPanel
     protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseLayers();
     
-    public void initialise(SuperCC emulator, Image tilespng, int tileWidth, int tileHeight) {
+    public void initialise(SuperCC emulator, Image tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
         this.emulator = emulator;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
+        this.tileSheet = tileSheet;
         initialiseDigits();
         initialiseTileGraphics((BufferedImage) tilespng);
         initialiseBGTileGraphics((BufferedImage) tilespng);

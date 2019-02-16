@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -365,24 +366,102 @@ public class MenuBar extends JMenuBar{
     
             JMenu tileset = new JMenu("Tileset");
             ButtonGroup allTilesets = new ButtonGroup();
-            String[] tilesetNames = new String[] {"Tile World (Editor)", "Tile World", "MSCC (Editor)", "MSCC"};
-            String[] tilesetPaths = new String[] {"/resources/tw-editor.png", "/resources/tw.png",
-                "/resources/mscc-editor.png", "/resources/mscc.png"};
+            String[] tilesetNames = TileSheet.getNames();
+            TileSheet[] tileSheets = TileSheet.values();
             for (int i = 0; i < tilesetNames.length; i++) {
                 JRadioButton msccEditor = new JRadioButton(tilesetNames[i]);
-                String tilesetPath = tilesetPaths[i];
+                TileSheet tileSheet = tileSheets[i];
                 msccEditor.addActionListener(e -> {
+                    int tileWidth = 0, tileHeight = 0;
                     try {
-                        window.getGamePanel().initialiseTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
-                        window.getGamePanel().initialiseBGTileGraphics(ImageIO.read(getClass().getResource(tilesetPath)));
+                        tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
+                        tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();
+                    }
+                    catch (NullPointerException exc) {
+                        tileWidth = Gui.DEFAULT_TILE_WIDTH;
+                        tileHeight = Gui.DEFAULT_TILE_HEIGHT;
+                    }
+                    try {
+                        BufferedImage tilesetImage = tileSheet.getTileSheet(tileWidth, tileHeight);
+                        window.getGamePanel().setTileSheet(tileSheet);
+                        window.getGamePanel().initialiseTileGraphics(tilesetImage);
+                        window.getGamePanel().initialiseBGTileGraphics(tilesetImage);
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(emulator.getLevel(), true);
-                    } catch (IOException exc) {}
+                    } catch (IOException exc) {
+                        emulator.throwError(exc.getMessage());
+                    }
                 });
                 allTilesets.add(msccEditor);
                 tileset.add(msccEditor);
             }
             add(tileset);
+    
+            JMenu tileSize = new JMenu("Tile size");
+            ButtonGroup tileSizes = new ButtonGroup();
+            int[] sizes = new int[] {16, 20, 24, 32, 48};
+            for (int i = 0; i < sizes.length; i++) {
+                int size = sizes[i];
+                JRadioButton sizeButton = new JRadioButton(size + "x" + size);
+                sizeButton.addActionListener((e) -> {
+                    try {
+                        TileSheet ts;
+                        try {
+                            ts = emulator.getMainWindow().getGamePanel().getTileSheet();
+                        }
+                        catch (NullPointerException npe) {
+                            ts = Gui.DEFAULT_TILESHEET;
+                        }
+                        SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
+                        emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheet(size, size), ts, size, size);
+                        window.getInventoryPanel().initialise(emulator);
+                        window.getInventoryPanel().setPreferredSize(new Dimension(4*size+10, 2*size+10));
+                        window.getInventoryPanel().setSize(4*size+10, 2*size+10);
+                        window.setSize(200+size*gamePanel.getWindowSizeX(), 200+size*gamePanel.getWindowSizeY());
+                        window.getGamePanel().setPreferredSize(new Dimension(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY()));
+                        window.getGamePanel().setSize(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY());
+                        window.pack();
+                        window.repaint(emulator.getLevel(), true);
+                    }
+                    catch (IOException e1) {
+                        emulator.throwError(e1.getMessage());
+                    }
+                });
+                tileSizes.add(sizeButton);
+                tileSize.add(sizeButton);
+            }
+            JRadioButton sizeButton = new JRadioButton("custom");
+            sizeButton.addActionListener(e -> new ChooseTileSize(emulator, window.getGamePanel().getTileWidth(), 0, 256));
+            tileSizes.add(sizeButton);
+            tileSize.add(sizeButton);
+            add(tileSize);
+            
+            JMenu windowSize = new JMenu("Game window size");
+            ButtonGroup windowSizes = new ButtonGroup();
+            sizes = new int[] {9, 32};
+            for (int i = 0; i < sizes.length; i++) {
+                int size = sizes[i];
+                sizeButton = new JRadioButton(size + "x" + size);
+                sizeButton.addActionListener((e) -> {
+                    SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
+                    gamePanel.setWindowSize(size, size);
+                    int tileWidth = gamePanel.getTileWidth(), tileHeight = gamePanel.getTileHeight();
+                    window.setSize(200+tileWidth*size, 200+tileHeight*size);
+                    window.getGamePanel().setPreferredSize(new Dimension(tileWidth*size, tileHeight*size));
+                    window.getGamePanel().setSize(tileWidth*size, tileHeight*size);
+                    window.pack();
+                    window.repaint(emulator.getLevel(), true);
+                });
+                windowSizes.add(sizeButton);
+                windowSize.add(sizeButton);
+            }
+            sizeButton = new JRadioButton("custom");
+            sizeButton.addActionListener(e -> new ChooseWindowSize(emulator));
+            windowSizes.add(sizeButton);
+            windowSize.add(sizeButton);
+            add(windowSize);
+            
+            add(new JSeparator());
     
             String[] setterNames = new String[] {
                 "Show Background Tiles",
