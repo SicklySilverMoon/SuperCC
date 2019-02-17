@@ -85,7 +85,7 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new WindowsSliderUI(timeSlider));
         try {
-            ((GamePanel) gamePanel).initialise(emulator, TileSheet.TW.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+            ((GamePanel) gamePanel).initialise(emulator, TileSheet.CCEDIT_TW.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
