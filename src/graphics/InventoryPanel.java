@@ -33,6 +33,10 @@ public class InventoryPanel extends JPanel {
             tileWidth = Gui.DEFAULT_TILE_WIDTH;
             tileHeight = Gui.DEFAULT_TILE_HEIGHT;
         }
+        setSize(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER);
+        setPreferredSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
+        setMaximumSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
+        setMinimumSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
         BufferedImage bbg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         bg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         WritableRaster r1 = bbg.getRaster();

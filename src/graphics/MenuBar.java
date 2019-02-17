@@ -399,7 +399,7 @@ public class MenuBar extends JMenuBar{
     
             JMenu tileSize = new JMenu("Tile size");
             ButtonGroup tileSizes = new ButtonGroup();
-            int[] sizes = new int[] {16, 20, 24, 32, 48};
+            int[] sizes = new int[] {16, 20, 24, 32, 48, 64};
             for (int i = 0; i < sizes.length; i++) {
                 int size = sizes[i];
                 JRadioButton sizeButton = new JRadioButton(size + "x" + size);
