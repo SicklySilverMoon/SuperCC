@@ -12,7 +12,6 @@ CCLP1.dat
 CCLP2.dat
 failed level 81 Just Enough
 failed level 103 Island Hopping
-failed level 111 Monster Factory
 failed level 124 Paramecia
 failed level 140 Keep Trying
 

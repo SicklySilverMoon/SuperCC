@@ -621,22 +621,25 @@ public class Creature{
         Position newPosition = position.move(direction);
         Tile newTile = level.layerFG.get(newPosition);
         if (!creatureType.isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if (newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level)) return false;
+        if (!(newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level))) {
+    
+            if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
+                level.popTile(position);
+                position = newPosition;
         
-        if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
-            level.popTile(position);
-            position = newPosition;
-    
-            if (sliding && !creatureType.isMonster()) this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);
-            
-            if (!isDead()) level.insertTile(getPosition(), toTile());
-            else if (isMonster) {
-                level.monsterList.numDeadMonsters++;
+                if (sliding && !creatureType.isMonster())
+                    this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);
+        
+                if (!isDead()) level.insertTile(getPosition(), toTile());
+                else if (isMonster) {
+                    level.monsterList.numDeadMonsters++;
+                }
+        
+                setSliding(wasSliding, sliding, level);
+        
+                return true;
             }
-    
-            setSliding(wasSliding, sliding, level);
             
-            return true;
         }
         
         setSliding(wasSliding, sliding, level);
