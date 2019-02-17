@@ -5,7 +5,6 @@ trap stays open if a block is pushed off of it
 Levels where the public tws does not play back correctly (+reason):
 
 CHIPS.dat
-failed level 116 BLOCK BUSTER II (unknown)
 
 CCLP1.dat
 
@@ -17,7 +16,6 @@ failed level 140 Keep Trying
 
 CCLP3.dat
 failed level 60 Red, Green and Blue (unknown)
-failed level 102 Triple Alarm (unknown)
 
 CCLP4.dat
 failed level 143 Color Coordination (trap stays open if a block leaves it)

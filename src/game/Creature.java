@@ -3,6 +3,8 @@ package game;
 import game.button.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import static game.CreatureID.BLOCK;
@@ -657,11 +659,12 @@ public class Creature{
         Creature oldCreature = clone();
         if (!creatureType.isChip() && !isSliding()) CreatureList.direction = direction;
         for (Direction newDirection : directions){
-            
-            List<Button> pressedButtons = new ArrayList<>();
+    
+            LinkedList<Button> pressedButtons = new LinkedList<>();
             
             if (tryMove(newDirection, level, slidingMove, pressedButtons)){
-                for (Button b : pressedButtons) b.press(level);
+                Iterator<Button> reverseIter = pressedButtons.descendingIterator();
+                while (reverseIter.hasNext()) reverseIter.next().press(level);
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
                     if (b != null && level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
