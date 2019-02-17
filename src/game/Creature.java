@@ -179,6 +179,7 @@ public class Creature{
     private void teleport(Direction direction, Level level, Position position, List<Button> pressedButtons) {
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
+            if (portalIndex >= level.getPortals().length) return;
             if (level.getPortals()[portalIndex].equals(position)){
                 break;
             }

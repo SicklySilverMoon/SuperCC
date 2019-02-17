@@ -42,12 +42,12 @@ public class LevelFactory {
     private static Position[] getPortals(Layer layerFG, Layer layerBG){
         int l = 0;
         for (int i = 0; i < 32*32; i++){
-            if (layerFG.get(i) == Tile.TELEPORT || layerBG.get(i) == Tile.TELEPORT) l++;
+            if (layerFG.get(i) == Tile.TELEPORT || (layerFG.get(i).isMonster() && layerBG.get(i) == Tile.TELEPORT)) l++;
         }
         Position[] portals = new Position[l];
         l = 0;
         for (short i = 0; i < 32*32; i++){
-            if (layerFG.get(i) == Tile.TELEPORT || layerBG.get(i) == Tile.TELEPORT){
+            if (layerFG.get(i) == Tile.TELEPORT || (layerFG.get(i).isMonster() && layerBG.get(i) == Tile.TELEPORT)){
                 portals[l++] = new Position(i);
             }
         }
