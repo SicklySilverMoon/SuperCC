@@ -39,8 +39,8 @@ public class FullscreenGamePanel extends GamePanel {
                 rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[i]]);
                 rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
                 if (showBG && !Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
-                    rasterFG.setPixels(x + BG_BORDER, y + BG_BORDER,
-                                       tileWidth - 2 * BG_BORDER, tileHeight - 2 * BG_BORDER, bgTileImage[layerBG[i]]);
+                    rasterFG.setPixels(x + bgBorderSize, y + bgBorderSize,
+                                       tileWidth - 2 * bgBorderSize, tileHeight - 2 * bgBorderSize, bgTileImage[layerBG[i]]);
                 }
             }
         }
@@ -119,11 +119,12 @@ public class FullscreenGamePanel extends GamePanel {
     @Override
     protected void initialiseBGTileGraphics(BufferedImage allTiles) {
         bgTileImage = new int[7*16][tileWidth*tileHeight*CHANNELS];
+        bgBorderSize = 4;
         for (int i = 0; i < 16 * 7; i++) {
             int x = i / 16;
             int y = i % 16;
-            allTiles.getRaster().getPixels(x * tileWidth + BG_BORDER, y * tileHeight + BG_BORDER,
-                                           tileWidth - 2 * BG_BORDER, tileHeight - 2 * BG_BORDER, bgTileImage[i]);
+            allTiles.getRaster().getPixels(x * tileWidth + bgBorderSize, y * tileHeight + bgBorderSize,
+                                           tileWidth - 2 * bgBorderSize, tileHeight - 2 * bgBorderSize, bgTileImage[i]);
         }
     }
     

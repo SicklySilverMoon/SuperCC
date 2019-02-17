@@ -19,7 +19,8 @@ import static game.Position.UNCLICKABLE;
 public abstract class GamePanel extends JPanel
     implements MouseMotionListener, MouseListener {
     
-    static final int BG_BORDER = 4, CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
+    static final int CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
+    protected int bgBorderSize;
     protected int tileHeight, tileWidth;
     private TileSheet tileSheet;
     
