@@ -23,6 +23,8 @@ public abstract class GamePanel extends JPanel
     protected int tileHeight, tileWidth;
     private TileSheet tileSheet;
     
+    protected Position screenTopLeft = new Position(0, 0);
+    
     protected static final int[][]
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
@@ -176,7 +178,7 @@ public abstract class GamePanel extends JPanel
                     press.addActionListener((e) -> {
                         cheats.pressButton(position);
                         updateGraphics(false);
-                        this.repaint();
+                        emulator.getMainWindow().repaint();
                     });
                     add(press);
                 }
@@ -200,7 +202,7 @@ public abstract class GamePanel extends JPanel
                     menuItem.addActionListener((e) -> {
                         cheats.setDirection(c, d);
                         updateGraphics(false);
-                        this.repaint();
+                        emulator.getMainWindow().repaint();
                     });
                     setDirection.add(menuItem);
                 }
@@ -209,7 +211,7 @@ public abstract class GamePanel extends JPanel
                 kill.addActionListener((e) -> {
                     cheats.kill(c);
                     updateGraphics(false);
-                    this.repaint();
+                    emulator.getMainWindow().repaint();
                 });
                 add(kill);
             }
@@ -219,7 +221,7 @@ public abstract class GamePanel extends JPanel
                 revive.addActionListener((e) -> {
                     cheats.reviveChip();
                     updateGraphics(false);
-                    this.repaint();
+                    emulator.getMainWindow().repaint();
                 });
                 add(revive);
             }
@@ -228,7 +230,7 @@ public abstract class GamePanel extends JPanel
             teleportChip.addActionListener((e) -> {
                 cheats.moveChip(position);
                 updateGraphics(false);
-                this.repaint();
+                emulator.getMainWindow().repaint();
             });
             add(teleportChip);
             
@@ -236,7 +238,7 @@ public abstract class GamePanel extends JPanel
             pop.addActionListener((e) -> {
                 cheats.popTile(position);
                 updateGraphics(false);
-                this.repaint();
+                emulator.getMainWindow().repaint();
             });
             add(pop);
             
@@ -250,7 +252,7 @@ public abstract class GamePanel extends JPanel
                     menuItem.addActionListener((e) -> {
                         cheats.insertTile(position, t);
                         updateGraphics(false);
-                        this.repaint();
+                        emulator.getMainWindow().repaint();
                     });
                     tileSubsetMenu.add(menuItem);
                 }
@@ -279,7 +281,7 @@ public abstract class GamePanel extends JPanel
         popupMenu.show(e.getComponent(), e.getX(), e.getY());
     }
     public void mouseReleased(MouseEvent e) {
-        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight);
+        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
         if (e.isPopupTrigger()) rightClick(clickPosition, e);
         else leftClick(clickPosition);
     }
@@ -287,7 +289,7 @@ public abstract class GamePanel extends JPanel
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {
-        GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight);
+        GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
         Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
             fgTile = emulator.getLevel().getLayerFG().get(pos);
         String str = pos.toString() + " " + fgTile;

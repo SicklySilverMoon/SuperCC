@@ -28,14 +28,14 @@ public class GameGraphicPosition extends Position {
         return y * tileHeight + PATH_DISPLAY_OFFSETS[offsetIndex];
     }
     
-    public GameGraphicPosition(Position p, int tileWidth, int tileHeight) {
-        super(p.getX(), p.getY(), p.getIndex());
+    public GameGraphicPosition(Position p, int tileWidth, int tileHeight, Position offset) {
+        super(p.getX() + offset.getX(), p.getY() + offset.getY());
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
     }
     
-    public GameGraphicPosition(MouseEvent e, int tileWidth, int tileHeight){
-        super(e.getX() / tileWidth, e.getY() / tileHeight);
+    public GameGraphicPosition(MouseEvent e, int tileWidth, int tileHeight, Position offset){
+        super(e.getX() / tileWidth + offset.getX(), e.getY() / tileHeight + offset.getY());
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
     }

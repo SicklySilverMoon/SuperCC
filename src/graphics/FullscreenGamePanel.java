@@ -71,19 +71,19 @@ public class FullscreenGamePanel extends GamePanel {
         Graphics2D g = overlay.createGraphics();
         g.setColor(Color.BLACK);
         for (ConnectionButton connection : connections){
-            GameGraphicPosition pos1 = new GameGraphicPosition(connection.getButtonPosition(), tileWidth, tileHeight),
-                pos2 = new GameGraphicPosition(connection.getTargetPosition(), tileWidth, tileHeight);
+            GameGraphicPosition pos1 = new GameGraphicPosition(connection.getButtonPosition(), tileWidth, tileHeight, screenTopLeft),
+                pos2 = new GameGraphicPosition(connection.getTargetPosition(), tileWidth, tileHeight, screenTopLeft);
             g.drawLine(pos1.getGraphicX(0), pos1.getGraphicY(0), pos2.getGraphicX(0), pos2.getGraphicY(0));
         }
     }
     
     @Override
     public void drawPositionList(List<Position> positionList, Graphics2D g) {
-        GameGraphicPosition previousPos = new GameGraphicPosition(positionList.get(0), tileWidth, tileHeight);
+        GameGraphicPosition previousPos = new GameGraphicPosition(positionList.get(0), tileWidth, tileHeight, screenTopLeft);
         boolean[][] tileEnterCount = new boolean[32*32][21];
         int oldOffset = 0, offset = 0;
         for(Position pos : positionList) {
-            GameGraphicPosition gp = new GameGraphicPosition(pos, tileWidth, tileHeight);
+            GameGraphicPosition gp = new GameGraphicPosition(pos, tileWidth, tileHeight, screenTopLeft);
             int tile = gp.getIndex();
             if (tile == previousPos.getIndex()) continue;
             if (tileEnterCount[tile][oldOffset]){
