@@ -8,11 +8,12 @@ public class TileLayer implements Layer {
     private final Tile[] tiles;
     
     public Tile get(int i) {
-        return tiles[i];
+        if (i >= 0 && i < 32*32) return tiles[i];
+        else return Tile.WALL;
     }
     
     public Tile get(Position p) {
-        return tiles[p.getIndex()];
+        return get(p.getIndex());
     }
     
     public void set(int i, Tile t) {

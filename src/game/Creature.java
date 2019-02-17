@@ -612,13 +612,14 @@ public class Creature{
         boolean wasSliding = sliding;
         boolean isMonster = creatureType.isMonster();
         setDirection(direction);
+        Position newPosition;
         if ((direction == LEFT && position.getX() == 0) ||
             (direction == RIGHT && position.getX() == 31) ||
             (direction == UP && position.getY() == 0) ||
-            (direction == DOWN && position.getY() == 31)) return false;
+            (direction == DOWN && position.getY() == 31)) newPosition = new Position(-1);
+        else newPosition = position.move(direction);
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
-        Position newPosition = position.move(direction);
         Tile newTile = level.layerFG.get(newPosition);
         if (!creatureType.isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (!(newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level))) {

@@ -9,7 +9,8 @@ public class ByteLayer implements Layer {
     private final byte[] layer;
     
     public Tile get(int i){
-        return Tile.fromOrdinal(layer[i]);
+        if (i >= 0 && i < 32*32) return Tile.fromOrdinal(layer[i]);
+        return Tile.WALL;
     }
     
     public Tile get(Position p){

@@ -16,6 +16,10 @@ public class Position {
     protected int x;
     protected int y;
     
+    public boolean isValid() {
+        return x >= 0 && x < 32 && y >= 0 && y < 32;
+    }
+    
     public int getX(){
         return x;
     }
