@@ -101,6 +101,11 @@ public class Creature{
         return direction;
     }
     Direction[] getSlideDirectionPriority(Tile tile, RNG rng, boolean changeOnRFF){
+        if (nextMoveDirectionCheat != null) {
+            Direction[] directions = new Direction[] {nextMoveDirectionCheat};
+            nextMoveDirectionCheat = null;
+            return directions;
+        }
         if (tile.isIce() || (creatureType.isChip() && tile == TELEPORT)){
             Direction[] directions = direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
             directions[0] = applySlidingTile(directions[0], tile, rng);
