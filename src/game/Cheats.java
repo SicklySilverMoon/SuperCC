@@ -55,6 +55,7 @@ public class Cheats {
     
     public void setDirection(Creature creature, Direction direction) {
         level.popTile(creature.getPosition());
+        if (creature.getCreatureType() == CreatureID.BLOB) creature.setNextMoveDirectionCheat(direction);
         creature.setDirection(direction);
         level.insertTile(creature.getPosition(), creature.toTile());
     }

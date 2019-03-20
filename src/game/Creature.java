@@ -2,7 +2,6 @@ package game;
 
 import game.button.*;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +24,8 @@ public class Creature{
     private CreatureID creatureType;
     private Direction direction;
     private boolean sliding;
+    
+    private Direction nextMoveDirectionCheat = null;
 
     // Direction-related methods
 
@@ -36,6 +37,11 @@ public class Creature{
     }
     
     Direction[] getDirectionPriority(Creature chip, RNG rng){
+        if (nextMoveDirectionCheat != null) {
+            Direction[] directions = new Direction[] {nextMoveDirectionCheat};
+            nextMoveDirectionCheat = null;
+            return directions;
+        }
         if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
         switch (creatureType){
             case BUG: return direction.turn(new Direction[] {TURN_LEFT, TURN_FORWARD, TURN_RIGHT, TURN_AROUND});
@@ -104,6 +110,14 @@ public class Creature{
         else if (tile == TELEPORT) return new Direction[] {direction};
         else if (tile == FF_RANDOM && !changeOnRFF) return new Direction[] {direction};
         else return new Direction[] {applySlidingTile(getDirection(), tile, rng)};
+    }
+    
+    public Direction getNextMoveDirectionCheat() {
+        return nextMoveDirectionCheat;
+    }
+    
+    public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {
+        this.nextMoveDirectionCheat = nextMoveDirectionCheat;
     }
     
     // MonsterType-related methods

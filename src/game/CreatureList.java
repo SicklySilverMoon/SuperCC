@@ -63,7 +63,8 @@ public class CreatureList implements Iterable<Creature> {
             }
 
             if (!monster.isSliding()){
-                if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
+                if (monster.getNextMoveDirectionCheat() != null) direction = monster.getNextMoveDirectionCheat();
+                else if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
                 Tile bgTile = level.layerBG.get(monster.getPosition());
                 if (bgTile == CLONE_MACHINE) tickClonedMonster(monster);
                 else if (bgTile == TRAP) tickTrappedMonster(monster);
