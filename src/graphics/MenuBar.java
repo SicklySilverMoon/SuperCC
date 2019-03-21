@@ -179,7 +179,7 @@ public class MenuBar extends JMenuBar{
             });
             addIcon(save, "/resources/icons/save.gif");
             add(save);
-
+    
             JMenuItem open = new JMenuItem("Open");
             open.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
             open.addActionListener(event -> {
@@ -200,6 +200,26 @@ public class MenuBar extends JMenuBar{
             });
             addIcon(open, "/resources/icons/open.gif");
             add(open);
+            
+            JMenuItem seedSearch = new JMenuItem("Search for seeds");
+            seedSearch.addActionListener(event -> {
+                try{
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
+                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
+                    fc.setSelectedFile(new File(emulator.getJSONPath()));
+                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath()), StandardCharsets.ISO_8859_1));
+                        new SeedSearch(emulator, solution);
+                    }
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                    emulator.throwError("Could not load file:\n" + e.getMessage());
+                }
+            });
+            addIcon(seedSearch, "/resources/icons/open.gif");
+            add(seedSearch);
             
             addSeparator();
     

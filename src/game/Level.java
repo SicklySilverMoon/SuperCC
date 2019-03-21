@@ -157,6 +157,10 @@ public class Level extends SaveState {
         this.mouseClick = position;
     }
     
+    public boolean isCompleted() {
+        return layerFG.get(chip.getPosition()) == EXITED_CHIP;
+    }
+    
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] portals,
                  GreenButton[] greenButtons, RedButton[] redButtons,
                  BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,

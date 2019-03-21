@@ -1,6 +1,8 @@
 package game;
 
 public class RNG{
+    
+    public static final int LAST_SEED = 0x7FFFFFFF;
 
     private int currentValue;
     private int nextValue(){
