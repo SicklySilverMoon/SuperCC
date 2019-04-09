@@ -40,6 +40,7 @@ public class Creature{
         if (nextMoveDirectionCheat != null) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
+            if (creatureType == WALKER || creatureType == BLOB) rng.random4();
             return directions;
         }
         if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
