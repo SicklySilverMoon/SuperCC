@@ -24,7 +24,7 @@ public class Creature{
     private CreatureID creatureType;
     private Direction direction;
     private boolean sliding;
-    
+
     private Direction nextMoveDirectionCheat = null;
 
     // Direction-related methods
@@ -34,6 +34,9 @@ public class Creature{
     }
     protected void setDirection(Direction direction){
         this.direction = direction;
+    }
+    protected void setPosition(Position position){ //So you can make a creature teleport 32 tiles at once to data reset properly
+        this.position = position;
     }
     
     Direction[] getDirectionPriority(Creature chip, RNG rng){

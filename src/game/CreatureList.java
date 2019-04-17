@@ -112,25 +112,58 @@ public class CreatureList implements Iterable<Creature> {
     }
 
     public void addClone(Position position){
-    
+
         for (Creature c: list){
             if (c.getPosition().equals(position)) return;
         }
         for (Creature c: newClones){
             if (c.getPosition().equals(position)) return;
         }
-        Tile tile = level.layerFG.get(position);
-        if (!tile.isCreature()) return;
-        Creature clone = new Creature(position, tile);
-        direction = clone.getDirection();
-        Position newPosition = clone.getPosition().move(direction);
-        Tile newTile = level.layerFG.get(newPosition);
 
-        if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()){
-            if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
-            else newClones.add(clone);
+        //Data resetting right here
+        if (position.y == 32) { //If the clone button's Y target is row 32 take over from normal code
+
+            //System.out.println(level.getLevelNumber());
+            //System.out.println(level.getStartTime());
+
+            Position row0Position = new Position(position.x, 0);
+            if (level.getLayerBG().get(row0Position).isCreature()) { //if the background (buried) layer is a creature
+                Creature resetClone = new Creature(row0Position, level.layerBG.get(row0Position)); //Create a new variable for the creature
+                if (resetClone.getDirection()==Direction.UP) { //If the creature is facing up
+                    Position row31Position = new Position(position.x, 31); //Create a new variable for the creature's position
+                    Tile resetNewTile = level.layerFG.get(row31Position); //Makes it so that the next section checks X, 31 and not X, 0
+                    if (resetClone.canEnter(direction, resetNewTile, level)) { //If the creature can clone to X, 31
+                        resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
+                        if (resetClone.getCreatureType().isBlock()) {
+                            if (level.getChip().getPosition().equals(row31Position)) {
+                                level.chip.kill();
+                            }
+                            level.insertTile(row31Position, Tile.BLOCK); //Blocks don't play by the rules of normal clones so here I directly insert a block into X, 31
+                        }
+                        //Note: the block clone workaround doesn't even work properly so I need to fix that
+                        newClones.add(resetClone); //Clones them
+                        level.ResetData(row0Position); //passes the position of the reset to a new method to handle data resets
+                    }
+                }
+            }
         }
 
+        else {
+            Tile tile = level.layerFG.get(position);
+            if (!tile.isCreature()) return;
+
+            Creature clone = new Creature(position, tile);
+            direction = clone.getDirection();
+
+
+            Position newPosition = clone.getPosition().move(direction);
+            Tile newTile = level.layerFG.get(newPosition);
+
+            if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()) {
+                if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
+                else newClones.add(clone);
+            }
+        }
     }
 
     void finalise(){

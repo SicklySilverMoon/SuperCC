@@ -10,7 +10,10 @@ public class Level extends SaveState {
     
     private static final int HALF_WAIT = 0, KEY = 1, CLICK_EARLY = 2, CLICK_LATE = 3;
     public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
-    
+
+    public final int INITIAL_MONSTER_LIST_SIZE = monsterList.size();
+    public final Position INITIAL_MONSTER_POSITION = monsterList.get(0).getPosition();
+
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
     final Position[] toggleDoors, portals;
@@ -20,6 +23,9 @@ public class Level extends SaveState {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
+
+    private boolean ResetStep = false; //Stuff for data reset
+    private Position AutopsyPosition = new Position(22, 0);
     
     public final Cheats cheats;
     
@@ -280,7 +286,11 @@ public class Level extends SaveState {
             layerFG.set(chip.getPosition(), EXITED_CHIP);
             chip.kill();
         }
-        return chip.isDead();
+        if (!ResetStep && (getLayerBG().get(AutopsyPosition).isCreature())) { //Gotta love data resetting
+            ResetStep = true;
+            return false;
+        }
+        else return chip.isDead();
     }
     
     /**
@@ -324,5 +334,57 @@ public class Level extends SaveState {
     
         return moveType == KEY && !isHalfMove && !chip.isSliding();
     }
-    
+
+    public void ResetData(Position position){ //Actual reset code for data reset
+        Position ChipPosition = getChip().getPosition(); //Gets Chip's Current position
+        if (position.x == 8) { //X reset
+            Position ChipXReset = new Position(0, ChipPosition.y); //prepares to set Chip's X position to 0
+            getChip().setPosition(ChipXReset); //sets Chip's X position to 0
+            layerBG.set(position, (Tile.fromOrdinal(ChipPosition.x))); //Doesn't need to be checked as co-cords are always within valid tile ranges
+        }
+        else if (position.x == 10) { //Y reset
+            Position ChipYReset = new Position(ChipPosition.x, 0); //prepares to set Chip's Y position to 0
+            getChip().setPosition(ChipYReset); //sets Chip's Y position to 0
+            layerBG.set(position, (Tile.fromOrdinal(ChipPosition.y))); //Doesn't need to be checked as co-cords are always within valid tile ranges
+        }
+        else if (position.x == 12) { //Sliding state reset
+            if (chip.isSliding()) { //Is chip sliding?
+                chip.setSliding(false); //Stop Chip from sliding
+                layerBG.set(position, WALL); //Place a wall (1 for data)
+            }
+            else {layerBG.set(position, FLOOR);} //if Chip isn't sliding place a floor (0 for data)
+        }
+        else if (position.x == 14 || position.x == 18 || position.x == 20) { //Current keystroke's buffer, & x- and y-directions of the keystroke reset (SuCC doesn't measure this so i'm treating it as a constant 0)
+            layerBG.set(position, FLOOR);
+        }
+        else if (position.x == 22) { //Autopsy report reset
+            chip.setCreatureType(CreatureID.CHIP); //If he's CHIP he's not DEAD
+            layerBG.set(position, FIRE); //In almost all situations where this is activated chip is killed by a block (due to the nature of blocks cloning instantly its usually only what can be used) which will place fire, so here i skip that and just place fire
+        }
+        else if (position.x == 24) { //Sliding Direction (X) reset
+            //if Chip is sliding horizontally immobilize him
+            layerBG.set(position, FLOOR); //defaulting to floor for resets not coded yet
+        }
+        else if (position.x == 26) { //Sliding Direction (Y) reset
+            //if Chip is sliding vertically immobilize him
+            layerBG.set(position, FLOOR); //defaulting to floor for resets not coded yet
+        }
+        else if (position.x == 28) { //amount of monsters in the monster list before the player starts playing the level reset
+            if (INITIAL_MONSTER_LIST_SIZE<112) {
+                layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_LIST_SIZE)));
+            }
+            else {
+                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
+            }
+        }
+        else if (position.x == 30) { //coordinates (X) of the initial position of the first monster reset, grabs from final variables set up in the Level.java file
+            layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_POSITION.x))); //Doesn't need to be checked as co-cords are always within valid tile ranges
+        }
+        else if (position.x == 31) { //coordinates (Y) of the initial position of the first monster reset
+            layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_POSITION.y))); //Doesn't need to be checked as co-cords are always within valid tile ranges
+        }
+        else {
+            layerBG.set(position, FLOOR); //defaulting to floor for resets not coded yet
+        }
+    }
 }

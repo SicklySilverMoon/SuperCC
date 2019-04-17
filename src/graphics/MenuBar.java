@@ -7,7 +7,6 @@ import game.Level;
 import game.Step;
 import io.TWSWriter;
 import tools.*;
-import tools.tsp.TSPGUI;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -539,7 +538,7 @@ public class MenuBar extends JMenuBar{
             tsp.addActionListener(e -> new SwingWorker<Void, Void>(){
                 @Override
                 protected Void doInBackground() throws Exception {
-                    new TSPGUI(emulator);
+
                     return null;
                 }
             }.execute()) ;
