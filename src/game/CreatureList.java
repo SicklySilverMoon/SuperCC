@@ -133,16 +133,27 @@ public class CreatureList implements Iterable<Creature> {
                     Position row31Position = new Position(position.x, 31); //Create a new variable for the creature's position
                     Tile resetNewTile = level.layerFG.get(row31Position); //Makes it so that the next section checks X, 31 and not X, 0
                     if (resetClone.canEnter(direction, resetNewTile, level)) { //If the creature can clone to X, 31
+                        Tile tile = resetClone.toTile(); //Needed to not cause tile erasure
                         resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
                         if (resetClone.getCreatureType().isBlock()) {
                             if (level.getChip().getPosition().equals(row31Position)) {
                                 level.chip.kill();
                             }
-                            level.insertTile(row31Position, Tile.BLOCK); //Blocks don't play by the rules of normal clones so here I directly insert a block into X, 31
+                            level.insertTile(row31Position, tile);
+                            if (level.getLayerBG().get(row31Position).isSliding()) { //Blocks now slide
+                                resetClone.setSliding(true);
+                                resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
+                            }
                         }
-                        //Note: the block clone workaround doesn't even work properly so I need to fix that
-                        newClones.add(resetClone); //Clones them
-                        level.ResetData(row0Position); //passes the position of the reset to a new method to handle data resets
+                        else {
+                            level.insertTile(row31Position, tile); //Clones them | fun fact: not having else here causes a crash in the most weird circumstances
+                            if (level.getLayerBG().get(row31Position).isSliding()) { //Bunch of stuff to make things slide correctly
+                                resetClone.setSliding(true);
+                                resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
+                            }
+                            else newClones.add(resetClone); //fun fact 2: the first part makes it so that the tile on X,31 isn't deleted
+                        }
+                        level.ResetData(row0Position, level); //passes the position of the reset to a new method to handle data resets
                     }
                 }
             }

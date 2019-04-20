@@ -70,7 +70,12 @@ public class SuperCC {
     public int lastLevelNumber() {
         return dat.lastLevel();
     }
-    
+
+    private static DatParser datReader; //Literally just to make data resetting tile placement be fully correct
+    public static int lastLevelNumberStatic() {
+        return datReader.lastLevel();
+    }
+
     public void setTWSFile(File twsFile){
         try{
             this.twsReader = new TWSReader(twsFile);
@@ -106,6 +111,7 @@ public class SuperCC {
     public void openLevelset(File levelset){
         try{
             dat = new DatParser(levelset);
+            datReader = new DatParser(levelset); //Literally just to make data resetting tile placement be fully correct
         }
         catch (IOException e){
             throwError("Could not read file:\n"+e.getLocalizedMessage());
@@ -266,7 +272,7 @@ public class SuperCC {
         try{
             SuperCC emulator = new SuperCC();
             //emulator.runTests();
-            //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CHIPS.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            //emulator.openLevelset(new File("D:\\WIN\\WEP\\Reset.dat")); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
