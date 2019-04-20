@@ -147,6 +147,9 @@ public class CreatureList implements Iterable<Creature> {
                         }
                         else {
                             level.insertTile(row31Position, tile); //Clones them | fun fact: not having else here causes a crash in the most weird circumstances
+                            if (level.getChip().getPosition().equals(row31Position)) {
+                                level.chip.kill();
+                            }
                             if (level.getLayerBG().get(row31Position).isSliding()) { //Bunch of stuff to make things slide correctly
                                 resetClone.setSliding(true);
                                 resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
