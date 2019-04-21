@@ -713,7 +713,7 @@ public class Creature{
         }
         setSliding(oldCreature.sliding, level);
         if (creatureType.isTank() && !isSliding()) setCreatureType(TANK_STATIONARY);
-        if (!creatureType.isChip()) setDirection(oldCreature.direction);
+        if (!creatureType.isChip() &&!(creatureType.isBlock() && level.layerBG.get(position) == FF_RANDOM)) setDirection(oldCreature.direction);
         else level.getLayerFG().set(position, toTile());
         return false;
     }
