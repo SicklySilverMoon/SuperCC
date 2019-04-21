@@ -162,7 +162,7 @@ public class LevelFactory {
      */
     static Level makeLevel(int levelNumber, int timeLimit, int chips, byte[] byteLayerFG, byte[] byteLayerBG,
                            byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
-                           byte[] hint, int[][] monsterPositions, int rngSeed, Step step){
+                           byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel){
 
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
@@ -188,7 +188,8 @@ public class LevelFactory {
             chips,
             new RNG(rngSeed),
             rngSeed,
-            step
+            step,
+            lastLevel
         );
     }
 

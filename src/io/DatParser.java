@@ -151,7 +151,7 @@ public class DatParser{
             }
 
             return LevelFactory.makeLevel(levelNumber, timeLimit, chips, layerFG, layerBG, title, trapConnections,
-                    cloneConnections, password, hint, monsterPositions, rngSeed, step);
+                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel());
         }
         catch (IOException e){
             reader.close();

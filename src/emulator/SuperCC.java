@@ -71,11 +71,6 @@ public class SuperCC {
         return dat.lastLevel();
     }
 
-    private static DatParser datReader; //Literally just to make data resetting tile placement be fully correct
-    public static int lastLevelNumberStatic() {
-        return datReader.lastLevel();
-    }
-
     public void setTWSFile(File twsFile){
         try{
             this.twsReader = new TWSReader(twsFile);
@@ -111,7 +106,6 @@ public class SuperCC {
     public void openLevelset(File levelset){
         try{
             dat = new DatParser(levelset);
-            datReader = new DatParser(levelset); //Literally just to make data resetting tile placement be fully correct
         }
         catch (IOException e){
             throwError("Could not read file:\n"+e.getLocalizedMessage());

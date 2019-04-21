@@ -17,7 +17,7 @@ public class Level extends SaveState {
     public final Position INITIAL_MONSTER_POSITION =
             (monsterList.size() == 0) ? null : monsterList.get(0).getPosition(); //this is needed or else half the levels aren't playable
     public final int INITIAL_CHIPS_AMOUNT = chipsLeft;
-    public int LEVELSET_LENGTH = SuperCC.lastLevelNumberStatic();
+    final int LEVELSET_LENGTH;
 
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
@@ -176,7 +176,7 @@ public class Level extends SaveState {
                  GreenButton[] greenButtons, RedButton[] redButtons,
                  BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
                  Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
-                 Creature chip, int time, int chips, RNG rng, int rngSeed, Step step){
+                 Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
         
         super(layerBG, layerFG, monsterList, slipList, chip,
               time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
@@ -195,6 +195,7 @@ public class Level extends SaveState {
         this.rngSeed = rngSeed;
         this.step = step;
         this.cheats = new Cheats(this);
+        this.LEVELSET_LENGTH = levelsetLength;
         
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
