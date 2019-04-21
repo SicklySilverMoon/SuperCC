@@ -154,7 +154,7 @@ public class CreatureList implements Iterable<Creature> {
                                 resetClone.setSliding(true);
                                 resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
                             }
-                            else newClones.add(resetClone); //fun fact 2: the first part makes it so that the tile on X,31 isn't deleted
+                            newClones.add(resetClone); //fun fact 2: the first part makes it so that the tile on X,31 isn't deleted
                         }
                         level.ResetData(row0Position, level); //passes the position of the reset to a new method to handle data resets
                     }
