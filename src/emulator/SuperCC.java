@@ -114,6 +114,8 @@ public class SuperCC {
     }
 
     public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves){
+        if (levelNumber == 0) levelNumber = lastLevelNumber()-1; //If the level number is 0 (player goes back from level 1, load the last level)
+        if (levelNumber == lastLevelNumber()) levelNumber = 1; //And vice versa
         try{
             if (keepMoves && level != null && levelNumber == level.getLevelNumber()) {
                 solution = new Solution(getSavestates().getMoveList(), rngSeed, step);
