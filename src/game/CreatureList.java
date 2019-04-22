@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import game.button.*;
 
 import static game.CreatureID.*;
 import static game.Tile.*;
@@ -135,27 +136,29 @@ public class CreatureList implements Iterable<Creature> {
                     if (resetClone.canEnter(direction, resetNewTile, level)) { //If the creature can clone to X, 31
                         Tile tile = resetClone.toTile(); //Needed to not cause tile erasure
                         resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
-                        if (resetClone.getCreatureType().isBlock()) {
-                            if (level.getChip().getPosition().equals(row31Position)) {
-                                level.chip.kill();
-                            }
-                            level.insertTile(row31Position, tile);
-                            if (level.getLayerBG().get(row31Position).isSliding()) { //Blocks now slide
-                                resetClone.setSliding(true);
-                                resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
-                            }
+                        boolean SpecialTileInteraction = false;
+                        if (level.getChip().getPosition().equals(row31Position)|| resetNewTile.isSwimmingChip()) { //Swimming Chip is now checked along side normal Chip
+                            level.chip.kill();
                         }
-                        else {
-                            level.insertTile(row31Position, tile); //Clones them | fun fact: not having else here causes a crash in the most weird circumstances
-                            if (level.getChip().getPosition().equals(row31Position)) {
-                                level.chip.kill();
-                            }
-                            if (level.getLayerBG().get(row31Position).isSliding()) { //Bunch of stuff to make things slide correctly
-                                resetClone.setSliding(true);
-                                resetClone.tick(new Direction[]{Direction.DOWN}, level, false);
-                            }
-                            else newClones.add(resetClone); //fun fact 2: the first part makes it so that the tile on X,31 isn't deleted
+                        if (resetNewTile.isButton()) { //Buttons now push properly
+                            Button button = null; //The IDE screams at me if i don't do this
+                            if (resetNewTile == BUTTON_GREEN) button = level.getButton(row31Position, GreenButton.class); //This is... disturbing in its inefficiency
+                            if (resetNewTile == BUTTON_RED) button = level.getButton(row31Position, RedButton.class);
+                            if (resetNewTile == BUTTON_BROWN) button = level.getButton(row31Position, BrownButton.class);
+                            if (resetNewTile == BUTTON_BLUE) button = level.getButton(row31Position, BlueButton.class);
+                            button.press(level); //If this thing gives you warnings about null pointers, ignore it, i handle all 4 button types
                         }
+                        if (resetNewTile == WATER || resetNewTile == BOMB || resetNewTile == FIRE) { //Special interactions
+                            if (resetClone.getCreatureType().isBlock() && resetNewTile == WATER) level.layerFG.set(row31Position, DIRT);
+                            if (resetNewTile == BOMB) level.layerFG.set(row31Position, FLOOR);
+                            SpecialTileInteraction = true; //Literally just so you don't add dead monsters to lists they shouldn't be in
+                        }
+                        else level.insertTile(row31Position, tile); //Clones them
+                        if (level.getLayerBG().get(row31Position).isSliding()) { //Bunch of stuff to make things slide correctly
+                            resetClone.setSliding(true);
+                            resetClone.tick(new Direction[]{Direction.DOWN}, level, false); //Some fancy stuff to actually make them slide
+                        } //Fun fact: not having else here causes a crash when a sliding creature steps off a sliding force floor and hits a resetclone button the same turn a normal clone button is hit, BUT only if that's the first normal button hit. However the game not adding resetclones that started on sliding tiles to the monster list is a bigger issue
+                        if (!SpecialTileInteraction && !(resetClone.getCreatureType().isBlock())) newClones.add(resetClone); //the above error is caused by accidentally adding blocks to the monsterlist, if you handle it so that doesn't happen there's no error
                         level.ResetData(row0Position, level); //passes the position of the reset to a new method to handle data resets
                     }
                 }

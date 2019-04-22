@@ -29,6 +29,9 @@ public class LevelPanel extends TextPanel {
         g.setColor(Color.DARK_GRAY);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
+        drawText(g, "Level "+level.getLevelNumber()+": ", 1);
+        drawText(g, "", 1);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
         drawText(g, new String(level.getTitle()), 3);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));

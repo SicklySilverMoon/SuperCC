@@ -136,6 +136,9 @@ public enum Tile {
     public boolean isChip(){
         return CHIP_UP.ordinal() <= ordinal() && ordinal() <= CHIP_RIGHT.ordinal();
     }
+    public boolean isSwimmingChip(){
+        return CHIP_SWIMMING_UP.ordinal() <= ordinal() && ordinal() <= CHIP_SWIMMING_RIGHT.ordinal();
+    }
     public boolean isMovingBlock(){
         return BLOCK_UP.ordinal() <= ordinal() && ordinal() <= BLOCK_RIGHT.ordinal();
     }
