@@ -7,10 +7,12 @@ import game.RNG;
 
 import javax.swing.*;
 
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.text.DecimalFormat;
 
 public class SeedSearch {
-    
+
     private SuperCC emulator;
     private Solution solution;
     private JPanel panel1;
@@ -23,15 +25,15 @@ public class SeedSearch {
     private final byte[] startingState;
     private int seed = 0;
     private boolean killThreadFlag = false;
-    private boolean running = false;
+    private static boolean running = false;
     private DecimalFormat df;
     
     private int successes = 0;
     private int attempts = 0;
     private int lastSuccess = -1;
-    
+
     public SeedSearch(SuperCC emulator, Solution solution) {
-    
+
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false);
         startingState = emulator.getLevel().save();
         
@@ -45,19 +47,58 @@ public class SeedSearch {
             if (running) killThreadFlag = true;
             else new SeedSearchThread().start();
         });
-        
+
         JFrame frame = new JFrame("Seed Search");
         frame.setContentPane(panel1);
         frame.pack();
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setVisible(true);
+        frame.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                killThreadFlag = true;
+            }
+
+            @Override
+            public void windowClosed(WindowEvent windowEvent) { //this stuff doesn't work
+//                emulator.getSavestates().restart();
+//                emulator.getLevel().load(emulator.getSavestates().getSavestate());
+//                emulator.showAction("Restarted Level");
+//                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+            }
+
+            @Override
+            public void windowIconified(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowActivated(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent windowEvent) {
+
+            }
+        });
     }
-    
+
     private void createUIComponents() {
         resultsLabel = new JLabel();
         exampleSeedLabel = new JLabel("Example seed:");
     }
-    
+
     private void updateText() {
         resultsLabel.setText("Successes: "+successes+"/"+attempts+" ("+df.format(100.0 * (double) successes / (double) attempts)+"%)");
         resultsLabel.repaint();
@@ -80,6 +121,10 @@ public class SeedSearch {
             }
             running = false;
             killThreadFlag = false;
+                emulator.getSavestates().restart();
+                emulator.getLevel().load(emulator.getSavestates().getSavestate());
+                emulator.showAction("Restarted Level");
+                emulator.getMainWindow().repaint(emulator.getLevel(), false);
         }
     }
     
@@ -90,5 +135,9 @@ public class SeedSearch {
         solution.loadMoves(emulator, TickFlags.LIGHT, false);
         return emulator.getLevel().isCompleted();
     }
-    
+
+    public static boolean isRunning() {
+        return running;
+    }
+
 }
