@@ -2,6 +2,7 @@ package emulator;
 
 import game.Direction;
 import game.Level;
+import tools.SeedSearch;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -63,13 +64,13 @@ public class EmulatorKeyListener extends KeyAdapter {
                 case DOWN:
                 case RIGHT:
                 case HALF_WAIT:
-                    if (!emulator.getLevel().getChip().isDead())
+                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
                     break;
                 case FULL_WAIT:
-                    if (!emulator.getLevel().getChip().isDead())
+                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
-                    if (!emulator.getLevel().getChip().isDead())
+                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
                     break;
                 case REWIND:
