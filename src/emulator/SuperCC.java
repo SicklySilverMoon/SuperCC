@@ -37,8 +37,8 @@ public class SuperCC {
     }
     
     public String getJSONPath() {
-        String levelName = new String(level.getTitle());
-        levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_");
+        String levelName = new String(level.getTitle()).replaceAll("[^a-zA-Z0-9 ]",""); //Delete everything except letters, numbers, and spaces so you won't get issues with illegal filenames
+        //levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_"); //No longer needed as the previous line now takes care of this but kept commented in case its needed in future
         return paths.getJSONPath(dat.getLevelsetName(), level.getLevelNumber(), levelName);
     }
     
@@ -268,7 +268,7 @@ public class SuperCC {
         try{
             SuperCC emulator = new SuperCC();
             //emulator.runTests();
-            //emulator.openLevelset(new File("D:\\WIN\\WEP\\Reset.dat")); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            emulator.openLevelset(new File("D:\\WIN\\WEP\\traptest.dat")); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));

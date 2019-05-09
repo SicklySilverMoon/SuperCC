@@ -9,7 +9,7 @@ CHIPS.dat
 CCLP1.dat
 
 CCLP2.dat
-failed level 81 Just Enough
+failed level 81 Just Enough (transparency is not implemented correctly)
 failed level 103 Island Hopping
 failed level 124 Paramecia
 failed level 140 Keep Trying
