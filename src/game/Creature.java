@@ -297,6 +297,7 @@ public class Creature{
             case TOGGLE_OPEN: return true;
             case BUTTON_BROWN:
             case BUTTON_BLUE:
+            case TELEPORT:
             case BOMB:
             case TRAP: return true;
             case HIDDENWALL_TEMP: return false;
@@ -647,6 +648,15 @@ public class Creature{
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
+//        if (newTile.isTransparent()) { //Doesn't work, at all
+//            level.insertTile(newPosition, FLOOR);
+//            if (tryEnter(direction, level, newPosition, newTile, pressedButtons)){
+//                //if (level.layerBG.get(position).isSliding()) {setSliding(false, true, level);}
+//                position = newPosition;
+//                //setSliding(wasSliding, sliding, level);
+//                return true;
+//            }
+//        }
         if (!creatureType.isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (!(newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level))) {
     
