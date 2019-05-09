@@ -123,10 +123,6 @@ public class CreatureList implements Iterable<Creature> {
 
         //Data resetting right here
         if (position.y == 32) { //If the clone button's Y target is row 32 take over from normal code
-
-            //System.out.println(level.getLevelNumber());
-            //System.out.println(level.getStartTime());
-
             Position row0Position = new Position(position.x, 0);
             if (level.getLayerBG().get(row0Position).isCreature()) { //if the background (buried) layer is a creature
                 Creature resetClone = new Creature(row0Position, level.layerBG.get(row0Position)); //Create a new variable for the creature
