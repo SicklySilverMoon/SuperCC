@@ -704,6 +704,9 @@ public class Creature{
                     if (b != null && level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
                         b.release(level);
                     }
+                    if(b.getTargetPosition().equals(position)) {
+                        b.release(level);
+                    }
                 }
                 if (level.getLayerFG().get(oldCreature.position) == TRAP){
                     for (BrownButton b : level.getBrownButtons()) {
