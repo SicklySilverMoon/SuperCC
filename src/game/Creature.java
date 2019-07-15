@@ -398,6 +398,11 @@ public class Creature{
                     }
                     Creature block = new Creature(newPosition, Tile.BLOCK);
                     if (block.tryMove(direction, level, false, pressedButtons)){
+                        for (BrownButton b : level.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
+                            if (b.getTargetPosition().equals(newPosition) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
+                                b.release(level);
+                            }
+                        }
                         return tryEnter(direction, level, newPosition, level.layerFG.get(newPosition), pressedButtons);
                     }
                 }
@@ -708,7 +713,7 @@ public class Creature{
                         b.release(level);
                     }
                 }
-                if (level.getLayerFG().get(oldCreature.position) == TRAP){
+                if (level.getLayerFG().get(oldCreature.position) == TRAP || level.getLayerBG().get(oldCreature.position) == TRAP){
                     for (BrownButton b : level.getBrownButtons()) {
                         if (b.getTargetPosition().equals(oldCreature.position) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
                             b.release(level);

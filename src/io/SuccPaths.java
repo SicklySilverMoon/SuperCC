@@ -32,7 +32,7 @@ public class SuccPaths {
         }
     }
     
-    public String getGetTilesetPath() {
+    public String getTilesetPath() {
         return tilesetPath;
     }
     public String getLevelsetPath() {

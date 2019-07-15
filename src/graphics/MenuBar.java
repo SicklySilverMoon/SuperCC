@@ -53,6 +53,7 @@ public class MenuBar extends JMenuBar{
                     emulator.openLevelset(fc.getSelectedFile());
                 }
             });
+            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK + SHIFT_MASK));
             addIcon(openLevelset, "/resources/icons/open.gif");
             add(openLevelset);
 
