@@ -97,9 +97,36 @@ public class SuperCC {
         return window;
     }
 
-    public SuperCC() throws IOException {
-        File f = new File("settings.txt");
-        paths = new SuccPaths(f);
+    public SuperCC() {
+        try {
+            File f = new File("settings.cfg");
+            paths = new SuccPaths(f);
+        }
+        catch (IOException e){
+            throwError("Could not find settings.cfg file, creating"); //If it can't find the settings file make it with some defaults
+            try {
+                FileWriter fw=new FileWriter("settings.cfg");
+                fw.write("/resources/tw-editor.png\n" +
+                        "C:\n" +
+                        "C:\n" +
+                        "succsave\n" +
+                        "38\n" +
+                        "37\n" +
+                        "40\n" +
+                        "39\n" +
+                        "32\n" +
+                        "17\n" +
+                        "8\n" +
+                        "10\n");
+                fw.close();
+                //Now that the settings file exists we can call this again safely
+                File f = new File("settings.cfg");
+                paths = new SuccPaths(f);
+            }
+            catch(Exception g) {
+                g.printStackTrace();
+            }
+        }
         window = new Gui(this);
     }
 
@@ -265,7 +292,6 @@ public class SuperCC {
     }
 
     public static void initialise(){
-        try{
             SuperCC emulator = new SuperCC();
             //emulator.runTests();
             //emulator.openLevelset(new File("D:\\WIN\\WEP\\traptest.dat")); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
@@ -275,11 +301,6 @@ public class SuperCC {
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP4.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP4.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\0markustest.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\0markustest.tws"));
             //emulator.runBenchmark(134, 200);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-            System.exit(-1);
-        }
     }
 
     public void throwError(String s){

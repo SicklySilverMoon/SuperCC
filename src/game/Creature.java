@@ -214,11 +214,11 @@ public class Creature{
             if (i < 0) i += l;
             position.setIndex(level.getPortals()[i].getIndex());
             if (level.layerFG.get(position) != TELEPORT) {
-                if (!creatureType.isChip()) {
+                if (!creatureType.isChip()) { //Allows monsters  to still partial post off themselves
                     continue;
-                }
+                } //Yeah weirdly monsters can partial post off themselves but Chip can't
                 else {
-                    if (!level.layerFG.get(position).isChip()) continue;
+                    if (!level.layerFG.get(position).isChip()) continue; //So Chip doesn't partial post off himself
                 }
             }
             Position exitPosition = position.move(direction);
@@ -660,37 +660,29 @@ public class Creature{
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
-//        if (newTile.isTransparent()) { //Doesn't work, at all
-//            level.insertTile(newPosition, FLOOR);
-//            if (tryEnter(direction, level, newPosition, newTile, pressedButtons)){
-//                //if (level.layerBG.get(position).isSliding()) {setSliding(false, true, level);}
-//                position = newPosition;
-//                //setSliding(wasSliding, sliding, level);
-//                return true;
-//            }
-//        }
-        if (!creatureType.isChip() && newTile.isChip()) newTile = level.layerBG.get(newPosition);
+        if ((!creatureType.isChip()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (!(newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level))) {
-    
+            if (creatureType.isBlock() && level.layerFG.get(newPosition).isChip()) newTile = level.layerFG.get(newPosition); //I have to put it here or else it doesn't work, I know its awful
+
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
                 position = newPosition;
-        
+
                 if (sliding && !creatureType.isMonster())
                     this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);
-        
+
                 if (!isDead()) level.insertTile(getPosition(), toTile());
                 else if (isMonster) {
                     level.monsterList.numDeadMonsters++;
                 }
-        
+
                 setSliding(wasSliding, sliding, level);
-        
+
                 return true;
             }
-            
+
         }
-        
+
         setSliding(wasSliding, sliding, level);
         
         if (wasSliding && !creatureType.isMonster()) {
