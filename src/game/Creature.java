@@ -213,7 +213,14 @@ public class Creature{
             i--;
             if (i < 0) i += l;
             position.setIndex(level.getPortals()[i].getIndex());
-            if (level.layerFG.get(position) != TELEPORT && !creatureType.isChip()) continue;
+            if (level.layerFG.get(position) != TELEPORT) {
+                if (!creatureType.isChip()) {
+                    continue;
+                }
+                else {
+                    if (!level.layerFG.get(position).isChip()) continue;
+                }
+            }
             Position exitPosition = position.move(direction);
             if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                 exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
