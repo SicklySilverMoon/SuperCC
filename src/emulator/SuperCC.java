@@ -105,7 +105,7 @@ public class SuperCC {
         catch (IOException e){
             throwError("Could not find settings.cfg file, creating"); //If it can't find the settings file make it with some defaults
             try {
-                FileWriter fw=new FileWriter("settings.cfg");
+                FileWriter fw = new FileWriter("settings.cfg");
                 fw.write("/resources/tw-editor.png\n" +
                         "C:\n" +
                         "C:\n" +
