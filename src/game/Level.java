@@ -207,7 +207,6 @@ public class Level extends SaveState {
                 b.press(this);
             }
         }
-        levelWon = false; //Each level restart set the levelWon flag to false so that when Chip starts in an exit it doesn't auto win
     }
     
     void popTile(Position position){
@@ -323,7 +322,8 @@ public class Level extends SaveState {
      * @return true if the next move should be made automatically without input
      */
     public boolean tick(byte b, Direction[] directions){
-        
+
+        setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         initialiseSlidingMonsters();
         boolean isHalfMove = tickNumber % 2 != 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());

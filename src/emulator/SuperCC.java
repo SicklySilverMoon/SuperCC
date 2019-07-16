@@ -210,19 +210,19 @@ public class SuperCC {
     
     private void runTests() {
         String[] levelsets = new String[] {
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CHIPS.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP1.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP2.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP3.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP4.DAT",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CHIPS.DAT",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP1.DAT",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP2.DAT",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP3.DAT",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP4.DAT",
 //            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\0markustest.dat"
         };
         String[] twss = new String[] {
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CHIPS.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP1.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP2.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP3.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP4.dac.tws",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CHIPS.dac.tws",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP1.dac.tws",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP2.dac.tws",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP3.dac.tws",
+//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP4.dac.tws",
 //            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\0markustest.tws"
         };
         
@@ -293,7 +293,7 @@ public class SuperCC {
 
     public static void initialise(){
             SuperCC emulator = new SuperCC();
-            emulator.runTests();
+            //emulator.runTests();
             //emulator.openLevelset(new File("C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\SuCCTest.dat")); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
