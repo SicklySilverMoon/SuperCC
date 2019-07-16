@@ -1,7 +1,5 @@
 Known issues
 
-trap stays open if a block is pushed off of it
-
 Levels where the public tws does not play back correctly (+reason):
 
 CHIPS.dat
@@ -10,12 +8,7 @@ CCLP1.dat
 
 CCLP2.dat
 failed level 81 Just Enough (transparency is not implemented correctly)
-failed level 103 Island Hopping
-failed level 124 Paramecia
-failed level 140 Keep Trying
 
 CCLP3.dat
-failed level 60 Red, Green and Blue (unknown)
 
 CCLP4.dat
-failed level 143 Color Coordination (trap stays open if a block leaves it)

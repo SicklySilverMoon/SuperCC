@@ -167,7 +167,7 @@ public class Level extends SaveState {
     public void setClick(int position){
         this.mouseClick = position;
     }
-    
+
     public boolean isCompleted() {
         return layerFG.get(chip.getPosition()) == EXITED_CHIP;
     }
@@ -199,6 +199,12 @@ public class Level extends SaveState {
         
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
+
+        for (BrownButton b : getBrownButtons()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
+            if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK) {
+                b.press(this);
+            }
+        }
     }
     
     void popTile(Position position){

@@ -661,8 +661,7 @@ public class Creature{
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
         if ((!creatureType.isChip()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if (!(newTile.isTransparent() && !canEnter(direction, level.layerBG.get(newPosition), level))) {
-            if (creatureType.isBlock() && level.layerFG.get(newPosition).isChip()) newTile = level.layerFG.get(newPosition); //I have to put it here or else it doesn't work, I know its awful
+        if (!newTile.isTransparent() || canEnter(direction, level.layerBG.get(newPosition), level)) {
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
@@ -680,7 +679,6 @@ public class Creature{
 
                 return true;
             }
-
         }
 
         setSliding(wasSliding, sliding, level);
@@ -708,7 +706,7 @@ public class Creature{
                     if (b != null && level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
                         b.release(level);
                     }
-                    if(b.getTargetPosition().equals(position)) {
+                    if (b != null && b.getTargetPosition().equals(position)) {
                         b.release(level);
                     }
                 }
@@ -726,7 +724,7 @@ public class Creature{
                 return true;
             }
             if (!creatureType.isChip() && !isSliding()) CreatureList.direction = newDirection;
-            
+
         }
         setSliding(oldCreature.sliding, level);
         if (creatureType.isTank() && !isSliding()) setCreatureType(TANK_STATIONARY);
