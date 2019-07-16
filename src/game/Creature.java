@@ -439,6 +439,7 @@ public class Creature{
                 if (creatureType.isBlock()) return true;
                 if (creatureType.isChip()){
                     level.layerFG.set(newPosition, EXITED_CHIP);
+                    level.setLevelWon(true);
                     kill();
                     return true;
                 }
@@ -666,6 +667,8 @@ public class Creature{
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
                 position = newPosition;
+
+                if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT) tryEnter(direction, level, newPosition, level.layerBG.get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
 
                 if (sliding && !creatureType.isMonster())
                     this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);

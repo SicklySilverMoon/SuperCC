@@ -1,0 +1,22 @@
+SuperCC bug list:
+Priority: Low
+1. Block/Block results in a block being flicked. Intended behavior: treated as Block/Floor, erasing the lower block when pushed, except when the attempted push is out of a teleport, which results in flicking the top block off of the lower block.
+
+Priority: High (desyncs Just Enough)
+2. Block interactions with invalid tiles. Intended behavior is that if the top layer is a key or boot, that a block can be pushed onto that tile erasing the lower layer unless the lower layer is a clone machine.
+
+Priority: High
+3. Block interactions with invalid tiles, part 2. Intended behavior is that if the top layer is floor an the bottom layer is not a clone machine, that a block can be pushed onto that tile creating a Block/Buried Tile that takes effect immediately on the block being pushed again.
+
+Priority: Medium
+4. Block/Clone Machine should clone a block in the pushed direction.
+
+Priority: Medium
+5. Blocks and Chip that start in connected traps should be able to leave the trap without the trap button being pressed, contingent on the initial state of the trap set in the file. Ask pieguy for details.
+Fixed, ignored dat file contingency as all editors set the traps as open
+
+Priority: High
+6. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
+
+Priority: Medium
+7. When teleporting, Chip should try each teleport move in turn until finding one that isn't blocked or returning to the first teleport, bouncing off of it like it's ice. This should flick any blocks on acting walls on those tiles. This should not reveal blue walls/hidden walls blocking teleports.

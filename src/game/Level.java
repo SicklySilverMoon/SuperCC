@@ -29,7 +29,7 @@ public class Level extends SaveState {
     private int rngSeed;
     private Step step;
 
-    private boolean ResetStep = false; //Stuff for data reset
+    private boolean levelWon, ResetStep = false; //Stuff for data reset
     private Position AutopsyPosition = new Position(22, 0);
     
     public final Cheats cheats;
@@ -168,8 +168,10 @@ public class Level extends SaveState {
         this.mouseClick = position;
     }
 
+    public void setLevelWon(boolean won) {levelWon = won;}
+
     public boolean isCompleted() {
-        return layerFG.get(chip.getPosition()) == EXITED_CHIP;
+        return levelWon;
     }
     
     public Level(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] portals,
@@ -205,6 +207,7 @@ public class Level extends SaveState {
                 b.press(this);
             }
         }
+        levelWon = false; //Each level restart set the levelWon flag to false so that when Chip starts in an exit it doesn't auto win
     }
     
     void popTile(Position position){
@@ -294,7 +297,7 @@ public class Level extends SaveState {
     }
     
     private boolean endTick() {
-        if (layerBG.get(chip.getPosition()).equals(EXIT)){
+        if (layerBG.get(chip.getPosition()).equals(EXIT) && levelWon){
             layerFG.set(chip.getPosition(), EXITED_CHIP);
             chip.kill();
         }
