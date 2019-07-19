@@ -685,12 +685,12 @@ public class Creature{
         }
 
         setSliding(wasSliding, sliding, level);
-        
+
         if (wasSliding && !creatureType.isMonster()) {
             if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) this.direction = oldDirection;
             else this.direction = applySlidingTile(direction, level.layerBG.get(position), level.rng);
         }
-        
+
         return false;
     }
 
