@@ -350,7 +350,7 @@ public class Level extends SaveState {
         return moveType == KEY && !isHalfMove && !chip.isSliding();
     }
 
-    public void ResetData(Position position, Level level){ //Actual reset code for data reset
+    void ResetData(Position position, Level level){ //Actual reset code for data reset
         Position ChipPosition = getChip().getPosition(); //Gets Chip's Current position
         if (position.x == 8) { //X reset
             Position ChipXReset = new Position(0, ChipPosition.y); //prepares to set Chip's X position to 0

@@ -142,7 +142,9 @@ public class CreatureList implements Iterable<Creature> {
                             if (resetNewTile == BUTTON_RED) button = level.getButton(row31Position, RedButton.class);
                             if (resetNewTile == BUTTON_BROWN) button = level.getButton(row31Position, BrownButton.class);
                             if (resetNewTile == BUTTON_BLUE) button = level.getButton(row31Position, BlueButton.class);
-                            button.press(level); //If this thing gives you warnings about null pointers, ignore it, i handle all 4 button types
+                            if (button != null) {
+                                button.press(level); //If this thing gives you warnings about null pointers, ignore it, i handle all 4 button types
+                            }
                         }
                         if (resetNewTile == WATER || resetNewTile == BOMB || resetNewTile == FIRE) { //Special interactions
                             if (resetClone.getCreatureType().isBlock() && resetNewTile == WATER) level.layerFG.set(row31Position, DIRT);
