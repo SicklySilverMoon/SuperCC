@@ -9,7 +9,7 @@ As well as tileset images under /src/resources with the names:
 32-mscc.png, (with tilesizes of 32x32 pixels)
 
 48-cedit-tw.png,
-48-tw.png, (with tilesizes of 42x42 pixels)
+48-tw.png, (with tilesizes of 48x48 pixels)
 
 mscc.png,
 mscc-editor.png,
