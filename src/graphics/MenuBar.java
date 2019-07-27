@@ -27,10 +27,10 @@ import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
-public class MenuBar extends JMenuBar{
+class MenuBar extends JMenuBar{
 
     private SuperCC emulator;
-    Gui window;
+    private Gui window;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -40,7 +40,7 @@ public class MenuBar extends JMenuBar{
     }
 
     private class LevelMenu extends JMenu{
-        public LevelMenu(){
+        LevelMenu(){
             super("Level");
 
             JMenuItem openLevelset = new JMenuItem("Open levelset");
@@ -115,7 +115,7 @@ public class MenuBar extends JMenuBar{
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
             rngSeed.addActionListener(e -> {
                 String s = JOptionPane.showInputDialog(window, "Choose a starting seed");
-                if (s == "") return;
+                if (s.equals("")) return;
                 try{
                     Level oldLevel = emulator.getLevel();
                     int n = Integer.parseInt(s);
@@ -132,7 +132,7 @@ public class MenuBar extends JMenuBar{
     }
     
     private class SolutionMenu extends JMenu{
-        public SolutionMenu(){
+        SolutionMenu(){
             super("Solution");
     
             JMenuItem saveAs = new JMenuItem("Save as");
@@ -313,7 +313,7 @@ public class MenuBar extends JMenuBar{
 
     // TODO fromOrdinal new tws file, save a solution
     private class TWSMenu extends JMenu{
-        public TWSMenu(){
+        TWSMenu(){
             super("TWS");
 
             JMenuItem newTWS = new JMenuItem("Write solution to new tws");
@@ -381,7 +381,7 @@ public class MenuBar extends JMenuBar{
     }
 
     private class ViewMenu extends JMenu{
-        public ViewMenu(){
+        ViewMenu(){
             super("View");
     
             JMenu tileset = new JMenu("Tileset");
@@ -515,7 +515,7 @@ public class MenuBar extends JMenuBar{
     }
     
     private class ToolMenu extends JMenu{
-        public ToolMenu() {
+        ToolMenu() {
             super("Tools");
     
             JMenuItem controls = new JMenuItem("Controls");
@@ -534,23 +534,12 @@ public class MenuBar extends JMenuBar{
             });
             addIcon(gif, "/resources/icons/video.gif");
             add(gif);
-    
-            JMenuItem tsp = new JMenuItem("TSP Solver");
-            tsp.addActionListener(e -> new SwingWorker<Void, Void>(){
-                @Override
-                protected Void doInBackground() throws Exception {
 
-                    return null;
-                }
-            }.execute()) ;
-            add(tsp);
-            tsp.setEnabled(false);
-            
         }
     }
     
     private class CheatMenu extends JMenu{
-        public CheatMenu() {
+        CheatMenu() {
             super("Cheats");
     
             JMenuItem inventory = new JMenuItem("Change inventory");
@@ -584,7 +573,7 @@ public class MenuBar extends JMenuBar{
         }
     }
     
-    public MenuBar(Gui window, SuperCC emulator){
+    MenuBar(Gui window, SuperCC emulator){
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
         add(new LevelMenu());

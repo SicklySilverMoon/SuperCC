@@ -17,15 +17,15 @@ public class SuperCC {
         {Direction.DOWN}, {Direction.RIGHT}, {}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
-    private static File introDat;
-    {
-        try { //This should literally be impossible to error on
-            introDat = new File(getClass().getResource("intro.dat").toURI()); //Used to just load a standard set so the program doesn't throw errors every time you move the mouse
-        }
-        catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
+//    private static File introDat; //Crashes in jar release
+//    {
+//        try { //This should literally be impossible to error on
+//            introDat = new File(getClass().getResource("intro.dat").toURI()); //Used to just load a standard set so the program doesn't throw errors every time you move the mouse
+//        }
+//        catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private SavestateManager savestates;
     private Level level;
@@ -305,7 +305,7 @@ public class SuperCC {
     public static void initialise(){
             SuperCC emulator = new SuperCC();
             //emulator.runTests();
-            emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
+            //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP3.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP3.dac.tws"));
