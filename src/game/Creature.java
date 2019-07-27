@@ -173,7 +173,7 @@ public class Creature{
         else if (!wasSliding && isSliding){
             if (creatureType.isChip()) setCreatureType(CHIP_SLIDING);
             else if (level.getSlipList().contains(this)) {
-                new RuntimeException("adding block twice").printStackTrace();
+                new RuntimeException("adding block twice on level "+level.getLevelNumber()+" "+new String(level.getTitle())).printStackTrace();
             }
             else level.getSlipList().add(this);
         }
@@ -239,6 +239,9 @@ public class Creature{
                     Position blockPushPosition = exitPosition.move(direction);
                     if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
                         blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
+                    if (blockPushPosition.equals(level.chip.getPosition()) && !block.canEnter(direction, level.layerBG.get(blockPushPosition), level)) {
+                        continue; //Fixes a weird interaction with blocks trying to move into the tile that Chip teleported from
+                    }
                     if (block.canEnter(direction, level.layerFG.get(blockPushPosition), level)){
                         if (block.tryMove(direction, level, false, pressedButtons)) break;
                     }
@@ -661,11 +664,11 @@ public class Creature{
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
-        if ((!creatureType.isChip()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
+        if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (!newTile.isTransparent()
                 || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works mostly correctly, sliding block should always kill Chip however currently they don't due to issues around teleports as seen in CCLP3 116
                     || (newTile.isKey() && level.layerBG.get(newPosition) != CLONE_MACHINE)
-                        || (creatureType.isBlock() && (newTile.isBoot() && level.layerBG.get(newPosition) != CLONE_MACHINE))) {
+                        || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && level.layerBG.get(newPosition) != CLONE_MACHINE))) {
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
