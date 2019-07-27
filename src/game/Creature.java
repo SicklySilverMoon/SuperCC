@@ -662,7 +662,10 @@ public class Creature{
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
         if ((!creatureType.isChip()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if (!newTile.isTransparent() || canEnter(direction, level.layerBG.get(newPosition), level)) {
+        if (!newTile.isTransparent()
+                || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works mostly correctly, sliding block should always kill Chip however currently they don't due to issues around teleports as seen in CCLP3 116
+                    || (newTile.isKey() && level.layerBG.get(newPosition) != CLONE_MACHINE)
+                        || (creatureType.isBlock() && (newTile.isBoot() && level.layerBG.get(newPosition) != CLONE_MACHINE))) {
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);

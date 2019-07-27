@@ -151,10 +151,16 @@ public enum Tile {
     public boolean isTransparent(){
         return ordinal() >= BUG_UP.ordinal();
     }
+    public boolean isKey() {
+        return KEY_BLUE.ordinal() <= ordinal() && ordinal() <= KEY_YELLOW.ordinal();
+    }
+    public boolean isBoot() {
+        return BOOTS_WATER.ordinal() <= ordinal() && ordinal() <= BOOTS_SLIDE.ordinal();
+    }
     public boolean isButton() {
         return this == BUTTON_BROWN || this == BUTTON_BLUE || this == BUTTON_RED || this == BUTTON_GREEN;
     }
-    
+
     private String str;
     @Override public String toString() {
         return str;
