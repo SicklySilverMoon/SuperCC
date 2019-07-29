@@ -1,12 +1,17 @@
 SuperCC bug list:
-Priority: Low
-1. Block/Block results in a block being flicked. Intended behavior: treated as Block/Floor, erasing the lower block when pushed, except when the attempted push is out of a teleport, which results in flicking the top block off of the lower block.
+
+Priority: VERY High
+1. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
+(desyncs a lot of mouse routes)
 
 Priority: Low
-2. Block/Clone Machine should clone a block in the pushed direction.
+2. Block/Block results in a block being flicked. Intended behavior: treated as Block/Floor, erasing the lower block when pushed, except when the attempted push is out of a teleport, which results in flicking the top block off of the lower block.
 
-Priority: High
-3. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
+Priority: Low
+3. Block/Clone Machine should clone a block in the pushed direction.
 
 Priority: Medium
 4. When teleporting, Chip should try each teleport move in turn until finding one that isn't blocked or returning to the first teleport, bouncing off of it like it's ice. This should flick any blocks on acting walls on those tiles. This should not reveal blue walls/hidden walls blocking teleports.
+
+Priority: Very Low
+5. Add TSG tick into exit to save 0.1

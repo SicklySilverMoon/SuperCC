@@ -7,7 +7,6 @@ CHIPS.dat
 CCLP1.dat
 
 CCLP2.dat
-failed level 81 Just Enough (transparency is not implemented correctly)
 
 CCLP3.dat
 

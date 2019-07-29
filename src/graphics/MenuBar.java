@@ -31,6 +31,9 @@ class MenuBar extends JMenuBar{
 
     private SuperCC emulator;
     private Gui window;
+
+//    private JPanel aboutPanel;
+//    private JLabel aboutLabel;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -419,7 +422,7 @@ class MenuBar extends JMenuBar{
     
             JMenu tileSize = new JMenu("Tile size");
             ButtonGroup tileSizes = new ButtonGroup();
-            int[] sizes = new int[] {16, 20, 24, 32, 48, 64};
+            int[] sizes = new int[] {16, 20, 24, 32};
             for (int i = 0; i < sizes.length; i++) {
                 int size = sizes[i];
                 JRadioButton sizeButton = new JRadioButton(size + "x" + size);
@@ -572,7 +575,18 @@ class MenuBar extends JMenuBar{
             
         }
     }
-    
+
+//    private class AboutMenu extends JMenu{
+//        AboutMenu() {
+//            super("About");
+//
+//            JMenuItem aboutWindow = new JMenuItem("About SuCC");
+//            //aboutWindow.addActionListener(e -> new About(emulator));
+//            addIcon(aboutWindow, "/resources/icons/green_key.gif");
+//            add(aboutWindow);
+//        }
+//    }
+
     MenuBar(Gui window, SuperCC emulator){
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
@@ -582,6 +596,7 @@ class MenuBar extends JMenuBar{
         add(new ViewMenu());
         add(new ToolMenu());
         add(new CheatMenu());
+//        add(new AboutMenu());
         this.window = window;
         this.emulator = emulator;
     }

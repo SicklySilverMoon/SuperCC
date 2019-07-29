@@ -165,7 +165,7 @@ public class Creature{
         setSliding(this.sliding, sliding, level);
     }
     void setSliding(boolean wasSliding, boolean isSliding, Level level) {
-    
+
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
             else level.slipList.remove(this);
@@ -177,12 +177,16 @@ public class Creature{
             }
             else level.getSlipList().add(this);
         }
-        if (creatureType.isBlock() && wasSliding && level.layerBG.get(position) == TRAP){
+        Position newPosition = position.move(direction); //Dirty hack to make sure blocks in traps affect slide delay properly
+        if (creatureType.isBlock() && wasSliding && level.layerBG.get(position) == TRAP
+            && (!canLeave(direction, level.layerBG.get(position), level) || !canEnter(direction, level.layerFG.get(newPosition), level))){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
         }
-        this.sliding = isSliding;
+        if (creatureType.isBlock() && wasSliding && level.layerBG.get(position) == TRAP && canLeave(direction, level.layerBG.get(position), level))
+            this.sliding = true; //This prevents errors about adding a block to the sliplist twice
+        else this.sliding = isSliding;
     }
 
     /**
@@ -666,15 +670,20 @@ public class Creature{
         Tile newTile = level.layerFG.get(newPosition);
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
         if (!newTile.isTransparent()
-                || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works mostly correctly, sliding block should always kill Chip however currently they don't due to issues around teleports as seen in CCLP3 116
-                    || (newTile.isKey() && level.layerBG.get(newPosition) != CLONE_MACHINE)
-                        || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && level.layerBG.get(newPosition) != CLONE_MACHINE))) {
+                || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works correctly
+                || (newTile.isKey() && (level.layerBG.get(newPosition) != CLONE_MACHINE))
+                || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && (level.layerBG.get(newPosition) != CLONE_MACHINE)))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
                 position = newPosition;
 
+                //!!DIRTY HACK SECTION BEGINS!!//
                 if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT) tryEnter(direction, level, newPosition, level.layerBG.get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
+
+                if (creatureType.isBlock() && wasSliding && level.layerFG.get(newPosition) == TRAP && canLeave(direction, level.layerFG.get(newPosition), level)) //canLeave just calls isTrapOpen in case this didn't make sense
+                    sliding = true; //A block that slides into an open trap should just slide out of it with no change in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
+                //!!DIRTY HACK SECTION ENDS!!//
 
                 if (sliding && !creatureType.isMonster())
                     this.direction = applySlidingTile(direction, level.layerFG.get(position), level.rng);

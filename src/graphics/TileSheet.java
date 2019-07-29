@@ -11,7 +11,7 @@ public enum TileSheet {
     TW("/resources/48-tw.png", "Tile World"),
     CCEDIT_MSCC("/resources/32-ccedit-mscc.png", "MSCC (Editor)"),
     MSCC("/resources/32-mscc.png", "MSCC");
-    
+
     private static final int TILESHEET_WIDTH = 7, TILESHEET_HEIGHT = 16;
     
     private final String url;
