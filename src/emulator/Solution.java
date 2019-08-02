@@ -9,8 +9,11 @@ import util.ByteList;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
-import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
+import static emulator.SuperCC.*;
 
 public class Solution{
 
@@ -147,20 +150,55 @@ public class Solution{
         }
         return writer.toByteArray();
     }
-    private static byte[] quarterToHalfMoves(byte[] quarterMoves){
+
+    private static byte[] quarterToHalfMoves(byte[] quarterMoves) {
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
-        for (int i = 0; i < quarterMoves.length; i += 2){
-            int j = i;
-            byte b = quarterMoves[i];
-            if (b == '-' && i+1 < quarterMoves.length){
-                b = quarterMoves[++j];
+        //System.out.println(Arrays.toString(quarterMoves));
+
+        Set<Byte> cardinals = new HashSet<>(); //Makes it so that i have to write out 8 equality checks
+        cardinals.add(UP);
+        cardinals.add(DOWN);
+        cardinals.add(LEFT);
+        cardinals.add(RIGHT);
+
+        for (int i = 0; i < quarterMoves.length; i += 2) {
+            byte a = quarterMoves[i];
+            byte b = 0;
+            int j = i+1;
+
+            if (a == CHIP_RELATIVE_CLICK && j+2 < quarterMoves.length) j += 2; //Since mouse moves take 3 bytes this just makes sure that b is always the intended move/wait and not part of the mouse bytes
+            if (j < quarterMoves.length) b = quarterMoves[j];
+
+            if (a == '~' && b == '~') { //It should only write a half wait if BOTH values read are quarter waits
+                writer.write('-');
             }
-            writer.write(b);
-            if (b == CHIP_RELATIVE_CLICK){
-                writer.write(quarterMoves[++j]);
-                writer.write(quarterMoves[++j]);
+            else {
+                if (cardinals.contains(a)) {
+                    writer.write(a);
+                    continue;
+                }
+                if (cardinals.contains(b) || b == CHIP_RELATIVE_CLICK) {
+                    writer.write(b);
+                    if (cardinals.contains(b)) { //Keyboard input check
+                        continue;
+                    }
+                    else if (b == CHIP_RELATIVE_CLICK) {
+                        i = j;
+                        writer.write(quarterMoves[++j]);
+                        writer.write(quarterMoves[++j]);
+                        ++i; //Puts the reader right into the first direction so that the i += 2 at the start jumps to the next pair of quarter moves
+                        continue;
+                    }
+                }
+                if (a == CHIP_RELATIVE_CLICK) {
+                    writer.write(a);
+                    writer.write(quarterMoves[++i]);
+                    writer.write(quarterMoves[++i]); //Puts the reader right into the second direction so that the i += 2 at the start jumps to the next pair of quarter moves
+                    continue;
+                }
             }
         }
+        //System.out.println(Arrays.toString(writer.toByteArray()));
         return writer.toByteArray();
     }
     

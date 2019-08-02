@@ -145,6 +145,7 @@ public class Position {
     }
     
     public boolean equals(Position p){
+        assert p != null; //100% null should never get passed as a position so you need to know if it does
         return index == p.index;
     }
     

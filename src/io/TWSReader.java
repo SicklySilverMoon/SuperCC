@@ -119,7 +119,7 @@ public class TWSReader{
                 direction = DIRECTIONS[(b & 0b11100) >>> 2];
                 time = ((b & 0b11100000) >>> 5 | readByte() << 3);
             }
-            for (int i = 0; i < time; i++) writer.write('-');
+            for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
         public void readFormat2(int b, ByteArrayOutputStream writer) throws IOException{
@@ -127,12 +127,12 @@ public class TWSReader{
             byte direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
             if (time < 2047) ineffiencies += 1;
-            for (int i = 0; i < time; i++) writer.write('-');
+            for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
         public void readFormat3(int b, ByteArrayOutputStream writer) throws IOException{
             counter += 1;
-            byte[] waits = new byte[] {'-', '-', '-'};
+            byte[] waits = new byte[] {'~', '~', '~'};
             writer.write(waits);
             writer.write(DIRECTIONS[(b >>> 2) & 0b11]);
             writer.write(waits);
@@ -147,7 +147,7 @@ public class TWSReader{
             int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
             int time = (b2 & 0b11000000) >> 6;
             for (int i = 0; i < length - 2; i++) time = time | readByte() << (2 + 8*i);
-            for (int i = 0; i < time; i++) writer.write('-');
+            for (int i = 0; i < time; i++) writer.write('~');
             if (d < 4){
                 byte direction = DIRECTIONS[d];
                 writer.write(direction);

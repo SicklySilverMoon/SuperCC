@@ -1,6 +1,6 @@
 SuperCC bug list:
 
-Priority: VERY High
+Priority: *Should* be fixed now
 1. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
 (desyncs a lot of mouse routes)
 
@@ -15,3 +15,13 @@ Priority: Medium
 
 Priority: Very Low
 5. Add TSG tick into exit to save 0.1
+
+Mouse issues:
+
+Mouse bug 1:
+If a mouse move is made via boosting so it occurs on the first half of the turn it doesn't add a half wait after the move like it should and allows for an erroneous extra move that turn
+(cclp4 68, down then up then click up left of Chip, should add a half wait after but doesn't)
+
+Mouse bug 2:
+Currently: second mouse move cancels first mouse move
+What should happen: first move executes, the second move the next turn unless cancled by something within that next turn
