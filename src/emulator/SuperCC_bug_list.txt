@@ -16,6 +16,9 @@ Priority: Medium
 Priority: Very Low
 5. Add TSG tick into exit to save 0.1
 
+Priority: Cosmetic
+6. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
+
 Mouse issues:
 
 Mouse bug 1:

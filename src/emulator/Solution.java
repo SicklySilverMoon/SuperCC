@@ -172,7 +172,7 @@ public class Solution{
             if (a == '~' && b == '~') { //It should only write a half wait if BOTH values read are quarter waits
                 writer.write('-');
             }
-            else {
+            else { //Input priority things
                 if (cardinals.contains(a)) {
                     writer.write(a);
                     continue;

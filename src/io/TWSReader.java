@@ -5,6 +5,7 @@ import game.Level;
 import game.Step;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
@@ -59,8 +60,9 @@ public class TWSReader{
                         break;
                 }
             }
-            catch (Exception e){                    // Some solution files are too long - seems to be caused by long
-                break;                              // slides at the end of a level
+            catch (Exception e){                    // Some solution files are too long - seems to be caused by long slides at the end of a level
+                //System.out.println("TWS file too long on level: "+level.getLevelNumber()+" "+Arrays.toString(level.getTitle()));
+                break;
             }
         }
         Solution s = new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);

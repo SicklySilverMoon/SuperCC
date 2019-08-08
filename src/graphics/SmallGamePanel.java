@@ -133,8 +133,8 @@ public class SmallGamePanel extends GamePanel {
             if (onScreen(monster.getPosition())) {
                 int x = (monster.getPosition().getX() - screenTopLeft.getX()) * tileWidth;
                 int y = (monster.getPosition().getY() - screenTopLeft.getY()) * tileHeight + yOffset;
-                System.out.println(x);
-                System.out.println(y);
+//                System.out.println(x); //I have no idea why these 2 are here
+//                System.out.println(y);
                 drawNumber(i + 1, blueDigits, x, y, overlay.getRaster());
             }
         }

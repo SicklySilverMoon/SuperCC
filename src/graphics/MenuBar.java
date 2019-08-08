@@ -507,6 +507,7 @@ class MenuBar extends JMenuBar{
             for (int i = 0; i < setterNames.length; i++){
                 JToggleButton b = new JToggleButton(setterNames[i]);
                 Consumer<Boolean> setter = setters.get(i);
+                if (i == 0 || i == 1 || i == 2) b.setSelected(true); //These are already selected by default in the backend (GamePanel.java, at the top with all the variable declarations) so i just make the buttons default the on state
                 b.addActionListener(e -> {
                     setter.accept(((AbstractButton) e.getSource()).isSelected());
                     window.repaint(emulator.getLevel(), true);

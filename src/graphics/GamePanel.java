@@ -31,8 +31,9 @@ public abstract class GamePanel extends JPanel
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     static int[][] tileImage, bgTileImage;
     
-    protected boolean showBG, showMonsterList, showSlipList, showTrapConnections, showCloneConnections, showHistory;
-    
+    protected boolean showBG = true, showMonsterList = true, showSlipList = true; //Makes sure that the BG layer, the slip list, and the monster list show by default
+    protected boolean showTrapConnections, showCloneConnections, showHistory;
+
     // The background image
     protected BufferedImage bg;
     // The foreground image

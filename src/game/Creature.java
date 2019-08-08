@@ -669,10 +669,12 @@ public class Creature{
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if (!newTile.isTransparent()
+        if ((!newTile.isTransparent() && (creatureType.isBlock() || (level.layerBG.get(newPosition) != CLONE_MACHINE)))
                 || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works correctly
                 || (newTile.isKey() && (level.layerBG.get(newPosition) != CLONE_MACHINE))
                 || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && (level.layerBG.get(newPosition) != CLONE_MACHINE)))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
+
+            if (level.layerBG.get(newPosition) == CLONE_MACHINE) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
