@@ -515,6 +515,25 @@ class MenuBar extends JMenuBar{
                 add(b);
             }
 
+            add(new JSeparator());
+
+            String[] setterHUDNames = new String[] { //Should probably rename this sometime
+                    "Switch Decimal Notation",
+            };
+
+            List<Consumer<Boolean>> HUDSetters = Arrays.asList( //Yes yes this and the next are stupid as its only one value, but this also future proofs it
+                    b -> window.getLevelPanel().changeNotation(b)
+            );
+
+            for (int i = 0; i < setterHUDNames.length; i++){
+                JToggleButton b = new JToggleButton(setterHUDNames[i]);
+                Consumer<Boolean> setter = HUDSetters.get(i);
+                b.addActionListener(e -> {
+                    setter.accept(((AbstractButton) e.getSource()).isSelected());
+                    window.repaint(emulator.getLevel(), true);
+                });
+                add(b);
+            }
         }
     }
     

@@ -5,16 +5,24 @@ import game.Level;
 import java.awt.*;
 
 public class LevelPanel extends TextPanel {
-    
+
+    private static boolean twsNotation;
+
     private static String timerToString(Level level){
         int time = level.getTimer();
         if (time < 0) {
             time = level.getTChipTime();
-            return "("+Integer.toString(time/10)+"."+Integer.toString(Math.abs(time%10))+")";
+            if (!twsNotation) return "["+ time / 10 +"."+ Math.abs(time % 10)+"]";
+            else return "["+ time / 10 +"] (-."+ (9 - Math.abs(time % 10)) +")";
         }
-        return Integer.toString(time/10)+"."+Integer.toString(time%10);
+        if (!twsNotation) return time / 10 +"."+ Math.abs(time % 10);
+        else return time / 10 +" (-."+ (9 - Math.abs(time % 10))+")";
     }
-    
+
+    public void changeNotation(boolean change) {
+        twsNotation = change;
+    }
+
     @Override
     public void paintComponent(Graphics g){
         
