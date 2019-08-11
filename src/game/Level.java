@@ -347,7 +347,7 @@ public class Level extends SaveState {
         finaliseTraps();
         if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;
     
-        return moveType == KEY && !isHalfMove && !chip.isSliding();
+        return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
     }
 
     void ResetData(Position position, Level level){ //Actual reset code for data reset

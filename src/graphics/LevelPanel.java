@@ -19,7 +19,7 @@ public class LevelPanel extends TextPanel {
         else return time / 10 +" (-."+ (9 - Math.abs(time % 10))+")";
     }
 
-    public void changeNotation(boolean change) {
+    void changeNotation(boolean change) {
         twsNotation = change;
     }
 
