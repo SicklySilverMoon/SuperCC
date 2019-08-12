@@ -10,7 +10,8 @@ public enum TileSheet {
     CCEDIT_TW("/resources/32-ccedit-tw.png", "Tile World (Editor)"),
     TW("/resources/48-tw.png", "Tile World"),
     CCEDIT_MSCC("/resources/32-ccedit-mscc.png", "MSCC (Editor)"),
-    MSCC("/resources/32-mscc.png", "MSCC");
+    MSCC("/resources/32-mscc.png", "MSCC"),
+    BLACK_AND_WHITE("/resources/32-ccedit-bw.png", "MSCC (Black and White - Editor)");
 
     private static final int TILESHEET_WIDTH = 7, TILESHEET_HEIGHT = 16;
     
