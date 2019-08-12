@@ -21,10 +21,10 @@ Priority: Cosmetic
 
 Mouse issues:
 
-Mouse bug 1:
+Mouse bug 1 (Fixed):
 If a mouse move is made via boosting so it occurs on the first half of the turn it doesn't add a half wait after the move like it should and allows for an erroneous extra move that turn
 (cclp4 68, down then up then click up left of Chip, should add a half wait after but doesn't)
 
-Mouse bug 2:
+Mouse bug 2 (Not a bug, intended behaviour under MSCC):
 Currently: second mouse move cancels first mouse move
-What should happen: first move executes, the second move the next turn unless cancled by something within that next turn
+What should happen: first move executes, the second move the next turn unless canceled by something within that next turn

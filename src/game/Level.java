@@ -325,18 +325,18 @@ public class Level extends SaveState {
 
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         initialiseSlidingMonsters();
-        boolean isHalfMove = tickNumber % 2 != 0;
+        boolean isHalfMove = (tickNumber & 0x1) != 0; //A faster version of tickNumber % 2 != 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
         monsterList.initialise();
     
         if (tickNumber > 0 && !isHalfMove) monsterList.tick();
-        
+
         if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (endTick()) return false;
-        tickNumber++;
         if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick)));
         if (endTick()) return false;
+        tickNumber++;
         slipList.tick();
         if (endTick()) return false;
         if (moveType == KEY) moveChip(directions);
@@ -346,7 +346,7 @@ public class Level extends SaveState {
         monsterList.finalise();
         finaliseTraps();
         if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;
-    
+
         return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
     }
 
