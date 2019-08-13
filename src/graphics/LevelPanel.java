@@ -12,11 +12,19 @@ public class LevelPanel extends TextPanel {
         int time = level.getTimer();
         if (time < 0) {
             time = level.getTChipTime();
-            if (!twsNotation) return "["+ time / 10 +"."+ Math.abs(time % 10)+"]";
-            else return "["+ time / 10 +"] (-."+ (9 - Math.abs(time % 10)) +")";
+            if (!twsNotation) return String.format("[%d.%d]",
+                    time / 10,
+                    Math.abs(time % 10));
+            else return String.format("[%d (-.%d)]",
+                    time / 10,
+                    9 - Math.abs(time % 10));
         }
-        if (!twsNotation) return time / 10 +"."+ Math.abs(time % 10);
-        else return time / 10 +" (-."+ (9 - Math.abs(time % 10))+")";
+        if (!twsNotation) return String.format("%d.%d",
+                time / 10,
+                Math.abs(time % 10));
+        else return String.format("%d (-.%d)",
+                time / 10,
+                9 - Math.abs(time % 10));
     }
 
     void changeNotation(boolean change) {
