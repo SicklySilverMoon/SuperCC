@@ -250,7 +250,7 @@ public class Creature{
                         if (block.tryMove(direction, level, false, pressedButtons)) break;
                     }
                 }
-                if (block.tryMove(direction, level, false, pressedButtons)) break;
+                if (block.tryMove(direction, level, false, pressedButtons) && (canEnter(direction, exitTile, level))) break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
             }
             if (canEnter(direction, exitTile, level)) break;
         }

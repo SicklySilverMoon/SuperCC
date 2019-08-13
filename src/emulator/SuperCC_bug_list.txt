@@ -10,16 +10,10 @@ Priority: Low
 Priority: Low
 3. Block/Clone Machine should clone a block in the pushed direction.
 
-Priority: Medium
-4. When teleporting, Chip should try each teleport move in turn until finding one that isn't blocked or returning to the first teleport, bouncing off of it like it's ice. This should flick any blocks on acting walls on those tiles. This should not reveal blue walls/hidden walls blocking teleports.
-
-Priority: Very Low
-5. Add TSG tick into exit to save 0.1
-
 Priority: Cosmetic
-6. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
+4. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
 
-Mouse issues:
+Mouse issues (All fixed):
 
 Mouse bug 1 (Fixed):
 If a mouse move is made via boosting so it occurs on the first half of the turn it doesn't add a half wait after the move like it should and allows for an erroneous extra move that turn

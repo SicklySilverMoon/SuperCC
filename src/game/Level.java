@@ -15,7 +15,7 @@ public class Level extends SaveState {
 
     public final int INITIAL_MONSTER_LIST_SIZE = monsterList.size();
     public final Position INITIAL_MONSTER_POSITION =
-            (monsterList.size() == 0) ? null : monsterList.get(0).getPosition(); //this is needed or else half the levels aren't playable
+            (monsterList.size() == 0) ? null : monsterList.get(0).getPosition(); //this is needed or else half the levels aren't playable due to a crash from having an empty monster list
     public final int INITIAL_CHIPS_AMOUNT = chipsLeft;
     final int LEVELSET_LENGTH;
 
@@ -28,6 +28,7 @@ public class Level extends SaveState {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
+    private int previousMoveType;
 
     private boolean levelWon, ResetStep = false; //Stuff for data reset
     private Position AutopsyPosition = new Position(22, 0);
@@ -334,7 +335,10 @@ public class Level extends SaveState {
         if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (endTick()) return false;
-        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick)));
+        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick))); //{ //James is currently
+//            if (previousMoveType != KEY) moveChip(chip.seek(new Position(mouseClick)));
+//            else if (previousMoveType == KEY) moveType = CLICK_LATE;
+//        }
         if (endTick()) return false;
         tickNumber++;
         slipList.tick();
@@ -343,6 +347,7 @@ public class Level extends SaveState {
         else if (moveType == CLICK_LATE) moveChip(chip.seek(new Position(mouseClick)));
         if (endTick()) return false;
 
+        previousMoveType = moveType;
         monsterList.finalise();
         finaliseTraps();
         if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;
