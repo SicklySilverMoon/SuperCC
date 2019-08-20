@@ -204,6 +204,8 @@ public class Creature{
     
     
     private void teleport(Direction direction, Level level, Position position, List<Button> pressedButtons) {
+        Position chipPosition = level.chip.getPosition();
+        if (creatureType.isChip()) level.layerFG.set(chipPosition, level.layerBG.get(chipPosition));
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
             if (portalIndex >= level.getPortals().length) return;
@@ -243,12 +245,13 @@ public class Creature{
                     Position blockPushPosition = exitPosition.move(direction);
                     if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
                         blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
-                    if (blockPushPosition.equals(level.chip.getPosition()) && !block.canEnter(direction, level.layerBG.get(blockPushPosition), level)) {
-                        continue; //Fixes a weird interaction with blocks trying to move into the tile that Chip teleported from
-                    }
                     if (block.canEnter(direction, level.layerFG.get(blockPushPosition), level)){
                         if (block.tryMove(direction, level, false, pressedButtons)) break;
                     }
+                }
+                if (level.layerBG.get(exitPosition) == Tile.BLOCK) {
+                    block.tryMove(direction, level, false, pressedButtons);
+                    break;
                 }
                 if (block.tryMove(direction, level, false, pressedButtons) && (canEnter(direction, exitTile, level))) break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
             }
@@ -409,6 +412,9 @@ public class Creature{
                             }
                             return false;
                         }
+                    }
+                    if (level.getLayerBG().get(newPosition) == Tile.BLOCK) {
+                        level.popTile(newPosition);
                     }
                     Creature block = new Creature(newPosition, Tile.BLOCK);
                     if (block.tryMove(direction, level, false, pressedButtons)){

@@ -1,17 +1,19 @@
 SuperCC bug list:
 
-Priority: *Should* be fixed now
+Priority: Low
+1. Block/Clone Machine should clone a block in the pushed direction.
+
+Priority: Cosmetic
+2. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
+
+Fixed Bugs:
+
+Priority: VERY High (Mainly fixed)
 1. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
 (desyncs a lot of mouse routes)
 
 Priority: Low
 2. Block/Block results in a block being flicked. Intended behavior: treated as Block/Floor, erasing the lower block when pushed, except when the attempted push is out of a teleport, which results in flicking the top block off of the lower block.
-
-Priority: Low
-3. Block/Clone Machine should clone a block in the pushed direction.
-
-Priority: Cosmetic
-4. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
 
 Mouse issues (All fixed):
 

@@ -335,7 +335,7 @@ public class Level extends SaveState {
         if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (endTick()) return false;
-        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick))); //{ //James is currently
+        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick))); //{ //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
 //            if (previousMoveType != KEY) moveChip(chip.seek(new Position(mouseClick)));
 //            else if (previousMoveType == KEY) moveType = CLICK_LATE;
 //        }
