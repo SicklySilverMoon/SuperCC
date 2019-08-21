@@ -231,7 +231,7 @@ public class Creature{
             if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                 exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
             Tile exitTile = level.layerFG.get(exitPosition);
-            if (level.layerBG.get(exitPosition) == CLONE_MACHINE) exitTile = level.layerBG.get(exitPosition);
+            if (level.layerBG.get(exitPosition) == CLONE_MACHINE && level.layerFG.get(exitPosition) != Tile.BLOCK) exitTile = level.layerBG.get(exitPosition);
             if (!creatureType.isChip() && exitTile.isChip()) exitTile = level.layerBG.get(exitPosition);
             if (creatureType.isChip() && exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
             if (creatureType.isChip() && exitTile == Tile.BLOCK){
@@ -253,6 +253,12 @@ public class Creature{
                 if (level.layerBG.get(exitPosition) == Tile.BLOCK) {
                     block.tryMove(direction, level, false, pressedButtons);
                     break;
+                }
+                if (level.layerBG.get(exitPosition) == CLONE_MACHINE) {
+                    block.tryMove(direction, level, false, pressedButtons);
+                    level.layerFG.set(exitPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
+                    level.insertTile(exitPosition, Tile.BLOCK);
+                    continue; //Continues through the teleport array like in MSCC
                 }
                 if (block.tryMove(direction, level, false, pressedButtons) && (canEnter(direction, exitTile, level))) break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
             }
@@ -418,6 +424,18 @@ public class Creature{
                         level.popTile(newPosition);
                     }
                     Creature block = new Creature(newPosition, Tile.BLOCK);
+                    if (level.layerBG.get(newPosition) == CLONE_MACHINE) { //The weird block/clone_machine push block to clone thing now works
+                        if (block.tryMove(direction, level, false, pressedButtons)) {
+                            for (BrownButton b : level.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
+                                if (b.getTargetPosition().equals(newPosition) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
+                                    b.release(level);
+                                }
+                            }
+                        }
+                        level.layerFG.set(newPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
+                        level.insertTile(newPosition, Tile.BLOCK);
+                        return false; //Normally you would check if Chip could enter the resulting tile but seeing as its always a clone machine on the bottom it'll always be false, therefore i always have this return false
+                    }
                     if (block.tryMove(direction, level, false, pressedButtons)){
                         for (BrownButton b : level.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
                             if (b.getTargetPosition().equals(newPosition) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
@@ -572,7 +590,8 @@ public class Creature{
                 return false;
             case HINT: return true;
             case THIN_WALL_DOWN_RIGHT: return direction == DOWN || direction == RIGHT;
-            case CLONE_MACHINE: return false;
+            case CLONE_MACHINE:
+                return false;
             case FF_RANDOM:
                 if (creatureType.isMonster()) return false;
                 if (!(creatureType.isChip() && level.getBoots()[3] > 0)) sliding = true;
@@ -673,22 +692,30 @@ public class Creature{
             (direction == DOWN && position.getY() == 31)) newPosition = new Position(-1);
         else newPosition = position.move(direction);
 
+        boolean CloneMachineCheck = true;
+        if (level.layerBG.get(newPosition) == CLONE_MACHINE && level.layerFG.get(newPosition) == Tile.BLOCK) CloneMachineCheck = true;
+        else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !creatureType.isBlock()) CloneMachineCheck = false;
+
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if ((!newTile.isTransparent() && (creatureType.isBlock() || (level.layerBG.get(newPosition) != CLONE_MACHINE)))
+        if ((!newTile.isTransparent() && (creatureType.isBlock() || CloneMachineCheck))
                 || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works correctly
-                || (newTile.isKey() && (level.layerBG.get(newPosition) != CLONE_MACHINE))
-                || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && (level.layerBG.get(newPosition) != CLONE_MACHINE)))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
+                || (newTile.isKey() && CloneMachineCheck)
+                || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && CloneMachineCheck))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
-            if (level.layerBG.get(newPosition) == CLONE_MACHINE) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
+            if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 level.popTile(position);
                 position = newPosition;
 
                 //!!DIRTY HACK SECTION BEGINS!!//
-                if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT) tryEnter(direction, level, newPosition, level.layerBG.get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
+                if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT) {
+                    tryEnter(direction, level, newPosition, level.layerBG.get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
+                    level.layerFG.set(newPosition, EXITED_CHIP); //Fixed cosmetics, else you have an EXITED_CHIP/EXIT tile that looks ugly (no gameplay effect however)
+                    level.layerBG.set(newPosition, FLOOR);
+                }
 
                 if (creatureType.isBlock() && wasSliding && level.layerFG.get(newPosition) == TRAP && canLeave(direction, level.layerFG.get(newPosition), level)) //canLeave just calls isTrapOpen in case this didn't make sense
                     sliding = true; //A block that slides into an open trap should just slide out of it with no change in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
