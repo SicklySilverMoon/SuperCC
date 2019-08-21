@@ -231,6 +231,7 @@ public class Creature{
             if (exitPosition.getX() < 0 || exitPosition.getX() > 31 ||
                 exitPosition.getY() < 0 || exitPosition.getY() > 31) continue;
             Tile exitTile = level.layerFG.get(exitPosition);
+            if (level.layerBG.get(exitPosition) == CLONE_MACHINE) exitTile = level.layerBG.get(exitPosition);
             if (!creatureType.isChip() && exitTile.isChip()) exitTile = level.layerBG.get(exitPosition);
             if (creatureType.isChip() && exitTile.isTransparent()) exitTile = level.layerBG.get(exitPosition);
             if (creatureType.isChip() && exitTile == Tile.BLOCK){
