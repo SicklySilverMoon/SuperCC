@@ -1,7 +1,14 @@
 SuperCC bug list:
 
 Priority: Cosmetic
-2. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
+1. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
+
+Priority: Cosmetic-Medium
+2. Collecting 10 keys of 1 colour then rewinding or restarting and collecting more of that same key causes the key digit to glitch out (line 79 of GamePanel.java, something to do with the j variable)
+
+Things MSCC does but TW and SuCC don't:
+Priority: Low-Medium
+1. https://wiki.bitbusters.club/Tank_Top_Glitch
 
 Fixed Bugs:
 
