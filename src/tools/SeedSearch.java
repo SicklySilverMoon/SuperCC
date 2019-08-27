@@ -19,8 +19,8 @@ public class SeedSearch {
     private JButton startStopButton;
     private JLabel resultsLabel;
     private JLabel exampleSeedLabel;
-
-    private static final int UPDATE_RATE = 1023;
+    
+    private static final int UPDATE_RATE = 1000;
     
     private final byte[] startingState;
     private int seed = 0;
@@ -117,7 +117,7 @@ public class SeedSearch {
                 }
                 attempts++;
                 seed++;
-                if ((UPDATE_RATE & seed) == 0) updateText();
+                if (seed % UPDATE_RATE == 0) updateText();
             }
             running = false;
             killThreadFlag = false;

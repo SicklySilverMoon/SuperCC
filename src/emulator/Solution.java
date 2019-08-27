@@ -155,7 +155,7 @@ public class Solution{
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         //System.out.println(Arrays.toString(quarterMoves));
 
-        Set<Byte> cardinals = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
+        Set<Byte> cardinals = new HashSet<>(); //Makes it so that i have to write out 8 equality checks
         cardinals.add(UP);
         cardinals.add(DOWN);
         cardinals.add(LEFT);
