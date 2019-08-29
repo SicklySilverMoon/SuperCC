@@ -320,7 +320,7 @@ public class SuperCC {
     }
 
     public static void main(String[] args){
-        SwingUtilities.invokeLater(() -> initialise());
+        SwingUtilities.invokeLater(SuperCC::initialise);
     }
 
 }

@@ -3,7 +3,6 @@ package tools;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.RNG;
 
 import javax.swing.*;
 
