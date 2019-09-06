@@ -182,7 +182,7 @@ public class SuperCC {
         if (level == null) return false;
         boolean tickTwice = level.tick(b, directions);
         if (flags.doubleTick && tickTwice) {
-            b = capital(b);
+            if (b != '-') b = capital(b); //Avoids a really weird situation where a mouse goal set in prior moves off a sliding tile can cause the wait to become capitalized due to the mouse move becoming a TSG move (note that even though the move panel will only display 1 '-' it actually takes 2 half moves)
             level.tick(b, DIRECTIONS[4]);
         }
         if (flags.save) savestates.addRewindState(level, b);
