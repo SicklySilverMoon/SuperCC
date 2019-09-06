@@ -153,8 +153,6 @@ public class SuperCC {
     public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves){
         if (levelNumber == 0) levelNumber = lastLevelNumber()-1; //If the level number is 0 (player goes back from level 1, load the last level)
         if (levelNumber == lastLevelNumber()) levelNumber = 1; //And vice versa
-        rngSeed = Math.abs(rngSeed); //Keeps the RNG seeds within the max of 2^31-1 as TW does
-        if (rngSeed == -2147483648) rngSeed = 2147483647; //It doesn't become positive with this value due to overflow behaviour
         try{
             if (keepMoves && level != null && levelNumber == level.getLevelNumber()) {
                 solution = new Solution(getSavestates().getMoveList(), rngSeed, step);
@@ -305,7 +303,7 @@ public class SuperCC {
 
     public static void initialise(){
             SuperCC emulator = new SuperCC();
-            //emulator.runTests();
+            emulator.runTests();
             //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
