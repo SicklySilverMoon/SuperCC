@@ -301,9 +301,15 @@ public class SuperCC {
         }
     }
 
-    public static void initialise(){
+    public static void initialise(String[] args){
             SuperCC emulator = new SuperCC();
-            emulator.runTests();
+
+            if (args.length != 0) {
+                emulator.openLevelset(new File(args[0])); //The first command argument should always be the level set
+                if (args.length > 1) emulator.loadLevel(Integer.parseInt(args[1]));  //The second command argument (if it exists) should always be the level number
+            }
+
+            //emulator.runTests();
             //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
@@ -318,7 +324,7 @@ public class SuperCC {
     }
 
     public static void main(String[] args){
-        SwingUtilities.invokeLater(SuperCC::initialise);
+        SwingUtilities.invokeLater(() -> initialise(args));
     }
 
 }
