@@ -121,12 +121,12 @@ public class SuperCC {
                         "C:\n" +
                         "C:\n" +
                         "succsave\n" +
-                        "38\n" +
+                        "38\n" + //Turns out these are all the key codes for the controls
                         "37\n" +
                         "40\n" +
                         "39\n" +
                         "32\n" +
-                        "17\n" +
+                        "27\n" +
                         "8\n" +
                         "10\n");
                 fw.close();
