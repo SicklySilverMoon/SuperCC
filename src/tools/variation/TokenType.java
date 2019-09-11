@@ -1,0 +1,30 @@
+package tools.variation;
+
+public enum TokenType {
+    // Structural
+    LEFT_BRACKET, RIGHT_BRACKET, LEFT_PAREN, RIGHT_PAREN,
+    LEFT_BRACE, RIGHT_BRACE, COMMA, SEMICOLON,
+
+    // Operations
+    PLUS, MINUS, PLUS_PLUS, MINUS_MINUS, SLASH, STAR, MODULO,
+    EQUAL, PLUS_EQUAL, MINUS_EQUAL, SLASH_EQUAL, STAR_EQUAL, MODULO_EQUAL,
+    AND_AND, OR_OR, BANG,
+
+    // Comparison
+    EQUAL_EQUAL, BANG_EQUAL,
+    LESS, LESS_EQUAL, GREATER, GREATER_EQUAL,
+
+    // Values
+    IDENTIFIER, NUMBER, MOVE,
+
+    // Keywords
+    START, BEFORE_MOVE, AFTER_MOVE,
+    IF, ELSE, FOR, TRUE, FALSE, NULL, VAR,
+    AND, OR, NOT,
+
+    // Sequence control
+    RETURN, CONTINUE, TERMINATE,
+
+    // End
+    EOF
+}
