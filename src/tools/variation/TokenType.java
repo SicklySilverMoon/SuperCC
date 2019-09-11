@@ -3,7 +3,7 @@ package tools.variation;
 public enum TokenType {
     // Structural
     LEFT_BRACKET, RIGHT_BRACKET, LEFT_PAREN, RIGHT_PAREN,
-    LEFT_BRACE, RIGHT_BRACE, COMMA, SEMICOLON,
+    LEFT_BRACE, RIGHT_BRACE, COMMA, SEMICOLON, COLON,
 
     // Operations
     PLUS, MINUS, PLUS_PLUS, MINUS_MINUS, SLASH, STAR, MODULO,
@@ -24,6 +24,9 @@ public enum TokenType {
 
     // Sequence control
     RETURN, CONTINUE, TERMINATE,
+
+    // Unimportant in parsing
+    SPACE, TAB, CARRIAGE_RETURN, NEW_LINE, COMMENT,
 
     // End
     EOF

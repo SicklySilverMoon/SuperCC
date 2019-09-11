@@ -65,6 +65,7 @@ public class Tokenizer {
             case '}': addToken(TokenType.RIGHT_BRACE); break;
             case ',': addToken(TokenType.COMMA); break;
             case ';': addToken(TokenType.SEMICOLON); break;
+            case ':': addToken(TokenType.COLON); break;
             case '+': processPlus(); break;
             case '-': processMinus(); break;
             case '/': processSlash(); break;
@@ -76,10 +77,10 @@ public class Tokenizer {
             case '!': processBang(); break;
             case '<': addToken(isNextChar('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
             case '>': addToken(isNextChar('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
-            case ' ':
-            case '\t':
-            case '\r':
-            case '\n': break;
+            case ' ': addToken(TokenType.SPACE); break;
+            case '\t': addToken(TokenType.TAB); break;
+            case '\r': addToken(TokenType.CARRIAGE_RETURN); break;
+            case '\n': addToken(TokenType.NEW_LINE); break;
             default: processOther(c); break;
         }
     }
@@ -112,6 +113,7 @@ public class Tokenizer {
             while(peek() != '\n' && !isEnd()) {
                 getNextChar();
             }
+            addToken(TokenType.COMMENT);
         }
         else if(isNextChar('=')) {
             addToken(TokenType.SLASH_EQUAL);
@@ -241,6 +243,7 @@ public class Tokenizer {
     }
 
     private void addToken(TokenType type, Object value) {
-        tokens.add(new Token(type, value));
+        String lexeme = code.substring(start, current);
+        tokens.add(new Token(type, lexeme, value));
     }
 }
