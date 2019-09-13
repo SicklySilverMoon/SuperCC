@@ -10,12 +10,119 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expr parse() {
-        return expression();
+    public ArrayList<Stmt> parse() {
+        ArrayList<Stmt> statements = new ArrayList<>();
+        while(!isEnd()) {
+            statements.add(statement());
+        }
+        return statements;
+    }
+
+    private Stmt statement() {
+        if(isNextToken(TokenType.LEFT_BRACE)) {
+            return new Stmt.Block(block());
+        }
+        if(isNextToken(TokenType.IF)) {
+            return ifStatement();
+        }
+        if(isNextToken(TokenType.FOR)) {
+            return forStatement();
+        }
+        if(isNextToken(TokenType.PRINT)) {
+            return printStatement();
+        }
+        if(isNextToken(TokenType.SEMICOLON)) {
+            return new Stmt.Empty();
+        }
+        if(isNextToken(TokenType.BREAK)) {
+            return new Stmt.Break();
+        }
+        return expressionStatement();
+    }
+
+    private ArrayList<Stmt> block() {
+        ArrayList<Stmt> statements = new ArrayList<>();
+
+        while(!(peek().type == TokenType.RIGHT_BRACE) && !isEnd()) {
+            statements.add(statement());
+        }
+
+        getNextToken(); // Right brace
+        return statements;
+    }
+
+    private Stmt ifStatement() {
+        getNextToken(); // Left parenthesis
+        Expr condition = expression();
+        getNextToken(); // Right parenthesis
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if(isNextToken(TokenType.ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    private Stmt forStatement() {
+        Stmt init = null;
+        Expr condition = null;
+        Stmt post = null;
+
+        getNextToken(); // Left parenthesis
+        if(peek().type != TokenType.SEMICOLON) {
+            init = expressionStatement();
+        } else {
+            getNextToken(); // Semicolon
+        }
+
+        if(peek().type != TokenType.SEMICOLON) {
+            condition = expression();
+        }
+        getNextToken(); // Semicolon
+
+        if(peek().type != TokenType.RIGHT_PAREN) {
+            post = new Stmt.Expression(expression());
+        }
+        getNextToken(); // Left parenthesis
+
+        Stmt body = statement();
+
+        return new Stmt.For(init, condition, post, body);
+    }
+
+    private Stmt printStatement() {
+        Expr expr = expression();
+        getNextToken(); // Semicolon
+
+        return new Stmt.Print(expr);
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        getNextToken(); // Semicolon
+        return new Stmt.Expression(expr);
     }
 
     private Expr expression() {
-        return or();
+        return assignment();
+    }
+
+    private Expr assignment() {
+        Expr expr = or();
+
+        if(isNextToken(TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL, TokenType.STAR_EQUAL,
+                       TokenType.SLASH_EQUAL, TokenType.MODULO_EQUAL)) {
+            Token operator = getPreviousToken();
+            Expr value = assignment();
+
+            if(expr instanceof Expr.Variable) {
+                Token var = ((Expr.Variable)expr).var;
+                return new Expr.Assign(var, operator, value);
+            }
+        }
+        return expr;
     }
 
     private Expr or() {
@@ -112,6 +219,12 @@ public class Parser {
         }
         if(isNextToken(TokenType.NUMBER)) {
             return new Expr.Literal(getPreviousToken().value);
+        }
+        if(isNextToken(TokenType.MOVE)) {
+            return new Expr.Literal(new Move(getPreviousToken().lexeme));
+        }
+        if(isNextToken(TokenType.IDENTIFIER)) {
+            return new Expr.Variable(getPreviousToken());
         }
         if(isNextToken(TokenType.LEFT_PAREN)) {
             Expr expr = expression();

@@ -47,6 +47,8 @@ public class VariationTesting {
         colors.put(TokenType.FALSE, new Color(0, 153, 255));
         colors.put(TokenType.NULL, new Color(0, 153, 255));
         colors.put(TokenType.VAR, new Color(0, 153, 255));
+        colors.put(TokenType.PRINT, new Color(0, 153, 255));
+        colors.put(TokenType.BREAK, new Color(0, 153, 255));
         colors.put(TokenType.AND, new Color(0, 153, 255));
         colors.put(TokenType.OR, new Color(0, 153, 255));
         colors.put(TokenType.NOT, new Color(0, 153, 255));
@@ -75,10 +77,11 @@ public class VariationTesting {
         runButton.addActionListener(e -> {
             Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
             ArrayList<Token> tokens = tokenizer.tokenize();
+            HashMap<String, Object> variables = Tokenizer.prepareForInterpreter(tokens);
 
-            Parser parser = new Parser(Tokenizer.removeUnimportant(tokens));
-            Interpreter interpreter = new Interpreter();
-            printToConsole(interpreter.evaluate(parser.parse()).toString());
+            Parser parser = new Parser(tokens);
+            Interpreter interpreter = new Interpreter(variables, console);
+            interpreter.interpret(parser.parse());
         });
     }
 

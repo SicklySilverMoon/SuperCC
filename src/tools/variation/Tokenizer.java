@@ -32,6 +32,8 @@ public class Tokenizer {
         keywords.put("false", TokenType.FALSE);
         keywords.put("null", TokenType.NULL);
         keywords.put("var", TokenType.VAR);
+        keywords.put("print", TokenType.PRINT);
+        keywords.put("break", TokenType.BREAK);
         keywords.put("and", TokenType.AND);
         keywords.put("or", TokenType.OR);
         keywords.put("not", TokenType.NOT);
@@ -40,21 +42,38 @@ public class Tokenizer {
         keywords.put("terminate", TokenType.TERMINATE);
     }
 
-    public static ArrayList<Token> removeUnimportant(ArrayList<Token> tokens) {
-        ArrayList<Token> newTokens = new ArrayList<>();
-        for(Token token : tokens) {
+    public static HashMap<String, Object> prepareForInterpreter(ArrayList<Token> tokens) {
+        removeUnimportant(tokens);
+        return getVariables(tokens);
+    }
+
+    private static void removeUnimportant(ArrayList<Token> tokens) {
+        for(int i = tokens.size() - 1; i >= 0; i--) {
+            Token token = tokens.get(i);
             switch(token.type) {
                 case SPACE:
                 case TAB:
                 case CARRIAGE_RETURN:
                 case NEW_LINE:
                 case COMMENT:
-                    continue;
-                default:
-                    newTokens.add(new Token(token.type, token.lexeme, token.value));
+                    tokens.remove(i);
+                    break;
             }
         }
-        return newTokens;
+    }
+
+    private static HashMap<String, Object> getVariables(ArrayList<Token> tokens) {
+        HashMap<String, Object> variables = new HashMap<>();
+        for(int i = tokens.size() - 1; i >= 0; i--) {
+            Token token = tokens.get(i);
+            switch(token.type) {
+                case VAR:
+                    variables.put(tokens.get(i + 1).lexeme, null);
+                    tokens.remove(i);
+                    break;
+            }
+        }
+        return variables;
     }
 
     public Tokenizer(String code) {

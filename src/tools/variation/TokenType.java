@@ -19,7 +19,7 @@ public enum TokenType {
 
     // Keywords
     START, BEFORE_MOVE, AFTER_MOVE,
-    IF, ELSE, FOR, TRUE, FALSE, NULL, VAR,
+    IF, ELSE, FOR, TRUE, FALSE, NULL, VAR, PRINT, BREAK,
     AND, OR, NOT,
 
     // Sequence control

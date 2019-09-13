@@ -7,6 +7,8 @@ public abstract class Expr {
         Object evaluateGroup(Group expr);
         Object evaluateLogical(Logical expr);
         Object evaluateUnary(Unary expr);
+        Object evaluateVariable(Variable expr);
+        Object evaluateAssign(Assign expr);
     }
 
     abstract public Object evaluate(Evaluator evaluator);
@@ -83,6 +85,36 @@ public abstract class Expr {
         @Override
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateUnary(this);
+        }
+    }
+
+    static public class Variable extends Expr {
+        public final Token var;
+
+        public Variable(Token var) {
+            this.var = var;
+        }
+
+        @Override
+        public Object evaluate(Evaluator evaluator) {
+            return evaluator.evaluateVariable(this);
+        }
+    }
+
+    static public class Assign extends Expr {
+        public final Token var;
+        public final Token operator;
+        public final Expr value;
+
+        public Assign(Token var, Token operator, Expr value) {
+            this.var = var;
+            this.operator = operator;
+            this.value = value;
+        }
+
+        @Override
+        public Object evaluate(Evaluator evaluator) {
+            return evaluator.evaluateAssign(this);
         }
     }
 }
