@@ -1,9 +1,7 @@
 package tools;
 
 import emulator.SuperCC;
-import tools.variation.Token;
-import tools.variation.TokenType;
-import tools.variation.Tokenizer;
+import tools.variation.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -75,9 +73,17 @@ public class VariationTesting {
         setFrame();
 
         runButton.addActionListener(e -> {
-            //Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
-            //ArrayList<Token> tokens = tokenizer.tokenize();
+            Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
+            ArrayList<Token> tokens = tokenizer.tokenize();
+
+            Parser parser = new Parser(Tokenizer.removeUnimportant(tokens));
+            Interpreter interpreter = new Interpreter();
+            printToConsole(interpreter.evaluate(parser.parse()).toString());
         });
+    }
+
+    private void printToConsole(String str) {
+        console.setText(str);
     }
 
     private void setTextPanes() {

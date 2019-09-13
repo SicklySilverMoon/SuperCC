@@ -40,6 +40,23 @@ public class Tokenizer {
         keywords.put("terminate", TokenType.TERMINATE);
     }
 
+    public static ArrayList<Token> removeUnimportant(ArrayList<Token> tokens) {
+        ArrayList<Token> newTokens = new ArrayList<>();
+        for(Token token : tokens) {
+            switch(token.type) {
+                case SPACE:
+                case TAB:
+                case CARRIAGE_RETURN:
+                case NEW_LINE:
+                case COMMENT:
+                    continue;
+                default:
+                    newTokens.add(new Token(token.type, token.lexeme, token.value));
+            }
+        }
+        return newTokens;
+    }
+
     public Tokenizer(String code) {
         this.code = code;
         this.tokens = new ArrayList<Token>();
