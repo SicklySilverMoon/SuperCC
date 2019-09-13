@@ -334,7 +334,8 @@ class MenuBar extends JMenuBar{
                     file = new File(filename);
                     TWSWriter.write(file, emulator.getLevel(), new Solution(emulator.getSavestates().getMoveList(),
                                                                             emulator.getLevel().getRngSeed(),
-                                                                            emulator.getLevel().getStep()));
+                                                                            emulator.getLevel().getStep()),
+                                    emulator.getSavestates().gettwsMouseMoveList());
                 }
             });
             add(newTWS);

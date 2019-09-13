@@ -2,7 +2,7 @@ package io;
 
 import emulator.Solution;
 import game.Level;
-import game.Position;
+import util.ByteList;
 
 import java.io.*;
 import java.util.HashMap;
@@ -14,17 +14,27 @@ public class TWSWriter{
 
     private File twsFile;
     
-    public static void write(File twsFile, Level level, Solution solution) {
+    public static void write(File twsFile, Level level, Solution solution, ByteList mouseMoves) {
         try(TWSOutputStream writer = new TWSOutputStream(twsFile)) {
             writer.writeTWSHeader(level);
             writer.writeInt(writer.solutionLength(solution));
             writer.writeLevelHeader(level, solution);
             int timeBetween = 0;
             boolean firstMove = true;
+            int i = 0;
             for (byte b : solution.halfMoves) {
                 if (b == '-') timeBetween += 2;
                 else {
-                    writer.writeMove(b, timeBetween, firstMove);
+                    int relativeClickX;
+                    int relativeClickY;
+                    int twsRelativeClick = 0;
+                    if (b <= 0) {
+                        relativeClickX = mouseMoves.get(i++); //Postfix ++ returns the current value of i then increments it
+                        relativeClickY = mouseMoves.get(i++);
+
+                        twsRelativeClick = 16 + ((relativeClickY + 9) * 19) + (relativeClickX + 9);
+                    }
+                    writer.writeMove(b, timeBetween, firstMove, twsRelativeClick);
                     timeBetween = 2;
                     firstMove = false;
                 }
@@ -36,38 +46,31 @@ public class TWSWriter{
     }
 
     private static class TWSOutputStream extends FileOutputStream{
-        // direction = 196
-        /*
-        98765432 10987654 32109876 54321098 76543210
-        000TTTTT TTTTTTTT TTTTTTTT TTDDDDDD DDD1NN11
-        WAIT:                      00011000 10011111
-        UP:                        00000000 00011111
-        LEFT:                      00000000 00111111
-        DOWN:                      00000000 01011111
-        RIGHT:                     00000000 01111111
-         */
-        private final byte[] WAIT = new byte[] {-97, 24, 0, 0, 0};
-        /*private final byte[] UP = new byte[] {31, 0, 0, 0, 0};
-        private final byte[] LEFT = new byte[] {63, 0, 0, 0, 0};
-        private final byte[] DOWN = new byte[] {95, 0, 0, 0, 0};
-        private final byte[] RIGHT = new byte[] {127, 0, 0, 0, 0};*/
+
         private final byte UP = 3, LEFT = 7, DOWN = 11, RIGHT = 15;
-        
-        void writeMove (byte b, int time, boolean firstMove) throws IOException {
+
+        //all key directions (u, l, d, r) use format 2 on this page http://www.muppetlabs.com/~breadbox/software/tworld/tworldff.html#3
+
+        void writeMove (byte b, int time, boolean firstMove, int relativeClick) throws IOException {
             if (!firstMove) time -= 1;
             byte twsMoveByte;
+            boolean useFormat4 = false;
             switch (b) {
                 case 'u': twsMoveByte = UP; break;
                 case 'l': twsMoveByte = LEFT; break;
                 case 'd': twsMoveByte = DOWN; break;
                 case 'r': twsMoveByte = RIGHT; break;
                 default:
-                    throw new RuntimeException("Solutions with clicks are not supported!");
+                    twsMoveByte = 0; //turns out if you don't have this it won't compile due to twsMoveByte "may not have been initialized" despite that it'll never get used if this code block activates!
+                    useFormat4 = true;
+                    //Do all the things involving the type 4 mouse moves either here or next
             }
-            write(twsMoveByte | (time & 0b111) << 5);
-            write((time >> 3) & 0xFF);
-            write((time >> 11) & 0xFF);
-            write((time >> 19) & 0xFF);
+            if (!useFormat4) { //This is all format 2 which is all SuCC supports using for key moves
+                writeFormat2(twsMoveByte, time);
+            }
+            else {
+                writeFormat4(time, relativeClick);
+            }
         }
         void writeTWSHeader (Level level) throws IOException {
             writeInt(0x999B3335);                        // Signature
@@ -81,7 +84,7 @@ public class TWSWriter{
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.halfMoves.length);
+            writeInt(2 * solution.halfMoves.length - 2); //minus 2 because the change that added mouse moves also always extended the time value by an extra 2 for unknown reason
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     
@@ -103,6 +106,48 @@ public class TWSWriter{
             for (byte b : s.halfMoves) if (b != '-') c += 4;
             return c;
         }
-    }
+        void writeFormat2(byte twsMoveByte, int time) throws IOException {
+            write(twsMoveByte | (time & 0b111) << 5);
+            write((time >> 3) & 0xFF);
+            write((time >> 11) & 0xFF);
+            write((time >> 19) & 0xFF);
+        }
+        void writeFormat4(int time, int direction) throws IOException {
+            // First byte DDD1NN11
+            //int numBytes = measureTime(time);
+            write(0b1_0011 | (2 << 2) | (direction & 0b111) << 5); //(2 << 2), the first 2 used to be the result of measureTime however as all bytes have to be 4 long its forced to being 2 now
 
+            // Second byte TTDDDDDD
+            write (((time & 0b11) << 6) | ((direction & 0b11_1111_000) >> 3));
+
+            // Third byte TTTTTTTT
+            //if (numBytes > 0) {
+                write ((time & 0b1111_1111_00) >> 2);
+            //}
+
+            // Fourth byte TTTTTTTT
+            //if (numBytes > 1) {
+                write ((time & 0b1111_1111_0000_0000_00) >> 10);
+            //}
+
+            // Fifth byte 000TTTTT
+//            if (numBytes > 2) {
+//                write ((time & 0b1_1111_0000_0000_0000_0000_00) >> 18);
+//            }
+        }
+//        int measureTime(int time) {
+//            if ((time & 0b11) == time) {
+//                return 0;
+//            }
+//            else if ((time & 0b11_1111_1111) == time) {
+//                return 1;
+//            }
+//            else if ((time & 0b11_1111_1111_1111_1111) == time) {
+//                return 2;
+//            }
+//            else {
+//                return 3;
+//            }
+//        }
+    }
 }
