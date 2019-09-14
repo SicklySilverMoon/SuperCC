@@ -76,6 +76,14 @@ public class SuperCC {
         else if (b == 'R') return new byte[] {'r', '-'};
         else return new byte[] {b};
     }
+
+    public static char[] lowerCaseChar(char b) {
+        if (b == 'U') return new char[] {'u', '-'};
+        else if (b == 'L') return new char[] {'l', '-'};
+        else if (b == 'D') return new char[] {'d', '-'};
+        else if (b == 'R') return new char[] {'r', '-'};
+        else return new char[] {b};
+    }
     
     public int lastLevelNumber() {
         return dat.lastLevel();
@@ -223,28 +231,28 @@ public class SuperCC {
         getMainWindow().getLastActionPanel().repaint();
     }
     
-    private void runTests(String levelSet, String tws) {
-//        String[] levelsets = new String[] {
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CHIPS.DAT",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP1.DAT",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP2.DAT",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP3.DAT",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP4.DAT",
-////            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\0markustest.dat"
-//        };
-//        String[] twss = new String[] {
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CHIPS.dac.tws",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP1.dac.tws",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP2.dac.tws",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP3.dac.tws",
-//            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP4.dac.tws",
-////            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\0markustest.tws"
-//        };
+    private void runUnitTests() {
+        String[] levelsets = new String[] {
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CHIPS.DAT",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP1.DAT",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP2.DAT",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP3.DAT",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP4.DAT",
+//            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\0markustest.dat"
+        };
+        String[] twss = new String[] {
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CHIPS.dac.tws",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP1.dac.tws",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP2.dac.tws",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP3.dac.tws",
+            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP4.dac.tws",
+//            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\0markustest.tws"
+        };
         
-//        for (int i = 0; i < levelsets.length; i++) {
-            openLevelset(new File(levelSet));
-            setTWSFile(new File(tws));
-            System.out.println(new File(levelSet).getName());
+        for (int i = 0; i < levelsets.length; i++) {
+            openLevelset(new File(levelsets[i]));
+            setTWSFile(new File(twss[i]));
+            System.out.println(new File(levelsets[i]).getName());
             
             for (int j = 1; j <= 149; j++) {
                 loadLevel(j);
@@ -267,7 +275,33 @@ public class SuperCC {
             
         }
         
-//    }
+    }
+
+    private void testTWS(String levelset, String tws) {
+
+        openLevelset(new File(levelset));
+        setTWSFile(new File(tws));
+        System.out.println(new File(levelset).getName());
+
+        for (int j = 1; j <= level.getLevelsetLength(); j++) {
+            loadLevel(j);
+            try {
+                Solution s = twsReader.readSolution(level);
+                // System.out.println(s.efficiency);
+                s.load(this);
+                for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
+                    level.tick(WAIT, new Direction[] {});
+                }
+                if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
+                    System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
+                }
+            }
+            catch (Exception exc) {
+                System.out.println("Error loading "+level.getLevelNumber()+" "+new String(level.getTitle()));
+                exc.printStackTrace();
+            }
+        }
+    }
     
     private void runBenchmark(int levelNumber, int runs){
         loadLevel(levelNumber);
@@ -311,7 +345,7 @@ public class SuperCC {
 
             parseArgument(args, emulator); //Parses any command line arguments given
 
-            //emulator.runTests();
+            //emulator.runUnitTests();
             //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP2.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP2.dac.tws"));
@@ -345,7 +379,7 @@ public class SuperCC {
                     emulator.loadLevel(startLevel);  //The third command argument (if it exists and is a number and comes after the TWS) should be the level number
                 }
                 catch (NumberFormatException e) { //If the second argument isn't a number than its a string with command options
-                    if (args[2].equals("--testTWS")) emulator.runTests(args[0], args[1]);
+                    if (args[2].equals("--testTWS")) emulator.testTWS(args[0], args[1]);
                 }
             }
         }

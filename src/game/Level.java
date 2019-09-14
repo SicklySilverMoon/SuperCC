@@ -162,6 +162,9 @@ public class Level extends SaveState {
     public BitSet getOpenTraps(){
         return traps;
     }
+    public int getLevelsetLength() {
+        return LEVELSET_LENGTH;
+    }
     /**
      * @param position the last clicked position.
      */

@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -243,14 +244,36 @@ class MenuBar extends JMenuBar{
             paste.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
-                Solution s;
+                //Solution s = emulator.getSolution();
                 try {
                     Solution.fromJSON((String) t.getTransferData(DataFlavor.stringFlavor)).load(emulator);
                     emulator.showAction("Pasted solution");
                     emulator.getMainWindow().repaint(emulator.getLevel(), false);
                 }
                 catch (IllegalArgumentException e){
-                    emulator.throwError(e.getMessage());
+                    try { //All of this just to simply allow you to paste new moves into an already existing solution
+                        String currentUppercaseMoves = String.valueOf(emulator.getSavestates().getMoveList());
+                        String currentMoves = ""; //Filled in later
+                        String currentStep = String.valueOf(level.getStep());
+                        String currentRNG = String.valueOf(level.getRngSeed());
+
+                        for (char ch : currentUppercaseMoves.toCharArray()) {
+                            char[] lowerCaseArray = SuperCC.lowerCaseChar(ch); //I had to create a specific method that returns char arrays for this
+                            currentMoves = currentMoves.concat(new String(lowerCaseArray)); //Just stitches the new moves onto the end of the current list
+                        }
+                        for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
+                            char[] lowerCaseArray = SuperCC.lowerCaseChar(ch);
+                            currentMoves = currentMoves.concat(new String(lowerCaseArray));
+                        }
+
+                        String solution = "{\"Moves\":\"" + currentMoves + "\",\"Seed\":\"" + currentRNG + "\",\"Step\":\"" + currentStep + "\"}"; //Yup look at this big mess just to make a valid JSON string that SuCC can parse
+                        Solution.fromJSON(solution).load(emulator);
+                        emulator.showAction("Pasted solution");
+                        emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                    }
+                    catch (IllegalArgumentException | UnsupportedFlavorException | IOException e2) {
+                        emulator.throwError(e2.getMessage());
+                    }
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -597,16 +620,16 @@ class MenuBar extends JMenuBar{
         }
     }
 
-//    private class AboutMenu extends JMenu{
-//        AboutMenu() {
-//            super("About");
-//
-//            JMenuItem aboutWindow = new JMenuItem("About SuCC");
-//            //aboutWindow.addActionListener(e -> new About(emulator));
-//            addIcon(aboutWindow, "/resources/icons/green_key.gif");
-//            add(aboutWindow);
-//        }
-//    }
+    private class HelpMenu extends JMenu{
+        HelpMenu() {
+            super("Help");
+
+            JMenuItem helpPopup = new JMenuItem("Help");
+            helpPopup.addActionListener(e -> new HelpWindow(emulator));
+            addIcon(helpPopup, "/resources/icons/help.gif");
+            add(helpPopup);
+        }
+    }
 
     MenuBar(Gui window, SuperCC emulator){
         setPreferredSize(new Dimension(0, 24));
@@ -617,7 +640,7 @@ class MenuBar extends JMenuBar{
         add(new ViewMenu());
         add(new ToolMenu());
         add(new CheatMenu());
-//        add(new AboutMenu());
+        add(new HelpMenu());
         this.window = window;
         this.emulator = emulator;
     }
