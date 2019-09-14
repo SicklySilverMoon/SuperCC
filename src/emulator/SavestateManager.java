@@ -15,7 +15,7 @@ import java.util.*;
 import static game.SaveState.*;
 
 public class SavestateManager implements Serializable {
-    
+
     private HashMap<Integer, TreeNode<byte[]>> savestates = new HashMap<>();
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
     private HashMap<Integer, ByteList> savestatetwsMouseMoves = new HashMap<>();
@@ -25,6 +25,7 @@ public class SavestateManager implements Serializable {
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 1;
     private ByteList twsMouseMoves;
+    private ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
     
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
@@ -173,6 +174,10 @@ public class SavestateManager implements Serializable {
         savestateMoves.put(key, moves.clone());
         savestatetwsMouseMoves.put(key, twsMouseMoves.clone());
     }
+
+    public void addUndesirableSavestate(){
+        undesirableSavestates.add(currentNode); //Marks a level state as undesired so it can be checked for and alerted
+    }
     
     public boolean load(int key, Level level){
         TreeNode<byte[]> loadedNode = savestates.get(key);
@@ -201,6 +206,14 @@ public class SavestateManager implements Serializable {
     
     public byte[] getSavestate(){
         return currentNode.getData();
+    }
+
+    public boolean isUndesirableSaveState() {
+        for (TreeNode<byte[]> node : undesirableSavestates) {
+            byte[] savedState = node.getData();
+            if (Arrays.equals(savedState, currentNode.getData())) return true;
+        }
+        return false;
     }
     
     public byte[] getStartingState() {

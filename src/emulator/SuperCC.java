@@ -185,6 +185,11 @@ public class SuperCC {
         }
         if (flags.save) savestates.addRewindState(level, b);
         if (flags.repaint) window.repaint(level, false);
+
+        if (savestates.isUndesirableSaveState()) { //Just a little pop up window that tells the user that they reached a prior marked undesirable state
+            throwMessage("Undesirable State Reached");
+        }
+
         return tickTwice;
     }
     
@@ -348,6 +353,10 @@ public class SuperCC {
 
     public void throwError(String s){
         JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void throwMessage(String s){
+        JOptionPane.showMessageDialog(getMainWindow(), s, "SuCC Message", JOptionPane.PLAIN_MESSAGE);
     }
 
     public static void main(String[] args){

@@ -44,11 +44,17 @@ public class EmulatorKeyListener extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        Key k = keyMap.getOrDefault(e.getKeyCode(), null);
+        Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
         if (k == null) {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
-                emulator.getSavestates().addSavestate(keyCode);
-                emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
+                if (e.getKeyCode() == 47) { //Hardcoded value for the '/' key
+                    emulator.getSavestates().addUndesirableSavestate();
+                    emulator.showAction("Undesirable State saved");
+                }
+                else {
+                    emulator.getSavestates().addSavestate(keyCode);
+                    emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
+                }
             }
             else {
                 if (emulator.getSavestates().load(keyCode, emulator.getLevel())) {
