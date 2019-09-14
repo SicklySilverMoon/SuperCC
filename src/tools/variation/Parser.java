@@ -6,6 +6,16 @@ public class Parser {
     private final ArrayList<Token> tokens;
     private int current = 0;
 
+    public static ArrayList<Stmt.Sequence> getSequences(ArrayList<Stmt> statements) {
+        ArrayList<Stmt.Sequence> sequences = new ArrayList<>();
+        for(Stmt stmt : statements) {
+            if(stmt instanceof Stmt.Sequence) {
+                sequences.add((Stmt.Sequence)stmt);
+            }
+        }
+        return sequences;
+    }
+
     public Parser(ArrayList<Token> tokens) {
         this.tokens = tokens;
     }
@@ -30,6 +40,9 @@ public class Parser {
         }
         if(isNextToken(TokenType.PRINT)) {
             return printStatement();
+        }
+        if(isNextToken(TokenType.LEFT_BRACKET)) {
+            return sequence();
         }
         if(isNextToken(TokenType.SEMICOLON)) {
             return new Stmt.Empty();
@@ -97,6 +110,67 @@ public class Parser {
         getNextToken(); // Semicolon
 
         return new Stmt.Print(expr);
+    }
+
+    private Stmt sequence() {
+        MovePool movePool = new MovePool();
+        while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
+            movePool.add(new Move(getNextToken().lexeme));
+            if(peek().type == TokenType.COMMA) {
+                getNextToken(); // Comma
+            }
+        }
+        getNextToken(); // Right bracket
+        getNextToken(); // Left parenthesis
+
+        Integer lowerLimit = null;
+        Integer upperLimit = null;
+        if(peek().type != TokenType.RIGHT_PAREN) {
+            lowerLimit = Integer.parseInt(getNextToken().lexeme);
+            if(peek().type == TokenType.COMMA) {
+                getNextToken(); // Comma
+            }
+        }
+        if(peek().type != TokenType.RIGHT_PAREN) {
+            upperLimit = Integer.parseInt(getNextToken().lexeme);
+        }
+        getNextToken(); // Right parenthesis
+        getNextToken(); // Left brace
+
+        String lexicographic = "";
+        if(isNextToken(TokenType.LEXICOGRAPHIC)) {
+            getNextToken(); // Left parenthesis
+            for(int i = 0; i < 5; i++) {
+                lexicographic += getNextToken().lexeme;
+                getNextToken(); // Comma
+            }
+            lexicographic += getNextToken().lexeme;
+            getNextToken(); // Right parenthesis
+            getNextToken(); // Semicolon
+        }
+
+        Stmt start = null;
+        Stmt beforeMove = null;
+        Stmt afterMove = null;
+
+        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE)) {
+            Token lifecycle = getPreviousToken();
+            getNextToken(); // Colon
+            Stmt stmt = statement();
+            switch(lifecycle.type) {
+                case START:
+                    start = stmt;
+                    break;
+                case BEFORE_MOVE:
+                    beforeMove = stmt;
+                    break;
+                case AFTER_MOVE:
+                    afterMove = stmt;
+                    break;
+            }
+        }
+        getNextToken(); // Right brace
+        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove);
     }
 
     private Stmt expressionStatement() {

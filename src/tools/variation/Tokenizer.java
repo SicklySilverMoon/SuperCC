@@ -40,6 +40,7 @@ public class Tokenizer {
         keywords.put("return", TokenType.RETURN);
         keywords.put("continue", TokenType.CONTINUE);
         keywords.put("terminate", TokenType.TERMINATE);
+        keywords.put("lexicographic", TokenType.TERMINATE);
     }
 
     public static HashMap<String, Object> prepareForInterpreter(ArrayList<Token> tokens) {

@@ -55,6 +55,7 @@ public class VariationTesting {
         colors.put(TokenType.RETURN, new Color(0, 153, 255));
         colors.put(TokenType.CONTINUE, new Color(0, 153, 255));
         colors.put(TokenType.TERMINATE, new Color(0, 153, 255));
+        colors.put(TokenType.LEXICOGRAPHIC, new Color(0, 153, 255));
     }
 
     private SuperCC emulator;
@@ -81,7 +82,9 @@ public class VariationTesting {
 
             Parser parser = new Parser(tokens);
             Interpreter interpreter = new Interpreter(variables, console);
-            interpreter.interpret(parser.parse());
+            ArrayList<Stmt> statements = parser.parse();
+            ArrayList<Stmt.Sequence> sequences = Parser.getSequences(statements);
+            interpreter.interpret(statements);
         });
     }
 

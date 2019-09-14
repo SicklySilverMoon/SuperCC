@@ -11,6 +11,7 @@ public abstract class Stmt {
         void executePrint(Print stmt);
         void executeEmpty(Empty stmt);
         void executeBreak(Break stmt);
+        void executeSequence(Sequence stmt);
     }
 
     abstract public void execute(Executor executor);
@@ -101,6 +102,32 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeBreak(this);
+        }
+    }
+
+    public static class Sequence extends Stmt {
+        public final MovePool movePool;
+        public final Integer lowerLimit;
+        public final Integer upperLimit;
+        public final String lexicographic;
+        public final Stmt start;
+        public final Stmt beforeMove;
+        public final Stmt afterMove;
+
+        Sequence(MovePool movepool, Integer lowerLimit, Integer upperLimit, String lexicographic,
+                 Stmt start, Stmt beforeMove, Stmt afterMove) {
+            this.movePool = movepool;
+            this.lowerLimit = lowerLimit;
+            this.upperLimit = upperLimit;
+            this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
+            this.start = start;
+            this.beforeMove = beforeMove;
+            this.afterMove = afterMove;
+        }
+
+        @Override
+        public void execute(Executor executor) {
+            executor.executeSequence(this);
         }
     }
 }

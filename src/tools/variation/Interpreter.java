@@ -87,6 +87,22 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     @Override
+    public void executeSequence(Stmt.Sequence stmt) {
+        Permutation p = new Permutation(stmt.movePool, stmt.lowerLimit, stmt.upperLimit, stmt.lexicographic);
+        int count = 0;
+        do {
+            count++;
+            p.nextPermutation();
+        }while(!p.finished);
+
+        StyledDocument doc = console.getStyledDocument();
+        String str = "Number of permutations: " + count + "\n";
+        try {
+            doc.insertString(doc.getLength(), str, null);
+        } catch (BadLocationException e) {}
+    }
+
+    @Override
     public Object evaluateBinary(Expr.Binary expr) {
         Object left = expr.left.evaluate(this);
         Object right = expr.right.evaluate(this);
