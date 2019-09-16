@@ -1,6 +1,8 @@
 package tools.variation;
 
 import emulator.EmulatorKeyListener;
+import emulator.SuperCC;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.util.HashMap;
 
@@ -14,29 +16,21 @@ public class Permutation {
     private Multiset set;
     private int[] subset;
     private int currentSize;
+    private String lexicographic;
+    private int waitIndex;
 
-    private static final HashMap<Character, EmulatorKeyListener.Key> toMove;
+    public static double LIMIT = 1e18;
+
+    private static final HashMap<Character, Byte> toMove;
 
     static {
         toMove = new HashMap<>();
-        toMove.put('u', EmulatorKeyListener.Key.UP);
-        toMove.put('r', EmulatorKeyListener.Key.RIGHT);
-        toMove.put('d', EmulatorKeyListener.Key.DOWN);
-        toMove.put('l', EmulatorKeyListener.Key.LEFT);
-        toMove.put('w', EmulatorKeyListener.Key.FULL_WAIT);
-        toMove.put('h', EmulatorKeyListener.Key.HALF_WAIT);
-    }
-
-    // Returns double due to potentially large value
-    public static double factorial(int n) {
-        if(n == 0 || n == 1) {
-            return 1;
-        }
-        return (double)n * factorial(n - 1);
-    }
-
-    public static double choose(int n, int k) {
-        return factorial(n)/(factorial(k) * factorial(n - k));
+        toMove.put('u', SuperCC.UP);
+        toMove.put('r', SuperCC.RIGHT);
+        toMove.put('d', SuperCC.DOWN);
+        toMove.put('l', SuperCC.LEFT);
+        toMove.put('w', SuperCC.WAIT); // Has separate handling
+        toMove.put('h', SuperCC.WAIT);
     }
 
     public Permutation(MovePool movePool, Integer lowerBound, Integer upperBound, String lexicographic) {
@@ -47,6 +41,8 @@ public class Permutation {
         this.set = new Multiset(this.lowerBound, this.upperBound, movePool, lexicographic);
         this.subset = this.set.getSubset();
         this.currentSize = this.lowerBound;
+        this.lexicographic = lexicographic;
+        this.waitIndex = lexicographic.indexOf('w');
 
         for(int i = 0; i < 6; i++) {
             order.put(i, lexicographic.charAt(i));
@@ -89,14 +85,23 @@ public class Permutation {
         }
     }
 
-    public EmulatorKeyListener.Key[] getPermutation() {
+    public byte[] getPermutation() {
         if(finished) {
             return null;
         }
-        EmulatorKeyListener.Key[] moves = new EmulatorKeyListener.Key[currentSize];
+        int waitCount = subset[waitIndex];
+        int waits = 0;
+        byte[] moves = new byte[currentSize + waitCount];
 
-        for(int i = 0; i < currentSize; i++) {
-            moves[i] = toMove.get(order.get(permutation[i]));
+        for(int i = 0; i < currentSize + waitCount; i++) {
+            if(permutation[i - waits] == waitIndex) {
+                moves[i++] = SuperCC.WAIT;
+                moves[i] = SuperCC.WAIT;
+                waits++;
+            }
+            else {
+                moves[i] = toMove.get(order.get(permutation[i - waits]));
+            }
         }
 
         return moves;
@@ -107,6 +112,39 @@ public class Permutation {
             return null;
         }
         return permutation;
+    }
+
+    // Returns double due to potentially large value
+    public double getPermutationCount() {
+        double count = 0;
+        Multiset m = new Multiset(lowerBound, upperBound, movePool, lexicographic);
+        int[] s = m.getSubset();
+        do {
+            count += uniquePermutations(m.currentSize, s);
+            m.nextSubset();
+        } while(!m.finished && count < LIMIT);
+        return count;
+    }
+
+    public void reset() {
+        set.reset();
+        finished = false;
+        initialPermutation();
+    }
+
+    private double factorial(int n) {
+        if(n == 0 || n == 1) {
+            return 1;
+        }
+        return (double)n * factorial(n - 1);
+    }
+
+    private double uniquePermutations(int n, int[] moves) {
+        double denom = 1;
+        for(int i = 0; i < 6; i++) {
+            denom *= factorial(moves[i]);
+        }
+        return factorial(n)/denom;
     }
 
     private void initialPermutation() {

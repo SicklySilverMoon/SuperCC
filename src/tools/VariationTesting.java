@@ -1,6 +1,9 @@
 package tools;
 
 import emulator.SuperCC;
+import emulator.TickFlags;
+import game.Level;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import tools.variation.*;
 
 import javax.swing.*;
@@ -81,10 +84,9 @@ public class VariationTesting {
             HashMap<String, Object> variables = Tokenizer.prepareForInterpreter(tokens);
 
             Parser parser = new Parser(tokens);
-            Interpreter interpreter = new Interpreter(variables, console);
             ArrayList<Stmt> statements = parser.parse();
-            ArrayList<Stmt.Sequence> sequences = Parser.getSequences(statements);
-            interpreter.interpret(statements);
+            Interpreter interpreter = new Interpreter(emulator, statements, variables, console);
+            interpreter.interpret();
         });
     }
 

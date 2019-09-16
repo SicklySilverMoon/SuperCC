@@ -53,6 +53,11 @@ public class Multiset {
         return subset;
     }
 
+    public void reset() {
+        finished = false;
+        initialSubset();
+    }
+
     private void initialSubset() {
         int toDistribute = currentSize;
         for(int i = 0; i < 6; i++) {

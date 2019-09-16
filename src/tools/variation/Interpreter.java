@@ -1,5 +1,9 @@
 package tools.variation;
 
+import emulator.SuperCC;
+import emulator.TickFlags;
+import game.Level;
+
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
@@ -8,19 +12,49 @@ import java.util.HashMap;
 import java.util.stream.StreamSupport;
 
 public class Interpreter implements Expr.Evaluator, Stmt.Executor {
+    private final SuperCC emulator;
+    private final ArrayList<Stmt> statements;
     private final JTextPane console;
-    private HashMap<String, Object> variables;
+    private final HashMap<String, Object> variables;
+    private final ArrayList<Stmt.Sequence> sequences;
+    private Level level;
+    private final byte[] startingState;
+    private byte[][] permutations;
+    private int atSequence = 0;
+    private VariationManager manager;
+    private int[] sequenceIndex;
 
-    public Interpreter(HashMap<String, Object> variables, JTextPane console) {
+    public Interpreter(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables, JTextPane console) {
+        this.emulator = emulator;
+        this.statements = statements;
         this.variables = variables;
         this.console = console;
+        this.sequences = getSequences(statements);
+        this.level = emulator.getLevel();
+        this.startingState = this.level.save();
+        this.manager = new VariationManager(statements, variables, this.level);
+        this.sequenceIndex = manager.sequenceIndex;
     }
 
-    public void interpret(ArrayList<Stmt> statements) {
+    public void interpret() {
         console.setText("");
-        for(Stmt statement : statements) {
-            statement.execute(this);
-        }
+        int fromStatement = 0;
+        int count = 0;
+        do {
+            count++;
+            level.load(manager.saveStates[atSequence]);
+            for (int i = fromStatement; i < statements.size(); i++) {
+                Stmt stmt = statements.get(i);
+                stmt.execute(this);
+            }
+            atSequence = manager.nextPermutation();
+            if(atSequence == -1) {
+                break;
+            }
+            fromStatement = sequenceIndex[atSequence];
+        }while(!level.isCompleted());
+        System.out.println("Number of variations tested: " + count);
+        emulator.repaint(true);
     }
 
     public Object evaluate(Expr expr) {
@@ -88,18 +122,20 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeSequence(Stmt.Sequence stmt) {
-        Permutation p = new Permutation(stmt.movePool, stmt.lowerLimit, stmt.upperLimit, stmt.lexicographic);
-        int count = 0;
-        do {
-            count++;
-            p.nextPermutation();
-        }while(!p.finished);
-
-        StyledDocument doc = console.getStyledDocument();
-        String str = "Number of permutations: " + count + "\n";
-        try {
-            doc.insertString(doc.getLength(), str, null);
-        } catch (BadLocationException e) {}
+        manager.setVariables(atSequence);
+        byte[] permutation = manager.getPermutation(atSequence++);
+        if(stmt.start != null) {
+            stmt.start.execute(this);
+        }
+        for(byte move : permutation) {
+            if(stmt.beforeMove != null) {
+                stmt.beforeMove.execute(this);
+            }
+            emulator.tick(move, TickFlags.LIGHT);
+            if(stmt.afterMove != null) {
+                stmt.afterMove.execute(this);
+            }
+        }
     }
 
     @Override
@@ -270,6 +306,16 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             return false;
         }
         return left.equals(right);
+    }
+
+    private ArrayList<Stmt.Sequence> getSequences(ArrayList<Stmt> statements) {
+        ArrayList<Stmt.Sequence> sequences = new ArrayList<>();
+        for(Stmt stmt : statements) {
+            if(stmt instanceof Stmt.Sequence) {
+                sequences.add((Stmt.Sequence)stmt);
+            }
+        }
+        return sequences;
     }
 
     private class BreakException extends RuntimeException {

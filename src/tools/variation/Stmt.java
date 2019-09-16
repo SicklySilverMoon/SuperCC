@@ -113,16 +113,18 @@ public abstract class Stmt {
         public final Stmt start;
         public final Stmt beforeMove;
         public final Stmt afterMove;
+        public final Permutation permutation;
 
-        Sequence(MovePool movepool, Integer lowerLimit, Integer upperLimit, String lexicographic,
+        Sequence(MovePool movePool, Integer lowerLimit, Integer upperLimit, String lexicographic,
                  Stmt start, Stmt beforeMove, Stmt afterMove) {
-            this.movePool = movepool;
+            this.movePool = movePool;
             this.lowerLimit = lowerLimit;
             this.upperLimit = upperLimit;
             this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
             this.start = start;
             this.beforeMove = beforeMove;
             this.afterMove = afterMove;
+            this.permutation = new Permutation(movePool, lowerLimit, upperLimit, this.lexicographic);
         }
 
         @Override
