@@ -1,5 +1,7 @@
 package tools.variation;
 
+import game.Tile;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +43,32 @@ public class Tokenizer {
         keywords.put("continue", TokenType.CONTINUE);
         keywords.put("terminate", TokenType.TERMINATE);
         keywords.put("lexicographic", TokenType.TERMINATE);
+
+        keywords.put("previousmove", TokenType.FUNCTION);
+        keywords.put("nextmove", TokenType.FUNCTION);
+        keywords.put("getmove", TokenType.FUNCTION);
+        keywords.put("getoppositemove", TokenType.FUNCTION);
+        keywords.put("movesexecuted", TokenType.FUNCTION);
+        keywords.put("movecount", TokenType.FUNCTION);
+        keywords.put("seqlength", TokenType.FUNCTION);
+        keywords.put("getchipsleft", TokenType.FUNCTION);
+        keywords.put("getredkeycount", TokenType.FUNCTION);
+        keywords.put("getyellowkeycount", TokenType.FUNCTION);
+        keywords.put("getgreenkeycount", TokenType.FUNCTION);
+        keywords.put("getbluekeycount", TokenType.FUNCTION);
+        keywords.put("hasflippers", TokenType.FUNCTION);
+        keywords.put("hasfireboots", TokenType.FUNCTION);
+        keywords.put("hassuctionboots", TokenType.FUNCTION);
+        keywords.put("hasiceskates", TokenType.FUNCTION);
+        keywords.put("getforegroundtile", TokenType.FUNCTION);
+        keywords.put("getbackgroundtile", TokenType.FUNCTION);
+        keywords.put("getplayerx", TokenType.FUNCTION);
+        keywords.put("getplayery", TokenType.FUNCTION);
+        keywords.put("move", TokenType.FUNCTION);
+
+        for(Tile t : Tile.values()) {
+            keywords.put(t.name().toLowerCase(), TokenType.TILE);
+        }
     }
 
     public static HashMap<String, Object> prepareForInterpreter(ArrayList<Token> tokens) {

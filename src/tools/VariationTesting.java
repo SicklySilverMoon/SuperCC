@@ -3,6 +3,7 @@ package tools;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Level;
+import game.Tile;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import tools.variation.*;
 
@@ -38,6 +39,8 @@ public class VariationTesting {
         colors.put(TokenType.NUMBER, new Color(255, 153, 255));
         colors.put(TokenType.IDENTIFIER, new Color(68, 221, 255));
         colors.put(TokenType.MOVE, new Color(221, 51, 221));
+        colors.put(TokenType.FUNCTION, new Color(221, 170, 0));
+        colors.put(TokenType.TILE, new Color(221, 221, 0));
 
         colors.put(TokenType.START, new Color(68, 221, 255));
         colors.put(TokenType.BEFORE_MOVE, new Color(68, 221, 255));

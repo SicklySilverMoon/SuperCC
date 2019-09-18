@@ -1,6 +1,7 @@
 package tools.variation;
 
 import game.Level;
+import util.ByteList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,19 +12,23 @@ public class VariationManager {
     private HashMap<String, Object> variables;
     private ArrayList<HashMap<String, Object>> variableStates;
     private Level level;
+    private Interpreter interpreter;
     private byte[][] permutations;
     public int[] sequenceIndex;
     public byte[][] saveStates;
+    public ByteList[] moveLists;
     public boolean finished = false;
 
-    VariationManager(ArrayList<Stmt> statements, HashMap<String, Object> variables, Level level) {
+    VariationManager(ArrayList<Stmt> statements, HashMap<String, Object> variables, Level level, Interpreter interpreter) {
         setSequences(statements);
         this.variables = variables;
         this.variableStates = new ArrayList<>(sequences.size());
         this.level = level;
+        this.interpreter = interpreter;
         this.permutations = new byte[sequences.size()][];
         this.sequenceIndex = new int[sequences.size()];
         this.saveStates = new byte[sequences.size()][];
+        this.moveLists = new ByteList[sequences.size()];
 
         for(int i = 0; i < sequences.size(); i++) {
             permutations[i] = sequences.get(i).permutation.getPermutation();
@@ -32,6 +37,7 @@ public class VariationManager {
 
         byte[] initialState = level.save();
         this.saveStates[0] = Arrays.copyOf(initialState, initialState.length);
+        this.moveLists[0] = new ByteList();
         setSequenceIndex(statements);
     }
 
@@ -74,6 +80,7 @@ public class VariationManager {
         variableStates.set(index, newVariables);
         byte[] newSaveState = level.save();
         saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
+        moveLists[index] = interpreter.moveList.clone();
     }
 
     private void setSequences(ArrayList<Stmt> statements) {
@@ -103,5 +110,9 @@ public class VariationManager {
             }
             variables.put(var, val);
         }
+    }
+
+    public int getSequenceCount() {
+        return sequences.size();
     }
 }

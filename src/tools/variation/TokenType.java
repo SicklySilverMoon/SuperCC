@@ -15,7 +15,7 @@ public enum TokenType {
     LESS, LESS_EQUAL, GREATER, GREATER_EQUAL,
 
     // Values
-    IDENTIFIER, NUMBER, MOVE,
+    IDENTIFIER, NUMBER, MOVE, FUNCTION, TILE,
 
     // Keywords
     START, BEFORE_MOVE, AFTER_MOVE,

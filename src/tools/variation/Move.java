@@ -16,4 +16,12 @@ public class Move {
     public String toString() {
         return value;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Move) {
+            return this.move == ((Move) obj).move;
+        }
+        return false;
+    }
 }

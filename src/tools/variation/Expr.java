@@ -1,5 +1,7 @@
 package tools.variation;
 
+import java.util.ArrayList;
+
 public abstract class Expr {
     interface Evaluator {
         Object evaluateBinary(Binary expr);
@@ -9,6 +11,7 @@ public abstract class Expr {
         Object evaluateUnary(Unary expr);
         Object evaluateVariable(Variable expr);
         Object evaluateAssign(Assign expr);
+        Object evaluateFunction(Function expr);
     }
 
     abstract public Object evaluate(Evaluator evaluator);
@@ -115,6 +118,21 @@ public abstract class Expr {
         @Override
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateAssign(this);
+        }
+    }
+
+    static public class Function extends Expr {
+        public final String name;
+        public final ArrayList<Expr> arguments;
+
+        public Function(String name, ArrayList<Expr> arguments) {
+            this.name = name;
+            this.arguments = arguments;
+        }
+
+        @Override
+        public Object evaluate(Evaluator evaluator) {
+            return evaluator.evaluateFunction(this);
         }
     }
 }

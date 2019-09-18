@@ -22,8 +22,19 @@ public class Multiset {
     public void nextSubset() {
         int i;
         for(i = 5; i >= 1; i--) {
-            if(subset[i] != movePool[i] && subset[i - 1] > 0) {
-                subset[i - 1]--;
+            boolean found = false;
+            if(subset[i] != movePool[i]) {
+                for(int j = i - 1; j >= 0; j--) {
+                    if(movePool[j] > 0) {
+                        if(subset[j] > 0) {
+                            subset[j]--;
+                            found = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if(found) {
                 break;
             }
         }
@@ -68,11 +79,22 @@ public class Multiset {
 
         int i;
         for(i = 5; i >= 1; i--) {
-            if(subset[i] != movePool[i] && subset[i - 1] > 0) {
+            boolean found = false;
+            if(subset[i] != movePool[i]) {
+                for(int j = i - 1; j >= 0; j--) {
+                    if(movePool[j] > 0) {
+                        if(subset[j] > 0) {
+                            found = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if(found) {
                 break;
             }
         }
-        if(i == 0) {
+        if(i == 0 && currentSize > upperBound) {
             finished = true;
         }
     }

@@ -12,6 +12,7 @@ public abstract class Stmt {
         void executeEmpty(Empty stmt);
         void executeBreak(Break stmt);
         void executeSequence(Sequence stmt);
+        void executeReturn(Return stmt);
     }
 
     abstract public void execute(Executor executor);
@@ -130,6 +131,13 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeSequence(this);
+        }
+    }
+
+    public static class Return extends Stmt {
+        @Override
+        public void execute(Executor executor) {
+            executor.executeReturn(this);
         }
     }
 }

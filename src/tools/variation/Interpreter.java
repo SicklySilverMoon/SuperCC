@@ -1,15 +1,16 @@
 package tools.variation;
 
+import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Level;
+import util.ByteList;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.StreamSupport;
 
 public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final SuperCC emulator;
@@ -19,10 +20,13 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final ArrayList<Stmt.Sequence> sequences;
     private Level level;
     private final byte[] startingState;
-    private byte[][] permutations;
-    private int atSequence = 0;
+    public int atSequence = 0;
+    public int atMove = 0;
+    public boolean inSequence = false;
     private VariationManager manager;
     private int[] sequenceIndex;
+    private FunctionEvaluator evaluator;
+    public ByteList moveList;
 
     public Interpreter(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables, JTextPane console) {
         this.emulator = emulator;
@@ -32,8 +36,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.sequences = getSequences(statements);
         this.level = emulator.getLevel();
         this.startingState = this.level.save();
-        this.manager = new VariationManager(statements, variables, this.level);
+        this.manager = new VariationManager(statements, variables, this.level, this);
         this.sequenceIndex = manager.sequenceIndex;
+        this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
+        this.moveList = new ByteList();
     }
 
     public void interpret() {
@@ -43,6 +49,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         do {
             count++;
             level.load(manager.saveStates[atSequence]);
+            moveList = manager.moveLists[atSequence];
             for (int i = fromStatement; i < statements.size(); i++) {
                 Stmt stmt = statements.get(i);
                 stmt.execute(this);
@@ -54,6 +61,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             fromStatement = sequenceIndex[atSequence];
         }while(!level.isCompleted());
         System.out.println("Number of variations tested: " + count);
+        level.load(startingState);
         emulator.repaint(true);
     }
 
@@ -122,20 +130,35 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeSequence(Stmt.Sequence stmt) {
+        inSequence = true;
         manager.setVariables(atSequence);
-        byte[] permutation = manager.getPermutation(atSequence++);
+        byte[] permutation = manager.getPermutation(atSequence);
         if(stmt.start != null) {
             stmt.start.execute(this);
         }
-        for(byte move : permutation) {
+        for(atMove = 0; atMove < permutation.length;) {
+            byte move = permutation[atMove];
             if(stmt.beforeMove != null) {
                 stmt.beforeMove.execute(this);
             }
             emulator.tick(move, TickFlags.LIGHT);
+            moveList.add(move);
+            if(move != SuperCC.WAIT) {
+                moveList.add(SuperCC.WAIT);
+            }
+            atMove++;
             if(stmt.afterMove != null) {
                 stmt.afterMove.execute(this);
             }
         }
+        atSequence++;
+        inSequence = false;
+    }
+
+    @Override
+    public void executeReturn(Stmt.Return stmt) {
+        Solution solution = new Solution(moveList, level.getRngSeed(), level.getStep());
+        System.out.println(solution.toJSON().toJSONString());
     }
 
     @Override
@@ -277,6 +300,11 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 }
         }
         return null;
+    }
+
+    @Override
+    public Object evaluateFunction(Expr.Function expr) {
+        return evaluator.evaluate(expr);
     }
 
     private double getValue(String variable) {

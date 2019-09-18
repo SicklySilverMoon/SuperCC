@@ -1,5 +1,7 @@
 package tools.variation;
 
+import game.Tile;
+
 import java.util.ArrayList;
 
 public class Parser {
@@ -49,6 +51,9 @@ public class Parser {
         }
         if(isNextToken(TokenType.BREAK)) {
             return new Stmt.Break();
+        }
+        if(isNextToken(TokenType.RETURN)) {
+            return new Stmt.Return();
         }
         return expressionStatement();
     }
@@ -278,6 +283,24 @@ public class Parser {
             return new Expr.Unary(operator, right);
         }
 
+        return function();
+    }
+
+    private Expr function() {
+        if(isNextToken(TokenType.FUNCTION)) {
+            String name = getPreviousToken().lexeme.toLowerCase();
+            ArrayList<Expr> arguments = new ArrayList<>();
+
+            getNextToken(); // Left parenthesis
+            while(!isNextToken(TokenType.RIGHT_PAREN)) {
+                Expr expr = expression();
+                arguments.add(expr);
+                if(peek().type == TokenType.COMMA) {
+                    getNextToken(); // Comma
+                }
+            }
+            return new Expr.Function(name, arguments);
+        }
         return primary();
     }
 
@@ -299,6 +322,9 @@ public class Parser {
         }
         if(isNextToken(TokenType.IDENTIFIER)) {
             return new Expr.Variable(getPreviousToken());
+        }
+        if(isNextToken(TokenType.TILE)) {
+            return new Expr.Literal(Tile.valueOf(getPreviousToken().lexeme));
         }
         if(isNextToken(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
