@@ -27,7 +27,8 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private FunctionEvaluator evaluator;
     public ByteList moveList;
     private int amount = 1;
-    private int found = 0;
+    public ArrayList<Solution> solutions = new ArrayList<>();
+    public long count = 0;
 
     public Interpreter(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables, JTextPane console) {
         this.emulator = emulator;
@@ -45,7 +46,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void interpret() {
         console.setText("");
         int fromStatement = 0;
-        int count = 0;
+        count = 0;
         do {
             count++;
             level.load(manager.saveStates[atSequence]);
@@ -58,7 +59,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             }
             catch(TerminateException te) { }
             catch(ReturnException re) {
-                if(found >= amount) {
+                if(solutions.size() >= amount) {
                     break;
                 }
             }
@@ -68,7 +69,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             }
             fromStatement = sequenceIndex[atSequence];
         }while(!manager.finished);
-        System.out.println("Number of variations tested: " + count);
         level.load(startingState);
         emulator.repaint(true);
     }
@@ -163,8 +163,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     @Override
     public void executeReturn(Stmt.Return stmt) {
         Solution solution = new Solution(moveList, level.getRngSeed(), level.getStep());
-        System.out.println(solution.toJSON().toJSONString());
-        found++;
+        solutions.add(solution);
         throw new ReturnException();
     }
 

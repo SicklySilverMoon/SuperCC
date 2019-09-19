@@ -1,10 +1,6 @@
 package tools;
 
 import emulator.SuperCC;
-import emulator.TickFlags;
-import game.Level;
-import game.Tile;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import tools.variation.*;
 
 import javax.swing.*;
@@ -31,6 +27,7 @@ public class VariationTesting {
     private JLayeredPane editorArea;
     private JScrollPane editor;
     private JScrollPane output;
+    private ArrayList<JLabel> lineNumbers = new ArrayList<>();
     private static final HashMap<TokenType, Color> colors;
 
     static {
@@ -81,6 +78,7 @@ public class VariationTesting {
         setEditorPanel();
         setConsole();
         setFrame();
+        highlight();
 
         runButton.addActionListener(e -> {
             Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
@@ -91,6 +89,8 @@ public class VariationTesting {
             ArrayList<Stmt> statements = parser.parse();
             Interpreter interpreter = new Interpreter(emulator, statements, variables, console);
             interpreter.interpret();
+
+            VariationResult result = new VariationResult(emulator, interpreter.count, interpreter.solutions);
         });
     }
 
@@ -106,6 +106,7 @@ public class VariationTesting {
         codeEditor.setForeground(new Color(0, 0, 0, 0));
         codeEditor.setCaretColor(new Color(255, 255, 255));
         codeEditor.getStyledDocument().addDocumentListener(new EditorDocumentListener());
+        codeEditor.setMargin(new Insets(0, 60, 0, 0));
 
         codeOutput = new JTextPane();
         codeOutput.setEditable(false);
@@ -113,10 +114,11 @@ public class VariationTesting {
         codeOutput.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
         codeOutput.setBackground(new Color(50, 50, 50));
         codeOutput.setForeground(new Color(255, 255, 255));
+        codeOutput.setMargin(new Insets(0, 60, 0, 0));
 
         console = new JTextPane();
         console.setEditable(false);
-        console.setPreferredSize(new Dimension(6000, 200));
+        console.setSize(new Dimension(6000, 200));
         console.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
     }
 
@@ -143,6 +145,7 @@ public class VariationTesting {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 output.getVerticalScrollBar().setValue(e.getValue());
+                updateLineNumbers();
             }
         });
 
@@ -150,6 +153,7 @@ public class VariationTesting {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 output.getHorizontalScrollBar().setValue(e.getValue());
+                updateLineNumbers();
             }
         });
 
@@ -157,6 +161,7 @@ public class VariationTesting {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 output.getVerticalScrollBar().setValue(editor.getVerticalScrollBar().getValue());
+                updateLineNumbers();
             }
         });
 
@@ -164,13 +169,13 @@ public class VariationTesting {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 output.getHorizontalScrollBar().setValue(editor.getHorizontalScrollBar().getValue());
+                updateLineNumbers();
             }
         });
     }
 
     private void setEditorArea() {
         editorArea = new JLayeredPane();
-        editorArea.setBorder(BorderFactory.createLineBorder(Color.red));
 
         editorArea.add(editor, new Integer(1));
         editorArea.add(output, new Integer(1));
@@ -229,6 +234,7 @@ public class VariationTesting {
         Style style = codeOutput.addStyle("style", null);
         Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
         ArrayList<Token> tokens = tokenizer.tokenize();
+        int lines = 1;
 
         for(Token token : tokens) {
             Color c = colors.get(token.type);
@@ -236,9 +242,40 @@ public class VariationTesting {
                 c = new Color(255, 255, 255);
             }
             StyleConstants.setForeground(style, c);
+            if(token.type == TokenType.NEW_LINE) {
+                lines++;
+            }
             try {
                 doc.insertString(doc.getLength(), token.lexeme, style);
             } catch(BadLocationException ex) {}
+        }
+
+        for(int i = 0; i < lines; i++) {
+            if(lineNumbers.size() <= i) {
+                JLabel lineNumber = new JLabel();
+                lineNumber.setText(Integer.toString(i + 1));
+                lineNumber.setBounds(0, 22 * i, 40, 22);
+                lineNumber.setForeground(new Color(153, 153, 153));
+                lineNumber.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
+                lineNumber.setHorizontalAlignment(SwingConstants.RIGHT);
+                lineNumbers.add(lineNumber);
+                editorArea.add(lineNumber, new Integer(2));
+            }
+            else {
+                lineNumbers.get(i).setVisible(true);
+            }
+        }
+
+        for(int i = lines; i < lineNumbers.size(); i++) {
+            lineNumbers.get(i).setVisible(false);
+        }
+    }
+
+    private void updateLineNumbers() {
+        int offsetX = editor.getHorizontalScrollBar().getValue();
+        int offsetY = editor.getVerticalScrollBar().getValue();
+        for(int i = 0; i < lineNumbers.size(); i++) {
+            lineNumbers.get(i).setBounds(0 - offsetX, i * 22 - offsetY, 40, 22);
         }
     }
 }

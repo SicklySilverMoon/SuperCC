@@ -50,7 +50,9 @@
             <preferred-size width="600" height="-1"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-13487566"/>
+        </properties>
         <border type="none">
           <color color="-4521984"/>
         </border>
