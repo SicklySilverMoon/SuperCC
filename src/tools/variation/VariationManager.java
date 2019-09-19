@@ -83,6 +83,22 @@ public class VariationManager {
         moveLists[index] = interpreter.moveList.clone();
     }
 
+    public void terminate(int index) {
+        int sum = 0;
+        int prevSum = 0;
+        for(int i = 0; i < getSequenceCount(); i++) {
+            sum += getPermutation(i).length;
+            if(index < sum) {
+                sequences.get(i).permutation.terminate(index - prevSum);
+                for(int j = i + 1; j < getSequenceCount(); j++) {
+                    sequences.get(j).permutation.end();
+                }
+                return;
+            }
+            prevSum = sum;
+        }
+    }
+
     private void setSequences(ArrayList<Stmt> statements) {
         for(Stmt stmt : statements) {
             if(stmt instanceof Stmt.Sequence) {

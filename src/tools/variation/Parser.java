@@ -55,6 +55,15 @@ public class Parser {
         if(isNextToken(TokenType.RETURN)) {
             return new Stmt.Return();
         }
+        if(isNextToken(TokenType.TERMINATE)) {
+            return terminate();
+        }
+        if(isNextToken(TokenType.CONTINUE)) {
+            return new Stmt.Continue();
+        }
+        if(isNextToken(TokenType.ALL)) {
+            return all();
+        }
         return expressionStatement();
     }
 
@@ -144,13 +153,11 @@ public class Parser {
 
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
-            getNextToken(); // Left parenthesis
             for(int i = 0; i < 5; i++) {
                 lexicographic += getNextToken().lexeme;
                 getNextToken(); // Comma
             }
             lexicographic += getNextToken().lexeme;
-            getNextToken(); // Right parenthesis
             getNextToken(); // Semicolon
         }
 
@@ -176,6 +183,24 @@ public class Parser {
         }
         getNextToken(); // Right brace
         return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove);
+    }
+
+    private Stmt terminate() {
+        Expr index = null;
+        if(!isNextToken(TokenType.SEMICOLON)) {
+            index = expression();
+            getNextToken(); // Semicolon
+        }
+        return new Stmt.Terminate(index);
+    }
+
+    private Stmt all() {
+        Expr amount = new Expr.Literal(100.0);
+        if(!isNextToken(TokenType.SEMICOLON)) {
+            amount = expression();
+            getNextToken(); // Semicolon
+        }
+        return new Stmt.All(amount);
     }
 
     private Stmt expressionStatement() {

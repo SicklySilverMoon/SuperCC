@@ -42,7 +42,8 @@ public class Tokenizer {
         keywords.put("return", TokenType.RETURN);
         keywords.put("continue", TokenType.CONTINUE);
         keywords.put("terminate", TokenType.TERMINATE);
-        keywords.put("lexicographic", TokenType.TERMINATE);
+        keywords.put("lexicographic", TokenType.LEXICOGRAPHIC);
+        keywords.put("all", TokenType.ALL);
 
         keywords.put("previousmove", TokenType.FUNCTION);
         keywords.put("nextmove", TokenType.FUNCTION);

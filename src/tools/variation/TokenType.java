@@ -23,7 +23,7 @@ public enum TokenType {
     AND, OR, NOT,
 
     // Sequence control
-    RETURN, CONTINUE, TERMINATE, LEXICOGRAPHIC,
+    RETURN, CONTINUE, TERMINATE, LEXICOGRAPHIC, ALL,
 
     // Unimportant in parsing
     SPACE, TAB, CARRIAGE_RETURN, NEW_LINE, COMMENT,

@@ -33,7 +33,7 @@ public class FunctionEvaluator {
             case "movecount":
                 return moveCount((Move)function.arguments.get(0).evaluate(interpreter));
             case "seqlength":
-                return manager.getPermutation(interpreter.atSequence).length;
+                return seqLength();
             case "getchipsleft":
                 return (double)emulator.getLevel().getChipsLeft();
             case "getredkeycount":
@@ -185,6 +185,14 @@ public class FunctionEvaluator {
         return count;
     }
 
+    private double seqLength() {
+        double length = 0;
+        for(int i = 0; i < manager.getSequenceCount(); i++) {
+            length += manager.getPermutation(i).length;
+        }
+        return length;
+    }
+
     private Object move(ArrayList<Expr> arguments) {
         int mult = 1;
         for(Expr arg : arguments) {
@@ -199,6 +207,7 @@ public class FunctionEvaluator {
                 if(moveDir != SuperCC.WAIT) {
                     interpreter.moveList.add(SuperCC.WAIT);
                 }
+                interpreter.checkMove();
             }
         }
         return null;

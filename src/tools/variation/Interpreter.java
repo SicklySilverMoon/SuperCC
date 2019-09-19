@@ -17,7 +17,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final ArrayList<Stmt> statements;
     private final JTextPane console;
     private final HashMap<String, Object> variables;
-    private final ArrayList<Stmt.Sequence> sequences;
     private Level level;
     private final byte[] startingState;
     public int atSequence = 0;
@@ -27,13 +26,14 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private int[] sequenceIndex;
     private FunctionEvaluator evaluator;
     public ByteList moveList;
+    private int amount = 1;
+    private int found = 0;
 
     public Interpreter(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables, JTextPane console) {
         this.emulator = emulator;
         this.statements = statements;
         this.variables = variables;
         this.console = console;
-        this.sequences = getSequences(statements);
         this.level = emulator.getLevel();
         this.startingState = this.level.save();
         this.manager = new VariationManager(statements, variables, this.level, this);
@@ -50,23 +50,27 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             count++;
             level.load(manager.saveStates[atSequence]);
             moveList = manager.moveLists[atSequence];
-            for (int i = fromStatement; i < statements.size(); i++) {
-                Stmt stmt = statements.get(i);
-                stmt.execute(this);
+            try {
+                for (int i = fromStatement; i < statements.size(); i++) {
+                    Stmt stmt = statements.get(i);
+                    stmt.execute(this);
+                }
+            }
+            catch(TerminateException te) { }
+            catch(ReturnException re) {
+                if(found >= amount) {
+                    break;
+                }
             }
             atSequence = manager.nextPermutation();
             if(atSequence == -1) {
                 break;
             }
             fromStatement = sequenceIndex[atSequence];
-        }while(!level.isCompleted());
+        }while(!manager.finished);
         System.out.println("Number of variations tested: " + count);
         level.load(startingState);
         emulator.repaint(true);
-    }
-
-    public Object evaluate(Expr expr) {
-        return expr.evaluate(this);
     }
 
     @Override
@@ -146,6 +150,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             if(move != SuperCC.WAIT) {
                 moveList.add(SuperCC.WAIT);
             }
+            checkMove();
             atMove++;
             if(stmt.afterMove != null) {
                 stmt.afterMove.execute(this);
@@ -159,6 +164,43 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executeReturn(Stmt.Return stmt) {
         Solution solution = new Solution(moveList, level.getRngSeed(), level.getStep());
         System.out.println(solution.toJSON().toJSONString());
+        found++;
+        throw new ReturnException();
+    }
+
+    @Override
+    public void executeTerminate(Stmt.Terminate stmt) {
+        int index = 0;
+        if(stmt.index != null) {
+            index = ((Double) stmt.index.evaluate(this)).intValue();
+        }
+        else {
+            int atSeq = atSequence;
+            int atMo = atMove;
+            if(!inSequence) {
+                if(atSeq > 0) {
+                    atMo = 0;
+                }
+            }
+            for(int i = 0; i < atSeq; i++) {
+                index += manager.getPermutation(i).length;
+            }
+            index += atMo - 1;
+        }
+        manager.terminate(index);
+        throw new TerminateException();
+    }
+
+    @Override
+    public void executeContinue(Stmt.Continue stmt) {
+        throw new TerminateException();
+    }
+
+    @Override
+    public void executeAll(Stmt.All stmt) {
+        if(stmt.amount != null) {
+            this.amount = ((Double) stmt.amount.evaluate(this)).intValue();
+        }
     }
 
     @Override
@@ -307,6 +349,16 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         return evaluator.evaluate(expr);
     }
 
+    public void checkMove() {
+        if(level.isCompleted()) {
+            executeReturn(null);
+        }
+        if(level.getChip().isDead()) {
+            executeTerminate(new Stmt.Terminate(null));
+            throw new TerminateException();
+        }
+    }
+
     private double getValue(String variable) {
         try {
             double value = (double)variables.get(variable);
@@ -350,5 +402,15 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         BreakException() {
             super(null, null, false, false);
         }
+    }
+
+    private class TerminateException extends RuntimeException {
+        TerminateException() {
+            super(null, null, false, false);
+        }
+    }
+
+    private class ReturnException extends RuntimeException {
+        ReturnException() { super(null, null, false, false); }
     }
 }

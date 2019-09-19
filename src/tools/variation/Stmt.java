@@ -13,6 +13,9 @@ public abstract class Stmt {
         void executeBreak(Break stmt);
         void executeSequence(Sequence stmt);
         void executeReturn(Return stmt);
+        void executeTerminate(Terminate stmt);
+        void executeContinue(Continue stmt);
+        void executeAll(All stmt);
     }
 
     abstract public void execute(Executor executor);
@@ -138,6 +141,39 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeReturn(this);
+        }
+    }
+
+    public static class Terminate extends Stmt {
+        public final Expr index;
+
+        Terminate(Expr index) {
+            this.index = index;
+        }
+
+        @Override
+        public void execute(Executor executor) {
+            executor.executeTerminate(this);
+        }
+    }
+
+    public static class Continue extends Stmt {
+        @Override
+        public void execute(Executor executor) {
+            executor.executeContinue(this);
+        }
+    }
+
+    public static class All extends Stmt {
+        public final Expr amount;
+
+        All(Expr amount) {
+            this.amount = amount;
+        }
+
+        @Override
+        public void execute(Executor executor) {
+            executor.executeAll(this);
         }
     }
 }

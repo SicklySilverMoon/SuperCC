@@ -62,6 +62,7 @@ public class VariationTesting {
         colors.put(TokenType.CONTINUE, new Color(0, 153, 255));
         colors.put(TokenType.TERMINATE, new Color(0, 153, 255));
         colors.put(TokenType.LEXICOGRAPHIC, new Color(0, 153, 255));
+        colors.put(TokenType.ALL, new Color(0, 153, 255));
     }
 
     private SuperCC emulator;

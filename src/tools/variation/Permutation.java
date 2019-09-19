@@ -4,6 +4,7 @@ import emulator.EmulatorKeyListener;
 import emulator.SuperCC;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Permutation {
@@ -130,6 +131,19 @@ public class Permutation {
         set.reset();
         finished = false;
         initialPermutation();
+    }
+
+    public void terminate(int index) {
+        Arrays.sort(permutation, index + 1, permutation.length);
+        for(int i = index + 1; i < (index + 2 + permutation.length)/2; i++) {
+            int temp = permutation[i];
+            permutation[i] = permutation[permutation.length - i + index];
+            permutation[permutation.length - i + index] = temp;
+        }
+    }
+
+    public void end() {
+        terminate(0);
     }
 
     private double factorial(int n) {
