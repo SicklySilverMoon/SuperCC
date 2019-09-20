@@ -578,6 +578,12 @@ class MenuBar extends JMenuBar{
             addIcon(gif, "/resources/icons/video.gif");
             add(gif);
 
+            JMenuItem variations = new JMenuItem("Variation testing");
+            variations.addActionListener(e -> {
+                VariationTesting v = new VariationTesting(emulator);
+            });
+            add(variations);
+
         }
     }
     
