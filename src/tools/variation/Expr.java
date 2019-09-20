@@ -124,10 +124,12 @@ public abstract class Expr {
     static public class Function extends Expr {
         public final String name;
         public final ArrayList<Expr> arguments;
+        public final Token token;
 
-        public Function(String name, ArrayList<Expr> arguments) {
+        public Function(String name, ArrayList<Expr> arguments, Token token) {
             this.name = name;
             this.arguments = arguments;
+            this.token = token;
         }
 
         @Override

@@ -124,7 +124,7 @@ public abstract class Stmt {
             this.movePool = movePool;
             this.lowerLimit = lowerLimit;
             this.upperLimit = upperLimit;
-            this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
+            this.lexicographic = (lexicographic.equals("")) ? "urdlw" : lexicographic;
             this.start = start;
             this.beforeMove = beforeMove;
             this.afterMove = afterMove;

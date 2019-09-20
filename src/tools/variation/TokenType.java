@@ -28,6 +28,9 @@ public enum TokenType {
     // Unimportant in parsing
     SPACE, TAB, CARRIAGE_RETURN, NEW_LINE, COMMENT,
 
+    // Unknown
+    OTHER,
+
     // End
     EOF
 }

@@ -28,6 +28,11 @@ public class VariationTesting {
     private JScrollPane editor;
     private JScrollPane output;
     private ArrayList<JLabel> lineNumbers = new ArrayList<>();
+    private ArrayList<Stmt> statements;
+    private HashMap<String, Object> variables;
+    private Interpreter interpreter;
+    public boolean killFlag = false;
+    public boolean running = false;
     private static final HashMap<TokenType, Color> colors;
 
     static {
@@ -60,6 +65,8 @@ public class VariationTesting {
         colors.put(TokenType.TERMINATE, new Color(0, 153, 255));
         colors.put(TokenType.LEXICOGRAPHIC, new Color(0, 153, 255));
         colors.put(TokenType.ALL, new Color(0, 153, 255));
+
+        colors.put(TokenType.OTHER, new Color(221, 0, 0));
     }
 
     private SuperCC emulator;
@@ -81,21 +88,26 @@ public class VariationTesting {
         highlight();
 
         runButton.addActionListener(e -> {
+            if(running) {
+                killFlag = true;
+                return;
+            }
             Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
             ArrayList<Token> tokens = tokenizer.tokenize();
-            HashMap<String, Object> variables = Tokenizer.prepareForInterpreter(tokens);
+            variables = Tokenizer.prepareForInterpreter(tokens);
 
-            Parser parser = new Parser(tokens);
-            ArrayList<Stmt> statements = parser.parse();
-            Interpreter interpreter = new Interpreter(emulator, statements, variables, console);
-            interpreter.interpret();
+            Parser parser = new Parser(tokens, console);
+            statements = parser.parse();
 
-            VariationResult result = new VariationResult(emulator, interpreter.count, interpreter.solutions);
+            if(parser.hadError) {
+                return;
+            }
+
+            interpreter = new Interpreter(emulator, this, statements, variables, console);
+            interpreter.displayPermutationCount();
+
+            new VariationTestingThread().start();
         });
-    }
-
-    private void printToConsole(String str) {
-        console.setText(str);
     }
 
     private void setTextPanes() {
@@ -119,7 +131,8 @@ public class VariationTesting {
         console = new JTextPane();
         console.setEditable(false);
         console.setSize(new Dimension(6000, 200));
-        console.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        console.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
+        console.setBackground(new Color(50, 50, 50));
     }
 
     private void setScrollPanes() {
@@ -254,7 +267,7 @@ public class VariationTesting {
             if(lineNumbers.size() <= i) {
                 JLabel lineNumber = new JLabel();
                 lineNumber.setText(Integer.toString(i + 1));
-                lineNumber.setBounds(0, 22 * i, 40, 22);
+                lineNumber.setBounds(0, 22 * i, 40, 24);
                 lineNumber.setForeground(new Color(153, 153, 153));
                 lineNumber.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
                 lineNumber.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -275,7 +288,23 @@ public class VariationTesting {
         int offsetX = editor.getHorizontalScrollBar().getValue();
         int offsetY = editor.getVerticalScrollBar().getValue();
         for(int i = 0; i < lineNumbers.size(); i++) {
-            lineNumbers.get(i).setBounds(0 - offsetX, i * 22 - offsetY, 40, 22);
+            lineNumbers.get(i).setBounds(0 - offsetX, i * 22 - offsetY, 40, 24);
+        }
+    }
+
+    private class VariationTestingThread extends Thread {
+        public void run() {
+            running = true;
+            killFlag = false;
+            runButton.setText("Stop");
+            interpreter.interpret();
+            running = false;
+            killFlag = false;
+            runButton.setText("Run");
+
+            if(interpreter.solutions.size() > 0) {
+                VariationResult result = new VariationResult(emulator, interpreter.count, interpreter.solutions);
+            }
         }
     }
 }

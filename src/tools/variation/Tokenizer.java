@@ -11,7 +11,8 @@ public class Tokenizer {
     private ArrayList<Token> tokens;
     private int start = 0;
     private int current = 0;
-    private static final String moves = "urdlwhURDLWH";
+    private int line = 1;
+    private static final String moves = "urdlwURDLW";
     private static final HashMap<String, TokenType> keywords;
 
     static {
@@ -42,7 +43,7 @@ public class Tokenizer {
         keywords.put("return", TokenType.RETURN);
         keywords.put("continue", TokenType.CONTINUE);
         keywords.put("terminate", TokenType.TERMINATE);
-        keywords.put("lexicographic", TokenType.LEXICOGRAPHIC);
+        keywords.put("order", TokenType.LEXICOGRAPHIC);
         keywords.put("all", TokenType.ALL);
 
         keywords.put("previousmove", TokenType.FUNCTION);
@@ -146,7 +147,7 @@ public class Tokenizer {
             case ' ': addToken(TokenType.SPACE); break;
             case '\t': addToken(TokenType.TAB); break;
             case '\r': addToken(TokenType.CARRIAGE_RETURN); break;
-            case '\n': addToken(TokenType.NEW_LINE); break;
+            case '\n': line++; addToken(TokenType.NEW_LINE); break;
             default: processOther(c); break;
         }
     }
@@ -216,6 +217,9 @@ public class Tokenizer {
         }
         else if(isAlpha(c)) {
             processIdentifier();
+        }
+        else {
+            addToken(TokenType.OTHER);
         }
     }
 
@@ -310,6 +314,6 @@ public class Tokenizer {
 
     private void addToken(TokenType type, Object value) {
         String lexeme = code.substring(start, current);
-        tokens.add(new Token(type, lexeme, value));
+        tokens.add(new Token(type, lexeme, value, line));
     }
 }

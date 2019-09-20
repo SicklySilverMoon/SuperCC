@@ -30,8 +30,8 @@ public class Permutation {
         toMove.put('r', SuperCC.RIGHT);
         toMove.put('d', SuperCC.DOWN);
         toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', SuperCC.WAIT); // Has separate handling
-        toMove.put('h', SuperCC.WAIT);
+        toMove.put('w', SuperCC.WAIT);
+        //toMove.put('h', SuperCC.WAIT);
     }
 
     public Permutation(MovePool movePool, Integer lowerBound, Integer upperBound, String lexicographic) {
@@ -45,7 +45,7 @@ public class Permutation {
         this.lexicographic = lexicographic;
         this.waitIndex = lexicographic.indexOf('w');
 
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 5; i++) {
             order.put(i, lexicographic.charAt(i));
         }
 
@@ -90,19 +90,10 @@ public class Permutation {
         if(finished) {
             return null;
         }
-        int waitCount = subset[waitIndex];
-        int waits = 0;
-        byte[] moves = new byte[currentSize + waitCount];
+        byte[] moves = new byte[currentSize];
 
-        for(int i = 0; i < currentSize + waitCount; i++) {
-            if(permutation[i - waits] == waitIndex) {
-                moves[i++] = SuperCC.WAIT;
-                moves[i] = SuperCC.WAIT;
-                waits++;
-            }
-            else {
-                moves[i] = toMove.get(order.get(permutation[i - waits]));
-            }
+        for(int i = 0; i < currentSize; i++) {
+            moves[i] = toMove.get(order.get(permutation[i]));
         }
 
         return moves;
@@ -155,7 +146,7 @@ public class Permutation {
 
     private double uniquePermutations(int n, int[] moves) {
         double denom = 1;
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < 5; i++) {
             denom *= factorial(moves[i]);
         }
         return factorial(n)/denom;
@@ -164,7 +155,7 @@ public class Permutation {
     private void initialPermutation() {
         permutation = new int[currentSize];
         int i = 0;
-        for(int j = 0; j < 6; j++) {
+        for(int j = 0; j < 5; j++) {
             for(int k = 0; k < subset[j]; k++) {
                 permutation[i++] = j;
             }

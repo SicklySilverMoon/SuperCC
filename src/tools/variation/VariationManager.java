@@ -1,5 +1,6 @@
 package tools.variation;
 
+import emulator.SuperCC;
 import game.Level;
 import util.ByteList;
 
@@ -19,12 +20,16 @@ public class VariationManager {
     public ByteList[] moveLists;
     public boolean finished = false;
 
-    VariationManager(ArrayList<Stmt> statements, HashMap<String, Object> variables, Level level, Interpreter interpreter) {
+    VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
+                     Level level, Interpreter interpreter) {
         setSequences(statements);
         this.variables = variables;
         this.variableStates = new ArrayList<>(sequences.size());
         this.level = level;
         this.interpreter = interpreter;
+        if(sequences.size() == 0) {
+            return;
+        }
         this.permutations = new byte[sequences.size()][];
         this.sequenceIndex = new int[sequences.size()];
         this.saveStates = new byte[sequences.size()][];
@@ -37,7 +42,7 @@ public class VariationManager {
 
         byte[] initialState = level.save();
         this.saveStates[0] = Arrays.copyOf(initialState, initialState.length);
-        this.moveLists[0] = new ByteList();
+        this.moveLists[0] = emulator.getSavestates().getMoveList().clone();
         setSequenceIndex(statements);
     }
 
@@ -130,5 +135,13 @@ public class VariationManager {
 
     public int getSequenceCount() {
         return sequences.size();
+    }
+
+    public double getPermutationCount() {
+        double total = 0;
+        for(Stmt.Sequence seq : sequences) {
+            total += seq.permutation.getPermutationCount();
+        }
+        return total;
     }
 }

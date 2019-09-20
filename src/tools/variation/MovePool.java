@@ -11,7 +11,7 @@ public class MovePool {
         moves.put('d', 0);
         moves.put('l', 0);
         moves.put('w', 0);
-        moves.put('h', 0);
+        //moves.put('h', 0); // Unsupported for now
     }
 
     public void add(Move move) {
