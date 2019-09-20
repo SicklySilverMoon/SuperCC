@@ -69,7 +69,7 @@ public class InventoryPanel extends JPanel {
         int tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
         int tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();
         
-        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++){
+        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++){ //TODO Fix the issue where collecting more than 9 keys and then rewinding breaks the display
             FullscreenGamePanel.drawNumber(emulator.getLevel().getKeys()[i], FullscreenGamePanel.blackDigits,
                                            tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, bg.getRaster());
             FullscreenGamePanel.drawNumber(emulator.getLevel().getBoots()[i], FullscreenGamePanel.blackDigits,

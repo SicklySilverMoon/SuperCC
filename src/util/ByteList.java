@@ -21,7 +21,7 @@ public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
     private byte[] bytes = new byte[INITIAL_CAPACITY];
     private int size = 0;
     private int capacity = INITIAL_CAPACITY;
-    
+
     /**
      * Appends the specified element to the end of this list.
      * @param b byte to be appended to this list
@@ -81,6 +81,10 @@ public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
     public void copy(int srcPos, byte[] dest, int destPos, int length){
         System.arraycopy(bytes, srcPos, dest, destPos, length);
     }
+
+    public ByteList sublist(int from, int to) {
+        return new ByteList(Arrays.copyOfRange(bytes, from, to+1), to-from, capacity);
+    }
     
     /**
      * Returns the number of elements in this list.
@@ -117,27 +121,26 @@ public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
      */
     @Override
     public Iterator<Byte> iterator() {
-        Iterator<Byte> it = new Iterator<Byte>() {
-            
+        return new Iterator<Byte>() {
+
             private int i = 0;
-            
+
             @Override
             public boolean hasNext() {
                 return i < size;
             }
-            
+
             @Override
             public Byte next() {
                 return bytes[i++];
             }
-            
+
             @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
-            
+
         };
-        return it;
     }
     
     @Override

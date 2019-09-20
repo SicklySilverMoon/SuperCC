@@ -3,6 +3,7 @@ package graphics;
 import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
+import emulator.TickFlags;
 import game.Level;
 import game.Step;
 import io.TWSWriter;
@@ -250,28 +251,23 @@ class MenuBar extends JMenuBar{
                     emulator.showAction("Pasted solution");
                     emulator.getMainWindow().repaint(emulator.getLevel(), false);
                 }
-                catch (IllegalArgumentException e){
-                    try { //All of this just to simply allow you to paste new moves into an already existing solution
-                        String currentUppercaseMoves = String.valueOf(emulator.getSavestates().getMoveList());
-                        String currentMoves = ""; //Filled in later
-                        String currentStep = String.valueOf(level.getStep());
-                        String currentRNG = String.valueOf(level.getRngSeed());
-
-                        for (char ch : currentUppercaseMoves.toCharArray()) {
-                            char[] lowerCaseArray = SuperCC.lowerCaseChar(ch); //I had to create a specific method that returns char arrays for this
-                            currentMoves = currentMoves.concat(new String(lowerCaseArray)); //Just stitches the new moves onto the end of the current list
-                        }
+                catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
+                    try {
                         for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
                             char[] lowerCaseArray = SuperCC.lowerCaseChar(ch);
-                            currentMoves = currentMoves.concat(new String(lowerCaseArray));
+                            byte b = (byte) lowerCaseArray[0];
+                            switch (b){
+                                case 85: b = SuperCC.UP; break;
+                                case 76: b = SuperCC.LEFT; break;
+                                case 68: b = SuperCC.DOWN; break;
+                                case 82: b = SuperCC.RIGHT; break;
+                                case 45: b = SuperCC.WAIT; break;
+                            }
+                            emulator.tick(b, TickFlags.GAME_PLAY);
                         }
-
-                        String solution = "{\"Moves\":\"" + currentMoves + "\",\"Seed\":\"" + currentRNG + "\",\"Step\":\"" + currentStep + "\"}"; //Yup look at this big mess just to make a valid JSON string that SuCC can parse
-                        Solution.fromJSON(solution).load(emulator);
-                        emulator.showAction("Pasted solution");
-                        emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                        emulator.showAction("Pasted moves");
                     }
-                    catch (IllegalArgumentException | UnsupportedFlavorException | IOException e2) {
+                    catch (UnsupportedFlavorException | IOException e2) {
                         emulator.throwError(e2.getMessage());
                     }
                 }

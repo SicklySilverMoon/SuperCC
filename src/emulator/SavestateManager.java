@@ -26,7 +26,11 @@ public class SavestateManager implements Serializable {
     private transient int playbackIndex = 1;
     private ByteList twsMouseMoves;
     private ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
-    
+    private ByteList[] checkpoints = new ByteList[10];
+    private boolean[] recordingCheckpoints = new boolean[10];
+    private int[] checkpointStartIndex = new int[10];
+    private boolean checkpointRestart = false; //If you restart then set a checkpoint it breaks due to a weird index out of bounds array
+
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
     private transient int playbackWaitTime = STANDARD_WAIT_TIME;
@@ -57,7 +61,7 @@ public class SavestateManager implements Serializable {
         playbackWaitTime = STANDARD_WAIT_TIME;
         playbackIndex = currentNode.depth();
         playbackNodes = new ArrayList<>(playbackIndex*2);
-        for (TreeNode<byte[]> node : currentNode.getHistory()) playbackNodes.add(node);
+        playbackNodes.addAll(currentNode.getHistory());
         System.out.println(currentNode.depth());
     }
 
@@ -88,6 +92,7 @@ public class SavestateManager implements Serializable {
             currentNode = currentNode.getParent();
             playbackIndex--;
         }
+        checkpointRestart = true;
     }
     
     public void rewind(){
@@ -175,8 +180,22 @@ public class SavestateManager implements Serializable {
         savestatetwsMouseMoves.put(key, twsMouseMoves.clone());
     }
 
-    public void addUndesirableSavestate(){
+    void addUndesirableSavestate(){
         undesirableSavestates.add(currentNode); //Marks a level state as undesired so it can be checked for and alerted
+    }
+
+    boolean checkpointRecorder(int key) {
+        if (!recordingCheckpoints[key]) {
+            checkpointStartIndex[key] = playbackIndex; //Store the current position in the move array so we can come back to it later
+            recordingCheckpoints[key] = true;
+            return true;
+        }
+        else {
+            if (!checkpointRestart) checkpointStartIndex[key]--; //The very first time you run this you get a weird thing where its 1 ahead of where it should be
+            checkpoints[key] = moves.sublist(checkpointStartIndex[key], moves.size()); //Puts all the moves recorded into this list
+            recordingCheckpoints[key] = false;
+            return false;
+        }
     }
     
     public boolean load(int key, Level level){
@@ -208,7 +227,7 @@ public class SavestateManager implements Serializable {
         return currentNode.getData();
     }
 
-    public boolean isUndesirableSaveState() {
+    boolean isUndesirableSaveState() {
         for (TreeNode<byte[]> node : undesirableSavestates) {
             byte[] savedState = node.getData();
             if (Arrays.equals(savedState, currentNode.getData())) return true;
@@ -234,6 +253,10 @@ public class SavestateManager implements Serializable {
         byte[] moves = new byte[playbackIndex];
         this.moves.copy(0, moves, 0, playbackIndex);
         return moves;
+    }
+
+    public ByteList getCheckpoint(int key) {
+        return checkpoints[key];
     }
     
     public String movesToString() {
