@@ -19,6 +19,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -630,6 +632,18 @@ class MenuBar extends JMenuBar{
             helpPopup.addActionListener(e -> new HelpWindow(emulator));
             addIcon(helpPopup, "/resources/icons/help.gif");
             add(helpPopup);
+
+            JMenuItem variationHelp = new JMenuItem("Variation Tester Documentation");
+            variationHelp.addActionListener(e -> {
+                if (Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://supercc.bitbusters.club/VariationScriptDocumentation.pdf"));
+                    } catch (IOException | URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            add(variationHelp);
         }
     }
 
