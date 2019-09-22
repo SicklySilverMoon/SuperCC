@@ -18,7 +18,10 @@ public class SeedSearch {
     private JButton startStopButton;
     private JLabel resultsLabel;
     private JLabel exampleSeedLabel;
-    
+    private JLabel startLabel;
+    private JTextField startField;
+    private JLabel currentSeedLabel;
+
     private static final int UPDATE_RATE = 1000;
     
     private final byte[] startingState;
@@ -43,8 +46,17 @@ public class SeedSearch {
         df = new DecimalFormat("##.####");
     
         startStopButton.addActionListener((e) -> {
-            if (running) killThreadFlag = true;
-            else new SeedSearchThread().start();
+            if (running) {
+                startStopButton.setText("Resume");
+                killThreadFlag = true;
+            }
+            else {
+                seed = Integer.parseInt(startField.getText());
+                startLabel.setVisible(false);
+                startField.setVisible(false);
+                startStopButton.setText("Pause");
+                new SeedSearchThread().start();
+            }
         });
 
         JFrame frame = new JFrame("Seed Search");
@@ -57,39 +69,8 @@ public class SeedSearch {
             public void windowOpened(WindowEvent windowEvent) {
 
             }
-
-            @Override
-            public void windowClosing(WindowEvent windowEvent) {
-                killThreadFlag = true;
-            }
-
-            @Override
-            public void windowClosed(WindowEvent windowEvent) { //this stuff doesn't work
-//                emulator.getSavestates().restart();
-//                emulator.getLevel().load(emulator.getSavestates().getSavestate());
-//                emulator.showAction("Restarted Level");
-//                emulator.getMainWindow().repaint(emulator.getLevel(), false);
-            }
-
-            @Override
-            public void windowIconified(WindowEvent windowEvent) {
-
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent windowEvent) {
-
-            }
-
-            @Override
-            public void windowActivated(WindowEvent windowEvent) {
-
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent windowEvent) {
-
-            }
+        //None of these are useful but the code requires them to be here so i shoved them all into one line
+            @Override public void windowClosing(WindowEvent windowEvent) { killThreadFlag = true; }@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
         });
     }
 
@@ -101,6 +82,7 @@ public class SeedSearch {
     private void updateText() {
         resultsLabel.setText("Successes: "+successes+"/"+attempts+" ("+df.format(100.0 * (double) successes / (double) attempts)+"%)");
         resultsLabel.repaint();
+        currentSeedLabel.setText("Current Seed: "+seed);
         if (lastSuccess >= 0) exampleSeedLabel.setText("Example seed: " + lastSuccess);
         exampleSeedLabel.repaint();
     }
@@ -120,6 +102,7 @@ public class SeedSearch {
             }
             running = false;
             killThreadFlag = false;
+            updateText(); //just have it update with the last result, in case a success is found before an update and it gets canceled
                 emulator.getSavestates().restart();
                 emulator.getLevel().load(emulator.getSavestates().getSavestate());
                 emulator.showAction("Restarted Level");
