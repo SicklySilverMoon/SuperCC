@@ -38,7 +38,7 @@ public class Parser {
             try {
                 statements.add(statement());
             } catch(Exception e) {
-                print(peek(), "Unknown error");
+                print(peek(), "Unknown parsing error.\n  " + e.toString());
                 synchronize();
                 hadError = true;
             }
@@ -175,7 +175,7 @@ public class Parser {
 
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
-            for(int i = 0; i < 4; i++) {
+            for(int i = 0; i < 5; i++) {
                 lexicographic += getNextToken().lexeme;
                 expect(TokenType.COMMA, "Expected ','");
             }
@@ -255,7 +255,7 @@ public class Parser {
     private Expr or() {
         Expr expr = and();
 
-        while(isNextToken(TokenType.OR)) {
+        while(isNextToken(TokenType.OR, TokenType.OR_OR)) {
             Token operator = getPreviousToken();
             Expr right = and();
             expr = new Expr.Logical(expr, operator, right);
@@ -267,7 +267,7 @@ public class Parser {
     private Expr and() {
         Expr expr = equality();
 
-        while(isNextToken(TokenType.AND)) {
+        while(isNextToken(TokenType.AND, TokenType.AND_AND)) {
             Token operator = getPreviousToken();
             Expr right = equality();
             expr = new Expr.Logical(expr, operator, right);
@@ -373,7 +373,7 @@ public class Parser {
             return new Expr.Variable(getPreviousToken());
         }
         if(isNextToken(TokenType.TILE)) {
-            return new Expr.Literal(Tile.valueOf(getPreviousToken().lexeme));
+            return new Expr.Literal(Tile.valueOf((String)getPreviousToken().value));
         }
         if(isNextToken(TokenType.OTHER)) {
             throw error(getPreviousToken(), "Unexpected symbol");

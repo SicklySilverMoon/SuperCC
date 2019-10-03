@@ -23,6 +23,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final HashMap<String, Object> variables;
     private Level level;
     private final byte[] startingState;
+    private final ByteList startingMoveList;
     public int atSequence = 0;
     public int atMove = 0;
     public boolean inSequence = false;
@@ -45,6 +46,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.level = emulator.getLevel();
         this.startingState = this.level.save();
         this.manager = new VariationManager(emulator, statements, variables, this.level, this);
+        this.startingMoveList = this.manager.moveLists[0].clone();
         this.sequenceIndex = manager.sequenceIndex;
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
         this.vt = vt;
@@ -62,9 +64,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         count = 0;
         do {
             count++;
-            level.load(manager.saveStates[atSequence]);
-            moveList = manager.moveLists[atSequence];
             try {
+                level.load(manager.saveStates[atSequence]);
+                moveList = manager.moveLists[atSequence];
                 for (int i = fromStatement; i < statements.size(); i++) {
                     Stmt stmt = statements.get(i);
                     stmt.execute(this);
@@ -90,7 +92,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 break;
             }
             catch(Exception e) {
-                String str = "Unknown error occured.";
+                String str = "Unknown runtime error.\n  " + e.toString();
                 print(str, new Color(255, 68, 68));
                 hadError = true;
                 e.printStackTrace();
@@ -111,6 +113,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             print(str, new Color(0, 153, 0));
         }
         level.load(startingState);
+        emulator.getSavestates().restart();
+        for(byte move : startingMoveList) {
+            emulator.tick(move, TickFlags.PRELOADING);
+        }
         emulator.repaint(true);
     }
 
@@ -183,13 +189,19 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             if(stmt.beforeMove != null) {
                 stmt.beforeMove.execute(this);
             }
-            emulator.tick(move, TickFlags.LIGHT);
-            if(move == SuperCC.WAIT) {
-                emulator.tick(move, TickFlags.LIGHT);
+            if(move == 'w') {
+                emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                moveList.add(SuperCC.WAIT);
+                checkMove();
+                emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                moveList.add(SuperCC.WAIT);
+                checkMove();
             }
-            moveList.add(move);
-            moveList.add(SuperCC.WAIT);
-            checkMove();
+            else {
+                emulator.tick(move, TickFlags.LIGHT);
+                moveList.add(move);
+                checkMove();
+            }
             atMove++;
             if(stmt.afterMove != null) {
                 stmt.afterMove.execute(this);
@@ -201,8 +213,15 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeReturn(Stmt.Return stmt) {
-        Solution solution = new Solution(moveList, level.getRngSeed(), level.getStep());
-        solutions.add(solution);
+        Solution initialSolution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
+
+        emulator.getSavestates().restart();
+        level.load(emulator.getSavestates().getSavestate());
+        for(byte move : moveList) {
+            emulator.tick(move, TickFlags.PRELOADING);
+        }
+        solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep()));
+
         throw new ReturnException();
     }
 
@@ -302,14 +321,17 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 if(isTruthy(left)) {
                     return left;
                 }
+                break;
             case AND:
             case AND_AND:
                 if(!isTruthy(left)) {
                     return left;
                 }
+                break;
             default:
-                return expr.right.evaluate(this);
+                throw new RuntimeError(expr.operator, "Unknown logical expression");
         }
+        return expr.right.evaluate(this);
     }
 
     @Override

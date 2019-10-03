@@ -226,13 +226,19 @@ public class FunctionEvaluator {
             Move move = (Move)arg.evaluate(interpreter);
             byte moveDir = toByte(move);
             for(int i = 0; i < move.number; i++) {
-                emulator.tick(moveDir, TickFlags.LIGHT);
-                if(moveDir == SuperCC.WAIT) {
-                    emulator.tick(moveDir, TickFlags.LIGHT);
+                if(moveDir == 'w') {
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    interpreter.moveList.add(SuperCC.WAIT);
+                    interpreter.checkMove();
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    interpreter.moveList.add(SuperCC.WAIT);
+                    interpreter.checkMove();
                 }
-                interpreter.moveList.add(moveDir);
-                interpreter.moveList.add(SuperCC.WAIT);
-                interpreter.checkMove();
+                else {
+                    emulator.tick(moveDir, TickFlags.LIGHT);
+                    interpreter.moveList.add(moveDir);
+                    interpreter.checkMove();
+                }
             }
         }
         return null;

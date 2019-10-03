@@ -2,6 +2,7 @@ package tools;
 
 import emulator.Solution;
 import emulator.SuperCC;
+import emulator.TickFlags;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -16,6 +17,7 @@ public class VariationResult {
     private JScrollPane scroll;
     private JPanel solutionsPanel;
     private JLabel labelSolutions;
+    private JButton buttonFastest;
 
     VariationResult(SuperCC emulator, long count, ArrayList<Solution> solutions) {
         labelVariations.setText("Variations tested: " + String.format("%,d", count));
@@ -58,6 +60,22 @@ public class VariationResult {
 
             solutionsPanel.add(container, c);
         }
+
+        buttonFastest.addActionListener(e -> {
+            int fastestTime = -1;
+            Solution fastestSolution = null;
+            for(Solution solution: solutions) {
+                solution.load(emulator, TickFlags.LIGHT);
+                int time = emulator.getLevel().getTimer();
+                if(time > fastestTime) {
+                    fastestTime = time;
+                    fastestSolution = solution;
+                }
+            }
+            if(fastestSolution != null) {
+                fastestSolution.load(emulator);
+            }
+        });
 
         JFrame frame = new JFrame("Variation Results");
         frame.setContentPane(mainPanel);

@@ -12,7 +12,7 @@ public class Tokenizer {
     private int start = 0;
     private int current = 0;
     private int line = 1;
-    private static final String moves = "urdlwURDLW";
+    private static final String moves = "urdlwhURDLWH";
     private static final HashMap<String, TokenType> keywords;
 
     static {
@@ -194,11 +194,17 @@ public class Tokenizer {
         if(isNextChar('&')) {
             addToken(TokenType.AND_AND);
         }
+        else {
+            addToken(TokenType.OTHER);
+        }
     }
 
     private void processOr() {
         if(isNextChar('|')) {
             addToken(TokenType.OR_OR);
+        }
+        else {
+            addToken(TokenType.OTHER);
         }
     }
 
@@ -254,6 +260,9 @@ public class Tokenizer {
         }
         else if(type == TokenType.MOVE) {
             addToken(type, substr);
+        }
+        else if(type == TokenType.TILE) {
+            addToken(type, substr.toUpperCase());
         }
         else {
             addToken(type);

@@ -30,8 +30,8 @@ public class Permutation {
         toMove.put('r', SuperCC.RIGHT);
         toMove.put('d', SuperCC.DOWN);
         toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', SuperCC.WAIT);
-        //toMove.put('h', SuperCC.WAIT);
+        toMove.put('w', (byte)'w');
+        toMove.put('h', SuperCC.WAIT);
     }
 
     public Permutation(MovePool movePool, Integer lowerBound, Integer upperBound, String lexicographic) {
@@ -45,7 +45,7 @@ public class Permutation {
         this.lexicographic = lexicographic;
         this.waitIndex = lexicographic.indexOf('w');
 
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 6; i++) {
             order.put(i, lexicographic.charAt(i));
         }
 
@@ -121,6 +121,7 @@ public class Permutation {
     public void reset() {
         set.reset();
         finished = false;
+        currentSize = lowerBound;
         initialPermutation();
     }
 
@@ -135,6 +136,7 @@ public class Permutation {
 
     public void end() {
         terminate(0);
+        finished = true;
     }
 
     private double factorial(int n) {
@@ -146,7 +148,7 @@ public class Permutation {
 
     private double uniquePermutations(int n, int[] moves) {
         double denom = 1;
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 6; i++) {
             denom *= factorial(moves[i]);
         }
         return factorial(n)/denom;
@@ -155,7 +157,7 @@ public class Permutation {
     private void initialPermutation() {
         permutation = new int[currentSize];
         int i = 0;
-        for(int j = 0; j < 5; j++) {
+        for(int j = 0; j < 6; j++) {
             for(int k = 0; k < subset[j]; k++) {
                 permutation[i++] = j;
             }

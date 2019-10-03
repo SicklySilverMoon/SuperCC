@@ -42,7 +42,16 @@ public class VariationManager {
 
         byte[] initialState = level.save();
         this.saveStates[0] = Arrays.copyOf(initialState, initialState.length);
-        this.moveLists[0] = emulator.getSavestates().getMoveList().clone();
+        this.moveLists[0] = new ByteList();
+
+        byte[] moves = emulator.getSavestates().getMoves();
+        int index = emulator.getSavestates().getPlaybackIndex();
+        if(emulator.getSavestates().getMoveList().size() == 0) {
+            index = 0;
+        }
+        for(int i = 0; i < index; i++) {
+            moveLists[0].add(moves[i]);
+        }
         setSequenceIndex(statements);
     }
 
@@ -138,10 +147,23 @@ public class VariationManager {
     }
 
     public double getPermutationCount() {
-        double total = 0;
+        double total = 1;
         for(Stmt.Sequence seq : sequences) {
-            total += seq.permutation.getPermutationCount();
+            total *= seq.permutation.getPermutationCount();
         }
         return total;
+    }
+
+    public void printPermutations() {
+        do {
+            for(int i = 0; i < getSequenceCount(); i++) {
+                Stmt.Sequence seq = sequences.get(i);
+                for(int item : seq.permutation.getPermutation()) {
+                    System.out.print(item + " ");
+                }
+                System.out.print("| ");
+            }
+            System.out.println();
+        }while(nextPermutation() != -1);
     }
 }
