@@ -78,7 +78,7 @@ public class CreatureList implements Iterable<Creature> {
         Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
         if (monster.getCreatureType().isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + monster.getDirection().ordinal());
-        if (!monster.getCreatureType().isAffectedByCB()) direction = monster.getDirection();
+        if (!monster.getCreatureType().isAffectedByCB() && monster.getCreatureType() != CreatureID.ICE_BLOCK) direction = monster.getDirection();
         if (direction == null) return;
         if (monster.getCreatureType() == BLOB){
             Position p = monster.getPosition().clone();
@@ -165,10 +165,11 @@ public class CreatureList implements Iterable<Creature> {
 
         else {
             Tile tile = level.layerFG.get(position);
-            if (!tile.isCreature()) return;
-
+            Tile tilebg = level.layerBG.get(position);
+            if (!tile.isCreature() ^ (tile.isIceBlock() && tilebg.isMovingBlock())) return;
             Creature clone = new Creature(position, tile);
-            direction = clone.getDirection();
+            if (tile.isIceBlock()) direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
+            else direction = clone.getDirection();
 
 
             Position newPosition = clone.getPosition().move(direction);
@@ -177,6 +178,8 @@ public class CreatureList implements Iterable<Creature> {
             if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()) {
                 if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
                 else newClones.add(clone);
+
+                if (clone.getCreatureType() == CreatureID.ICE_BLOCK) level.layerFG.set(position, Tile.ICE_BLOCK);
             }
         }
     }

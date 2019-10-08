@@ -58,7 +58,7 @@ public enum Tile {
     /* 35 BURNED CHIP          */    BOMBED_CHIP("Bombed Chip"),
     /* 36 NOT USED             */    UNUSED_36("Unused"),
     /* 37 NOT USED             */    UNUSED_37("Unused"),
-    /* 38 NOT USED/ICE BLOCK   */    ICEBLOCK_STATIC("Ice Block"),
+    /* 38 NOT USED/ICE BLOCK   */    ICE_BLOCK("Ice Block"),
     /* 39 CHIP IN EXIT         */    EXITED_CHIP("Exited Chip"),
     /* 3A EXIT - END GAME      */    EXIT_EXTRA_1("Exit Animation 2"),
     /* 3B EXIT - END GAME      */    EXIT_EXTRA_2("Exit Animation 3"),
@@ -141,6 +141,9 @@ public enum Tile {
     }
     public boolean isMovingBlock(){
         return BLOCK_UP.ordinal() <= ordinal() && ordinal() <= BLOCK_RIGHT.ordinal();
+    }
+    public boolean isIceBlock(){
+        return ICE_BLOCK.ordinal() == ordinal();
     }
     public boolean isMonster(){
         return BUG_UP.ordinal() <= ordinal() && ordinal() <= PARAMECIUM_RIGHT.ordinal();

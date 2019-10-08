@@ -16,16 +16,6 @@ public class SuperCC {
         {Direction.DOWN}, {Direction.RIGHT}, {}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
-//    private static File introDat; //Crashes in jar release
-//    {
-//        try { //This should literally be impossible to error on
-//            introDat = new File(getClass().getResource("intro.dat").toURI()); //Used to just load a standard set so the program doesn't throw errors every time you move the mouse
-//        }
-//        catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private SavestateManager savestates;
     private Level level;
     private Gui window;
@@ -128,7 +118,7 @@ public class SuperCC {
                         "C:\n" +
                         "C:\n" +
                         "succsave\n" +
-                        "38\n" + //Turns out these are all the key codes for the controls
+                        "38\n" + //Turns out these are all the key codes for the controls. See: https://stackoverflow.com/questions/15313469/java-keyboard-keycodes-list/31637206
                         "37\n" +
                         "40\n" +
                         "39\n" +

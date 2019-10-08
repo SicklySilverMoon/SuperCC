@@ -196,6 +196,7 @@ public class Creature{
     public Tile toTile(){
         switch (creatureType){
             case BLOCK: return Tile.BLOCK;
+            case ICE_BLOCK: return Tile.ICE_BLOCK;
             case CHIP_SLIDING: return Tile.fromOrdinal(Tile.CHIP_UP.ordinal() | direction.ordinal());
             case TANK_STATIONARY: return Tile.fromOrdinal(TANK_UP.ordinal() | direction.ordinal());
             default: return Tile.fromOrdinal((creatureType.ordinal() << 2) + 0x40 | direction.ordinal());
@@ -335,8 +336,8 @@ public class Creature{
             case BURNED_CHIP:
             case BOMBED_CHIP:
             case UNUSED_36:
-            case UNUSED_37:
-            case ICEBLOCK_STATIC:
+            case UNUSED_37: return false;
+            case ICE_BLOCK: return creatureType == CreatureID.ICE_BLOCK;
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
@@ -380,7 +381,8 @@ public class Creature{
                     }
                 }
                 else if (creatureType.isBlock()) {
-                    level.layerFG.set(newPosition, DIRT);
+                    if (creatureType == CreatureID.ICE_BLOCK) level.layerFG.set(newPosition, ICE);
+                    else level.layerFG.set(newPosition, DIRT);
                     kill();
                 }
                 else if (creatureType != GLIDER) kill();
@@ -400,6 +402,9 @@ public class Creature{
                     case BUG:
                     case WALKER:
                         return false;
+                    case ICE_BLOCK:
+                        level.layerFG.set(newPosition, WATER);
+                        kill();
                     default:
                         kill();
                         return true;
@@ -425,13 +430,7 @@ public class Creature{
                     }
                     Creature block = new Creature(newPosition, Tile.BLOCK);
                     if (level.layerBG.get(newPosition) == CLONE_MACHINE) { //The weird block/clone_machine push block to clone thing now works
-                        if (block.tryMove(direction, level, false, pressedButtons)) {
-                            for (BrownButton b : level.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
-                                if (b.getTargetPosition().equals(newPosition) && level.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
-                                    b.release(level);
-                                }
-                            }
-                        }
+                        block.tryMove(direction, level, false, pressedButtons);
                         level.layerFG.set(newPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
                         level.insertTile(newPosition, Tile.BLOCK);
                         return false; //Normally you would check if Chip could enter the resulting tile but seeing as its always a clone machine on the bottom it'll always be false, therefore i always have this return false
@@ -447,7 +446,7 @@ public class Creature{
                 }
                 return false;
             case DIRT:
-                if (creatureType.isChip()) {
+                if (creatureType.isChip() || creatureType == CreatureID.ICE_BLOCK) {
                     level.layerFG.set(newPosition, FLOOR);
                     return true;
                 }
@@ -600,8 +599,39 @@ public class Creature{
             case BURNED_CHIP:
             case BOMBED_CHIP:
             case UNUSED_36:
-            case UNUSED_37:
-            case ICEBLOCK_STATIC:
+            case UNUSED_37: return false;
+            case ICE_BLOCK:
+                if (level.getLayerBG().get(newPosition).isMovingBlock()) return false; //You know how if you have a clone machine under a monster you can't enter it? Well it's the same with ice blocks and the clone blocks under them
+                if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType == CreatureID.ICE_BLOCK){
+                    for (Creature m : level.slipList) {
+                        if (m.position.equals(newPosition)) {
+                            if (m.direction == direction || m.direction.turn(TURN_AROUND) == direction) return false;
+                            if (m.tryMove(direction, level, false, pressedButtons)){
+                                return tryEnter(direction, level, newPosition, level.layerFG.get(newPosition), pressedButtons);
+                            }
+                            return false;
+                        }
+                    }
+                    if (level.getLayerBG().get(newPosition) == Tile.ICE_BLOCK) {
+                        level.popTile(newPosition);
+                    }
+                    Creature block = new Creature(newPosition, Tile.ICE_BLOCK);
+                    if (level.layerBG.get(newPosition) == CLONE_MACHINE) { //The weird block/clone_machine push block to clone thing now works
+                        block.tryMove(direction, level, false, pressedButtons);
+                        level.layerFG.set(newPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
+                        level.insertTile(newPosition, Tile.ICE_BLOCK);
+                        return false; //Normally you would check if Chip could enter the resulting tile but seeing as its always a clone machine on the bottom it'll always be false, therefore i always have this return false
+                    }
+                    if (block.tryMove(direction, level, false, pressedButtons)){
+                        for (BrownButton b3 : level.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
+                            if (b3.getTargetPosition().equals(newPosition) && level.getLayerFG().get(b3.getButtonPosition()) == BUTTON_BROWN) {
+                                b3.release(level);
+                            }
+                        }
+                        return tryEnter(direction, level, newPosition, level.layerFG.get(newPosition), pressedButtons);
+                    }
+                }
+                return false;
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
@@ -693,7 +723,7 @@ public class Creature{
         else newPosition = position.move(direction);
 
         boolean CloneMachineCheck = true;
-        if (level.layerBG.get(newPosition) == CLONE_MACHINE && level.layerFG.get(newPosition) == Tile.BLOCK) CloneMachineCheck = true;
+        if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) CloneMachineCheck = true;
         else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !creatureType.isBlock()) CloneMachineCheck = false;
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
@@ -801,7 +831,10 @@ public class Creature{
         else{
             direction = Direction.fromOrdinal(tile.ordinal() % 4);
             if (tile == Tile.BLOCK) creatureType = BLOCK;
-            else creatureType = CreatureID.fromOrdinal((tile.ordinal() - 0x40) >>> 2);
+            else {
+                if (tile == Tile.ICE_BLOCK) creatureType = CreatureID.ICE_BLOCK;
+                else creatureType = CreatureID.fromOrdinal((tile.ordinal() - 0x40) >>> 2);
+            }
         }
         if (creatureType == TANK_STATIONARY) creatureType = TANK_MOVING;
     }
