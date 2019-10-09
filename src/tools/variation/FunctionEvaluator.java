@@ -3,6 +3,7 @@ package tools.variation;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Position;
+import util.ByteList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -116,7 +117,8 @@ public class FunctionEvaluator {
                 atMove = manager.getPermutation(atSequence).length - 1;
             }
         }
-        return getMove(manager.getPermutation(atSequence)[atMove]);
+        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        return getMove(moves.get(moves.size() - 1));
     }
 
     private Move nextMove() {
@@ -139,7 +141,8 @@ public class FunctionEvaluator {
                 }
             }
         }
-        return getMove(manager.getPermutation(atSequence)[atMove]);
+        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        return getMove(moves.get(moves.size() - 1));
     }
 
     private Move getMove(byte move) {
@@ -164,7 +167,7 @@ public class FunctionEvaluator {
         for(int i = 0; i < manager.getSequenceCount(); i++) {
             sum += manager.getPermutation(i).length;
             if(index < sum) {
-                return getMove(manager.getPermutation(i)[index - prevSum]);
+                return getMove(manager.getPermutation(i)[index - prevSum].get(0));
             }
             prevSum = 0;
         }
@@ -172,7 +175,7 @@ public class FunctionEvaluator {
     }
 
     private Move getOppositeMove(Move move) {
-        switch(move.move) {
+        switch(move.move.charAt(0)) {
             case 'u':
                 return new Move("d");
             case 'r':
@@ -201,12 +204,14 @@ public class FunctionEvaluator {
     }
 
     private double moveCount(Move move) {
-        byte moveByte = toByte(move);
+        byte moveByte = toByte(move.move.charAt(0));
         double count = 0;
         for(int i = 0; i < manager.getSequenceCount(); i++) {
-            for(byte b : manager.getPermutation(i)) {
-                if(b == moveByte) {
-                    count++;
+            for(ByteList bl : manager.getPermutation(i)) {
+                for(byte b : bl) {
+                    if (b == moveByte) {
+                        count++;
+                    }
                 }
             }
         }
@@ -224,28 +229,30 @@ public class FunctionEvaluator {
     private Object move(ArrayList<Expr> arguments) {
         for(Expr arg : arguments) {
             Move move = (Move)arg.evaluate(interpreter);
-            byte moveDir = toByte(move);
+            String str = move.move;
             for(int i = 0; i < move.number; i++) {
-                if(moveDir == 'w') {
-                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                    interpreter.moveList.add(SuperCC.WAIT);
-                    interpreter.checkMove();
-                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                    interpreter.moveList.add(SuperCC.WAIT);
-                    interpreter.checkMove();
-                }
-                else {
-                    emulator.tick(moveDir, TickFlags.LIGHT);
-                    interpreter.moveList.add(moveDir);
-                    interpreter.checkMove();
+                for(int j = 0; j < str.length(); j++) {
+                    byte moveDir = toByte(str.charAt(j));
+                    if (moveDir == SuperCC.WAIT) {
+                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                        interpreter.moveList.add(SuperCC.WAIT);
+                        interpreter.checkMove();
+                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                        interpreter.moveList.add(SuperCC.WAIT);
+                        interpreter.checkMove();
+                    } else {
+                        emulator.tick(moveDir, TickFlags.LIGHT);
+                        interpreter.moveList.add(moveDir);
+                        interpreter.checkMove();
+                    }
                 }
             }
         }
         return null;
     }
 
-    private byte toByte(Move move) {
-        switch(move.move) {
+    private byte toByte(char c) {
+        switch(c) {
             case 'u':
                 return SuperCC.UP;
             case 'r':

@@ -54,6 +54,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     public void interpret() {
         console.setText("");
+        //manager.printPermutations();
         displayPermutationCount();
         if(manager.getSequenceCount() == 0) {
             hadError = true;
@@ -112,8 +113,8 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                     String.format("%,d", solutions.size()) + " solutions.";
             print(str, new Color(0, 153, 0));
         }
-        level.load(startingState);
         emulator.getSavestates().restart();
+        level.load(emulator.getSavestates().getSavestate());
         for(byte move : startingMoveList) {
             emulator.tick(move, TickFlags.PRELOADING);
         }
@@ -180,27 +181,27 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executeSequence(Stmt.Sequence stmt) {
         inSequence = true;
         manager.setVariables(atSequence);
-        byte[] permutation = manager.getPermutation(atSequence);
+        ByteList[] permutation = manager.getPermutation(atSequence);
         if(stmt.start != null) {
             stmt.start.execute(this);
         }
         for(atMove = 0; atMove < permutation.length;) {
-            byte move = permutation[atMove];
             if(stmt.beforeMove != null) {
                 stmt.beforeMove.execute(this);
             }
-            if(move == 'w') {
-                emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                moveList.add(SuperCC.WAIT);
-                checkMove();
-                emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                moveList.add(SuperCC.WAIT);
-                checkMove();
-            }
-            else {
-                emulator.tick(move, TickFlags.LIGHT);
-                moveList.add(move);
-                checkMove();
+            for(byte move : permutation[atMove]) {
+                if (move == 'w') {
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    moveList.add(SuperCC.WAIT);
+                    checkMove();
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    moveList.add(SuperCC.WAIT);
+                    checkMove();
+                } else {
+                    emulator.tick(move, TickFlags.LIGHT);
+                    moveList.add(move);
+                    checkMove();
+                }
             }
             atMove++;
             if(stmt.afterMove != null) {
@@ -213,8 +214,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeReturn(Stmt.Return stmt) {
-        Solution initialSolution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
-
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
         for(byte move : moveList) {
@@ -242,7 +241,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             for(int i = 0; i < atSeq; i++) {
                 index += manager.getPermutation(i).length;
             }
-            index += atMo - 1;
+            index += atMo;
         }
         manager.terminate(index);
         throw new TerminateException();

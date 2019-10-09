@@ -36,17 +36,22 @@ public class Parser {
         ArrayList<Stmt> statements = new ArrayList<>();
         while(!isEnd()) {
             try {
-                statements.add(statement());
+                statements.add(statement(true));
             } catch(Exception e) {
                 print(peek(), "Unknown parsing error.\n  " + e.toString());
                 synchronize();
                 hadError = true;
+                e.printStackTrace();
             }
         }
         return statements;
     }
 
     private Stmt statement() {
+        return statement(false);
+    }
+
+    private Stmt statement(boolean isGlobal) {
         try {
             if (isNextToken(TokenType.LEFT_BRACE)) {
                 return new Stmt.Block(block());
@@ -61,6 +66,9 @@ public class Parser {
                 return printStatement();
             }
             if (isNextToken(TokenType.LEFT_BRACKET)) {
+                if(!isGlobal) {
+                    throw error(getPreviousToken(), "Sequence must be outside conditions and loops");
+                }
                 return sequence();
             }
             if (isNextToken(TokenType.SEMICOLON)) {
@@ -176,11 +184,14 @@ public class Parser {
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
             for(int i = 0; i < 5; i++) {
-                lexicographic += getNextToken().lexeme;
+                lexicographic += getNextToken().lexeme.toLowerCase();
                 expect(TokenType.COMMA, "Expected ','");
             }
-            lexicographic += getNextToken().lexeme;
+            lexicographic += getNextToken().lexeme.toLowerCase();
             expect(TokenType.SEMICOLON, "Expected ';'");
+            if(!checkLexicographic(lexicographic)) {
+                throw error(getPreviousToken(), "All 6 move types required for order");
+            }
         }
 
         Stmt start = null;
@@ -438,7 +449,7 @@ public class Parser {
         StyledDocument doc = console.getStyledDocument();
         Style style = console.addStyle("style", null);
         StyleConstants.setForeground(style, new Color(255, 68, 68));
-        String str = "[Line " + token.line + "] " + message + " near '" + token.lexeme + "'\n";
+        String str = "[Line " + token.line + " near '" + token.lexeme + "'] " + message + "\n";
         try {
             doc.insertString(doc.getLength(), str, style);
         } catch (BadLocationException e) {}
@@ -465,6 +476,16 @@ public class Parser {
             }
             getNextToken();
         }
+    }
+
+    private boolean checkLexicographic(String lexicographic) {
+        String toCheck = "urdlwh";
+        for(int i = 0; i < toCheck.length(); i++) {
+            if(lexicographic.indexOf(toCheck.charAt(i)) < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class SyntaxError extends RuntimeException { }

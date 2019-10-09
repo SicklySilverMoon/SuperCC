@@ -17,13 +17,6 @@ public class Tokenizer {
 
     static {
         keywords = new HashMap<>();
-        keywords.put("u", TokenType.MOVE);
-        keywords.put("r", TokenType.MOVE);
-        keywords.put("d", TokenType.MOVE);
-        keywords.put("l", TokenType.MOVE);
-        keywords.put("w", TokenType.MOVE);
-        keywords.put("h", TokenType.MOVE);
-
         keywords.put("start", TokenType.START);
         keywords.put("beforemove", TokenType.BEFORE_MOVE);
         keywords.put("aftermove", TokenType.AFTER_MOVE);
@@ -234,9 +227,11 @@ public class Tokenizer {
             getNextChar();
         }
         if(moves.contains(peek() + "")) {
-            getNextChar();
+            while(moves.contains(peek() + "")) {
+                getNextChar();
+            }
             String substr = code.substring(start, current);
-            addToken(TokenType.MOVE, substr);
+            addToken(TokenType.MOVE, substr.toLowerCase());
             return;
         }
         else if(peek() == '.' && isDigit(peekNext())) {
@@ -256,10 +251,18 @@ public class Tokenizer {
         String substr = code.substring(start, current);
         TokenType type = keywords.get(substr.toLowerCase());
         if(type == null) {
+            boolean move = true;
+            for(int i = 0; i < substr.length(); i++) {
+                if(!moves.contains(substr.charAt(i) + "")) {
+                    move = false;
+                    break;
+                }
+            }
+            if(move) {
+                addToken(TokenType.MOVE, substr.toLowerCase());
+                return;
+            }
             addToken(TokenType.IDENTIFIER, substr);
-        }
-        else if(type == TokenType.MOVE) {
-            addToken(type, substr);
         }
         else if(type == TokenType.TILE) {
             addToken(type, substr.toUpperCase());

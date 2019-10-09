@@ -3,6 +3,7 @@ package tools.variation;
 import emulator.EmulatorKeyListener;
 import emulator.SuperCC;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+import util.ByteList;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,14 +12,12 @@ public class Permutation {
     private MovePool movePool;
     public Integer lowerBound;
     public Integer upperBound;
-    private HashMap<Integer, Character> order = new HashMap<>();
     private int[] permutation;
     public boolean finished = false;
     private Multiset set;
     private int[] subset;
     private int currentSize;
     private String lexicographic;
-    private int waitIndex;
 
     public static double LIMIT = 1e18;
 
@@ -43,13 +42,12 @@ public class Permutation {
         this.subset = this.set.getSubset();
         this.currentSize = this.lowerBound;
         this.lexicographic = lexicographic;
-        this.waitIndex = lexicographic.indexOf('w');
-
-        for(int i = 0; i < 6; i++) {
-            order.put(i, lexicographic.charAt(i));
-        }
 
         initialPermutation();
+    }
+
+    public int[] getSubset() {
+        return subset;
     }
 
     public void nextPermutation() {
@@ -59,7 +57,7 @@ public class Permutation {
                 break;
             }
         }
-        if(k == -1) {
+        if(k < 0) {
             set.nextSubset();
             if(!set.finished) {
                 currentSize = set.currentSize;
@@ -86,23 +84,24 @@ public class Permutation {
         }
     }
 
-    public byte[] getPermutation() {
+    public ByteList[] getPermutation() {
         if(finished) {
             return null;
         }
-        byte[] moves = new byte[currentSize];
+        ByteList[] moves = new ByteList[currentSize];
 
         for(int i = 0; i < currentSize; i++) {
-            moves[i] = toMove.get(order.get(permutation[i]));
+            moves[i] = new ByteList();
+            String str = this.set.moves.get(permutation[i]);
+            for(int j = 0; j < str.length(); j++) {
+                moves[i].add(toMove.get(str.charAt(j)));
+            }
         }
 
         return moves;
     }
 
     public int[] getRawPermutation() {
-        if(finished) {
-            return null;
-        }
         return permutation;
     }
 
@@ -135,7 +134,7 @@ public class Permutation {
     }
 
     public void end() {
-        terminate(0);
+        terminate(-1);
         finished = true;
     }
 
@@ -148,7 +147,7 @@ public class Permutation {
 
     private double uniquePermutations(int n, int[] moves) {
         double denom = 1;
-        for(int i = 0; i < 6; i++) {
+        for(int i = 0; i < moves.length; i++) {
             denom *= factorial(moves[i]);
         }
         return factorial(n)/denom;
@@ -157,7 +156,7 @@ public class Permutation {
     private void initialPermutation() {
         permutation = new int[currentSize];
         int i = 0;
-        for(int j = 0; j < 6; j++) {
+        for(int j = 0; j < subset.length; j++) {
             for(int k = 0; k < subset[j]; k++) {
                 permutation[i++] = j;
             }

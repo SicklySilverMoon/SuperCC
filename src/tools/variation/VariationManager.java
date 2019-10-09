@@ -14,7 +14,6 @@ public class VariationManager {
     private ArrayList<HashMap<String, Object>> variableStates;
     private Level level;
     private Interpreter interpreter;
-    private byte[][] permutations;
     public int[] sequenceIndex;
     public byte[][] saveStates;
     public ByteList[] moveLists;
@@ -30,13 +29,11 @@ public class VariationManager {
         if(sequences.size() == 0) {
             return;
         }
-        this.permutations = new byte[sequences.size()][];
         this.sequenceIndex = new int[sequences.size()];
         this.saveStates = new byte[sequences.size()][];
         this.moveLists = new ByteList[sequences.size()];
 
         for(int i = 0; i < sequences.size(); i++) {
-            permutations[i] = sequences.get(i).permutation.getPermutation();
             variableStates.add(new HashMap<>());
         }
 
@@ -50,13 +47,14 @@ public class VariationManager {
             index = 0;
         }
         for(int i = 0; i < index; i++) {
-            moveLists[0].add(moves[i]);
+            byte move = lowercase(moves[i]);
+            moveLists[0].add(move);
         }
         setSequenceIndex(statements);
     }
 
-    public byte[] getPermutation(int index) {
-        return permutations[index];
+    public ByteList[] getPermutation(int index) {
+        return sequences.get(index).permutation.getPermutation();
     }
 
     public int nextPermutation() {
@@ -67,11 +65,9 @@ public class VariationManager {
             if(seq.permutation.finished) {
                 if(i > 0) {
                     seq.permutation.reset();
-                    permutations[i] = seq.permutation.getPermutation();
                 }
             }
             else  {
-                permutations[i] = seq.permutation.getPermutation();
                 break;
             }
         }
@@ -155,15 +151,40 @@ public class VariationManager {
     }
 
     public void printPermutations() {
+        int count = 0;
+        int[] subset = sequences.get(0).permutation.getSubset();
         do {
             for(int i = 0; i < getSequenceCount(); i++) {
                 Stmt.Sequence seq = sequences.get(i);
-                for(int item : seq.permutation.getPermutation()) {
-                    System.out.print(item + " ");
+                for(ByteList list : seq.permutation.getPermutation()) {
+                    for(byte b : list) {
+                        System.out.print((char)b);
+                    }
                 }
-                System.out.print("| ");
+                count++;
+                System.out.print(" | [");
+                for(int s : subset) {
+                    System.out.print(s + ", ");
+                }
+                System.out.print("]");
             }
             System.out.println();
         }while(nextPermutation() != -1);
+        System.out.println("Count: " + count);
+    }
+
+    private byte lowercase(byte b) {
+        switch(b) {
+            case 'U':
+                return 'u';
+            case 'R':
+                return 'r';
+            case 'D':
+                return 'd';
+            case 'L':
+                return 'l';
+            default:
+                return b;
+        }
     }
 }
