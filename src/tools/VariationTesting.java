@@ -47,6 +47,9 @@ public class VariationTesting {
         colors.put(TokenType.START, new Color(68, 221, 255));
         colors.put(TokenType.BEFORE_MOVE, new Color(68, 221, 255));
         colors.put(TokenType.AFTER_MOVE, new Color(68, 221, 255));
+        colors.put(TokenType.BEFORE_STEP, new Color(68, 221, 255));
+        colors.put(TokenType.AFTER_STEP, new Color(68, 221, 255));
+        colors.put(TokenType.END, new Color(68, 221, 255));
 
         colors.put(TokenType.IF, new Color(0, 153, 255));
         colors.put(TokenType.ELSE, new Color(0, 153, 255));

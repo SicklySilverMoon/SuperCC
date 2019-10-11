@@ -95,6 +95,19 @@ public class FunctionEvaluator {
                 return (double)emulator.getLevel().getChip().getPosition().getY();
             case "move":
                 return move(function.arguments);
+            case "distanceto":
+                checkArgs(function, 2);
+                x = function.arguments.get(0).evaluate(interpreter);
+                y = function.arguments.get(1).evaluate(interpreter);
+                checkIfNumber(function, x, y);
+                int playerX = emulator.getLevel().getChip().getPosition().getX();
+                int playerY = emulator.getLevel().getChip().getPosition().getY();
+                return Math.abs(playerX - ((Double)x).intValue()) + Math.abs(playerY - ((Double)y).intValue());
+            case "gettimeleft":
+                checkArgs(function, 0);
+                int time = emulator.getLevel().getTimer();
+                if(time < 0) time += 10001;
+                return (double)time / 10;
         }
         return null;
     }
@@ -142,7 +155,7 @@ public class FunctionEvaluator {
             }
         }
         ByteList moves = manager.getPermutation(atSequence)[atMove];
-        return getMove(moves.get(moves.size() - 1));
+        return getMove(moves.get(0));
     }
 
     private Move getMove(byte move) {
@@ -155,8 +168,10 @@ public class FunctionEvaluator {
                 return new Move("d");
             case SuperCC.LEFT:
                 return new Move("l");
-            case SuperCC.WAIT:
+            case 'w':
                 return new Move("w");
+            case SuperCC.WAIT:
+                return new Move("h");
         }
         return null;
     }

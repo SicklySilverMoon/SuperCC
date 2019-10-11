@@ -165,15 +165,18 @@ public class Permutation {
 
     private void setBounds() {
         if(lowerBound == null && upperBound == null) {
-            int count = 0;
-            for(int moves : movePool.moves.values()) {
-                count += moves;
-            }
-            lowerBound = count;
-            upperBound = count;
+            lowerBound = movePool.size;
+            upperBound = movePool.size;
         }
         else if(upperBound == null) {
             upperBound = lowerBound;
         }
+        if(upperBound < lowerBound) {
+            int temp = upperBound;
+            upperBound = lowerBound;
+            lowerBound = temp;
+        }
+        upperBound = Math.min(upperBound, movePool.size);
+        lowerBound = Math.min(lowerBound, movePool.size);
     }
 }

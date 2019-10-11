@@ -159,7 +159,7 @@ public class Parser {
     private Stmt sequence() {
         MovePool movePool = new MovePool();
         while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-            movePool.add(new Move(getNextToken().lexeme));
+            movePool.add(new Move((String)(getNextToken().value)));
             if(peek().type == TokenType.COMMA) {
                 expect(TokenType.COMMA, "Expected ','");
             }
@@ -183,10 +183,6 @@ public class Parser {
 
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
-            for(int i = 0; i < 5; i++) {
-                lexicographic += getNextToken().lexeme.toLowerCase();
-                expect(TokenType.COMMA, "Expected ','");
-            }
             lexicographic += getNextToken().lexeme.toLowerCase();
             expect(TokenType.SEMICOLON, "Expected ';'");
             if(!checkLexicographic(lexicographic)) {
@@ -197,8 +193,12 @@ public class Parser {
         Stmt start = null;
         Stmt beforeMove = null;
         Stmt afterMove = null;
+        Stmt beforeStep = null;
+        Stmt afterStep = null;
+        Stmt end = null;
 
-        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE)) {
+        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE,
+                TokenType.BEFORE_STEP, TokenType.AFTER_STEP, TokenType.END)) {
             Token lifecycle = getPreviousToken();
             expect(TokenType.COLON, "Expected ':'");
             Stmt stmt = statement();
@@ -212,10 +212,20 @@ public class Parser {
                 case AFTER_MOVE:
                     afterMove = stmt;
                     break;
+                case BEFORE_STEP:
+                    beforeStep = stmt;
+                    break;
+                case AFTER_STEP:
+                    afterStep = stmt;
+                    break;
+                case END:
+                    end = stmt;
+                    break;
             }
         }
         expect(TokenType.RIGHT_BRACE, "Expected '}'");
-        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove);
+        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic,
+                start, beforeMove, afterMove, beforeStep, afterStep, end);
     }
 
     private Stmt terminate() {
@@ -378,7 +388,7 @@ public class Parser {
             return new Expr.Literal(getPreviousToken().value);
         }
         if(isNextToken(TokenType.MOVE)) {
-            return new Expr.Literal(new Move(getPreviousToken().lexeme));
+            return new Expr.Literal(new Move((String)(getPreviousToken().value)));
         }
         if(isNextToken(TokenType.IDENTIFIER)) {
             return new Expr.Variable(getPreviousToken());
@@ -479,6 +489,9 @@ public class Parser {
     }
 
     private boolean checkLexicographic(String lexicographic) {
+        if(lexicographic.length() != 6) {
+            return false;
+        }
         String toCheck = "urdlwh";
         for(int i = 0; i < toCheck.length(); i++) {
             if(lexicographic.indexOf(toCheck.charAt(i)) < 0) {
