@@ -3,6 +3,7 @@ package tools.variation;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Position;
+import util.ByteList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +95,19 @@ public class FunctionEvaluator {
                 return (double)emulator.getLevel().getChip().getPosition().getY();
             case "move":
                 return move(function.arguments);
+            case "distanceto":
+                checkArgs(function, 2);
+                x = function.arguments.get(0).evaluate(interpreter);
+                y = function.arguments.get(1).evaluate(interpreter);
+                checkIfNumber(function, x, y);
+                int playerX = emulator.getLevel().getChip().getPosition().getX();
+                int playerY = emulator.getLevel().getChip().getPosition().getY();
+                return Math.abs(playerX - ((Double)x).intValue()) + Math.abs(playerY - ((Double)y).intValue());
+            case "gettimeleft":
+                checkArgs(function, 0);
+                int time = emulator.getLevel().getTimer();
+                if(time < 0) time += 10001;
+                return (double)time / 10;
         }
         return null;
     }
@@ -116,7 +130,8 @@ public class FunctionEvaluator {
                 atMove = manager.getPermutation(atSequence).length - 1;
             }
         }
-        return getMove(manager.getPermutation(atSequence)[atMove]);
+        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        return getMove(moves.get(moves.size() - 1));
     }
 
     private Move nextMove() {
@@ -139,7 +154,8 @@ public class FunctionEvaluator {
                 }
             }
         }
-        return getMove(manager.getPermutation(atSequence)[atMove]);
+        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        return getMove(moves.get(0));
     }
 
     private Move getMove(byte move) {
@@ -152,8 +168,10 @@ public class FunctionEvaluator {
                 return new Move("d");
             case SuperCC.LEFT:
                 return new Move("l");
-            case SuperCC.WAIT:
+            case 'w':
                 return new Move("w");
+            case SuperCC.WAIT:
+                return new Move("h");
         }
         return null;
     }
@@ -164,7 +182,7 @@ public class FunctionEvaluator {
         for(int i = 0; i < manager.getSequenceCount(); i++) {
             sum += manager.getPermutation(i).length;
             if(index < sum) {
-                return getMove(manager.getPermutation(i)[index - prevSum]);
+                return getMove(manager.getPermutation(i)[index - prevSum].get(0));
             }
             prevSum = 0;
         }
@@ -172,7 +190,7 @@ public class FunctionEvaluator {
     }
 
     private Move getOppositeMove(Move move) {
-        switch(move.move) {
+        switch(move.move.charAt(0)) {
             case 'u':
                 return new Move("d");
             case 'r':
@@ -201,12 +219,14 @@ public class FunctionEvaluator {
     }
 
     private double moveCount(Move move) {
-        byte moveByte = toByte(move);
+        byte moveByte = toByte(move.move.charAt(0));
         double count = 0;
         for(int i = 0; i < manager.getSequenceCount(); i++) {
-            for(byte b : manager.getPermutation(i)) {
-                if(b == moveByte) {
-                    count++;
+            for(ByteList bl : manager.getPermutation(i)) {
+                for(byte b : bl) {
+                    if (b == moveByte) {
+                        count++;
+                    }
                 }
             }
         }
@@ -224,22 +244,30 @@ public class FunctionEvaluator {
     private Object move(ArrayList<Expr> arguments) {
         for(Expr arg : arguments) {
             Move move = (Move)arg.evaluate(interpreter);
-            byte moveDir = toByte(move);
+            String str = move.move;
             for(int i = 0; i < move.number; i++) {
-                emulator.tick(moveDir, TickFlags.LIGHT);
-                if(moveDir == SuperCC.WAIT) {
-                    emulator.tick(moveDir, TickFlags.LIGHT);
+                for(int j = 0; j < str.length(); j++) {
+                    byte moveDir = toByte(str.charAt(j));
+                    if (moveDir == SuperCC.WAIT) {
+                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                        interpreter.moveList.add(SuperCC.WAIT);
+                        interpreter.checkMove();
+                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                        interpreter.moveList.add(SuperCC.WAIT);
+                        interpreter.checkMove();
+                    } else {
+                        emulator.tick(moveDir, TickFlags.LIGHT);
+                        interpreter.moveList.add(moveDir);
+                        interpreter.checkMove();
+                    }
                 }
-                interpreter.moveList.add(moveDir);
-                interpreter.moveList.add(SuperCC.WAIT);
-                interpreter.checkMove();
             }
         }
         return null;
     }
 
-    private byte toByte(Move move) {
-        switch(move.move) {
+    private byte toByte(char c) {
+        switch(c) {
             case 'u':
                 return SuperCC.UP;
             case 'r':

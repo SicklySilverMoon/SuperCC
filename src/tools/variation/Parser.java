@@ -36,17 +36,22 @@ public class Parser {
         ArrayList<Stmt> statements = new ArrayList<>();
         while(!isEnd()) {
             try {
-                statements.add(statement());
+                statements.add(statement(true));
             } catch(Exception e) {
-                print(peek(), "Unknown error");
+                print(peek(), "Unknown parsing error.\n  " + e.toString());
                 synchronize();
                 hadError = true;
+                e.printStackTrace();
             }
         }
         return statements;
     }
 
     private Stmt statement() {
+        return statement(false);
+    }
+
+    private Stmt statement(boolean isGlobal) {
         try {
             if (isNextToken(TokenType.LEFT_BRACE)) {
                 return new Stmt.Block(block());
@@ -61,6 +66,9 @@ public class Parser {
                 return printStatement();
             }
             if (isNextToken(TokenType.LEFT_BRACKET)) {
+                if(!isGlobal) {
+                    throw error(getPreviousToken(), "Sequence must be outside conditions and loops");
+                }
                 return sequence();
             }
             if (isNextToken(TokenType.SEMICOLON)) {
@@ -151,7 +159,7 @@ public class Parser {
     private Stmt sequence() {
         MovePool movePool = new MovePool();
         while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-            movePool.add(new Move(getNextToken().lexeme));
+            movePool.add(new Move((String)(getNextToken().value)));
             if(peek().type == TokenType.COMMA) {
                 expect(TokenType.COMMA, "Expected ','");
             }
@@ -175,19 +183,22 @@ public class Parser {
 
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
-            for(int i = 0; i < 4; i++) {
-                lexicographic += getNextToken().lexeme;
-                expect(TokenType.COMMA, "Expected ','");
-            }
-            lexicographic += getNextToken().lexeme;
+            lexicographic += getNextToken().lexeme.toLowerCase();
             expect(TokenType.SEMICOLON, "Expected ';'");
+            if(!checkLexicographic(lexicographic)) {
+                throw error(getPreviousToken(), "All 6 move types required for order");
+            }
         }
 
         Stmt start = null;
         Stmt beforeMove = null;
         Stmt afterMove = null;
+        Stmt beforeStep = null;
+        Stmt afterStep = null;
+        Stmt end = null;
 
-        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE)) {
+        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE,
+                TokenType.BEFORE_STEP, TokenType.AFTER_STEP, TokenType.END)) {
             Token lifecycle = getPreviousToken();
             expect(TokenType.COLON, "Expected ':'");
             Stmt stmt = statement();
@@ -201,10 +212,20 @@ public class Parser {
                 case AFTER_MOVE:
                     afterMove = stmt;
                     break;
+                case BEFORE_STEP:
+                    beforeStep = stmt;
+                    break;
+                case AFTER_STEP:
+                    afterStep = stmt;
+                    break;
+                case END:
+                    end = stmt;
+                    break;
             }
         }
         expect(TokenType.RIGHT_BRACE, "Expected '}'");
-        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove);
+        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic,
+                start, beforeMove, afterMove, beforeStep, afterStep, end);
     }
 
     private Stmt terminate() {
@@ -255,7 +276,7 @@ public class Parser {
     private Expr or() {
         Expr expr = and();
 
-        while(isNextToken(TokenType.OR)) {
+        while(isNextToken(TokenType.OR, TokenType.OR_OR)) {
             Token operator = getPreviousToken();
             Expr right = and();
             expr = new Expr.Logical(expr, operator, right);
@@ -267,7 +288,7 @@ public class Parser {
     private Expr and() {
         Expr expr = equality();
 
-        while(isNextToken(TokenType.AND)) {
+        while(isNextToken(TokenType.AND, TokenType.AND_AND)) {
             Token operator = getPreviousToken();
             Expr right = equality();
             expr = new Expr.Logical(expr, operator, right);
@@ -367,13 +388,13 @@ public class Parser {
             return new Expr.Literal(getPreviousToken().value);
         }
         if(isNextToken(TokenType.MOVE)) {
-            return new Expr.Literal(new Move(getPreviousToken().lexeme));
+            return new Expr.Literal(new Move((String)(getPreviousToken().value)));
         }
         if(isNextToken(TokenType.IDENTIFIER)) {
             return new Expr.Variable(getPreviousToken());
         }
         if(isNextToken(TokenType.TILE)) {
-            return new Expr.Literal(Tile.valueOf(getPreviousToken().lexeme));
+            return new Expr.Literal(Tile.valueOf((String)getPreviousToken().value));
         }
         if(isNextToken(TokenType.OTHER)) {
             throw error(getPreviousToken(), "Unexpected symbol");
@@ -438,7 +459,7 @@ public class Parser {
         StyledDocument doc = console.getStyledDocument();
         Style style = console.addStyle("style", null);
         StyleConstants.setForeground(style, new Color(255, 68, 68));
-        String str = "[Line " + token.line + "] " + message + " near '" + token.lexeme + "'\n";
+        String str = "[Line " + token.line + " near '" + token.lexeme + "'] " + message + "\n";
         try {
             doc.insertString(doc.getLength(), str, style);
         } catch (BadLocationException e) {}
@@ -465,6 +486,19 @@ public class Parser {
             }
             getNextToken();
         }
+    }
+
+    private boolean checkLexicographic(String lexicographic) {
+        if(lexicographic.length() != 6) {
+            return false;
+        }
+        String toCheck = "urdlwh";
+        for(int i = 0; i < toCheck.length(); i++) {
+            if(lexicographic.indexOf(toCheck.charAt(i)) < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class SyntaxError extends RuntimeException { }

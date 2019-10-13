@@ -3,13 +3,18 @@ package tools.variation;
 public class Move {
     public final String value;
     public final int number;
-    public final char move;
+    public final String move;
 
     public Move(String value) {
         this.value = value;
-        String num = value.substring(0, value.length() - 1);
-        this.number = num.equals("") ? 1 : Integer.parseInt(num);
-        this.move = value.charAt(value.length() - 1);
+
+        int numIndex = 0;
+        while(value.charAt(numIndex) >= '0' && value.charAt(numIndex) <= '9') {
+            numIndex++;
+        }
+        String num = value.substring(0, numIndex);
+        this.number = num.equals("") ? 1 : Math.max(Integer.parseInt(num), 1);
+        this.move = value.substring(numIndex);
     }
 
     @Override
@@ -20,7 +25,7 @@ public class Move {
     @Override
     public boolean equals(Object obj) {
         if(obj instanceof Move) {
-            return this.move == ((Move) obj).move;
+            return this.number == ((Move) obj).number && this.move.equals(((Move) obj).move);
         }
         return false;
     }

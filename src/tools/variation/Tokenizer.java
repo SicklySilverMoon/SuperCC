@@ -12,21 +12,17 @@ public class Tokenizer {
     private int start = 0;
     private int current = 0;
     private int line = 1;
-    private static final String moves = "urdlwURDLW";
+    private static final String moves = "urdlwhURDLWH";
     private static final HashMap<String, TokenType> keywords;
 
     static {
         keywords = new HashMap<>();
-        keywords.put("u", TokenType.MOVE);
-        keywords.put("r", TokenType.MOVE);
-        keywords.put("d", TokenType.MOVE);
-        keywords.put("l", TokenType.MOVE);
-        keywords.put("w", TokenType.MOVE);
-        keywords.put("h", TokenType.MOVE);
-
         keywords.put("start", TokenType.START);
         keywords.put("beforemove", TokenType.BEFORE_MOVE);
         keywords.put("aftermove", TokenType.AFTER_MOVE);
+        keywords.put("beforestep", TokenType.BEFORE_STEP);
+        keywords.put("afterstep", TokenType.AFTER_STEP);
+        keywords.put("end", TokenType.END);
 
         keywords.put("if", TokenType.IF);
         keywords.put("else", TokenType.ELSE);
@@ -67,6 +63,8 @@ public class Tokenizer {
         keywords.put("getplayerx", TokenType.FUNCTION);
         keywords.put("getplayery", TokenType.FUNCTION);
         keywords.put("move", TokenType.FUNCTION);
+        keywords.put("distanceto", TokenType.FUNCTION);
+        keywords.put("gettimeleft", TokenType.FUNCTION);
 
         for(Tile t : Tile.values()) {
             keywords.put(t.name().toLowerCase(), TokenType.TILE);
@@ -194,11 +192,17 @@ public class Tokenizer {
         if(isNextChar('&')) {
             addToken(TokenType.AND_AND);
         }
+        else {
+            addToken(TokenType.OTHER);
+        }
     }
 
     private void processOr() {
         if(isNextChar('|')) {
             addToken(TokenType.OR_OR);
+        }
+        else {
+            addToken(TokenType.OTHER);
         }
     }
 
@@ -228,9 +232,11 @@ public class Tokenizer {
             getNextChar();
         }
         if(moves.contains(peek() + "")) {
-            getNextChar();
+            while(moves.contains(peek() + "")) {
+                getNextChar();
+            }
             String substr = code.substring(start, current);
-            addToken(TokenType.MOVE, substr);
+            addToken(TokenType.MOVE, substr.toLowerCase());
             return;
         }
         else if(peek() == '.' && isDigit(peekNext())) {
@@ -250,10 +256,21 @@ public class Tokenizer {
         String substr = code.substring(start, current);
         TokenType type = keywords.get(substr.toLowerCase());
         if(type == null) {
+            boolean move = true;
+            for(int i = 0; i < substr.length(); i++) {
+                if(!moves.contains(substr.charAt(i) + "")) {
+                    move = false;
+                    break;
+                }
+            }
+            if(move) {
+                addToken(TokenType.MOVE, substr.toLowerCase());
+                return;
+            }
             addToken(TokenType.IDENTIFIER, substr);
         }
-        else if(type == TokenType.MOVE) {
-            addToken(type, substr);
+        else if(type == TokenType.TILE) {
+            addToken(type, substr.toUpperCase());
         }
         else {
             addToken(type);

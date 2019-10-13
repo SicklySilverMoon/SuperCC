@@ -23,6 +23,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final HashMap<String, Object> variables;
     private Level level;
     private final byte[] startingState;
+    private final ByteList startingMoveList;
     public int atSequence = 0;
     public int atMove = 0;
     public boolean inSequence = false;
@@ -45,6 +46,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.level = emulator.getLevel();
         this.startingState = this.level.save();
         this.manager = new VariationManager(emulator, statements, variables, this.level, this);
+        this.startingMoveList = this.manager.moveLists[0].clone();
         this.sequenceIndex = manager.sequenceIndex;
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
         this.vt = vt;
@@ -52,19 +54,25 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     public void interpret() {
         console.setText("");
+        //manager.printPermutations();
         displayPermutationCount();
         if(manager.getSequenceCount() == 0) {
             hadError = true;
             print("Script must contain at least 1 sequence\n", new Color(255, 68, 68));
             return;
         }
+        else if(manager.getPermutation(0).length == 0) {
+            hadError = true;
+            print("First sequence mustn't be of length 0\n", new Color(255, 68, 68));
+            return;
+        }
         int fromStatement = 0;
         count = 0;
         do {
             count++;
-            level.load(manager.saveStates[atSequence]);
-            moveList = manager.moveLists[atSequence];
             try {
+                level.load(manager.saveStates[atSequence]);
+                moveList = manager.moveLists[atSequence];
                 for (int i = fromStatement; i < statements.size(); i++) {
                     Stmt stmt = statements.get(i);
                     stmt.execute(this);
@@ -84,13 +92,13 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 }
             }
             catch(RuntimeError err) {
-                String str = "[Line " + err.token.line + "] " + err.getMessage() + " near " + err.token.lexeme + "\n";
+                String str = "[Line " + err.token.line + " near '" + err.token.lexeme + "'] " + err.getMessage() + "\n";
                 print(str, new Color(255, 68, 68));
                 hadError = true;
                 break;
             }
             catch(Exception e) {
-                String str = "Unknown error occured.";
+                String str = "Unknown runtime error.\n  " + e.toString();
                 print(str, new Color(255, 68, 68));
                 hadError = true;
                 e.printStackTrace();
@@ -110,7 +118,11 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                     String.format("%,d", solutions.size()) + " solutions.";
             print(str, new Color(0, 153, 0));
         }
-        level.load(startingState);
+        emulator.getSavestates().restart();
+        level.load(emulator.getSavestates().getSavestate());
+        for(byte move : startingMoveList) {
+            emulator.tick(move, TickFlags.PRELOADING);
+        }
         emulator.repaint(true);
     }
 
@@ -157,6 +169,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executePrint(Stmt.Print stmt) {
         Object obj = stmt.expr.evaluate(this);
         String str = (obj == null) ? "null\n" : obj.toString() + '\n';
+        if(str.endsWith(".0\n")) {
+            str = str.substring(0, str.length() - 3) + '\n';
+        }
         print(str, Color.white);
     }
 
@@ -174,26 +189,41 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executeSequence(Stmt.Sequence stmt) {
         inSequence = true;
         manager.setVariables(atSequence);
-        byte[] permutation = manager.getPermutation(atSequence);
+        ByteList[] permutation = manager.getPermutation(atSequence);
         if(stmt.start != null) {
             stmt.start.execute(this);
         }
         for(atMove = 0; atMove < permutation.length;) {
-            byte move = permutation[atMove];
             if(stmt.beforeMove != null) {
                 stmt.beforeMove.execute(this);
             }
-            emulator.tick(move, TickFlags.LIGHT);
-            if(move == SuperCC.WAIT) {
-                emulator.tick(move, TickFlags.LIGHT);
+            for(byte move : permutation[atMove]) {
+                if(stmt.beforeStep != null) {
+                    stmt.beforeStep.execute(this);
+                }
+                if (move == 'w') {
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    moveList.add(SuperCC.WAIT);
+                    checkMove();
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
+                    moveList.add(SuperCC.WAIT);
+                    checkMove();
+                } else {
+                    emulator.tick(move, TickFlags.LIGHT);
+                    moveList.add(move);
+                    checkMove();
+                }
+                if(stmt.afterStep != null) {
+                    stmt.afterStep.execute(this);
+                }
             }
-            moveList.add(move);
-            moveList.add(SuperCC.WAIT);
-            checkMove();
             atMove++;
             if(stmt.afterMove != null) {
                 stmt.afterMove.execute(this);
             }
+        }
+        if(stmt.end != null) {
+            stmt.end.execute(this);
         }
         atSequence++;
         inSequence = false;
@@ -201,8 +231,13 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeReturn(Stmt.Return stmt) {
-        Solution solution = new Solution(moveList, level.getRngSeed(), level.getStep());
-        solutions.add(solution);
+        emulator.getSavestates().restart();
+        level.load(emulator.getSavestates().getSavestate());
+        for(byte move : moveList) {
+            emulator.tick(move, TickFlags.PRELOADING);
+        }
+        solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep()));
+
         throw new ReturnException();
     }
 
@@ -216,14 +251,12 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             int atSeq = atSequence;
             int atMo = atMove;
             if(!inSequence) {
-                if(atSeq > 0) {
-                    atMo = 0;
-                }
+                atMo = -1;
             }
             for(int i = 0; i < atSeq; i++) {
                 index += manager.getPermutation(i).length;
             }
-            index += atMo - 1;
+            index += atMo;
         }
         manager.terminate(index);
         throw new TerminateException();
@@ -302,14 +335,17 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 if(isTruthy(left)) {
                     return left;
                 }
+                break;
             case AND:
             case AND_AND:
                 if(!isTruthy(left)) {
                     return left;
                 }
+                break;
             default:
-                return expr.right.evaluate(this);
+                throw new RuntimeError(expr.operator, "Unknown logical expression");
         }
+        return expr.right.evaluate(this);
     }
 
     @Override
@@ -334,6 +370,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     @Override
     public Object evaluateAssign(Expr.Assign expr) {
         Object value = getValue(expr.var);
+        if(value == null && expr.operator.type != TokenType.EQUAL) {
+            throw new RuntimeError(expr.var, "Variable undefined");
+        }
         Object exprValue = expr.value.evaluate(this);
         double newValue;
         switch(expr.operator.type) {
@@ -341,27 +380,27 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 variables.put(expr.var.lexeme, exprValue);
                 return exprValue;
             case PLUS_EQUAL:
-                checkIfNumber(expr.operator, exprValue);
+                checkIfNumber(expr.operator, exprValue, value);
                 newValue = (double)value + (double)exprValue;
                 variables.put(expr.var.lexeme, newValue);
                 return newValue;
             case MINUS_EQUAL:
-                checkIfNumber(expr.operator, exprValue);
+                checkIfNumber(expr.operator, exprValue, value);
                 newValue = (double)value - (double)exprValue;
                 variables.put(expr.var.lexeme, newValue);
                 return newValue;
             case STAR_EQUAL:
-                checkIfNumber(expr.operator, exprValue);
+                checkIfNumber(expr.operator, exprValue, value);
                 newValue = (double)value * (double)exprValue;
                 variables.put(expr.var.lexeme, newValue);
                 return newValue;
             case SLASH_EQUAL:
-                checkIfNumber(expr.operator, exprValue);
+                checkIfNumber(expr.operator, exprValue, value);
                 newValue = (double)value / (double)exprValue;
                 variables.put(expr.var.lexeme, newValue);
                 return newValue;
             case MODULO_EQUAL:
-                checkIfNumber(expr.operator, exprValue);
+                checkIfNumber(expr.operator, exprValue, value);
                 newValue = (double)value % (double)exprValue;
                 variables.put(expr.var.lexeme, newValue);
                 return newValue;
@@ -424,16 +463,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             return false;
         }
         return left.equals(right);
-    }
-
-    private ArrayList<Stmt.Sequence> getSequences(ArrayList<Stmt> statements) {
-        ArrayList<Stmt.Sequence> sequences = new ArrayList<>();
-        for(Stmt stmt : statements) {
-            if(stmt instanceof Stmt.Sequence) {
-                sequences.add((Stmt.Sequence)stmt);
-            }
-        }
-        return sequences;
     }
 
     private class BreakException extends RuntimeException {
