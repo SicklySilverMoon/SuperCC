@@ -286,7 +286,7 @@ public class Creature{
             case CHIP: return creatureType.isChip();
             case WATER: return true;
             case FIRE: return getCreatureType() != BUG && getCreatureType() != WALKER;
-            case INVSIBLE_WALL: return false;
+            case INVISIBLE_WALL: return false;
             case THIN_WALL_UP: return direction != DOWN;
             case THIN_WALL_RIGHT: return direction != LEFT;
             case THIN_WALL_DOWN: return direction != UP;
@@ -409,7 +409,7 @@ public class Creature{
                         kill();
                         return true;
                 }
-            case INVSIBLE_WALL: return false;
+            case INVISIBLE_WALL: return false;
             case THIN_WALL_UP: return direction != DOWN;
             case THIN_WALL_RIGHT: return direction != LEFT;
             case THIN_WALL_DOWN: return direction != UP;

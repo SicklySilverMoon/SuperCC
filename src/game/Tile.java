@@ -7,7 +7,7 @@ public enum Tile {
     /* 02 CHIP                 */    CHIP("Chip"),
     /* 03 WATER                */    WATER("Water"),
     /* 04 FIRE                 */    FIRE("Fire"),
-    /* 05 INVISIBLE WALL_PERM. */    INVSIBLE_WALL("Invisible Wall"),
+    /* 05 INVISIBLE WALL_PERM. */    INVISIBLE_WALL("Invisible Wall"),
     /* 06 BLOCKED NORTH        */    THIN_WALL_UP("Thin Wall - Up"),
     /* 07 BLOCKED WEST         */    THIN_WALL_LEFT("Thin Wall - Left"),
     /* 08 BLOCKED SOUTH        */    THIN_WALL_DOWN("Thin Wall - Down"),

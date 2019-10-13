@@ -28,7 +28,7 @@ public class Level extends SaveState {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
-    private int previousMoveType;
+//    private int previousMoveType; //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
 
     private boolean levelWon, ResetStep = false; //Stuff for data reset
     private Position AutopsyPosition = new Position(22, 0);
@@ -350,7 +350,7 @@ public class Level extends SaveState {
         else if (moveType == CLICK_LATE) moveChip(chip.seek(new Position(mouseClick)));
         if (endTick()) return false;
 
-        previousMoveType = moveType;
+        //previousMoveType = moveType; //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
         monsterList.finalise();
         finaliseTraps();
         if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;

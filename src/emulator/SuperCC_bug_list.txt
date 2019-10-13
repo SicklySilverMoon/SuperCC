@@ -6,6 +6,9 @@ Priority: Cosmetic
 Priority: Cosmetic-Medium
 2. Collecting 10 keys of 1 colour then rewinding or restarting and collecting more of that same key causes the key digit to glitch out (line 79 of GamePanel.java, something to do with the j variable)
 
+Priority: Medium-High
+3. Blue and Green buttons added via the cheat menu will cause a Null Pointer exception when pressed via any means
+
 Things MSCC does but TW and SuCC don't:
 Priority: Low-Medium
 1. https://wiki.bitbusters.club/Tank_Top_Glitch
