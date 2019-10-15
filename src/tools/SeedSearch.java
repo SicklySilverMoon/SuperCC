@@ -25,7 +25,7 @@ public class SeedSearch {
     private static final int UPDATE_RATE = 1000;
     
     private final byte[] startingState;
-    private int seed = 0;
+    private int seed;
     private boolean killThreadFlag = false;
     private static boolean running = false;
     private DecimalFormat df;
@@ -51,7 +51,7 @@ public class SeedSearch {
                 killThreadFlag = true;
             }
             else {
-                seed = Integer.parseInt(startField.getText());
+                if (seed == 0) seed = Integer.parseInt(startField.getText());
                 startLabel.setVisible(false);
                 startField.setVisible(false);
                 startStopButton.setText("Pause");
