@@ -722,17 +722,19 @@ public class Creature{
             (direction == DOWN && position.getY() == 31)) newPosition = new Position(-1);
         else newPosition = position.move(direction);
 
-        boolean CloneMachineCheck = true;
-        if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) CloneMachineCheck = true;
-        else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !creatureType.isBlock()) CloneMachineCheck = false;
+        boolean isBlock = creatureType.isBlock();
+
+        boolean cloneMachineCheck = true;
+        if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) cloneMachineCheck = true;
+        else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !isBlock) cloneMachineCheck = false;
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
         Tile newTile = level.layerFG.get(newPosition);
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
-        if ((!newTile.isTransparent() && (creatureType.isBlock() || CloneMachineCheck))
+        if ((!newTile.isTransparent() && (isBlock || cloneMachineCheck))
                 || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works correctly
-                || (newTile.isKey() && CloneMachineCheck)
-                || (creatureType.isBlock() && ((newTile.isBoot() || newTile.isChip()) && CloneMachineCheck))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
+                || ((newTile.isKey() || (creatureType.isChip() && newTile.isPickup())) && cloneMachineCheck)
+                || (isBlock && (newTile.isBoot() || newTile.isChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
             if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 

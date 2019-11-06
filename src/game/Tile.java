@@ -160,6 +160,9 @@ public enum Tile {
     public boolean isBoot() {
         return BOOTS_WATER.ordinal() <= ordinal() && ordinal() <= BOOTS_SLIDE.ordinal();
     }
+    public boolean isPickup() {
+        return KEY_BLUE.ordinal() <= ordinal() && ordinal() <= BOOTS_SLIDE.ordinal();
+    }
     public boolean isButton() {
         return this == BUTTON_BROWN || this == BUTTON_BLUE || this == BUTTON_RED || this == BUTTON_GREEN;
     }
