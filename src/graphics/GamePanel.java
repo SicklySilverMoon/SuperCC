@@ -161,8 +161,10 @@ public abstract class GamePanel extends JPanel
         initialiseTileGraphics((BufferedImage) tilespng);
         initialiseBGTileGraphics((BufferedImage) tilespng);
         initialiseLayers();
-        addMouseListener(this);
-        addMouseMotionListener(this);
+        if (getMouseListeners().length == 0) { //Just so you don't add extra mouse listeners when you update tilesize or something
+            addMouseListener(this);
+            addMouseMotionListener(this); //I don't check existing motion listeners cause its always the same number of them as the normal mouse listener
+        }
     }
     
     class GamePopupMenu extends JPopupMenu {
@@ -194,14 +196,15 @@ public abstract class GamePanel extends JPanel
                     add(close);
                 }
 
-                if (tile.isMonster()) {
-                    JMenuItem revive = new JMenuItem("Revive Monster");
-                    revive.addActionListener(e -> {
-                        cheats.reviveMonster(position);
-                    });
-
-                    Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
-                    if (c == null) add(revive);
+                Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+                if (c == null) {
+                    if (tile.isMonster()) {
+                        JMenuItem revive = new JMenuItem("Revive Monster");
+                        revive.addActionListener(e -> {
+                            cheats.reviveMonster(position);
+                        });
+                        add(revive);
+                    }
                 }
                 
             }

@@ -2,10 +2,14 @@ package emulator;
 
 import game.*;
 import graphics.Gui;
+import graphics.SmallGamePanel;
+import graphics.TileSheet;
 import io.DatParser;
 import io.SuccPaths;
 import io.TWSReader;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 
 public class SuperCC {
@@ -114,7 +118,7 @@ public class SuperCC {
             throwError("Could not find settings.cfg file, creating"); //If it can't find the settings file make it with some defaults
             try {
                 FileWriter fw = new FileWriter("settings.cfg");
-                fw.write("/resources/tw-editor.png\n" +
+                fw.write("0\n" +
                         "C:\n" +
                         "C:\n" +
                         "succsave\n" +
@@ -125,7 +129,9 @@ public class SuperCC {
                         "32\n" +
                         "27\n" +
                         "8\n" +
-                        "10\n");
+                        "10\n" +
+                        "20\n" +
+                        "20\n");
                 fw.close();
                 //Now that the settings file exists we can call this again safely
                 File f = new File("settings.cfg");
@@ -335,6 +341,8 @@ public class SuperCC {
 
             parseArgument(args, emulator); //Parses any command line arguments given
 
+            initialiseTilesheet(emulator);
+
             //emulator.runUnitTests();
             //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
             //emulator.openLevelset(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\CCLP1.dat")); emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CCLP1.dac.tws"));
@@ -373,6 +381,31 @@ public class SuperCC {
                 }
             }
         }
+    }
+
+    private static void initialiseTilesheet(SuperCC emulator) {
+        Gui window = emulator.getMainWindow();
+        SuccPaths paths = emulator.getPaths();
+        TileSheet[] tileSheets = TileSheet.values();
+        TileSheet tileSheet = tileSheets[paths.getTilesetNum()];
+        int[] tileSizes = paths.getTileSizes();
+        int width = tileSizes[0];
+        int height = tileSizes[1];
+        SmallGamePanel gamePanel = (SmallGamePanel) window.getGamePanel();
+        emulator.getMainWindow().getGamePanel().setTileSheet(tileSheet);
+        BufferedImage tilesetImage = null;
+        try {
+            tilesetImage = tileSheet.getTileSheet(width, height);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        window.getGamePanel().initialise(emulator, tilesetImage, tileSheet, tileSizes[0], tileSizes[1]);
+        window.getInventoryPanel().initialise(emulator);
+        window.setSize(200+width*gamePanel.getWindowSizeX(), 200+height*gamePanel.getWindowSizeY());
+        window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));
+        window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
+        window.pack();
+        window.repaint(emulator.getLevel(), true);
     }
 
     public void throwError(String s){
