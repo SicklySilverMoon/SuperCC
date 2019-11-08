@@ -206,7 +206,7 @@ public class Creature{
     
     private void teleport(Direction direction, Level level, Position position, List<Button> pressedButtons) {
         Position chipPosition = level.chip.getPosition();
-        if (creatureType.isChip()) level.layerFG.set(chipPosition, level.layerBG.get(chipPosition));
+        if (creatureType.isChip()) level.popTile(chipPosition);
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
             if (portalIndex >= level.getPortals().length) return;
@@ -243,6 +243,7 @@ public class Creature{
                         break;
                     }
                 }
+
                 if (canEnter(direction, level.layerBG.get(exitPosition), level) && block.canLeave(direction, level.layerBG.get(exitPosition), level)) {
                     Position blockPushPosition = exitPosition.move(direction);
                     if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
@@ -251,17 +252,22 @@ public class Creature{
                         if (block.tryMove(direction, level, false, pressedButtons)) break;
                     }
                 }
+
                 if (level.layerBG.get(exitPosition) == Tile.BLOCK) {
                     block.tryMove(direction, level, false, pressedButtons);
                     break;
                 }
+
                 if (level.layerBG.get(exitPosition) == CLONE_MACHINE) {
                     block.tryMove(direction, level, false, pressedButtons);
                     level.layerFG.set(exitPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
                     level.insertTile(exitPosition, Tile.BLOCK);
                     continue; //Continues through the teleport array like in MSCC
                 }
-                if (block.tryMove(direction, level, false, pressedButtons) && (canEnter(direction, exitTile, level))) break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
+
+                if (block.tryMove(direction, level, false, pressedButtons) && (canEnter(direction, exitTile, level))) {
+                    break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
+                }
             }
             if (canEnter(direction, exitTile, level)) break;
         }
@@ -739,7 +745,9 @@ public class Creature{
             if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
-                level.popTile(position);
+                if (newTile != TELEPORT) level.popTile(position);
+                else if (creatureType.isChip())/*do nothing*/; //We handle this very specific case over in the teleport method so we cancel it out here, and yes it does in fact cause some issues if we don't, possibly even crashes if you revert both this and the teleport method handle
+                else level.popTile(position);
                 position = newPosition;
 
                 //!!DIRTY HACK SECTION BEGINS!!//
