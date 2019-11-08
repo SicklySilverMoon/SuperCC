@@ -49,6 +49,8 @@ public class ChooseTileSize {
                 window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
                 window.pack();
                 window.repaint(emulator.getLevel(), true);
+
+                emulator.getPaths().setTileSizes(new int[]{width, height});
             }
             catch (IOException e1) {
                 emulator.throwError(e1.getMessage());

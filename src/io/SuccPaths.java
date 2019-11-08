@@ -122,7 +122,7 @@ public class SuccPaths {
             int[] controlsList = new int[8];
             String line;
             int i = 0;
-            while ((line = reader.readLine()) != null) {
+            while (i <= 7 && (line = reader.readLine()) != null) {
                 controlsList[i++] = Integer.parseInt(line);
             }
             controls = new int[i];

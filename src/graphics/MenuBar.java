@@ -433,6 +433,8 @@ class MenuBar extends JMenuBar{
                         window.getGamePanel().initialiseBGTileGraphics(tilesetImage);
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(emulator.getLevel(), true);
+
+                        emulator.getPaths().setTilesetNum(String.valueOf(tileSheet.ordinal()));
                     } catch (IOException exc) {
                         emulator.throwError(exc.getMessage());
                     }
@@ -467,6 +469,8 @@ class MenuBar extends JMenuBar{
                         window.getGamePanel().setSize(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY());
                         window.pack();
                         window.repaint(emulator.getLevel(), true);
+
+                        emulator.getPaths().setTileSizes(new int[]{size, size});
                     }
                     catch (IOException e1) {
                         emulator.throwError(e1.getMessage());
