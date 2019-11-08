@@ -193,6 +193,16 @@ public abstract class GamePanel extends JPanel
                     close.addActionListener((e) -> cheats.setTrap(position, true));
                     add(close);
                 }
+
+                if (tile.isMonster()) {
+                    JMenuItem revive = new JMenuItem("Revive Monster");
+                    revive.addActionListener(e -> {
+                        cheats.reviveMonster(position);
+                    });
+
+                    Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+                    if (c == null) add(revive);
+                }
                 
             }
             

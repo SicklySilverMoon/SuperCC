@@ -75,6 +75,10 @@ public class Cheats {
         level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
+    public void reviveMonster(Position position) {
+        level.getMonsterList().addClone(position);
+        level.getMonsterList().finalise();
+    }
     public void reviveChip() {
         level.getChip().setCreatureType(CreatureID.CHIP);
         level.getLayerFG().set(level.getChip().getPosition(), Tile.CHIP_DOWN);
