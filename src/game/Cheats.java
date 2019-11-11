@@ -75,7 +75,7 @@ public class Cheats {
         level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
-    public void reviveMonster(Position position) {
+    public void animateMonster(Position position) {
         level.getMonsterList().addClone(position);
         level.getMonsterList().finalise();
     }

@@ -26,7 +26,7 @@ public class SeedSearch {
     
     private final byte[] startingState;
     private int seed;
-    private boolean killThreadFlag = false;
+    private static boolean killThreadFlag = false;
     private static boolean running = false;
     private DecimalFormat df;
     
@@ -65,12 +65,12 @@ public class SeedSearch {
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setVisible(true);
         frame.addWindowListener(new WindowListener() {
-            @Override
-            public void windowOpened(WindowEvent windowEvent) {
+            @Override public void windowClosing(WindowEvent windowEvent) { killThreadFlag = true; }
+            //None of these are useful but the code requires them to be here so i shoved them all into one line
 
-            }
-        //None of these are useful but the code requires them to be here so i shoved them all into one line
-            @Override public void windowClosing(WindowEvent windowEvent) { killThreadFlag = true; }@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
+            @Override public void windowOpened(WindowEvent windowEvent) {
+
+            }@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
         });
     }
 
@@ -120,6 +120,10 @@ public class SeedSearch {
 
     public static boolean isRunning() {
         return running;
+    }
+
+    public static void kill() {
+        killThreadFlag = true;
     }
 
 }

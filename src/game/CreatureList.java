@@ -166,7 +166,7 @@ public class CreatureList implements Iterable<Creature> {
         else {
             Tile tile = level.layerFG.get(position);
             Tile tilebg = level.layerBG.get(position);
-            if (!tile.isCreature() ^ (tile.isIceBlock() && tilebg.isMovingBlock())) return;
+            if (!tile.isCreature() ^ (tile.isIceBlock() && tilebg.isCloneBlock())) return;
             Creature clone = new Creature(position, tile);
             if (tile.isIceBlock()) direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
             else direction = clone.getDirection();

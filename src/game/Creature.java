@@ -607,7 +607,7 @@ public class Creature{
             case UNUSED_36:
             case UNUSED_37: return false;
             case ICE_BLOCK:
-                if (level.getLayerBG().get(newPosition).isMovingBlock()) return false; //You know how if you have a clone machine under a monster you can't enter it? Well it's the same with ice blocks and the clone blocks under them
+                if (level.getLayerBG().get(newPosition).isCloneBlock()) return false; //You know how if you have a clone machine under a monster you can't enter it? Well it's the same with ice blocks and the clone blocks under them
                 if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType == CreatureID.ICE_BLOCK){
                     for (Creature m : level.slipList) {
                         if (m.position.equals(newPosition)) {
@@ -751,7 +751,7 @@ public class Creature{
                 position = newPosition;
 
                 //!!DIRTY HACK SECTION BEGINS!!//
-                if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT) {
+                if (creatureType.isChip() && level.layerBG.get(newPosition) == EXIT && level.layerFG.get(newPosition) == FLOOR && level.chip.getPosition() == newPosition) {
                     tryEnter(direction, level, newPosition, level.layerBG.get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
                     level.layerFG.set(newPosition, EXITED_CHIP); //Fixed cosmetics, else you have an EXITED_CHIP/EXIT tile that looks ugly (no gameplay effect however)
                     level.layerBG.set(newPosition, FLOOR);

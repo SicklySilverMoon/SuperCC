@@ -139,7 +139,7 @@ public enum Tile {
     public boolean isSwimmingChip(){
         return CHIP_SWIMMING_UP.ordinal() <= ordinal() && ordinal() <= CHIP_SWIMMING_RIGHT.ordinal();
     }
-    public boolean isMovingBlock(){
+    public boolean isCloneBlock(){
         return BLOCK_UP.ordinal() <= ordinal() && ordinal() <= BLOCK_RIGHT.ordinal();
     }
     public boolean isIceBlock(){
@@ -149,7 +149,7 @@ public enum Tile {
         return BUG_UP.ordinal() <= ordinal() && ordinal() <= PARAMECIUM_RIGHT.ordinal();
     }
     public boolean isCreature(){
-        return isMonster() || isMovingBlock();
+        return isMonster() || isCloneBlock();
     }
     public boolean isTransparent(){
         return ordinal() >= BUG_UP.ordinal();

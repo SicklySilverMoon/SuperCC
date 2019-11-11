@@ -151,7 +151,7 @@ public abstract class GamePanel extends JPanel
     protected abstract void initialiseTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseLayers();
-    
+
     public void initialise(SuperCC emulator, Image tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
         this.emulator = emulator;
         this.tileWidth = tileWidth;
@@ -199,11 +199,11 @@ public abstract class GamePanel extends JPanel
                 Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
                 if (c == null) {
                     if (tile.isMonster()) {
-                        JMenuItem revive = new JMenuItem("Revive Monster");
-                        revive.addActionListener(e -> {
-                            cheats.reviveMonster(position);
+                        JMenuItem animate = new JMenuItem("Animate Monster");
+                        animate.addActionListener(e -> {
+                            cheats.animateMonster(position);
                         });
-                        add(revive);
+                        add(animate);
                     }
                 }
                 

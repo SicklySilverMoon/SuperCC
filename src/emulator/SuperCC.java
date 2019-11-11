@@ -7,6 +7,8 @@ import graphics.TileSheet;
 import io.DatParser;
 import io.SuccPaths;
 import io.TWSReader;
+import tools.SeedSearch;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -177,6 +179,7 @@ public class SuperCC {
     }
 
     public synchronized void loadLevel(int levelNumber){
+        SeedSearch.kill();
         loadLevel(levelNumber, 0, Step.EVEN, true);
     }
 

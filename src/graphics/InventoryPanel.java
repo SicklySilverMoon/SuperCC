@@ -11,6 +11,7 @@ import java.awt.image.WritableRaster;
 import static game.Tile.NUM_BOOTS;
 import static game.Tile.NUM_KEYS;
 import static graphics.FullscreenGamePanel.SMALL_NUMERAL_HEIGHT;
+import static graphics.GamePanel.SMALL_NUMERAL_WIDTH;
 
 public class InventoryPanel extends JPanel {
     
@@ -68,8 +69,11 @@ public class InventoryPanel extends JPanel {
         g.fillRect(0, 0, getWidth(), getHeight());
         int tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
         int tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();
-        
-        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++){ //TODO Fix the issue where collecting more than 9 keys and then rewinding breaks the display
+
+        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++) {
+            bg.getGraphics().clearRect(tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, SMALL_NUMERAL_WIDTH * 4, SMALL_NUMERAL_HEIGHT + 2);
+            bg.getGraphics().clearRect(tileWidth * i, 2 * tileHeight - SMALL_NUMERAL_HEIGHT - 2, SMALL_NUMERAL_WIDTH * 4, SMALL_NUMERAL_HEIGHT + 2); //Used to clear the space the digits are drawn in else you get a glitch where if you collect more than 9 keys then rewind the single digit keys are getting drawn in the 10s spot
+
             FullscreenGamePanel.drawNumber(emulator.getLevel().getKeys()[i], FullscreenGamePanel.blackDigits,
                                            tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, bg.getRaster());
             FullscreenGamePanel.drawNumber(emulator.getLevel().getBoots()[i], FullscreenGamePanel.blackDigits,
