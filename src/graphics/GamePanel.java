@@ -4,6 +4,7 @@ import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
 import game.button.ConnectionButton;
+import tools.SeedSearch;
 
 import javax.swing.*;
 import java.awt.*;
@@ -284,12 +285,14 @@ public abstract class GamePanel extends JPanel
     public void mousePressed(MouseEvent e) {}
     private void leftClick(GameGraphicPosition clickPosition) {
         Creature chip = emulator.getLevel().getChip();
-        byte b = clickPosition.clickByte(chip.getPosition());
-        if (b == UNCLICKABLE) return;
-        emulator.showAction("Clicked " + clickPosition);
-        emulator.getLevel().setClick(clickPosition.getIndex());
-        Direction[] directions = chip.seek(clickPosition);
-        emulator.tick(b, directions, TickFlags.GAME_PLAY);
+        if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning()) {
+            byte b = clickPosition.clickByte(chip.getPosition());
+            if (b == UNCLICKABLE) return;
+            emulator.showAction("Clicked " + clickPosition);
+            emulator.getLevel().setClick(clickPosition.getIndex());
+            Direction[] directions = chip.seek(clickPosition);
+            emulator.tick(b, directions, TickFlags.GAME_PLAY);
+        }
     }
     private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
         FullscreenGamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
