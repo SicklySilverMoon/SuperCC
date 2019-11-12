@@ -3,9 +3,6 @@ SuperCC bug list:
 Priority: Cosmetic
 1. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
 
-Priority: Cosmetic-Medium
-2. Collecting 10 keys of 1 colour then rewinding or restarting and collecting more of that same key causes the key digit to glitch out (line 79 of GamePanel.java, something to do with the j variable)
-
 Priority: Medium-High
 3. Blue and Green buttons added via the cheat menu will cause a Null Pointer exception when pressed via any means
 
@@ -24,6 +21,9 @@ Priority: Low
 
 Priority: Low
 3. Block/Clone Machine should clone a block in the pushed direction.
+
+Priority: Cosmetic-Medium
+4. Collecting 10 keys of 1 colour then rewinding or restarting and collecting more of that same key causes the key digit to glitch out (line 79 of GamePanel.java, something to do with the j variable)
 
 Mouse issues (All fixed):
 

@@ -19,10 +19,11 @@ public class InventoryPanel extends JPanel {
     
     private int[][] tileImage;
     private BufferedImage bg;
+    private BufferedImage bbg;
     
     private static final int BORDER = 2;
     
-    public void initialise(SuperCC emulator){
+    public void initialise(SuperCC emulator) {
         this.emulator = emulator;
         tileImage = FullscreenGamePanel.tileImage;
         int tileWidth, tileHeight;
@@ -38,17 +39,9 @@ public class InventoryPanel extends JPanel {
         setPreferredSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
         setMaximumSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
         setMinimumSize(new Dimension(4*tileWidth + 2*BORDER, 2*tileHeight + 2*BORDER));
-        BufferedImage bbg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+
+        bbg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         bg = new BufferedImage(4*tileWidth, 2*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        WritableRaster r1 = bbg.getRaster();
-        WritableRaster r2 = bg.getRaster();
-        for (int i = 0; i < NUM_BOOTS; i++){
-            r1.setPixels(i * tileWidth, 0, tileWidth, tileHeight, tileImage[Tile.FLOOR.ordinal()]);
-            r2.setPixels(i * tileWidth, 0, tileWidth, tileHeight, tileImage[i + Tile.KEY_BLUE.ordinal()]);
-            r1.setPixels(i * tileWidth, tileHeight, tileWidth, tileHeight, tileImage[Tile.FLOOR.ordinal()]);
-            r2.setPixels(i * tileWidth, tileHeight, tileWidth, tileHeight, tileImage[i + Tile.BOOTS_WATER.ordinal()]);
-        }
-        bg = FlattenImage(bbg, bg);
     }
     
     private BufferedImage FlattenImage(Image... images){
@@ -70,10 +63,17 @@ public class InventoryPanel extends JPanel {
         int tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
         int tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();
 
-        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++) {
-            bg.getGraphics().clearRect(tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, SMALL_NUMERAL_WIDTH * 4, SMALL_NUMERAL_HEIGHT + 2);
-            bg.getGraphics().clearRect(tileWidth * i, 2 * tileHeight - SMALL_NUMERAL_HEIGHT - 2, SMALL_NUMERAL_WIDTH * 4, SMALL_NUMERAL_HEIGHT + 2); //Used to clear the space the digits are drawn in else you get a glitch where if you collect more than 9 keys then rewind the single digit keys are getting drawn in the 10s spot
+        WritableRaster r1 = bbg.getRaster();
+        WritableRaster r2 = bg.getRaster();
+        for (int i = 0; i < NUM_BOOTS; i++) {
+            r1.setPixels(i * tileWidth, 0, tileWidth, tileHeight, tileImage[Tile.FLOOR.ordinal()]);
+            r2.setPixels(i * tileWidth, 0, tileWidth, tileHeight, tileImage[i + Tile.KEY_BLUE.ordinal()]);
+            r1.setPixels(i * tileWidth, tileHeight, tileWidth, tileHeight, tileImage[Tile.FLOOR.ordinal()]);
+            r2.setPixels(i * tileWidth, tileHeight, tileWidth, tileHeight, tileImage[i + Tile.BOOTS_WATER.ordinal()]);
+        }
+        bg = FlattenImage(bbg, bg);
 
+        for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++) {
             FullscreenGamePanel.drawNumber(emulator.getLevel().getKeys()[i], FullscreenGamePanel.blackDigits,
                                            tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, bg.getRaster());
             FullscreenGamePanel.drawNumber(emulator.getLevel().getBoots()[i], FullscreenGamePanel.blackDigits,
