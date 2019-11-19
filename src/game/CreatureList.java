@@ -43,6 +43,10 @@ public class CreatureList implements Iterable<Creature> {
     public void setCreatures(Creature[] creatures) {
         list = creatures;
     }
+
+    public List<Creature> getNewClones() {
+        return newClones;
+    }
     
     void initialise() {
         newClones.clear();
