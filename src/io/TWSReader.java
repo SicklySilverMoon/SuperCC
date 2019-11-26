@@ -32,6 +32,7 @@ public class TWSReader{
         reader.skip(solutionOffset);
 
         int offset = reader.readInt();
+        if (offset == 6) throw new IOException("No solution recorded"); //If the offset is equal to 6 it means that the only thing the TWS file stores for that level is its level number, and its password
         reader.readShort();                     // Level number
         reader.readInt();                       // Password
         reader.readByte();                      // Other Flags (always 0)
