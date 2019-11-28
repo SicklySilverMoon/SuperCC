@@ -590,6 +590,12 @@ class MenuBar extends JMenuBar{
             });
             add(variations);
 
+            JMenuItem tsp = new JMenuItem("TSP Solver");
+            tsp.addActionListener(e -> {
+                TSPGUI t = new TSPGUI(emulator);
+            });
+            add(tsp);
+
         }
     }
     
