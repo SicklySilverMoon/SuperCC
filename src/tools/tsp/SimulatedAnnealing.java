@@ -1,5 +1,6 @@
 package tools.tsp;
 
+import javax.swing.*;
 import java.util.Random;
 
 public class SimulatedAnnealing {
@@ -11,22 +12,34 @@ public class SimulatedAnnealing {
     Random r = new Random();
     private int[] bestSolution;
     private int bestDistance;
+    private int inputNodeSize;
+    private int exitNodeSize;
+    public int bestExit;
+    private int exitChosen;
 
-    public SimulatedAnnealing(double temparature, double end, double cooling, int iterations, int[][] distances) {
+    private JTextPane output;
+
+    public SimulatedAnnealing(double temparature, double end, double cooling, int iterations, int[][] distances,
+                              int inputNodeSize, int exitNodeSize, JTextPane output) {
         this.temparature = temparature;
         this.end = end;
         this.cooling = cooling;
         this.iterations = iterations;
         this.distances = distances;
+        this.inputNodeSize = inputNodeSize;
+        this.exitNodeSize = exitNodeSize;
         this.bestSolution = initialSolution();
         this.bestDistance = calculateDistance(bestSolution);
+        this.output = output;
     }
 
     public int[] start() {
-        if(distances.length == 2) {
+        bestExit = exitChosen;
+
+        if(inputNodeSize == 0) {
             return new int[]{};
         }
-        if(distances.length == 3) {
+        if(inputNodeSize == 1) {
             return new int[]{1};
         }
 
@@ -35,6 +48,7 @@ public class SimulatedAnnealing {
 
         while(temparature > end) {
             temparature *= cooling;
+            output.setText("Calculating shortest path...\nTemperature: " + temparature + "\nCurrent best: " + bestDistance);
             int startDistance = distance;
             for(int i = 0; i < iterations; i++) {
                 int[] newSolution = solution.clone();
@@ -53,6 +67,7 @@ public class SimulatedAnnealing {
                 if(newDistance < bestDistance) {
                     bestDistance = newDistance;
                     bestSolution = newSolution.clone();
+                    bestExit = exitChosen;
                     System.out.println(temparature);
                     System.out.println(bestDistance);
                 }
@@ -60,14 +75,13 @@ public class SimulatedAnnealing {
             if(distance < startDistance) {
                 temparature /= cooling;
             }
-            //System.out.println(temparature);
         }
         return bestSolution;
     }
 
     private int[] initialSolution() {
-        int[] solution = new int[distances.length - 2];
-        for(int i = 0; i < distances.length - 2; i++) {
+        int[] solution = new int[inputNodeSize];
+        for(int i = 0; i < inputNodeSize; i++) {
             solution[i] = i + 1;
         }
 
@@ -86,7 +100,16 @@ public class SimulatedAnnealing {
         for(int i = 0; i < solution.length - 1; i++) {
             distance += distances[solution[i]][solution[i + 1]];
         }
-        distance += distances[solution[solution.length - 1]][solution.length + 1];
+
+        exitChosen = 0;
+        int bestExitDistance = distances[solution[solution.length - 1]][solution.length + 1];
+        for(int i = 1; i < exitNodeSize; i++) {
+            if(distances[solution[solution.length - 1]][solution.length + 1 + i] < bestExitDistance) {
+                exitChosen = i;
+                bestExitDistance = distances[solution[solution.length - 1]][solution.length + 1 + i];
+            }
+        }
+        distance += bestExitDistance;
         return distance;
     }
 
