@@ -3,10 +3,7 @@ package tools.tsp;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.Direction;
-import game.Level;
-import game.Position;
-import game.Tile;
+import game.*;
 import tools.TSPGUI;
 import util.ByteList;
 
@@ -45,19 +42,27 @@ public class TSPSolver {
 
     private JTextPane output;
 
+    Creature[] monsterList;
+
     private final int LIMIT = 200000; // Upper bound of exploration
 
     public TSPSolver(SuperCC emulator, TSPGUI gui, ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes,
                      ArrayList<TSPGUI.RestrictionNode> restrictionNodes,
-                     double startTemp, double endTemp, double cooling, int iterations, JTextPane output) {
+                     double startTemp, double endTemp, double cooling, int iterations,
+                     boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall,
+                     JTextPane output) {
         this.emulator = emulator;
         this.gui = gui;
         this.level = emulator.getLevel();
+        emulator.getSavestates().restart();
+        level.load(emulator.getSavestates().getSavestate());
+        this.monsterList = level.getMonsterList().getCreatures().clone();
+        level.getMonsterList().setCreatures(new Creature[0]);
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
         this.directions = new byte[]{ SuperCC.UP, SuperCC.RIGHT, SuperCC.DOWN, SuperCC.LEFT };
-        this.initialState = normalizeState();
+        this.initialState = normalizeState(isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall);
 
         for(int i = 0; i < inputNodes.size(); i++) {
             this.nodes.add(inputNodes.get(i).index);
@@ -168,6 +173,7 @@ public class TSPSolver {
             }
         }
 
+        level.getMonsterList().setCreatures(monsterList);
         SimulatedAnnealing sa = new SimulatedAnnealing(gui, startTemp, endTemp, cooling, iterations, distances,
                 inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();
@@ -177,7 +183,7 @@ public class TSPSolver {
         output.setText("Finished!");
     }
 
-    private byte[] normalizeState() {
+    private byte[] normalizeState(boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall) {
         int start = 0;
         for(int i = 0; i < 32 * 32; i++) {
             Tile t = level.getLayerFG().get(i);
@@ -187,6 +193,15 @@ public class TSPSolver {
             if(!isTSPTile(t)) {
                 level.getLayerFG().set(i, Tile.FLOOR);
             }
+            if(isActingWall(t, isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall)) {
+                level.getLayerFG().set(i, Tile.WALL);
+            }
+            if(t == Tile.BLOCK || t.isTransparent()) {
+                Tile bgT = level.getLayerBG().get(i);
+                if(isActingWall(bgT, isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall)) {
+                    level.getLayerFG().set(i, Tile.WALL);
+                }
+            }
             level.getLayerBG().set(i, Tile.FLOOR);
         }
 
@@ -195,19 +210,31 @@ public class TSPSolver {
         return level.save();
     }
 
-    private boolean isTSPTile(Tile t) {
-        if(t == Tile.FLOOR || t == Tile.WALL || t == Tile.CHIP || t == Tile.EXIT || t.isChip() ||
-           t.isIce() || t.isFF() || t == Tile.TELEPORT || t == Tile.BLUEWALL_REAL ||
-           t == Tile.HIDDENWALL_TEMP || t == Tile.INVISIBLE_WALL || t == Tile.CLONE_MACHINE ||
-           t == Tile.THIN_WALL_LEFT || t == Tile.THIN_WALL_RIGHT || t == Tile.THIN_WALL_DOWN_RIGHT ||
-           t == Tile.THIN_WALL_DOWN || t == Tile.THIN_WALL_UP) {
+    private boolean isActingWall(Tile t, boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall) {
+        if(t == Tile.WATER && isWaterWall) {
+            return true;
+        }
+        if(t == Tile.FIRE && isFireWall) {
+            return true;
+        }
+        if(t == Tile.BOMB && isBombWall) {
+            return true;
+        }
+        if(t == Tile.THIEF && isThiefWall) {
+            return true;
+        }
+        if(t == Tile.TRAP && isTrapWall) {
             return true;
         }
         return false;
     }
 
-    private boolean isNodeTile(Tile t) {
-        if (t.isChip() || t == Tile.CHIP || t == Tile.EXIT ) {
+    private boolean isTSPTile(Tile t) {
+        if(t == Tile.FLOOR || t == Tile.WALL || t.isChip() ||
+           t.isIce() || t.isFF() || t == Tile.TELEPORT || t == Tile.BLUEWALL_REAL ||
+           t == Tile.HIDDENWALL_TEMP || t == Tile.INVISIBLE_WALL || t == Tile.CLONE_MACHINE ||
+           t == Tile.THIN_WALL_LEFT || t == Tile.THIN_WALL_RIGHT || t == Tile.THIN_WALL_DOWN_RIGHT ||
+           t == Tile.THIN_WALL_DOWN || t == Tile.THIN_WALL_UP) {
             return true;
         }
         return false;

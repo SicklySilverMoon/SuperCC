@@ -34,6 +34,11 @@ public class TSPGUI {
     private JButton removeNodeButton;
     private JButton removeExitButton;
     private JButton removeRestrictionButton;
+    private JCheckBox waterCheckBox;
+    private JCheckBox fireCheckBox;
+    private JCheckBox bombsCheckBox;
+    private JCheckBox thievesCheckBox;
+    private JCheckBox trapsCheckBox;
 
     private DefaultListModel<ListNode> nodes = new DefaultListModel<>();
     private DefaultListModel<ListNode> exitNodes = new DefaultListModel<>();
@@ -98,6 +103,12 @@ public class TSPGUI {
                     nodes.addElement(new ListNode(i, t));
                 }
             }
+            for(int i = 0; i < 32 * 32; i++) {
+                Tile t = emulator.getLevel().getLayerBG().get(i);
+                if(t == Tile.CHIP) {
+                    nodes.addElement(new ListNode(i, t));
+                }
+            }
         });
 
 
@@ -128,6 +139,12 @@ public class TSPGUI {
             exitNodes.clear();
             for(int i = 0; i < 32 * 32; i++) {
                 Tile t = emulator.getLevel().getLayerFG().get(i);
+                if(t == Tile.EXIT) {
+                    exitNodes.addElement(new ListNode(i, t));
+                }
+            }
+            for(int i = 0; i < 32 * 32; i++) {
+                Tile t = emulator.getLevel().getLayerBG().get(i);
                 if(t == Tile.EXIT) {
                     exitNodes.addElement(new ListNode(i, t));
                 }
@@ -338,6 +355,7 @@ public class TSPGUI {
                 if (startTemp <= endTemp)
                     throw new Exception("Starting temperature must be greater than ending temperature.");
                 if (cooling >= 1) throw new Exception("Cooling factor must be less than 1.");
+                if(exitNodesArray.size() == 0) throw new Exception("There must be at least one exit tile.");
             } catch(Exception e) {
                 emulator.throwError(e.getMessage());
                 return;
@@ -347,7 +365,9 @@ public class TSPGUI {
                 running = true;
                 runButton.setText("Stop");
                 TSPSolver solver = new TSPSolver(emulator, gui, nodesArray, exitNodesArray, restrictionNodesArray,
-                        startTemp, endTemp, cooling, iterations, output);
+                        startTemp, endTemp, cooling, iterations, waterCheckBox.isSelected(), fireCheckBox.isSelected(),
+                        bombsCheckBox.isSelected(), thievesCheckBox.isSelected(), trapsCheckBox.isSelected(),
+                        output);
                 solver.solve();
             } catch(Exception e) {
                 output.setText("An error occured:\n  " + e.toString());
