@@ -342,9 +342,9 @@ public class SuperCC {
     public static void initialise(String[] args){
             SuperCC emulator = new SuperCC();
 
-            parseArgument(args, emulator); //Parses any command line arguments given
+            emulator.parseArgument(args); //Parses any command line arguments given
 
-            initialiseTilesheet(emulator);
+            emulator.initialiseTilesheet();
 
             //emulator.runUnitTests();
             //emulator.openLevelset(introDat); //emulator.setTWSFile(new File("C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\public_CHIPS.dac.tws"));
@@ -356,7 +356,7 @@ public class SuperCC {
             //emulator.runBenchmark(134, 200);
     }
 
-    private static void parseArgument(String[] args, SuperCC emulator) { //All the command line argument parsing
+    private void parseArgument(String[] args) { //All the command line argument parsing
         if (args.length != 0) {
             if (args[0].equals("-h")) {
                 System.out.println("SuperCC.jar [Levelset File]/[-h] [Level Number]/[TWS File] [Level Number]/[--testTWS]\n" +
@@ -364,51 +364,51 @@ public class SuperCC {
                         "If [-h] is used as the 1st argument all other arguments will be ignored.");
                 System.exit(0);
             }
-            else emulator.openLevelset(new File(args[0])); //The first command argument should be the level set if it isn't the help argument
+            else this.openLevelset(new File(args[0])); //The first command argument should be the level set if it isn't the help argument
             if (args.length > 1) {
                 try {
                     int startLevel = Integer.parseInt(args[1]);
-                    emulator.loadLevel(startLevel);  //The second command argument (if it exists and is a number) should be the level number
+                    this.loadLevel(startLevel);  //The second command argument (if it exists and is a number) should be the level number
                 }
                 catch (NumberFormatException e) { //If the second argument isn't a number than its a TWS file
-                    emulator.setTWSFile(new File(args[1]));
+                    this.setTWSFile(new File(args[1]));
                 }
             }
             if (args.length > 2) {
                 try {
                     int startLevel = Integer.parseInt(args[2]);
-                    emulator.loadLevel(startLevel);  //The third command argument (if it exists and is a number and comes after the TWS) should be the level number
+                    this.loadLevel(startLevel);  //The third command argument (if it exists and is a number and comes after the TWS) should be the level number
                 }
                 catch (NumberFormatException e) { //If the second argument isn't a number than its a string with command options
-                    if (args[2].equals("--testTWS")) emulator.testTWS(args[0], args[1]);
+                    if (args[2].equals("--testTWS")) this.testTWS(args[0], args[1]);
                 }
             }
         }
     }
 
-    private static void initialiseTilesheet(SuperCC emulator) {
-        Gui window = emulator.getMainWindow();
-        SuccPaths paths = emulator.getPaths();
+    private void initialiseTilesheet() {
+        Gui window = this.getMainWindow();
+        SuccPaths paths = this.getPaths();
         TileSheet[] tileSheets = TileSheet.values();
         TileSheet tileSheet = tileSheets[paths.getTilesetNum()];
         int[] tileSizes = paths.getTileSizes();
         int width = tileSizes[0];
         int height = tileSizes[1];
         SmallGamePanel gamePanel = (SmallGamePanel) window.getGamePanel();
-        emulator.getMainWindow().getGamePanel().setTileSheet(tileSheet);
+        this.getMainWindow().getGamePanel().setTileSheet(tileSheet);
         BufferedImage tilesetImage = null;
         try {
             tilesetImage = tileSheet.getTileSheet(width, height);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        window.getGamePanel().initialise(emulator, tilesetImage, tileSheet, tileSizes[0], tileSizes[1]);
-        window.getInventoryPanel().initialise(emulator);
+        window.getGamePanel().initialise(this, tilesetImage, tileSheet, tileSizes[0], tileSizes[1]);
+        window.getInventoryPanel().initialise(this);
         window.setSize(200+width*gamePanel.getWindowSizeX(), 200+height*gamePanel.getWindowSizeY());
         window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));
         window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
         window.pack();
-        window.repaint(emulator.getLevel(), true);
+        window.repaint(this.getLevel(), true);
     }
 
     public void throwError(String s){
