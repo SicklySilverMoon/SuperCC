@@ -3,6 +3,8 @@ package emulator;
 import game.Level;
 import game.Position;
 import game.SaveState;
+import graphics.Gui;
+import graphics.SmallGamePanel;
 import util.ByteList;
 import util.TreeNode;
 
@@ -150,25 +152,30 @@ public class SavestateManager implements Serializable {
     
     public List<BufferedImage> play(SuperCC emulator, int numHalfTicks) {
         ArrayList<BufferedImage> images = new ArrayList<>();
-        BufferedImage img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-        emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+        Gui window = emulator.getMainWindow();
+        int tileWidth = window.getGamePanel().getTileWidth();
+        int tileHeight = window.getGamePanel().getTileHeight();
+        int windowSizeY = ((SmallGamePanel) window.getGamePanel()).getWindowSizeY();
+        int windowSizeX = ((SmallGamePanel) window.getGamePanel()).getWindowSizeX();
+        BufferedImage img = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        window.getGamePanel().paintComponent(img.getGraphics());
         images.add(img);
         while (numHalfTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
             byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
             boolean tickTwice = emulator.tick(b, TickFlags.REPLAY);
             img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-            emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+            window.getGamePanel().paintComponent(img.getGraphics());
             images.add(img);
             if (tickTwice && numHalfTicks-- > 0) {
                 emulator.tick((byte) '-', TickFlags.REPLAY);
                 img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-                emulator.getMainWindow().getGamePanel().paintComponent(img.getGraphics());
+                window.getGamePanel().paintComponent(img.getGraphics());
                 images.add(img);
             }
             replay();
         }
         if (!pause) {
-            emulator.getMainWindow().getPlayButton().doClick();
+            window.getPlayButton().doClick();
         }
         emulator.repaint(false);
         return images;
