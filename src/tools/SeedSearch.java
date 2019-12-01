@@ -26,7 +26,7 @@ public class SeedSearch {
     
     private final byte[] startingState;
     private int seed;
-    private static boolean killThreadFlag = false;
+    private static boolean killFlag = false;
     private static boolean running = false;
     private DecimalFormat df;
     
@@ -48,7 +48,7 @@ public class SeedSearch {
         startStopButton.addActionListener((e) -> {
             if (running) {
                 startStopButton.setText("Resume");
-                killThreadFlag = true;
+                killFlag = true;
             }
             else {
                 if (seed == 0) seed = Integer.parseInt(startField.getText());
@@ -65,12 +65,10 @@ public class SeedSearch {
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setVisible(true);
         frame.addWindowListener(new WindowListener() {
-            @Override public void windowClosing(WindowEvent windowEvent) { killThreadFlag = true; }
+            @Override public void windowClosing(WindowEvent windowEvent) { killFlag = true; }
+
             //None of these are useful but the code requires them to be here so i shoved them all into one line
-
-            @Override public void windowOpened(WindowEvent windowEvent) {
-
-            }@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
+            @Override public void windowOpened(WindowEvent windowEvent) {}@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
         });
     }
 
@@ -90,8 +88,8 @@ public class SeedSearch {
     private class SeedSearchThread extends Thread {
         public void run(){
             running = true;
-            killThreadFlag = false;
-            while (!killThreadFlag && seed >= 0) {
+            killFlag = false;
+            while (!killFlag && seed >= 0) {
                 if (verifySeed(seed)) {
                     successes++;
                     lastSuccess = seed;
@@ -101,7 +99,7 @@ public class SeedSearch {
                 if (seed % UPDATE_RATE == 0) updateText();
             }
             running = false;
-            killThreadFlag = false;
+            killFlag = false;
             updateText(); //just have it update with the last result, in case a success is found before an update and it gets canceled
                 emulator.getSavestates().restart();
                 emulator.getLevel().load(emulator.getSavestates().getSavestate());
@@ -123,7 +121,7 @@ public class SeedSearch {
     }
 
     public static void kill() {
-        killThreadFlag = true;
+        killFlag = true;
     }
 
 }

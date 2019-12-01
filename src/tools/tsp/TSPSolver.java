@@ -112,7 +112,7 @@ public class TSPSolver {
             int[] visitedCount = new int[32 * 32];
             int statesExplored = 0;
 
-            while (!states.isEmpty() && statesExplored < LIMIT && !gui.killflag) {
+            while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
                 statesExplored++;
                 PathNode node = states.poll();
                 byte[] state = node.state;

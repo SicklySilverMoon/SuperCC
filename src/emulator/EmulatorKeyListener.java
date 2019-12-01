@@ -91,13 +91,13 @@ public class EmulatorKeyListener extends KeyAdapter {
                 case DOWN:
                 case RIGHT:
                 case HALF_WAIT:
-                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
+                    if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
                     break;
                 case FULL_WAIT:
-                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
+                    if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
-                    if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning())
+                    if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
                         emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
                     break;
                 case REWIND:

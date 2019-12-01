@@ -6,6 +6,8 @@ import game.Tile;
 import tools.tsp.TSPSolver;
 
 import javax.swing.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 public class TSPGUI {
@@ -46,8 +48,8 @@ public class TSPGUI {
 
     private SuperCC emulator;
 
-    public boolean killflag = false;
-    public boolean running = false;
+    public boolean killFlag = false;
+    public static boolean running = false;
 
     public TSPGUI(SuperCC emulator) {
         this.emulator = emulator;
@@ -60,10 +62,16 @@ public class TSPGUI {
         frame.setContentPane(mainPanel);
         frame.pack();
         frame.setVisible(true);
+        frame.addWindowListener(new WindowListener() {
+            @Override public void windowClosing(WindowEvent windowEvent) { killFlag = true; }
+
+            //None of these are useful but the code requires them to be here so i shoved them all into one line
+            @Override public void windowOpened(WindowEvent windowEvent) {}@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
+        });
 
         runButton.addActionListener(e -> {
             if(running) {
-                killflag = true;
+                killFlag = true;
                 return;
             }
             new TSPSolverThread(this).start();
@@ -251,6 +259,10 @@ public class TSPGUI {
         return false;
     }
 
+    public static boolean isRunning() {
+        return running;
+    }
+
     public class ListNode {
         public int index;
         public Tile t;
@@ -374,7 +386,7 @@ public class TSPGUI {
                 e.printStackTrace();
             } finally {
                 runButton.setText("Run");
-                killflag = false;
+                killFlag = false;
                 running = false;
             }
         }

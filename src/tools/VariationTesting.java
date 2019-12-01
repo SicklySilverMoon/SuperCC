@@ -32,7 +32,7 @@ public class VariationTesting {
     private HashMap<String, Object> variables;
     private Interpreter interpreter;
     public boolean killFlag = false;
-    public boolean running = false;
+    public static boolean running = false;
     private static final HashMap<TokenType, Color> colors;
 
     static {
@@ -219,6 +219,12 @@ public class VariationTesting {
         frame.setContentPane(mainPanel);
         frame.pack();
         frame.setVisible(true);
+        frame.addWindowListener(new WindowListener() {
+            @Override public void windowClosing(WindowEvent windowEvent) { killFlag = true; }
+
+            //None of these are useful but the code requires them to be here so i shoved them all into one line
+            @Override public void windowOpened(WindowEvent windowEvent) {}@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
+        });
 
         frame.addComponentListener(new ComponentAdapter() {
             @Override
@@ -293,6 +299,10 @@ public class VariationTesting {
         for(int i = 0; i < lineNumbers.size(); i++) {
             lineNumbers.get(i).setBounds(0 - offsetX, i * 22 - offsetY, 40, 24);
         }
+    }
+
+    public static boolean isRunning() {
+        return running;
     }
 
     private class VariationTestingThread extends Thread {

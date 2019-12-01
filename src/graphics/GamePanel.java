@@ -285,7 +285,7 @@ public abstract class GamePanel extends JPanel
     public void mousePressed(MouseEvent e) {}
     private void leftClick(GameGraphicPosition clickPosition) {
         Creature chip = emulator.getLevel().getChip();
-        if (!emulator.getLevel().getChip().isDead() && !SeedSearch.isRunning()) {
+        if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
             byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
             emulator.showAction("Clicked " + clickPosition);

@@ -8,6 +8,8 @@ import io.DatParser;
 import io.SuccPaths;
 import io.TWSReader;
 import tools.SeedSearch;
+import tools.TSPGUI;
+import tools.VariationTesting;
 
 import javax.swing.*;
 import java.awt.*;
@@ -409,6 +411,10 @@ public class SuperCC {
         window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
         window.pack();
         window.repaint(this.getLevel(), true);
+    }
+
+    public static boolean areToolsRunning() {
+        return (SeedSearch.isRunning() || TSPGUI.isRunning() || VariationTesting.isRunning());
     }
 
     public void throwError(String s){

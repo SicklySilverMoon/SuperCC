@@ -52,7 +52,7 @@ public class SimulatedAnnealing {
         int[] solution = bestSolution.clone();
         int distance = bestDistance;
 
-        while(temparature > end && !gui.killflag) {
+        while(temparature > end && !gui.killFlag) {
             temparature *= cooling;
             output.setText("Calculating shortest path...\nTemperature: " + temparature + "\nCurrent best: " + bestDistance);
             int startDistance = distance;

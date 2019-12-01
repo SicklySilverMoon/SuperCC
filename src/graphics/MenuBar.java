@@ -52,12 +52,14 @@ class MenuBar extends JMenuBar{
 
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("dat, ccl", "dat", "ccl"));
-                fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
-                if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                    emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
-                    emulator.openLevelset(fc.getSelectedFile());
+                if (!SuperCC.areToolsRunning()) {
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileFilter(new FileNameExtensionFilter("dat, ccl", "dat", "ccl"));
+                    fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
+                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                        emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
+                        emulator.openLevelset(fc.getSelectedFile());
+                    }
                 }
             });
             openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK + SHIFT_MASK));
@@ -68,40 +70,44 @@ class MenuBar extends JMenuBar{
     
             JMenuItem restart = new JMenuItem("Restart");
             restart.addActionListener(e -> {
-                emulator.getSavestates().restart();
-                emulator.getLevel().load(emulator.getSavestates().getSavestate());
-                emulator.showAction("Restarted Level");
-                window.repaint(emulator.getLevel(), false);
+                if (!SuperCC.areToolsRunning()) {
+                    emulator.getSavestates().restart();
+                    emulator.getLevel().load(emulator.getSavestates().getSavestate());
+                    emulator.showAction("Restarted Level");
+                    window.repaint(emulator.getLevel(), false);
+                }
             });
             restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, CTRL_MASK));
             addIcon(restart, "/resources/icons/restart.gif");
             add(restart);
     
             JMenuItem next = new JMenuItem("Next");
-            next.addActionListener(e ->
-                                       emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1)
-            );
+            next.addActionListener(e -> {
+                if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1);
+            });
             next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
             addIcon(next, "/resources/icons/right.gif");
             add(next);
 
             JMenuItem previous = new JMenuItem("Previous");
-            previous.addActionListener(e ->
-                emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1)
-            );
+            previous.addActionListener(e -> {
+                if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1);
+            });
             previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, CTRL_MASK));
             addIcon(previous, "/resources/icons/left.gif");
             add(previous);
 
             JMenuItem goTo = new JMenuItem("Go to...");
             goTo.addActionListener(e -> {
-                String s = JOptionPane.showInputDialog(window, "Choose a level number");
-                if (s.length() == 0) return;
-                try {
-                    int n = Integer.parseInt(s);
-                    emulator.loadLevel(n, 0, Step.EVEN, true);
-                } catch (NumberFormatException nfe){
-                    JOptionPane.showMessageDialog(window, "Not a number");
+                if (!SuperCC.areToolsRunning()) {
+                    String s = JOptionPane.showInputDialog(window, "Choose a level number");
+                    if (s.length() == 0) return;
+                    try {
+                        int n = Integer.parseInt(s);
+                        emulator.loadLevel(n, 0, Step.EVEN, true);
+                    } catch (NumberFormatException nfe) {
+                        JOptionPane.showMessageDialog(window, "Not a number");
+                    }
                 }
             });
             goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, CTRL_MASK));
@@ -112,24 +118,27 @@ class MenuBar extends JMenuBar{
 
             JMenuItem toggleStep = new JMenuItem("Toogle odd/even step");
             toggleStep.addActionListener(e -> {
-                Level oldLevel = emulator.getLevel();
-                Step newStep = Step.EVEN;
-                if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
-                emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true);
+                if (!SuperCC.areToolsRunning()) {
+                    Level oldLevel = emulator.getLevel();
+                    Step newStep = Step.EVEN;
+                    if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
+                    emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true);
+                }
             });
             add(toggleStep);
 
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
             rngSeed.addActionListener(e -> {
-                String s = JOptionPane.showInputDialog(window, "Choose a starting seed");
-                if (s.equals("")) return;
-                try{
-                    Level oldLevel = emulator.getLevel();
-                    int n = Integer.parseInt(s);
-                    emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true);
-                }
-                catch (NumberFormatException nfe){
-                    JOptionPane.showMessageDialog(window, "Not a number");
+                if (!SuperCC.areToolsRunning()) {
+                    String s = JOptionPane.showInputDialog(window, "Choose a starting seed");
+                    if (s.equals("")) return;
+                    try {
+                        Level oldLevel = emulator.getLevel();
+                        int n = Integer.parseInt(s);
+                        emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true);
+                    } catch (NumberFormatException nfe) {
+                        JOptionPane.showMessageDialog(window, "Not a number");
+                    }
                 }
             });
             addIcon(rngSeed, "/resources/icons/rng.gif");
