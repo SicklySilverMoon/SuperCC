@@ -590,6 +590,12 @@ class MenuBar extends JMenuBar{
             });
             add(variations);
 
+            JMenuItem tsp = new JMenuItem("TSP Solver");
+            tsp.addActionListener(e -> {
+                TSPGUI t = new TSPGUI(emulator);
+            });
+            add(tsp);
+
         }
     }
     
@@ -648,6 +654,11 @@ class MenuBar extends JMenuBar{
                 }
             });
             add(variationHelp);
+
+            JMenuItem tspHelpPopup = new JMenuItem("TSP Solver Help");
+            tspHelpPopup.addActionListener(e -> new TSPHelpWindow(emulator));
+            addIcon(tspHelpPopup, "/resources/icons/help.gif");
+            add(tspHelpPopup);
         }
     }
 
