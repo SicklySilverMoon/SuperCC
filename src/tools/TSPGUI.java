@@ -34,13 +34,15 @@ public class TSPGUI {
     private JButton removeNodeButton;
     private JButton removeExitButton;
     private JButton removeRestrictionButton;
-    private JTextField restrictionLogicInput;
 
     private DefaultListModel<ListNode> nodes = new DefaultListModel<>();
     private DefaultListModel<ListNode> exitNodes = new DefaultListModel<>();
     private DefaultListModel<RestrictionNode> restrictionNodes = new DefaultListModel<>();
 
     private SuperCC emulator;
+
+    public boolean killflag = false;
+    public boolean running = false;
 
     public TSPGUI(SuperCC emulator) {
         this.emulator = emulator;
@@ -55,7 +57,11 @@ public class TSPGUI {
         frame.setVisible(true);
 
         runButton.addActionListener(e -> {
-            new TSPSolverThread().start();
+            if(running) {
+                killflag = true;
+                return;
+            }
+            new TSPSolverThread(this).start();
         });
 
 
@@ -267,6 +273,9 @@ public class TSPGUI {
         public ListNode before;
         public ListNode after;
 
+        public int beforeIndex;
+        public int afterIndex;
+
         public RestrictionNode(ListNode before, ListNode after) {
             this.before = before;
             this.after = after;
@@ -294,6 +303,12 @@ public class TSPGUI {
     }
 
     private class TSPSolverThread extends Thread {
+        private TSPGUI gui;
+
+        TSPSolverThread(TSPGUI gui) {
+            this.gui = gui;
+        }
+
         public void run() {
             ArrayList<ListNode> nodesArray = new ArrayList<>();
             ArrayList<ListNode> exitNodesArray = new ArrayList<>();
@@ -309,19 +324,38 @@ public class TSPGUI {
                 restrictionNodesArray.add(restrictionNodes.getElementAt(i));
             }
 
-            String restrictionLogic = restrictionLogicInput.getText();
-            double startTemp = Double.parseDouble(startTempInput.getText());
-            double endTemp = Double.parseDouble(endTempInput.getText());
-            double cooling = Double.parseDouble(coolingInput.getText());
-            int iterations = Integer.parseInt(iterationsInput.getText());
+            double startTemp, endTemp, cooling;
+            int iterations;
 
             try {
-                TSPSolver solver = new TSPSolver(emulator, nodesArray, exitNodesArray, restrictionNodesArray,
-                        restrictionLogic, startTemp, endTemp, cooling, iterations, output);
+                startTemp = Double.parseDouble(startTempInput.getText());
+                endTemp = Double.parseDouble(endTempInput.getText());
+                cooling = Double.parseDouble(coolingInput.getText());
+                iterations = Integer.parseInt(iterationsInput.getText());
+
+                if (startTemp <= 0 || endTemp <= 0 || cooling <= 0 || iterations <= 0)
+                    throw new Exception("Parameters must be greater than 0.");
+                if (startTemp <= endTemp)
+                    throw new Exception("Starting temperature must be greater than ending temperature.");
+                if (cooling >= 1) throw new Exception("Cooling factor must be less than 1.");
+            } catch(Exception e) {
+                emulator.throwError(e.getMessage());
+                return;
+            }
+
+            try {
+                running = true;
+                runButton.setText("Stop");
+                TSPSolver solver = new TSPSolver(emulator, gui, nodesArray, exitNodesArray, restrictionNodesArray,
+                        startTemp, endTemp, cooling, iterations, output);
                 solver.solve();
             } catch(Exception e) {
-                output.setText("An error occured:\n  " + e.getMessage());
+                output.setText("An error occured:\n  " + e.toString());
                 e.printStackTrace();
+            } finally {
+                runButton.setText("Run");
+                killflag = false;
+                running = false;
             }
         }
     }

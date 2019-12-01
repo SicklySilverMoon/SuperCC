@@ -654,6 +654,11 @@ class MenuBar extends JMenuBar{
                 }
             });
             add(variationHelp);
+
+            JMenuItem tspHelpPopup = new JMenuItem("TSP Solver Help");
+            tspHelpPopup.addActionListener(e -> new TSPHelpWindow(emulator));
+            addIcon(tspHelpPopup, "/resources/icons/help.gif");
+            add(tspHelpPopup);
         }
     }
 

@@ -16,6 +16,7 @@ import java.util.PriorityQueue;
 
 public class TSPSolver {
     private SuperCC emulator;
+    private TSPGUI gui;
     private Level level;
     private byte[] startState;
     private byte[] directions;
@@ -34,7 +35,6 @@ public class TSPSolver {
     private int exitNodeSize;
 
     private ArrayList<TSPGUI.RestrictionNode> restrictionNodes;
-    private String restrictionLogic;
 
     private double startTemp;
     private double endTemp;
@@ -45,12 +45,13 @@ public class TSPSolver {
 
     private JTextPane output;
 
-    private final int LIMIT = 100000; // Upper bound of exploration
+    private final int LIMIT = 200000; // Upper bound of exploration
 
-    public TSPSolver(SuperCC emulator, ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes,
-                     ArrayList<TSPGUI.RestrictionNode> restrictionNodes, String restrictionLogic,
+    public TSPSolver(SuperCC emulator, TSPGUI gui, ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes,
+                     ArrayList<TSPGUI.RestrictionNode> restrictionNodes,
                      double startTemp, double endTemp, double cooling, int iterations, JTextPane output) {
         this.emulator = emulator;
+        this.gui = gui;
         this.level = emulator.getLevel();
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
@@ -69,7 +70,7 @@ public class TSPSolver {
         this.distances = new int[nodes.size()][nodes.size()];
         for(int i = 0 ; i < nodes.size(); i++) {
             for(int j = 0; j < nodes.size(); j++) {
-                distances[i][j] = 9999;
+                distances[i][j] = Integer.MAX_VALUE;
             }
         }
         this.paths = new PathNode[nodes.size()][nodes.size()];
@@ -79,7 +80,11 @@ public class TSPSolver {
         this.exitNodeSize = exitNodes.size();
 
         this.restrictionNodes = restrictionNodes;
-        this.restrictionLogic = restrictionLogic;
+
+        for(TSPGUI.RestrictionNode node : restrictionNodes) {
+            node.beforeIndex = nodes.indexOf(node.before.index) - 1;
+            node.afterIndex = nodes.indexOf(node.after.index) - 1;
+        }
 
         this.startTemp = startTemp;
         this.endTemp = endTemp;
@@ -102,7 +107,7 @@ public class TSPSolver {
             int[] visitedCount = new int[32 * 32];
             int statesExplored = 0;
 
-            while (!states.isEmpty() && statesExplored < LIMIT) {
+            while (!states.isEmpty() && statesExplored < LIMIT && !gui.killflag) {
                 statesExplored++;
                 PathNode node = states.poll();
                 byte[] state = node.state;
@@ -116,10 +121,14 @@ public class TSPSolver {
                     visitedCount[index] = 0;
                 }
 
+                // Some strange limits because CC is too complex
                 if(visitedCount[index] >= 2 && !t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
                     continue;
                 }
-                else if(visitedCount[index] >= 20) {
+                else if(visitedCount[index] >= 10 && t.isFF()) {
+                    continue;
+                }
+                else if(visitedCount[index] >= 100) {
                     continue;
                 }
 
@@ -157,18 +166,10 @@ public class TSPSolver {
                     }
                 }
             }
-            System.out.println(statesExplored);
         }
 
-        for(int i = 0; i < nodes.size(); i++) {
-            for(int j = 0; j < nodes.size(); j++) {
-                System.out.format("%4d", distances[i][j]);
-            }
-            System.out.print("\n");
-        }
-        System.out.print("\n");
-
-        SimulatedAnnealing sa = new SimulatedAnnealing(startTemp, endTemp, cooling, iterations, distances, inputNodeSize, exitNodeSize, output);
+        SimulatedAnnealing sa = new SimulatedAnnealing(gui, startTemp, endTemp, cooling, iterations, distances,
+                inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();
         chosenExit = sa.bestExit;
 
@@ -282,11 +283,16 @@ public class TSPSolver {
 
         ArrayList<ByteList> partialSolutions = new ArrayList<>();
 
-        partialSolutions.add(paths[0][solution[0]].moves);
-        for(int i = 0; i < solution.length - 1; i++) {
-            partialSolutions.add(paths[solution[i]][solution[i + 1]].moves);
+        if(solution.length > 0) {
+            partialSolutions.add(paths[0][solution[0]].moves);
+            for (int i = 0; i < solution.length - 1; i++) {
+                partialSolutions.add(paths[solution[i]][solution[i + 1]].moves);
+            }
+            partialSolutions.add(paths[solution[solution.length - 1]][1 + inputNodeSize + chosenExit].moves);
         }
-        partialSolutions.add(paths[solution[solution.length - 1]][1 + inputNodeSize + chosenExit].moves);
+        else {
+            partialSolutions.add(paths[0][1].moves);
+        }
 
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
