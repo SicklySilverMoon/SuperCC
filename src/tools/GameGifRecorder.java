@@ -51,7 +51,7 @@ public class GameGifRecorder {
 
                     progressBar.setMinimum(0);
                     progressBar.setMaximum(numHalfTicks);
-                    for (i = 0; i < numHalfTicks && i <= images.size(); i += imageSkip) {
+                    for (i = 0; i < numHalfTicks && i < images.size(); i += imageSkip) {
                         writer.writeToSequence(images.get(i));
                         progressBar.setValue(i);
                         progressBar.repaint();
