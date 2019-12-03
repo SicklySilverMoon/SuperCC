@@ -50,7 +50,7 @@ public class GameGifRecorder {
                     GifSequenceWriter writer = new GifSequenceWriter(output, images.get(0).getType(), timePerFrame, true);
 
                     progressBar.setMinimum(0);
-                    progressBar.setMaximum(numHalfTicks);
+                    progressBar.setMaximum(images.size());
                     for (i = 0; i < numHalfTicks && i < images.size(); i += imageSkip) {
                         writer.writeToSequence(images.get(i));
                         progressBar.setValue(i);
