@@ -1,8 +1,6 @@
 package game;
 
-import emulator.SuperCC;
 import game.button.*;
-import io.DatParser;
 
 import java.util.BitSet;
 
@@ -28,8 +26,9 @@ public class Level extends SaveState {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
+    private boolean levelWon;
 
-    private boolean levelWon, ResetStep = false; //Stuff for data reset
+    private boolean ResetStep = false; //Stuff for data reset
     private Position AutopsyPosition = new Position(22, 0);
     
     public final Cheats cheats;
@@ -168,7 +167,7 @@ public class Level extends SaveState {
      * @param position the last clicked position.
      */
     public void setClick(int position){
-        this.mouseClick = position;
+        this.mouseGoal = position;
     }
 
     public void setLevelWon(boolean won) {levelWon = won;}
@@ -251,7 +250,7 @@ public class Level extends SaveState {
     
     private int moveType(byte b, boolean halfMove, boolean chipSliding){
         if (b <= 0 || b == WAIT){
-            if (mouseClick != NO_CLICK) {
+            if (mouseGoal != NO_CLICK) {
                 if (chipSliding) return CLICK_EARLY;
                 if (halfMove) return CLICK_LATE;
             }
@@ -331,24 +330,48 @@ public class Level extends SaveState {
         boolean isHalfMove = (tickNumber & 0x1) != 0; //A faster version of tickNumber % 2 != 0;
         int moveType = moveType(b, isHalfMove, chip.isSliding());
         monsterList.initialise();
-    
+
+        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad
+
+        if (isHalfMove && mouseGoal == NO_CLICK && moveType == HALF_WAIT) {
+            idleMoves++;
+            if (idleMoves > 2) {
+                layerFG.set(chip.getPosition(), CHIP_DOWN);
+            }
+        }
+
         if (tickNumber > 0 && !isHalfMove) monsterList.tick();
 
         if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (endTick()) return false;
-        if (moveType == CLICK_EARLY) moveChip(chip.seek(new Position(mouseClick))); //{ //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
+        if (moveType == CLICK_EARLY) {
+            if (voluntaryMoveAllowed) {
+                moveChip(chip.seek(new Position(mouseGoal))); //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
+                voluntaryMoveAllowed = false;
+            }
+            else {
+                moveType = CLICK_LATE;
+            }
+        }
         if (endTick()) return false;
         tickNumber++;
         slipList.tick();
         if (endTick()) return false;
-        if (moveType == KEY) moveChip(directions);
-        else if (moveType == CLICK_LATE) moveChip(chip.seek(new Position(mouseClick)));
+        if (moveType == KEY) {
+            moveChip(directions);
+            idleMoves = 0; //Yup, the timer only resets on key moves, clicks keep it the same
+            voluntaryMoveAllowed = false;
+        }
+        else if (moveType == CLICK_LATE && !chip.isSliding()) {
+            moveChip(chip.seek(new Position(mouseGoal)));
+            voluntaryMoveAllowed = true;
+        }
         if (endTick()) return false;
 
         monsterList.finalise();
         finaliseTraps();
-        if (moveType == KEY || chip.getPosition().getIndex() == mouseClick) mouseClick = NO_CLICK;
+        if (moveType == KEY || chip.getPosition().getIndex() == mouseGoal) mouseGoal = NO_CLICK;
 
         return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
     }

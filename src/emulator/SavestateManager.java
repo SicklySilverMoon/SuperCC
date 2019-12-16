@@ -364,7 +364,7 @@ public class SavestateManager implements Serializable {
             rleCompress(uncompressedState, list, LAYER_BG_LOCATION, 32*32);
             rleCompress(uncompressedState, list, LAYER_FG_LOCATION, 32*32);
             byte[] out = new byte[uncompressedState.length - 2 * 32 * 32 + list.size()];
-            out[0] = COMPRESSED;
+            out[0] = COMPRESSED_V2;
             out[1] = uncompressedState[1];
             out[2] = uncompressedState[2];
             list.copy(out, 3);

@@ -9,8 +9,10 @@ public class SaveState {
     public static final int NO_CLICK = 1025;
     public static final int RLE_MULTIPLE = 0x7F;
     public static final int RLE_END = 0x7E;
-    private static final byte UNCOMPRESSED = 4;
-    public static final byte COMPRESSED = 5;
+    private static final byte UNCOMPRESSED_V2 = 6;
+    public static final byte COMPRESSED_V2 = 7;
+    private static final byte UNCOMPRESSED_V1 = 4;
+    public static final byte COMPRESSED_V1 = 5;
 
     Layer layerBG;
     Layer layerFG;
@@ -20,11 +22,13 @@ public class SaveState {
     short[] keys;
     byte[] boots;
     RNG rng;
-    int mouseClick;
+    int mouseGoal;
     BitSet traps;
     CreatureList monsterList;
     SlipList slipList;
-    
+    short idleMoves;
+    boolean voluntaryMoveAllowed;
+
     /**
      * Write an uncompressed savestate
      * @return a savestate
@@ -48,10 +52,12 @@ public class SaveState {
             2 +                             // monsterlist size
             monsterList.size() * 2 +        // monsterlist
             2 +                             // sliplist size
-            slipList.size() * 2;            // sliplist
+            slipList.size() * 2 +           // sliplist
+            2 +                             // idle moves
+            4;                              // previous move type
         
         SavestateWriter writer = new SavestateWriter(length);
-        writer.write(UNCOMPRESSED);
+        writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
         writer.writeShort((short) chip.bits());
         writer.write(layerBG.getBytes());
         writer.write(layerFG.getBytes());
@@ -60,13 +66,15 @@ public class SaveState {
         writer.writeShorts(keys);
         writer.write(boots);
         writer.writeInt(rng.getCurrentValue());
-        writer.writeShort(mouseClick);
+        writer.writeShort(mouseGoal);
         writer.writeShort(traps.length);
         writer.write(traps);
         writer.writeShort(monsterList.size());
         writer.writeMonsterArray(monsterList.getCreatures());
         writer.writeShort(slipList.size());
         writer.writeMonsterList(slipList);
+        writer.writeShort(idleMoves);
+        writer.writeBool(voluntaryMoveAllowed);
         
         return writer.toByteArray();
     }
@@ -78,18 +86,36 @@ public class SaveState {
     public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
-        chip = new Creature(reader.readShort());
-        layerBG.load(reader.readLayer(version));
-        layerFG.load(reader.readLayer(version));
-        tickNumber = (short) reader.readShort();
-        chipsLeft = (short) reader.readShort();
-        keys = reader.readShorts(4);
-        boots = reader.readBytes(4);
-        rng.setCurrentValue(reader.readInt());
-        mouseClick = reader.readShort();
-        traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-        monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
-        slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
+        if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {
+            chip = new Creature(reader.readShort());
+            layerBG.load(reader.readLayer(version));
+            layerFG.load(reader.readLayer(version));
+            tickNumber = (short) reader.readShort();
+            chipsLeft = (short) reader.readShort();
+            keys = reader.readShorts(4);
+            boots = reader.readBytes(4);
+            rng.setCurrentValue(reader.readInt());
+            mouseGoal = reader.readShort();
+            traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
+            monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
+            slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
+            idleMoves = (short) reader.readShort();
+            voluntaryMoveAllowed = reader.readBool();
+        }
+        else if (version == UNCOMPRESSED_V1 || version == COMPRESSED_V1) {
+            chip = new Creature(reader.readShort());
+            layerBG.load(reader.readLayer(version));
+            layerFG.load(reader.readLayer(version));
+            tickNumber = (short) reader.readShort();
+            chipsLeft = (short) reader.readShort();
+            keys = reader.readShorts(4);
+            boots = reader.readBytes(4);
+            rng.setCurrentValue(reader.readInt());
+            mouseGoal = reader.readShort();
+            traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
+            monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
+            slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
+        }
     }
     
     /**
@@ -102,7 +128,7 @@ public class SaveState {
     }
 
     SaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, Creature chip,
-                     int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseClick, BitSet traps){
+              int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
         this.monsterList = monsterList;
@@ -113,7 +139,7 @@ public class SaveState {
         this.keys = keys;
         this.boots = boots;
         this.rng = rng;
-        this.mouseClick = mouseClick;
+        this.mouseGoal = mouseGoal;
         this.traps = traps;
     }
 
@@ -163,7 +189,7 @@ public class SaveState {
             return layerBytes;
         }
         byte[] readLayer(int version){
-            if (version == COMPRESSED) return readLayerRLE();
+            if (version == COMPRESSED_V1 || version == COMPRESSED_V2) return readLayerRLE();
             else return readBytes(32*32);
         }
         Creature[] readMonsterArray(int length){
@@ -172,6 +198,9 @@ public class SaveState {
                 monsters[i] = new Creature(readShort());
             }
             return monsters;
+        }
+        boolean readBool() {
+            return read() == 1;
         }
 
         SavestateReader(byte[] b){
@@ -214,7 +243,11 @@ public class SaveState {
         void writeMonsterList(List<Creature> monsters){
             for (Creature monster : monsters) writeShort(monster.bits());
         }
-        
+        void writeBool(boolean n) {
+            if (n) write(1);
+            else write(0);
+        }
+
         byte[] toByteArray() {
             return bytes;
         }

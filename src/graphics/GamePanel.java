@@ -24,7 +24,7 @@ public abstract class GamePanel extends JPanel
     protected int bgBorderSize;
     protected int tileHeight, tileWidth;
     private TileSheet tileSheet;
-    
+
     protected Position screenTopLeft = new Position(0, 0);
     
     protected static final int[][]

@@ -294,11 +294,10 @@ class MenuBar extends JMenuBar{
             JMenuItem saveSavestates = new JMenuItem("Save all states");
             saveSavestates.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
-                    fc.setCurrentDirectory(new File(emulator.getSerPath()));
+                    fc.setCurrentDirectory(new File(emulator.getSerPath()).getParentFile());
                     fc.setSelectedFile(new File(emulator.getSerPath()));
                     if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
                         File file = fc.getSelectedFile();
@@ -324,8 +323,8 @@ class MenuBar extends JMenuBar{
                 try{
                     JFileChooser fc = new JFileChooser();
                     fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
-                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
-                    fc.setSelectedFile(new File(emulator.getJSONPath()));
+                    fc.setCurrentDirectory(new File(emulator.getSerPath()).getParentFile());
+                    fc.setSelectedFile(new File(emulator.getSerPath()));
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                         FileInputStream fis = new FileInputStream(fc.getSelectedFile());
                         ObjectInputStream ois = new ObjectInputStream(fis);
