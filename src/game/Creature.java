@@ -729,25 +729,33 @@ public class Creature{
         else newPosition = position.move(direction);
 
         boolean isBlock = creatureType.isBlock();
-
+        boolean isChip = creatureType.isChip();
+        boolean pickupCheck = false;
         boolean cloneMachineCheck = true;
         if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) cloneMachineCheck = true;
         else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !isBlock) cloneMachineCheck = false;
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
+
         Tile newTile = level.layerFG.get(newPosition);
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.layerBG.get(newPosition);
+        if (newTile.isPickup()) {
+            if (isChip) {
+                if (canEnter(direction, level.layerBG.get(newPosition), level) || level.layerBG.get(newPosition) == Tile.BLOCK) pickupCheck = true;
+            }
+            else if (newTile.isKey()) pickupCheck = true;
+        }
+
         if ((!newTile.isTransparent() && (isBlock || cloneMachineCheck))
-                || canEnter(direction, level.layerBG.get(newPosition), level) //Transparency now works correctly
-                || ((newTile.isKey() || (creatureType.isChip() && newTile.isPickup())) && cloneMachineCheck)
+                || canEnter(direction, level.layerBG.get(newPosition), level) //Look at this if statement, this is all just to get transparency to work
+                || (pickupCheck && cloneMachineCheck)
                 || (isBlock && (newTile.isBoot() || newTile.isChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
             if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 if (newTile != TELEPORT) level.popTile(position);
-                else if (creatureType.isChip())/*do nothing*/; //We handle this very specific case over in the teleport method so we cancel it out here, and yes it does in fact cause some issues if we don't, possibly even crashes if you revert both this and the teleport method handle
-                else level.popTile(position);
+                else if (!creatureType.isChip()) level.popTile(position); //You probably noticed that this works for every creature other than Chip, we handle this very specific case (Chip and teleport) over in the teleport method so we cancel it out here, and yes it does in fact cause some issues if we don't, possibly even crashes if you revert both this and the teleport method handle
                 position = newPosition;
 
                 //!!DIRTY HACK SECTION BEGINS!!//
