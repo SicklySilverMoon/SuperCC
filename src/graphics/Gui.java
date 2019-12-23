@@ -1,6 +1,5 @@
 package graphics;
 
-import com.sun.java.swing.plaf.windows.WindowsSliderUI;
 import emulator.EmulatorKeyListener;
 import emulator.SavestateManager;
 import emulator.SuperCC;
@@ -9,8 +8,8 @@ import util.TreeNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
@@ -80,10 +79,10 @@ public class Gui extends JFrame{
         lastActionPanel = new LastActionPanel();
         speedSlider = new JSlider(0, SavestateManager.NUM_SPEEDS - 1);
         speedSlider.setBackground(DARK_GREY);
-        speedSlider.setUI(new WindowsSliderUI(speedSlider));
+        speedSlider.setUI(new BasicSliderUI(speedSlider));
         timeSlider = new JSlider(0, 0);
         timeSlider.setBackground(DARK_GREY);
-        timeSlider.setUI(new WindowsSliderUI(timeSlider));
+        timeSlider.setUI(new BasicSliderUI(timeSlider));
         try {
             ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));

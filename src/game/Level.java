@@ -66,6 +66,18 @@ public class Level extends SaveState {
     public BlueButton[] getBlueButtons() {
         return blueButtons;
     }
+    public void setGreenButtons(GreenButton[] greenButtons) {
+        this.greenButtons = greenButtons;
+    }
+    public void setRedButtons(RedButton[] redButtons) {
+        this.redButtons = redButtons;
+    }
+    public void setBrownButtons(BrownButton[] brownButtons) {
+        this.brownButtons = brownButtons;
+    }
+    public void setBlueButtons(BlueButton[] blueButtons) {
+        this.blueButtons = blueButtons;
+    }
     public int getRngSeed(){
         return rngSeed;
     }
