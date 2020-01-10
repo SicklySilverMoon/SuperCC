@@ -66,10 +66,7 @@ public class SimulatedAnnealing {
             for(int i = 0; i < iterations; i++) {
                 int[] newSolution = solution.clone();
                 mutate(newSolution);
-                if(!checkRestrictions(newSolution)) {
-                    solution = newSolution.clone();
-                    continue;
-                }
+                handleRestrictions(newSolution);
                 int newDistance = calculateDistance(newSolution);
 
                 if(newDistance < distance) {
@@ -173,8 +170,7 @@ public class SimulatedAnnealing {
         }
     }
 
-    private boolean checkRestrictions(int[] solution) {
-        boolean[] restrictionsMet = new boolean[restrictionNodes.size()];
+    private void handleRestrictions(int[] solution) {
         int[] indexes = new int[inputNodeSize];
 
         for(int i = 0; i < solution.length; i++) {
@@ -183,10 +179,11 @@ public class SimulatedAnnealing {
 
         for(int i = 0; i < restrictionNodes.size(); i++) {
             TSPGUI.RestrictionNode node = restrictionNodes.get(i);
-            restrictionsMet[i] = indexes[node.beforeIndex] < indexes[node.afterIndex];
-            if(!restrictionsMet[i]) return false;
+            if(indexes[node.beforeIndex] > indexes[node.afterIndex]) {
+                int temp = solution[indexes[node.beforeIndex]];
+                solution[indexes[node.beforeIndex]] = solution[indexes[node.afterIndex]];
+                solution[indexes[node.afterIndex]] = temp;
+            }
         }
-
-        return true;
     }
 }

@@ -182,12 +182,6 @@ public class TSPSolver {
                         }
                     }
                 }
-                //if(i == 0 && j == 0) {
-                //    for(int k = 0; k < 1024; k++) {
-                //        if(k % 32 == 0) System.out.println();
-                //        System.out.format("%4d", visitedCount[k] + visitedCount[k + 1024] + visitedCount[k + 2048] + visitedCount[k + 3072]);
-                //    }
-                //}
             }
         }
 
@@ -284,10 +278,6 @@ public class TSPSolver {
 
         if(!canEnter(dirToByte(dir), newPosition)) {
             return !on.isIce();
-        }
-
-        if(i == 0 && newPosition % 1024 == 900) {
-            int x = 1;
         }
 
         int[][] currentDistances = (j == 0) ? distances : distancesBoost;
