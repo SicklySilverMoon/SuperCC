@@ -4,6 +4,7 @@ import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import tools.TSPGUI;
 import util.ByteList;
 
@@ -19,9 +20,12 @@ public class TSPSolver {
     private byte[] directions;
     private byte[] initialState;
     private ArrayList<Integer> nodes = new ArrayList<>();
-    private boolean[] boostNodes;
+    private boolean[][] boostNodes;
+    private boolean[][] boostNodesBoost;
     private int[][] distances;
+    private int[][] distancesBoost;
     private PathNode[][] paths;
+    private PathNode[][] pathsBoost;
     private int startTime;
 
     private int toBeVisited = 0;
@@ -71,15 +75,19 @@ public class TSPSolver {
             this.nodes.add(exitNodes.get(i).index);
         }
 
-        this.boostNodes = new boolean[nodes.size()];
+        this.boostNodes = new boolean[nodes.size()][nodes.size()];
+        this.boostNodesBoost = new boolean[nodes.size()][nodes.size()];
         this.distances = new int[nodes.size()][nodes.size()];
+        this.distancesBoost = new int[nodes.size()][nodes.size()];
         for(int i = 0 ; i < nodes.size(); i++) {
             for(int j = 0; j < nodes.size(); j++) {
                 distances[i][j] = 9999;
+                distancesBoost[i][j] = 9999;
             }
         }
         this.paths = new PathNode[nodes.size()][nodes.size()];
-        this.startTime = level.getTimer();
+        this.pathsBoost = new PathNode[nodes.size()][nodes.size()];
+        this.startTime = level.getTChipTime();
 
         this.inputNodeSize = inputNodes.size();
         this.exitNodeSize = exitNodes.size();
@@ -101,88 +109,91 @@ public class TSPSolver {
 
     public void solve() {
         for(int i = 0; i < inputNodeSize + 1; i++) {
-            output.setText("Finding distances... " + (i + 1) + "/" + (inputNodeSize + 1));
-            level.load(initialState);
-            level.cheats.moveChip(new Position(nodes.get(i)));
-
-            PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
-            states.add(new PathNode(level.save(), new ByteList(), startTime, (byte)'u'));
-
-            int[] visited = new int[32 * 32 * 4];
-            int[] visitedCount = new int[32 * 32 * 4];
-            int statesExplored = 0;
-
-            while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
-                statesExplored++;
-                PathNode node = states.poll();
-                byte[] state = node.state;
-                level.load(state);
-
-                int index = level.getChip().getPosition().getIndex() + 1024 * getDirectionIndex(node.lastMove);
-                Tile t = level.getLayerBG().get(index % 1024);
-
-                if (visited[index] < level.getTimer()) {
-                    visited[index] = level.getTimer();
-                    visitedCount[index] = 0;
+            for(int j = 0; j < 2; j++) {
+                output.setText("Finding distances... " + (i + 1) + "/" + (inputNodeSize + 1));
+                level.load(initialState);
+                level.cheats.moveChip(new Position(nodes.get(i)));
+                if(j == 1) {
+                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Half wait
                 }
 
-                // Some strange limits because CC is too complex
-                if (visitedCount[index] >= 2 && !t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
-                    continue;
-                } else if(visitedCount[index] >= 4 && t == Tile.TELEPORT) {
-                    continue;
-                } else if (visitedCount[index] >= 10 && t.isFF()) {
-                    continue;
-                } else if (visitedCount[index] >= 100) {
-                    continue;
-                }
+                int[][] currentDistances = (j == 0) ? distances : distancesBoost;
+                PathNode[][] currentPaths = (j == 0) ? paths : pathsBoost;
+                boolean[][] currentBoostNodes = (j == 0) ? boostNodes : boostNodesBoost;
 
-                visitedCount[index]++;
+                PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
+                states.add(new PathNode(level.save(), new ByteList(), startTime, (byte) 'u'));
 
-                if (nodes.contains(index % 1024)) {
-                    if (distances[i][nodes.indexOf(index % 1024)] > startTime - level.getTimer()) {
-                        distances[i][nodes.indexOf(index % 1024)] = startTime - level.getTimer();
-                        paths[i][nodes.indexOf(index % 1024)] = node;
+                int[] visited = new int[32 * 32 * 4];
+                int[] visitedCount = new int[32 * 32 * 4];
+                int statesExplored = 0;
+
+                while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
+                    statesExplored++;
+                    PathNode node = states.poll();
+                    byte[] state = node.state;
+                    level.load(state);
+
+                    int index = level.getChip().getPosition().getIndex() + 1024 * getDirectionIndex(node.lastMove);
+                    Tile t = level.getLayerBG().get(index % 1024);
+
+                    if (visited[index] < level.getTChipTime()) {
+                        visited[index] = level.getTChipTime();
+                        visitedCount[index] = 0;
+                    }
+
+                    if (visitedCount[index] >= 2) {
+                        continue;
+                    }
+
+                    visitedCount[index]++;
+
+                    if (nodes.contains(index % 1024)) {
+                        int deltaTime = (j == 0) ? 0 : -1;
+                        if (currentDistances[i][nodes.indexOf(index % 1024)] > startTime - level.getTChipTime() + deltaTime) {
+                            currentDistances[i][nodes.indexOf(index % 1024)] = startTime - level.getTChipTime() + deltaTime;
+                            currentPaths[i][nodes.indexOf(index % 1024)] = node;
+                            currentBoostNodes[i][nodes.indexOf(index % 1024)] = false;
+                        }
+                    }
+
+                    for (int d = 0; d < directions.length; d++) {
+                        if (d > 0) {
+                            level.load(state);
+                        }
+                        boolean can = true;
+                        if (level.getChip().isSliding()) {
+                            can = checkSliding(directions[d], index, visited, visitedCount, i, t, node, j);
+                        }
+                        if (can) {
+                            emulator.tick(directions[d], TickFlags.LIGHT);
+                            ByteList newMoves = node.moves.clone();
+                            newMoves.add(directions[d]);
+                            states.add(new PathNode(level.save(), newMoves, level.getTChipTime(), directions[d]));
+                        }
+                    }
+
+                    if (shouldBeVisited) {
+                        visitedCount[toBeVisited]++;
+                        shouldBeVisited = false;
+                        if (visited[toBeVisited] < level.getTChipTime()) {
+                            visited[toBeVisited] = visitedTime;
+                            visitedCount[toBeVisited] = 0;
+                        }
                     }
                 }
-
-                for (int d = 0; d < directions.length; d++) {
-                    if (d > 0) {
-                        level.load(state);
-                    }
-                    boolean can = true;
-                    if (level.getChip().isSliding()) {
-                        can = checkSliding(directions[d], index, visited, visitedCount, i, t, node);
-                    }
-                    if (can) {
-                        emulator.tick(directions[d], TickFlags.LIGHT);
-                        ByteList newMoves = node.moves.clone();
-                        newMoves.add(directions[d]);
-                        states.add(new PathNode(level.save(), newMoves, level.getTimer(), directions[d]));
-                    }
-                }
-
-                if (shouldBeVisited) {
-                    visitedCount[toBeVisited]++;
-                    shouldBeVisited = false;
-                    if (visited[toBeVisited] < level.getTimer()) {
-                        visited[toBeVisited] = visitedTime;
-                        visitedCount[toBeVisited] = 0;
-                    }
-                }
-            }
-
-            if(i == 0) {
-                for (int j = 0; j < 32 * 32; j++) {
-                    if (j % 32 == 0) System.out.println();
-                    System.out.format("%4d", visitedCount[j]);
-                }
+                //if(i == 0 && j == 0) {
+                //    for(int k = 0; k < 1024; k++) {
+                //        if(k % 32 == 0) System.out.println();
+                //        System.out.format("%4d", visitedCount[k] + visitedCount[k + 1024] + visitedCount[k + 2048] + visitedCount[k + 3072]);
+                //    }
+                //}
             }
         }
 
         level.getMonsterList().setCreatures(monsterList);
         SimulatedAnnealing sa = new SimulatedAnnealing(gui, startTemp, endTemp, cooling, iterations, distances,
-                inputNodeSize, exitNodeSize, restrictionNodes, output);
+                distancesBoost, boostNodes, boostNodesBoost, inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();
         chosenExit = sa.bestExit;
 
@@ -255,7 +266,7 @@ public class TSPSolver {
         return false;
     }
 
-    private boolean checkSliding(byte d, int position, int[] visited, int[] visitedCount, int i, Tile on, PathNode node) {
+    private boolean checkSliding(byte d, int position, int[] visited, int[] visitedCount, int i, Tile on, PathNode node, int j) {
         int delta = 0;
         Direction dir = level.getChip().getDirection();
 
@@ -265,21 +276,36 @@ public class TSPSolver {
         else if(dir == Direction.LEFT) delta = -1;
 
         int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(d);
+        Tile t = level.getLayerFG().get(newPosition % 1024);
 
-        if(!canEnter(d, newPosition)) {
+        if(!canEnter(d, newPosition) && !isThinWall(t)) {
             return false;
         }
 
-        Tile t = level.getLayerFG().get(newPosition % 1024);
+        if(!canEnter(dirToByte(dir), newPosition)) {
+            return !on.isIce();
+        }
+
+        if(i == 0 && newPosition % 1024 == 900) {
+            int x = 1;
+        }
+
+        int[][] currentDistances = (j == 0) ? distances : distancesBoost;
+        PathNode[][] currentPaths = (j == 0) ? paths : pathsBoost;
+        boolean[][] currentBoostNodes = (j == 0) ? boostNodes : boostNodesBoost;
+
         boolean ret = true;
         if(!t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
             if (nodes.contains(newPosition % 1024)) {
-                int deltaTime = (level.getTimer() % 2 == 0) ? 0 : -1;
-                if(distances[i][nodes.indexOf(newPosition % 1024)] > startTime - level.getTimer() + deltaTime) {
-                    distances[i][nodes.indexOf(newPosition % 1024)] = startTime - level.getTimer() + deltaTime;
-                    paths[i][nodes.indexOf(newPosition % 1024)] = node;
-                    if(deltaTime == -1) {
-                        boostNodes[nodes.indexOf(newPosition % 1024)] = true;
+                int deltaTime = (j == 0) ? 0 : -1;
+                if(currentDistances[i][nodes.indexOf(newPosition % 1024)] > startTime - level.getTChipTime() + deltaTime) {
+                    currentDistances[i][nodes.indexOf(newPosition % 1024)] = startTime - level.getTChipTime() + deltaTime;
+                    currentPaths[i][nodes.indexOf(newPosition % 1024)] = node;
+                    if(level.getTChipTime() % 2 == 1) {
+                        currentBoostNodes[i][nodes.indexOf(newPosition % 1024)] = true;
+                    }
+                    else {
+                        currentBoostNodes[i][nodes.indexOf(newPosition % 1024)] = false;
                     }
                 }
             }
@@ -288,12 +314,34 @@ public class TSPSolver {
             }
             toBeVisited = newPosition;
             shouldBeVisited = true;
-            visitedTime = level.getTimer();
+            visitedTime = level.getTChipTime();
         }
-        else if(!directionEquals(level.getChip().getDirection(), d) && (on.isIce() || on == Tile.TELEPORT)) {
+        else if(!directionEquals(level.getChip().getDirection(), d) && (t.isIce() || t == Tile.TELEPORT)) {
             ret = false;
         }
         return ret;
+    }
+
+    private byte dirToByte(Direction dir) {
+        switch(dir) {
+            case UP: return 'u';
+            case RIGHT: return 'r';
+            case DOWN: return 'd';
+            case LEFT: return 'l';
+            default: return '-';
+        }
+    }
+
+    private boolean isThinWall(Tile tile) {
+        switch(tile) {
+            case THIN_WALL_DOWN:
+            case THIN_WALL_DOWN_RIGHT:
+            case THIN_WALL_LEFT:
+            case THIN_WALL_RIGHT:
+            case THIN_WALL_UP:
+                return true;
+            default: return false;
+        }
     }
 
     private boolean directionEquals(Direction dir, byte d) {
@@ -335,10 +383,23 @@ public class TSPSolver {
 
         if(solution.length > 0) {
             partialSolutions.add(paths[0][solution[0]].moves);
+            boolean boosted = boostNodes[0][solution[0]];
             for (int i = 0; i < solution.length - 1; i++) {
-                partialSolutions.add(paths[solution[i]][solution[i + 1]].moves);
+                if(boosted) {
+                    partialSolutions.add(pathsBoost[solution[i]][solution[i + 1]].moves);
+                }
+                else {
+                    partialSolutions.add(paths[solution[i]][solution[i + 1]].moves);
+                }
+                boosted = boosted ?
+                        boostNodesBoost[solution[i]][solution[i + 1]] : boostNodes[solution[i]][solution[i + 1]];
             }
-            partialSolutions.add(paths[solution[solution.length - 1]][1 + inputNodeSize + chosenExit].moves);
+            if(boosted) {
+                partialSolutions.add(pathsBoost[solution[solution.length - 1]][1 + inputNodeSize + chosenExit].moves);
+            }
+            else {
+                partialSolutions.add(paths[solution[solution.length - 1]][1 + inputNodeSize + chosenExit].moves);
+            }
         }
         else {
             partialSolutions.add(paths[0][1].moves);
