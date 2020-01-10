@@ -44,7 +44,7 @@ public class TSPSolver {
 
     Creature[] monsterList;
 
-    private final int LIMIT = 200000; // Upper bound of exploration
+    private final int LIMIT = 500000; // Upper bound of exploration
 
     public TSPSolver(SuperCC emulator, TSPGUI gui, ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes,
                      ArrayList<TSPGUI.RestrictionNode> restrictionNodes,
@@ -75,7 +75,7 @@ public class TSPSolver {
         this.distances = new int[nodes.size()][nodes.size()];
         for(int i = 0 ; i < nodes.size(); i++) {
             for(int j = 0; j < nodes.size(); j++) {
-                distances[i][j] = Integer.MAX_VALUE;
+                distances[i][j] = 9999;
             }
         }
         this.paths = new PathNode[nodes.size()][nodes.size()];
@@ -105,11 +105,11 @@ public class TSPSolver {
             level.load(initialState);
             level.cheats.moveChip(new Position(nodes.get(i)));
 
-            PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a,b) -> b.time - a.time);
-            states.add(new PathNode(level.save(), new ByteList(), startTime));
+            PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
+            states.add(new PathNode(level.save(), new ByteList(), startTime, (byte)'u'));
 
-            int[] visited = new int[32 * 32];
-            int[] visitedCount = new int[32 * 32];
+            int[] visited = new int[32 * 32 * 4];
+            int[] visitedCount = new int[32 * 32 * 4];
             int statesExplored = 0;
 
             while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
@@ -118,31 +118,31 @@ public class TSPSolver {
                 byte[] state = node.state;
                 level.load(state);
 
-                int index = level.getChip().getPosition().getIndex();
-                Tile t = level.getLayerBG().get(index);
+                int index = level.getChip().getPosition().getIndex() + 1024 * getDirectionIndex(node.lastMove);
+                Tile t = level.getLayerBG().get(index % 1024);
 
-                if(visited[index] < level.getTimer()) {
+                if (visited[index] < level.getTimer()) {
                     visited[index] = level.getTimer();
                     visitedCount[index] = 0;
                 }
 
                 // Some strange limits because CC is too complex
-                if(visitedCount[index] >= 2 && !t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
+                if (visitedCount[index] >= 2 && !t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
                     continue;
-                }
-                else if(visitedCount[index] >= 10 && t.isFF()) {
+                } else if(visitedCount[index] >= 4 && t == Tile.TELEPORT) {
                     continue;
-                }
-                else if(visitedCount[index] >= 100) {
+                } else if (visitedCount[index] >= 10 && t.isFF()) {
+                    continue;
+                } else if (visitedCount[index] >= 100) {
                     continue;
                 }
 
                 visitedCount[index]++;
 
-                if (nodes.contains(index)) {
-                    if(distances[i][nodes.indexOf(index)] > startTime - level.getTimer()) {
-                        distances[i][nodes.indexOf(index)] = startTime - level.getTimer();
-                        paths[i][nodes.indexOf(index)] = node;
+                if (nodes.contains(index % 1024)) {
+                    if (distances[i][nodes.indexOf(index % 1024)] > startTime - level.getTimer()) {
+                        distances[i][nodes.indexOf(index % 1024)] = startTime - level.getTimer();
+                        paths[i][nodes.indexOf(index % 1024)] = node;
                     }
                 }
 
@@ -151,24 +151,31 @@ public class TSPSolver {
                         level.load(state);
                     }
                     boolean can = true;
-                    if(level.getChip().isSliding()) {
+                    if (level.getChip().isSliding()) {
                         can = checkSliding(directions[d], index, visited, visitedCount, i, t, node);
                     }
-                    if(can) {
+                    if (can) {
                         emulator.tick(directions[d], TickFlags.LIGHT);
                         ByteList newMoves = node.moves.clone();
                         newMoves.add(directions[d]);
-                        states.add(new PathNode(level.save(), newMoves, level.getTimer()));
+                        states.add(new PathNode(level.save(), newMoves, level.getTimer(), directions[d]));
                     }
                 }
 
-                if(shouldBeVisited) {
+                if (shouldBeVisited) {
                     visitedCount[toBeVisited]++;
                     shouldBeVisited = false;
-                    if(visited[toBeVisited] < level.getTimer()) {
+                    if (visited[toBeVisited] < level.getTimer()) {
                         visited[toBeVisited] = visitedTime;
                         visitedCount[toBeVisited] = 0;
                     }
+                }
+            }
+
+            if(i == 0) {
+                for (int j = 0; j < 32 * 32; j++) {
+                    if (j % 32 == 0) System.out.println();
+                    System.out.format("%4d", visitedCount[j]);
                 }
             }
         }
@@ -183,6 +190,14 @@ public class TSPSolver {
         output.setText("Finished!");
     }
 
+    private int getDirectionIndex(byte d) {
+        if(d == 'u') return 0;
+        if(d == 'r') return 1;
+        if(d == 'd') return 2;
+        if(d == 'l') return 3;
+        return 0;
+    }
+
     private byte[] normalizeState(boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall) {
         int start = 0;
         for(int i = 0; i < 32 * 32; i++) {
@@ -194,7 +209,7 @@ public class TSPSolver {
                 level.getLayerFG().set(i, Tile.FLOOR);
             }
             if(isActingWall(t, isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall)) {
-                level.getLayerFG().set(i, Tile.WALL);
+                level.getLayerFG().set(i, Tile.BOMB);
             }
             if(t == Tile.BLOCK || t.isTransparent()) {
                 Tile bgT = level.getLayerBG().get(i);
@@ -249,23 +264,27 @@ public class TSPSolver {
         else if(dir == Direction.DOWN) delta = 32;
         else if(dir == Direction.LEFT) delta = -1;
 
-        int newPosition = position + delta;
+        int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(d);
 
-        Tile t = level.getLayerFG().get(newPosition);
+        if(!canEnter(d, newPosition)) {
+            return false;
+        }
+
+        Tile t = level.getLayerFG().get(newPosition % 1024);
         boolean ret = true;
-        if(!t.isIce() && !t.isFF() && t != Tile.TELEPORT && canEnter(d, newPosition)) {
-            if(visitedCount[newPosition] >= 2) {
-                return false;
-            }
-            if (nodes.contains(newPosition)) {
+        if(!t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
+            if (nodes.contains(newPosition % 1024)) {
                 int deltaTime = (level.getTimer() % 2 == 0) ? 0 : -1;
-                if(distances[i][nodes.indexOf(newPosition)] > startTime - level.getTimer() + deltaTime) {
-                    distances[i][nodes.indexOf(newPosition)] = startTime - level.getTimer() + deltaTime;
-                    paths[i][nodes.indexOf(newPosition)] = node;
+                if(distances[i][nodes.indexOf(newPosition % 1024)] > startTime - level.getTimer() + deltaTime) {
+                    distances[i][nodes.indexOf(newPosition % 1024)] = startTime - level.getTimer() + deltaTime;
+                    paths[i][nodes.indexOf(newPosition % 1024)] = node;
                     if(deltaTime == -1) {
-                        boostNodes[nodes.indexOf(newPosition)] = true;
+                        boostNodes[nodes.indexOf(newPosition % 1024)] = true;
                     }
                 }
+            }
+            else if(visitedCount[newPosition] >= 2) {
+                return false;
             }
             toBeVisited = newPosition;
             shouldBeVisited = true;
@@ -286,7 +305,7 @@ public class TSPSolver {
     }
 
     private boolean canEnter(byte d, int position) {
-        Tile t = level.getLayerFG().get(position);
+        Tile t = level.getLayerFG().get(position % 1024);
 
         switch(t) {
             case WALL:
@@ -300,6 +319,10 @@ public class TSPSolver {
             case THIN_WALL_LEFT: return d != 'r';
             case THIN_WALL_RIGHT: return d != 'l';
             case THIN_WALL_UP: return d != 'd';
+            case ICE_SLIDE_NORTHEAST: return (d == 'd' || d == 'l');
+            case ICE_SLIDE_SOUTHEAST: return (d == 'u' || d == 'l');
+            case ICE_SLIDE_NORTHWEST: return (d == 'd' || d == 'r');
+            case ICE_SLIDE_SOUTHWEST: return (d == 'u' || d == 'r');
             default: return true;
         }
     }
@@ -338,11 +361,13 @@ public class TSPSolver {
         public byte[] state;
         public ByteList moves;
         public int time;
+        byte lastMove;
 
-        public PathNode(byte[] state, ByteList moves, int time) {
+        public PathNode(byte[] state, ByteList moves, int time, byte lastMove) {
             this.state = state;
             this.moves = moves;
             this.time = time;
+            this.lastMove = lastMove;
         }
     }
 }

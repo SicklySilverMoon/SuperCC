@@ -118,6 +118,7 @@ public class SimulatedAnnealing {
             }
         }
         distance += bestExitDistance;
+        if(distance < 0) return 9999;
         return distance;
     }
 
