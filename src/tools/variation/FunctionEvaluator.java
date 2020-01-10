@@ -248,7 +248,7 @@ public class FunctionEvaluator {
             for(int i = 0; i < move.number; i++) {
                 for(int j = 0; j < str.length(); j++) {
                     byte moveDir = toByte(str.charAt(j));
-                    if (moveDir == SuperCC.WAIT) {
+                    if (moveDir == 'w') {
                         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
                         interpreter.moveList.add(SuperCC.WAIT);
                         interpreter.checkMove();
@@ -276,6 +276,8 @@ public class FunctionEvaluator {
                 return SuperCC.DOWN;
             case 'l':
                 return SuperCC.LEFT;
+            case 'w':
+                return 'w';
             default:
                 return SuperCC.WAIT;
         }

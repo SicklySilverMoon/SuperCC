@@ -13,6 +13,9 @@ public class SimulatedAnnealing {
     private double cooling;
     private int iterations;
     private int[][] distances;
+    private int[][] distancesBoost;
+    private boolean[][] boostNodes;
+    private boolean[][] boostNodesBoost;
     Random r = new Random();
     private int[] bestSolution;
     private int bestDistance;
@@ -24,6 +27,7 @@ public class SimulatedAnnealing {
     private JTextPane output;
 
     public SimulatedAnnealing(TSPGUI gui, double temparature, double end, double cooling, int iterations, int[][] distances,
+                              int[][] distancesBoost, boolean[][] boostNodes, boolean[][] boostNodesBoost,
                               int inputNodeSize, int exitNodeSize, ArrayList<TSPGUI.RestrictionNode> restrictionNodes, JTextPane output) {
         this.gui = gui;
         this.temparature = temparature;
@@ -31,6 +35,9 @@ public class SimulatedAnnealing {
         this.cooling = cooling;
         this.iterations = iterations;
         this.distances = distances;
+        this.distancesBoost = distancesBoost;
+        this.boostNodes = boostNodes;
+        this.boostNodesBoost = boostNodesBoost;
         this.inputNodeSize = inputNodeSize;
         this.exitNodeSize = exitNodeSize;
         this.bestSolution = initialSolution();
@@ -59,10 +66,7 @@ public class SimulatedAnnealing {
             for(int i = 0; i < iterations; i++) {
                 int[] newSolution = solution.clone();
                 mutate(newSolution);
-                if(!checkRestrictions(newSolution)) {
-                    solution = newSolution.clone();
-                    continue;
-                }
+                handleRestrictions(newSolution);
                 int newDistance = calculateDistance(newSolution);
 
                 if(newDistance < distance) {
@@ -105,8 +109,12 @@ public class SimulatedAnnealing {
 
     private int calculateDistance(int[] solution) {
         int distance = distances[0][solution[0]];
+        boolean boosted = false;
         for(int i = 0; i < solution.length - 1; i++) {
-            distance += distances[solution[i]][solution[i + 1]];
+            distance += boosted ?
+                    distancesBoost[solution[i]][solution[i + 1]] : distances[solution[i]][solution[i + 1]];
+            boosted = boosted ?
+                    boostNodesBoost[solution[i]][solution[i + 1]] : boostNodes[solution[i]][solution[i + 1]];
         }
 
         exitChosen = 0;
@@ -114,10 +122,16 @@ public class SimulatedAnnealing {
         for(int i = 1; i < exitNodeSize; i++) {
             if(distances[solution[solution.length - 1]][solution.length + 1 + i] < bestExitDistance) {
                 exitChosen = i;
-                bestExitDistance = distances[solution[solution.length - 1]][solution.length + 1 + i];
+                if(boosted) {
+                    bestExitDistance = distancesBoost[solution[solution.length - 1]][solution.length + 1 + i];
+                }
+                else {
+                    bestExitDistance = distances[solution[solution.length - 1]][solution.length + 1 + i];
+                }
             }
         }
         distance += bestExitDistance;
+        if(distance < 0) return 9999;
         return distance;
     }
 
@@ -156,8 +170,7 @@ public class SimulatedAnnealing {
         }
     }
 
-    private boolean checkRestrictions(int[] solution) {
-        boolean[] restrictionsMet = new boolean[restrictionNodes.size()];
+    private void handleRestrictions(int[] solution) {
         int[] indexes = new int[inputNodeSize];
 
         for(int i = 0; i < solution.length; i++) {
@@ -166,10 +179,11 @@ public class SimulatedAnnealing {
 
         for(int i = 0; i < restrictionNodes.size(); i++) {
             TSPGUI.RestrictionNode node = restrictionNodes.get(i);
-            restrictionsMet[i] = indexes[node.beforeIndex] < indexes[node.afterIndex];
-            if(!restrictionsMet[i]) return false;
+            if(indexes[node.beforeIndex] > indexes[node.afterIndex]) {
+                int temp = solution[indexes[node.beforeIndex]];
+                solution[indexes[node.beforeIndex]] = solution[indexes[node.afterIndex]];
+                solution[indexes[node.afterIndex]] = temp;
+            }
         }
-
-        return true;
     }
 }
