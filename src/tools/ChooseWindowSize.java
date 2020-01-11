@@ -3,12 +3,10 @@ package tools;
 import emulator.SuperCC;
 import graphics.Gui;
 import graphics.SmallGamePanel;
-import graphics.TileSheet;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 
 public class ChooseWindowSize {
     private JPanel panel1;
@@ -39,7 +37,7 @@ public class ChooseWindowSize {
             window.getGamePanel().setPreferredSize(new Dimension(tileWidth*width, tileHeight*height));
             window.getGamePanel().setSize(tileWidth*width, tileHeight*height);
             window.pack();
-            window.repaint(emulator.getLevel(), true);
+            window.repaint(true);
             frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
         });
     }

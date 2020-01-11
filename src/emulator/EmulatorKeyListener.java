@@ -1,7 +1,5 @@
 package emulator;
 
-import tools.SeedSearch;
-
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -80,7 +78,7 @@ public class EmulatorKeyListener extends KeyAdapter {
                 }
                 else if (emulator.getSavestates().load(keyCode, emulator.getLevel())) {
                     emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
-                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                    emulator.getMainWindow().repaint(false);
                 }
             }
         }
@@ -104,13 +102,13 @@ public class EmulatorKeyListener extends KeyAdapter {
                     emulator.getSavestates().rewind();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Rewind");
-                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                    emulator.getMainWindow().repaint(false);
                     break;
                 case FORWARD:
                     emulator.getSavestates().replay();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Replay");
-                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                    emulator.getMainWindow().repaint(false);
                     break;
             }
         }

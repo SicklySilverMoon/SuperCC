@@ -9,7 +9,6 @@ import util.ByteList;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -70,7 +69,7 @@ public class Solution{
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
         }
-        emulator.getMainWindow().repaint(level, true);
+        emulator.getMainWindow().repaint(true);
     }
     
     public void loadMoves(SuperCC emulator, TickFlags tickFlags, boolean repaint){
@@ -101,7 +100,7 @@ public class Solution{
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
         }
-        if (repaint) emulator.getMainWindow().repaint(level, true);
+        if (repaint) emulator.getMainWindow().repaint(true);
     }
     
     private static byte[] succToHalfMoves(byte[] succMoves){

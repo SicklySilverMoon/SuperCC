@@ -55,7 +55,7 @@ public class SuperCC {
     }
     
     public void repaint(boolean fromScratch) {
-        window.repaint(level, fromScratch);
+        window.repaint(fromScratch);
     }
     
     public static boolean isDoubleMove(byte b) {
@@ -170,7 +170,7 @@ public class SuperCC {
                 level = dat.parseLevel(levelNumber, rngSeed, step);
                 savestates = new SavestateManager(level);
                 solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
-                window.repaint(level, true);
+                window.repaint(true);
                 window.setTitle("SuperCC - " + new String(level.getTitle()));
             }
         }
@@ -193,7 +193,7 @@ public class SuperCC {
             level.tick(b, DIRECTIONS[4]);
         }
         if (flags.save) savestates.addRewindState(level, b);
-        if (flags.repaint) window.repaint(level, false);
+        if (flags.repaint) window.repaint(false);
 
         if (savestates.isUndesirableSaveState()) { //Just a little pop up window that tells the user that they reached a prior marked undesirable state
             throwMessage("Undesirable State Reached");
@@ -410,7 +410,7 @@ public class SuperCC {
         window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));
         window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
         window.pack();
-        window.repaint(this.getLevel(), true);
+        window.repaint(true);
     }
 
     public static boolean areToolsRunning() {

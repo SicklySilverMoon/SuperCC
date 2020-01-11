@@ -88,6 +88,50 @@ public class SuccPaths {
     
     public SuccPaths(File settingsFile) throws IOException {
         this.settingsFile = settingsFile;
+
+        //TODO: Stolen from Architect, used to parse INIs put into effect later, make sure to import java.util.regex.*;
+//        private static void parseSettings(Map<String, String> settingsMap, Reader source)
+//    throws IOException
+//        {
+//            BufferedReader reader = new BufferedReader(source);
+//            String
+//                    section = "",
+//                    line = null;
+//            Pattern headerPattern = null;
+//            while ((line = reader.readLine()) != null)
+//            {
+//                line = line.trim();
+//                if (line.isEmpty() || line.charAt(0) == ';')
+//                {
+//                    continue;
+//                }
+//                else if (line.charAt(0) == '[')
+//                {
+//                    if (headerPattern == null)
+//                        headerPattern = Pattern.compile("\\[\\W*(\\w*)\\W*\\]?");
+//                    Matcher matcher = headerPattern.matcher(line);
+//                    if (matcher.find()) section = matcher.group(1);
+//                }
+//                else
+//                {
+//                    int pivot = line.indexOf('=');
+//                    if (pivot > 0)
+//                    {
+//                        String
+//                                name = line.substring(0, pivot - 1).trim(),
+//                                value = line.substring(pivot + 1).trim();
+//                        if (!name.isEmpty())
+//                            settingsMap.put(section + ':' + name, value);
+//                        /*`[View]
+//                          Zoom = 1.0000`
+//                          would get put into the map as:
+//                          ["View:Zoom": "1.0000"]
+//                         */
+//                    }
+//                }
+//            }
+//        }
+
         try (BufferedReader reader = new BufferedReader(new FileReader(settingsFile))) {
     
             tilesetNum = reader.readLine();

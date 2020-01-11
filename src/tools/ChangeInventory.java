@@ -46,7 +46,7 @@ public class ChangeInventory extends JPanel {
             else boots[i] = 1;
         }
         emulator.getLevel().cheats.setChipsLeft((short) (KEYS_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
-        emulator.getMainWindow().repaint(emulator.getLevel(), false);
+        emulator.getMainWindow().repaint(false);
     }
     
     public ChangeInventory(SuperCC emulator){

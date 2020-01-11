@@ -74,7 +74,7 @@ class MenuBar extends JMenuBar{
                     emulator.getSavestates().restart();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Restarted Level");
-                    window.repaint(emulator.getLevel(), false);
+                    window.repaint(false);
                 }
             });
             restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, CTRL_MASK));
@@ -246,7 +246,7 @@ class MenuBar extends JMenuBar{
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
                 emulator.showAction("Copied solution");
-                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                emulator.getMainWindow().repaint(false);
             });
             addIcon(copy, "/resources/icons/copy.gif");
             add(copy);
@@ -260,7 +260,7 @@ class MenuBar extends JMenuBar{
                 try {
                     Solution.fromJSON((String) t.getTransferData(DataFlavor.stringFlavor)).load(emulator);
                     emulator.showAction("Pasted solution");
-                    emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                    emulator.getMainWindow().repaint(false);
                 }
                 catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
                     try {
@@ -440,7 +440,7 @@ class MenuBar extends JMenuBar{
                         window.getGamePanel().initialiseTileGraphics(tilesetImage);
                         window.getGamePanel().initialiseBGTileGraphics(tilesetImage);
                         window.getInventoryPanel().initialise(emulator);
-                        window.repaint(emulator.getLevel(), true);
+                        window.repaint(true);
 
                         emulator.getPaths().setTilesetNum(String.valueOf(tileSheet.ordinal()));
                     } catch (IOException exc) {
@@ -476,7 +476,7 @@ class MenuBar extends JMenuBar{
                         window.getGamePanel().setPreferredSize(new Dimension(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY()));
                         window.getGamePanel().setSize(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY());
                         window.pack();
-                        window.repaint(emulator.getLevel(), true);
+                        window.repaint(true);
 
                         emulator.getPaths().setTileSizes(new int[]{size, size});
                     }
@@ -507,7 +507,7 @@ class MenuBar extends JMenuBar{
                     window.getGamePanel().setPreferredSize(new Dimension(tileWidth*size, tileHeight*size));
                     window.getGamePanel().setSize(tileWidth*size, tileHeight*size);
                     window.pack();
-                    window.repaint(emulator.getLevel(), true);
+                    window.repaint(true);
                 });
                 windowSizes.add(sizeButton);
                 windowSize.add(sizeButton);
@@ -544,7 +544,7 @@ class MenuBar extends JMenuBar{
                 if (i == 0 || i == 1 || i == 2) b.setSelected(true); //These are already selected by default in the backend (GamePanel.java, at the top with all the variable declarations) so i just make the buttons default the on state
                 b.addActionListener(e -> {
                     setter.accept(((AbstractButton) e.getSource()).isSelected());
-                    window.repaint(emulator.getLevel(), true);
+                    window.repaint(true);
                 });
                 add(b);
             }
@@ -564,7 +564,7 @@ class MenuBar extends JMenuBar{
                 Consumer<Boolean> setter = HUDSetters.get(i);
                 b.addActionListener(e -> {
                     setter.accept(((AbstractButton) e.getSource()).isSelected());
-                    window.repaint(emulator.getLevel(), true);
+                    window.repaint(true);
                 });
                 add(b);
             }
@@ -625,7 +625,7 @@ class MenuBar extends JMenuBar{
             JMenuItem toggle = new JMenuItem("Press Green Button");
             toggle.addActionListener(e -> {
                 emulator.getLevel().cheats.pressGreenButton();
-                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                emulator.getMainWindow().repaint(false);
             });
             addIcon(toggle, "/resources/icons/green_button.gif");
             add(toggle);
@@ -633,7 +633,7 @@ class MenuBar extends JMenuBar{
             JMenuItem tank = new JMenuItem("Press Blue Button");
             tank.addActionListener(e -> {
                 emulator.getLevel().cheats.pressBlueButton();
-                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                emulator.getMainWindow().repaint(false);
             });
             addIcon(tank, "/resources/icons/blue_button.gif");
             add(tank);

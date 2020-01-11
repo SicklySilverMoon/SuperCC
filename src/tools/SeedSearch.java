@@ -104,7 +104,7 @@ public class SeedSearch {
                 emulator.getSavestates().restart();
                 emulator.getLevel().load(emulator.getSavestates().getSavestate());
                 emulator.showAction("Restarted Level");
-                emulator.getMainWindow().repaint(emulator.getLevel(), false);
+                emulator.getMainWindow().repaint(false);
         }
     }
     

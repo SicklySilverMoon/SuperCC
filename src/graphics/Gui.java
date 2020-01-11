@@ -3,7 +3,6 @@ package graphics;
 import emulator.EmulatorKeyListener;
 import emulator.SavestateManager;
 import emulator.SuperCC;
-import game.Level;
 import util.TreeNode;
 
 import javax.imageio.ImageIO;
@@ -176,9 +175,9 @@ public class Gui extends JFrame{
         movePanel.repaint();
     }
     
-    public void repaint(Level level, boolean fromSratch){
+    public void repaint(boolean fromScratch){
         updateTimeSlider(emulator.getSavestates());
-        getGamePanel().updateGraphics(fromSratch);
+        getGamePanel().updateGraphics(fromScratch);
         leftPanel.repaint();
         gamePanel.repaint();
         repaintRightContainer();

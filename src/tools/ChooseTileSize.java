@@ -7,7 +7,6 @@ import graphics.TileSheet;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 
@@ -48,7 +47,7 @@ public class ChooseTileSize {
                 window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));
                 window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
                 window.pack();
-                window.repaint(emulator.getLevel(), true);
+                window.repaint(true);
 
                 emulator.getPaths().setTileSizes(new int[]{width, height});
             }
