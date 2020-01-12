@@ -442,7 +442,7 @@ class MenuBar extends JMenuBar{
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(true);
 
-                        emulator.getPaths().setTilesetNum(String.valueOf(tileSheet.ordinal()));
+                        emulator.getPaths().setTilesetNum(tileSheet.ordinal());
                     } catch (IOException exc) {
                         emulator.throwError(exc.getMessage());
                     }

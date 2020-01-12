@@ -115,34 +115,18 @@ public class SuperCC {
 
     public SuperCC() {
         try {
-            File f = new File("settings.cfg");
+            File f = new File("settings.ini");
             paths = new SuccPaths(f);
         }
         catch (IOException e){
-            throwError("Could not find settings.cfg file, creating"); //If it can't find the settings file make it with some defaults
-            try {
-                FileWriter fw = new FileWriter("settings.cfg");
-                fw.write("0\n" +
-                        "C:\n" +
-                        "C:\n" +
-                        "succsave\n" +
-                        "38\n" + //Turns out these are all the key codes for the controls. See: https://stackoverflow.com/questions/15313469/java-keyboard-keycodes-list/31637206
-                        "37\n" +
-                        "40\n" +
-                        "39\n" +
-                        "32\n" +
-                        "27\n" +
-                        "8\n" +
-                        "10\n" +
-                        "20\n" +
-                        "20\n");
-                fw.close();
+            throwError("Could not find settings.ini file, creating"); //If it can't find the settings file make it with some defaults
+                SuccPaths.createSettingsFile();
                 //Now that the settings file exists we can call this again safely
-                File f = new File("settings.cfg");
+                File f = new File("settings.ini");
+            try {
                 paths = new SuccPaths(f);
-            }
-            catch(Exception g) {
-                g.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
         window = new Gui(this);
