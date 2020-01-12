@@ -34,7 +34,7 @@ public enum CreatureID {
         return this == TEETH || this == BUG || this == PARAMECIUM;
     }
     boolean isChip(){
-        return this == DEAD || this == CHIP || this == CHIP_SLIDING;
+        return this == CHIP || this == CHIP_SLIDING;
     }
     boolean isMonster(){
         return this.ordinal() <= TANK_STATIONARY.ordinal();
