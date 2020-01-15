@@ -10,7 +10,7 @@ import java.awt.image.WritableRaster;
 
 import static game.Tile.NUM_BOOTS;
 import static game.Tile.NUM_KEYS;
-import static graphics.FullscreenGamePanel.SMALL_NUMERAL_HEIGHT;
+import static graphics.GamePanel.SMALL_NUMERAL_HEIGHT;
 import static graphics.GamePanel.SMALL_NUMERAL_WIDTH;
 
 public class InventoryPanel extends JPanel {
@@ -25,7 +25,7 @@ public class InventoryPanel extends JPanel {
     
     public void initialise(SuperCC emulator) {
         this.emulator = emulator;
-        tileImage = FullscreenGamePanel.tileImage;
+        tileImage = GamePanel.tileImage;
         int tileWidth, tileHeight;
         try {
             tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
@@ -74,9 +74,9 @@ public class InventoryPanel extends JPanel {
         bg = FlattenImage(bbg, bg);
 
         for (int i = 0; emulator.getLevel() != null && i < NUM_KEYS; i++) {
-            FullscreenGamePanel.drawNumber(emulator.getLevel().getKeys()[i], FullscreenGamePanel.blackDigits,
+            GamePanel.drawNumber(emulator.getLevel().getKeys()[i], GamePanel.blackDigits,
                                            tileWidth * i, tileHeight - SMALL_NUMERAL_HEIGHT - 2, bg.getRaster());
-            FullscreenGamePanel.drawNumber(emulator.getLevel().getBoots()[i], FullscreenGamePanel.blackDigits,
+            GamePanel.drawNumber(emulator.getLevel().getBoots()[i], GamePanel.blackDigits,
                                            tileWidth * i, 2 * tileHeight - SMALL_NUMERAL_HEIGHT - 2, bg.getRaster());
         }
         g.drawImage(bg, BORDER, BORDER, null);

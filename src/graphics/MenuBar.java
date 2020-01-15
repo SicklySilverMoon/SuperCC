@@ -150,8 +150,8 @@ class MenuBar extends JMenuBar{
     private class SolutionMenu extends JMenu{
         SolutionMenu(){
             super("Solution");
-    
-            JMenuItem saveAs = new JMenuItem("Save as");
+
+            JMenuItem saveAs = new JMenuItem("Save as"); //TODO: make saving a solution or opening from a new file adjust sccpath so things actually change and you don't have to go get the new solution each time
             saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK + SHIFT_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
