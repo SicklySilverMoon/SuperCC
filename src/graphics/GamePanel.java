@@ -295,7 +295,7 @@ public abstract class GamePanel extends JPanel
         }
     }
     private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
-        FullscreenGamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
+        GamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
         popupMenu.show(e.getComponent(), e.getX(), e.getY());
     }
     public void mouseReleased(MouseEvent e) {
