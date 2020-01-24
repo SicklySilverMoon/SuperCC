@@ -4,7 +4,6 @@ import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
 import game.button.ConnectionButton;
-import tools.SeedSearch;
 
 import javax.swing.*;
 import java.awt.*;
@@ -249,14 +248,16 @@ public abstract class GamePanel extends JPanel
                 emulator.getMainWindow().repaint();
             });
             add(teleportChip);
-            
-            JMenuItem pop = new JMenuItem("Remove Tile: "+tileFG.toString());
-            pop.addActionListener((e) -> {
-                cheats.popTile(position);
-                updateGraphics(false);
-                emulator.getMainWindow().repaint();
-            });
-            add(pop);
+            if (c == null) {
+                JMenuItem pop = new JMenuItem("Remove Tile: " + tileFG.toString());
+                pop.addActionListener((e) -> {
+                    emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position));
+                    cheats.popTile(position);
+                    updateGraphics(false);
+                    emulator.getMainWindow().repaint();
+                });
+                add(pop);
+            }
             
             JMenu insert = new JMenu("Insert Tile");
             Tile[] allTiles = Tile.values();
