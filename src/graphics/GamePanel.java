@@ -251,7 +251,7 @@ public abstract class GamePanel extends JPanel
             if (c == null) {
                 JMenuItem pop = new JMenuItem("Remove Tile: " + tileFG.toString());
                 pop.addActionListener((e) -> {
-                    emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position));
+                    emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position)); //In practice this only affects sliding blocks
                     cheats.popTile(position);
                     updateGraphics(false);
                     emulator.getMainWindow().repaint();

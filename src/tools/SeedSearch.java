@@ -3,6 +3,7 @@ package tools;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
+import game.Position;
 
 import javax.swing.*;
 
@@ -21,6 +22,10 @@ public class SeedSearch {
     private JLabel startLabel;
     private JTextField startField;
     private JLabel currentSeedLabel;
+    private JRadioButton untilExitRadioButton;
+    private JRadioButton untilPositionRadioButton;
+    private JLabel searchTypeLabel;
+    private JTextField positionField;
 
     private static final int UPDATE_RATE = 1000;
     
@@ -33,6 +38,8 @@ public class SeedSearch {
     private int successes = 0;
     private int attempts = 0;
     private int lastSuccess = -1;
+    private boolean untilPosition = false;
+    private Position endPosition = new Position(0, 0);
 
     public SeedSearch(SuperCC emulator, Solution solution) {
 
@@ -52,11 +59,32 @@ public class SeedSearch {
             }
             else {
                 if (seed == 0) seed = Integer.parseInt(startField.getText());
+                if (untilPosition) {
+                    String positionString = positionField.getText().replaceAll("\\s+",""); //Remove whitespace
+                    String[] positionStrings = positionString.split(",");
+                    int[] positions = {Integer.parseInt(positionStrings[0]), Integer.parseInt(positionStrings[1])};
+                    endPosition = new Position(
+                            positions[0] < 32 ? positions[0] : 31, //Just a little ternary check to make sure the position are within bounds, and to put them in bounds if they aren't
+                            positions[1] < 32 ? positions[1] : 31);
+                    System.out.println(endPosition);
+                }
+                searchTypeLabel.setVisible(false);
+                untilExitRadioButton.setVisible(false);
+                untilPositionRadioButton.setVisible(false);
+                positionField.setVisible(false);
                 startLabel.setVisible(false);
                 startField.setVisible(false);
                 startStopButton.setText("Pause");
                 new SeedSearchThread().start();
             }
+        });
+        untilPositionRadioButton.addActionListener(e -> {
+            positionField.setEnabled(true);
+            untilPosition = true;
+        });
+        untilExitRadioButton.addActionListener(e -> {
+            positionField.setEnabled(false);
+            untilPosition = false;
         });
 
         JFrame frame = new JFrame("Seed Search");
@@ -113,7 +141,8 @@ public class SeedSearch {
         emulator.getLevel().load(startingState);
         emulator.getLevel().cheats.setRng(seed);
         solution.loadMoves(emulator, TickFlags.LIGHT, false);
-        return emulator.getLevel().isCompleted();
+        if (!untilPosition) return emulator.getLevel().isCompleted();
+        else return emulator.getLevel().getChip().getPosition().equals(endPosition) && !emulator.getLevel().getChip().isDead();
     }
 
     public static boolean isRunning() {
