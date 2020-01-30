@@ -176,7 +176,9 @@ public class SuperCC {
             if (b != '-') b = capital(b); //Avoids a really weird situation where a mouse goal set in prior moves off a sliding tile can cause the wait to become capitalized due to the mouse move becoming a TSG move (note that even though the move panel will only display 1 '-' it actually takes 2 half moves)
             level.tick(b, DIRECTIONS[4]);
         }
-        if (flags.save) savestates.addRewindState(level, b);
+        if (flags.save) {
+            savestates.addRewindState(level, b);
+        }
         if (flags.repaint) window.repaint(false);
 
         if (savestates.isUndesirableSaveState()) { //Just a little pop up window that tells the user that they reached a prior marked undesirable state
@@ -186,7 +188,7 @@ public class SuperCC {
         return tickTwice;
     }
     
-    public boolean isClick(byte b){
+    public static boolean isClick(byte b){
         return b <= 0;
     }
     

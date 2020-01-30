@@ -20,13 +20,11 @@ public class SavestateManager implements Serializable {
 
     private HashMap<Integer, TreeNode<byte[]>> savestates = new HashMap<>();
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
-    private HashMap<Integer, ByteList> savestatetwsMouseMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
     private ByteList moves;
     private transient SavestateCompressor compressor;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 1;
-    private ByteList twsMouseMoves;
     private ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
     private ByteList[] checkpoints = new ByteList[10];
     private boolean[] recordingCheckpoints = new boolean[10];
@@ -77,15 +75,6 @@ public class SavestateManager implements Serializable {
         compressor.add(currentNode);
         playbackNodes.add(currentNode);
         moves.add(b);
-        if (b <= 0) { //Use to math out the relative click position for TWS writing with mouse moves, //TODO: Refactor and move this to somewhere outside of SavestateManager Logic
-            Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-            Position clickedPosition = Position.clickPosition(screenPosition, b);
-            int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
-            int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
-
-            twsMouseMoves.add(relativeClickX);
-            twsMouseMoves.add(relativeClickY);
-        }
         playbackIndex = playbackNodes.size() - 1;
     }
     
@@ -184,7 +173,6 @@ public class SavestateManager implements Serializable {
     public void addSavestate(int key){
         savestates.put(key, currentNode);
         savestateMoves.put(key, moves.clone());
-        savestatetwsMouseMoves.put(key, twsMouseMoves.clone());
     }
 
     void addUndesirableSavestate(){
@@ -214,7 +202,6 @@ public class SavestateManager implements Serializable {
             playbackNodes = currentNode.getHistory();
             playbackIndex = playbackNodes.size();
             moves = savestateMoves.get(key).clone();
-            twsMouseMoves = savestatetwsMouseMoves.get(key).clone();
         }
         else {
             playbackIndex = playbackNodes.indexOf(currentNode);
@@ -251,10 +238,6 @@ public class SavestateManager implements Serializable {
     public ByteList getMoveList(){
         return moves;
     }
-
-    public ByteList gettwsMouseMoveList(){
-        return twsMouseMoves;
-    }
     
     public byte[] getMoves(){
         byte[] moves = new byte[playbackIndex];
@@ -278,7 +261,6 @@ public class SavestateManager implements Serializable {
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
         moves = new ByteList();
-        twsMouseMoves = new ByteList();
         compressor = new SavestateCompressor();
     }
     

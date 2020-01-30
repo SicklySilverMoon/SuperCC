@@ -47,7 +47,7 @@ public class TWSWriter{
 
         //all key directions (u, l, d, r) use format 2 on this page http://www.muppetlabs.com/~breadbox/software/tworld/tworldff.html#3
 
-        void writeMove (byte b, int time, boolean firstMove, int relativeClick) throws IOException {
+        void writeMove(byte b, int time, boolean firstMove, int relativeClick) throws IOException {
             if (!firstMove) time -= 1;
             byte twsMoveByte;
             boolean useFormat4 = false;
@@ -76,7 +76,7 @@ public class TWSWriter{
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
 
-            int endingSlide;
+            int endingSlide; //TODO: Refactor this, its not really appropriate here
             if (level.isCompleted() && level.getChip().isSliding()) endingSlide = 1;
             else endingSlide = 0;
 

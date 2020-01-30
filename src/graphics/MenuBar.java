@@ -5,9 +5,12 @@ import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Level;
+import game.Position;
 import game.Step;
 import io.TWSWriter;
 import tools.*;
+import util.ByteList;
+import util.TreeNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -25,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.function.Consumer;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
@@ -359,10 +363,40 @@ class MenuBar extends JMenuBar{
                     String filename = file.toString();
                     if (!filename.endsWith(".tws")) filename += ".tws";
                     file = new File(filename);
-                    TWSWriter.write(file, emulator.getLevel(), new Solution(emulator.getSavestates().getMoveList(),
-                                                                            emulator.getLevel().getRngSeed(),
-                                                                            emulator.getLevel().getStep()),
-                                    emulator.getSavestates().gettwsMouseMoveList());
+                    SavestateManager savestates = emulator.getSavestates();
+                    Level level = emulator.getLevel();
+                    Solution solution = new Solution(savestates.getMoveList(),
+                            level.getRngSeed(),
+                            level.getStep());
+
+                    ByteList twsMouseMovesX = new ByteList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
+                    ByteList twsMouseMovesY = new ByteList();
+                    ByteList twsMouseMoves = new ByteList();
+                    savestates.addSavestate(-1); //Ideally a savestate should never be possible to be saved to this key
+                    ListIterator<Byte> itr = savestates.getMoveList().listIterator(true);
+                    while (itr.hasPrevious()) {
+                        byte b = itr.previous();
+                        if (SuperCC.isClick(b)) { //Use to math out the relative click position for TWS writing with mouse moves
+                            Position screenPosition = Position.screenPosition(level.getChip().getPosition());
+                            Position clickedPosition = Position.clickPosition(screenPosition, b);
+                            int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
+                            int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
+
+                            twsMouseMovesX.add(relativeClickX);
+                            twsMouseMovesY.add(relativeClickY);
+                        }
+                        savestates.rewind();
+                    }
+                    twsMouseMovesX.reverse(); //We were rewind through the entire solution so now we have to reverse the resulting list
+                    twsMouseMovesY.reverse();
+                    for (int i = 0; i < twsMouseMovesX.size(); i++){
+                        twsMouseMoves.add(twsMouseMovesX.get(i));
+                        twsMouseMoves.add(twsMouseMovesY.get(i));
+                    }
+
+                    savestates.load(-1, level);
+
+                    TWSWriter.write(file, level, solution, twsMouseMoves);
                 }
             });
             add(newTWS);

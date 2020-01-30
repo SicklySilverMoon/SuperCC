@@ -2,9 +2,7 @@ package util;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.RandomAccess;
+import java.util.*;
 
 /**
  * This class is basically an ArrayList for the byte primitive, used for
@@ -114,33 +112,97 @@ public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
     public void clear(){
         size = 0;
     }
-    
+
+    /**
+     * Reverses the order of the elements in the specified list.<p>
+     * Just a slight modification of Collections.reverse as it can't be run on a ByteList
+     */
+    public void reverse() {
+        for (int i=0, mid=size>>1, j=size-1; i<mid; i++, j--)
+            swap(i, j);
+    }
+
+    /**
+     * Swaps the elements at the specified positions in the specified list.
+     */
+    private void swap(int i, int j) {
+        byte a = this.get(i);
+        byte b = this.get(j);
+        this.set(i, b);
+        this.set(j, a);
+    }
+
     /**
      * Returns an iterator over the elements in this list in proper sequence.
      * @return an iterator over the elements in this list in proper sequence
      */
     @Override
     public Iterator<Byte> iterator() {
-        return new Iterator<Byte>() {
+        return new ListItr(false);
+    }
 
-            private int i = 0;
+    /**
+     * Returns a ListIterator over the elements in this list in proper sequence (ascending or descending).
+     * @return a ListIterator over the elements in this list in proper sequence (ascending or descending).
+     * @param reverse if the list should be iterated in ascending (false) or descending (true) order.
+     */
+    public ListIterator<Byte> listIterator(boolean reverse){
+        return new ListItr(reverse);
+    }
 
-            @Override
-            public boolean hasNext() {
-                return i < size;
-            }
+    private class ListItr implements java.util.ListIterator<Byte> {
+        private int cursor;
+        ListItr(boolean reverse) {
+            if (reverse) cursor = size;
+            else cursor = 0;
+        }
 
-            @Override
-            public Byte next() {
-                return bytes[i++];
-            }
+        @Override
+        public boolean hasNext() {
+            return cursor < size;
+        }
 
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+        @Override
+        public Byte next() {
+            if (cursor >= size) throw new NoSuchElementException();
+            return bytes[cursor++];
+        }
 
-        };
+        @Override
+        public boolean hasPrevious() {
+            return cursor > 0;
+        }
+
+        @Override
+        public Byte previous() {
+            if ((cursor - 1) < 0) throw new NoSuchElementException();
+            return bytes[--cursor];
+        }
+
+        @Override
+        public int nextIndex() {
+            return cursor;
+        }
+
+        @Override
+        public int previousIndex() {
+            return cursor-1;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(Byte aByte) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(Byte aByte) {
+            throw new UnsupportedOperationException();
+        }
     }
     
     @Override
@@ -168,5 +230,5 @@ public class ByteList implements Iterable<Byte>, RandomAccess, Serializable {
     public String toString(Charset charset, int size){
         return new String(bytes, 0, size, charset);
     }
-    
+
 }
