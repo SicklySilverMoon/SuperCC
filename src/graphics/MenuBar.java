@@ -350,8 +350,6 @@ class MenuBar extends JMenuBar{
 
             JMenuItem newTWS = new JMenuItem("Write solution to new tws");
             newTWS.addActionListener(event -> {
-                Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(new FileNameExtensionFilter("tws", "tws"));
                 fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
@@ -359,7 +357,7 @@ class MenuBar extends JMenuBar{
                 if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
                     String filename = file.toString();
-                    if (!filename .endsWith(".tws")) filename += ".tws";
+                    if (!filename.endsWith(".tws")) filename += ".tws";
                     file = new File(filename);
                     TWSWriter.write(file, emulator.getLevel(), new Solution(emulator.getSavestates().getMoveList(),
                                                                             emulator.getLevel().getRngSeed(),

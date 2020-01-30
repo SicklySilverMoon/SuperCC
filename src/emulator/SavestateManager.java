@@ -77,7 +77,7 @@ public class SavestateManager implements Serializable {
         compressor.add(currentNode);
         playbackNodes.add(currentNode);
         moves.add(b);
-        if (b <= 0) { //Use to math out the relative click position for TWS writing with mouse moves
+        if (b <= 0) { //Use to math out the relative click position for TWS writing with mouse moves, //TODO: Refactor and move this to somewhere outside of SavestateManager Logic
             Position screenPosition = Position.screenPosition(level.getChip().getPosition());
             Position clickedPosition = Position.clickPosition(screenPosition, b);
             int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that

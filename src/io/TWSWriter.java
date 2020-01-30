@@ -5,14 +5,10 @@ import game.Level;
 import util.ByteList;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class TWSWriter{
-
-    private HashMap<Long, Long> lPassLevelOffsets = new HashMap<Long, Long>();
-    private HashMap<Long, Long> passLevelOffsets = new HashMap<Long, Long>();
-
-    private File twsFile;
     
     public static void write(File twsFile, Level level, Solution solution, ByteList mouseMoves) {
         try(TWSOutputStream writer = new TWSOutputStream(twsFile)) {
@@ -79,12 +75,21 @@ public class TWSWriter{
             write(0);
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
+
+            int endingSlide;
+            if (level.isCompleted() && level.getChip().isSliding()) endingSlide = 1;
+            else endingSlide = 0;
+
             writeShort(level.getLevelNumber());
             for (int i = 0; i < 4; i++) write(level.getPassword()[i]);
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.halfMoves.length - 2); //minus 2 because the change that added mouse moves also always extended the time value by an extra 2 for unknown reason
+            writeInt(2 * solution.halfMoves.length - 2 - endingSlide);
+            /* minus 2 because the time value is always 2 extra for unknown reasons (likely tick counting differences between TW and SuCC).
+            endingSlide because if Chip ends up sliding into an exit it doesn't tick the timer,
+            however TW (which moves in 1/4 steps even in MS) does tick the quarter step timer,
+            so we have to subtract one here whenever this situation happens */
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     

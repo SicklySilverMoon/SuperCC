@@ -765,6 +765,10 @@ public class Creature{
                     level.layerBG.set(newPosition, FLOOR);
                 }
 
+                if (level.getChip().isDead() && level.isCompleted() && wasSliding) { //Technically this can fire even when Chip isn't the active creature (stepping into an exit kills Chip) but it should be impossible for that to happen, only spot i can think of is when you shove a block off an exit but well, you had to step into the exit to do that didn't you?
+                    sliding = true; //TWS slides into the exit are written with 1 time value more than they should be, now because of this line sliding into the exit is the only situation where the level is completed and Chip is marked as sliding (prior to this the level couldn't be completed with Chip marked as sliding
+                }
+
                 if (creatureType.isBlock() && wasSliding && level.layerFG.get(newPosition) == TRAP && canLeave(direction, level.layerFG.get(newPosition), level)) //canLeave just calls isTrapOpen in case this didn't make sense
                     sliding = true; //A block that slides into an open trap should just slide out of it with no change in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
                 //!!DIRTY HACK SECTION ENDS!!//
