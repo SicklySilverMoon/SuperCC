@@ -76,12 +76,12 @@ public class TWSWriter{
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
 
-            int endingSlide; //TODO: Refactor this, its not really appropriate here
-            if (level.isCompleted() && level.getChip().isSliding()) endingSlide = 1;
-            else endingSlide = 0;
+            int endingSlide = 0; //TODO: Refactor this, its not really appropriate here
+            if (level.isCompleted() && level.getChip().isSliding()) endingSlide = 1; //Its an evil hack but i don't think there's any other way to resolve this, or anywhere i can move this
 
             writeShort(level.getLevelNumber());
-            for (int i = 0; i < 4; i++) write(level.getPassword()[i]);
+            byte[] password = level.getPassword();
+            for (int i = 0; i < 4; i++) write(password[i]);
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);

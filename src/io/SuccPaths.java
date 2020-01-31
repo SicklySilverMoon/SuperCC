@@ -55,38 +55,75 @@ public class SuccPaths {
     }
 
     public String getLevelsetPath() {
-        return settingsMap.get("Paths:Levelset");
+        String levelset = settingsMap.get("Paths:Levelset");
+        if (levelset != null) return levelset;
+        else {
+            setLevelsetPath("");
+            return "";
+        }
     }
     public String getTwsPath() {
-        return settingsMap.get("Paths:TWS");
+        String tws = settingsMap.get("Paths:TWS");
+        if (tws != null) return tws;
+        else {
+            setTwsPath("");
+            return "";
+        }
     }
     public String getSuccPath() {
-        return settingsMap.get("Paths:succ");
+        String succ = settingsMap.get("Paths:succ");
+        if (succ != null) return succ;
+        else {
+            setSuccPath("");
+            return "";
+        }
     }
     public int[] getControls() {
-        return new int[]{Integer.parseInt(settingsMap.get("Controls:Up")),
-                Integer.parseInt(settingsMap.get("Controls:Left")),
-                Integer.parseInt(settingsMap.get("Controls:Down")),
-                Integer.parseInt(settingsMap.get("Controls:Right")),
-                Integer.parseInt(settingsMap.get("Controls:HalfWait")),
-                Integer.parseInt(settingsMap.get("Controls:FullWait")),
-                Integer.parseInt(settingsMap.get("Controls:Rewind")),
-                Integer.parseInt(settingsMap.get("Controls:Play"))};
+        try {
+            return new int[]{Integer.parseInt(settingsMap.get("Controls:Up")),
+                    Integer.parseInt(settingsMap.get("Controls:Left")),
+                    Integer.parseInt(settingsMap.get("Controls:Down")),
+                    Integer.parseInt(settingsMap.get("Controls:Right")),
+                    Integer.parseInt(settingsMap.get("Controls:HalfWait")),
+                    Integer.parseInt(settingsMap.get("Controls:FullWait")),
+                    Integer.parseInt(settingsMap.get("Controls:Rewind")),
+                    Integer.parseInt(settingsMap.get("Controls:Play"))};
+        }
+        catch (NumberFormatException e) {
+            int[] controls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};
+            setControls(controls);
+            return controls;
+        }
     }
     public int getTilesetNum() {
-        return Integer.parseInt(settingsMap.get("Graphics:TilesheetNum"));
+        try {
+            return Integer.parseInt(settingsMap.get("Graphics:TilesheetNum"));
+        }
+        catch (NumberFormatException e) {
+            setTilesetNum(0);
+            return 0;
+        }
     }
     public int[] getTileSizes() {
-        return new int[]{Integer.parseInt(settingsMap.get("Graphics:TileWidth")),
-                Integer.parseInt(settingsMap.get("Graphics:TileHeight"))};
+        try {
+            return new int[]{Integer.parseInt(settingsMap.get("Graphics:TileWidth")),
+                    Integer.parseInt(settingsMap.get("Graphics:TileHeight"))};
+        }
+        catch (NumberFormatException e) {
+            int[] tileSizes = new int[] {20, 20};
+            setTileSizes(tileSizes);
+            return tileSizes;
+        }
     }
     public String getJSONPath(String levelsetName, int levelNumber, String levelName) {
-        new File(Paths.get(settingsMap.get("Paths:succ"), levelsetName).toString()).mkdirs();
-        return Paths.get(settingsMap.get("Paths:succ"), levelsetName, Integer.toString(levelNumber)+"_"+levelName+".json").toString();
+        String json = getSuccPath();
+        new File(Paths.get(json, levelsetName).toString()).mkdirs();
+        return Paths.get(json, levelsetName, Integer.toString(levelNumber)+"_"+levelName+".json").toString();
     }
     public String getSccPath(String levelsetName, int levelNumber, String levelName) {
-        return Paths.get(settingsMap.get("Paths:succ"), levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();
+        return Paths.get(getSuccPath(), levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();
     }
+
     public void setLevelsetPath(String levelsetPath) {
         settingsMap.put("Paths:Levelset", levelsetPath);
         updateSettingsFile();
@@ -119,7 +156,7 @@ public class SuccPaths {
         settingsMap.put("Graphics:TileHeight", String.valueOf(tileSizes[1]));
         updateSettingsFile();
     }
-    
+
     public SuccPaths(File settingsFile) throws IOException {
         this.settingsFile = settingsFile;
         settingsMap = new HashMap<>();
