@@ -42,6 +42,12 @@ public enum CreatureID {
     boolean isBlock(){
         return this == BLOCK || this == ICE_BLOCK;
     }
+    boolean isDirtBlock() {
+        return this == BLOCK;
+    }
+    boolean isIceBlock() {
+        return this == ICE_BLOCK;
+    }
     public boolean isTank() {
         return this == TANK_MOVING || this == TANK_STATIONARY;
     }

@@ -343,7 +343,7 @@ public class Creature{
             case BOMBED_CHIP:
             case UNUSED_36:
             case UNUSED_37: return false;
-            case ICE_BLOCK: return creatureType == CreatureID.ICE_BLOCK;
+            case ICE_BLOCK: return creatureType.isIceBlock();
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
@@ -387,7 +387,7 @@ public class Creature{
                     }
                 }
                 else if (creatureType.isBlock()) {
-                    if (creatureType == CreatureID.ICE_BLOCK) level.layerFG.set(newPosition, ICE);
+                    if (creatureType.isIceBlock()) level.layerFG.set(newPosition, ICE);
                     else level.layerFG.set(newPosition, DIRT);
                     kill();
                 }
@@ -421,7 +421,7 @@ public class Creature{
             case THIN_WALL_DOWN: return direction != UP;
             case THIN_WALL_LEFT: return direction != RIGHT;
             case BLOCK:
-                if (creatureType.isChip()){
+                if (creatureType.isChip()) {
                     for (Creature m : level.slipList) {
                         if (m.position.equals(newPosition)) {
                             if (m.direction == direction || m.direction.turn(TURN_AROUND) == direction) return false;
@@ -452,7 +452,7 @@ public class Creature{
                 }
                 return false;
             case DIRT:
-                if (creatureType.isChip() || creatureType == CreatureID.ICE_BLOCK) {
+                if (creatureType.isChip() || creatureType.isIceBlock()) {
                     level.layerFG.set(newPosition, FLOOR);
                     return true;
                 }
@@ -608,7 +608,7 @@ public class Creature{
             case UNUSED_37: return false;
             case ICE_BLOCK:
                 if (level.getLayerBG().get(newPosition).isCloneBlock()) return false; //You know how if you have a clone machine under a monster you can't enter it? Well it's the same with ice blocks and the clone blocks under them
-                if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType == CreatureID.ICE_BLOCK){
+                if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType.isIceBlock()){
                     for (Creature m : level.slipList) {
                         if (m.position.equals(newPosition)) {
                             if (m.direction == direction || m.direction.turn(TURN_AROUND) == direction) return false;
@@ -622,6 +622,7 @@ public class Creature{
                         level.popTile(newPosition);
                     }
                     Creature block = new Creature(newPosition, Tile.ICE_BLOCK);
+                    System.out.println(level.layerFG.get(newPosition)+" : "+level.layerBG.get(newPosition));
                     if (level.layerBG.get(newPosition) == CLONE_MACHINE) { //The weird block/clone_machine push block to clone thing now works
                         block.tryMove(direction, level, false, pressedButtons);
                         level.layerFG.set(newPosition, CLONE_MACHINE); //Sets the block/clone_machine back to the way it was
@@ -731,9 +732,9 @@ public class Creature{
         boolean isBlock = creatureType.isBlock();
         boolean isChip = creatureType.isChip();
         boolean pickupCheck = false;
-        boolean cloneMachineCheck = true;
-        if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) cloneMachineCheck = true;
-        else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !isBlock) cloneMachineCheck = false;
+        boolean blockMachineCheck = true;
+        if (level.layerBG.get(newPosition) == CLONE_MACHINE && (level.layerFG.get(newPosition) == Tile.BLOCK || level.layerFG.get(newPosition) == Tile.ICE_BLOCK)) blockMachineCheck = true;
+        else if (level.layerBG.get(newPosition) == CLONE_MACHINE && !isBlock) blockMachineCheck = false;
 
         if (!canLeave(direction, level.layerBG.get(position), level)) return false;
 
@@ -746,12 +747,12 @@ public class Creature{
             else if (newTile.isKey()) pickupCheck = true;
         }
 
-        if ((!newTile.isTransparent() && (isBlock || cloneMachineCheck))
+        if ((!newTile.isTransparent() && (isBlock || blockMachineCheck))
                 || canEnter(direction, level.layerBG.get(newPosition), level) //Look at this if statement, this is all just to get transparency to work
-                || (pickupCheck && cloneMachineCheck)
+                || (pickupCheck && blockMachineCheck)
                 || (isBlock && (newTile.isBoot() || newTile.isChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
-            if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
+            if (level.layerBG.get(newPosition) == CLONE_MACHINE && creatureType.isDirtBlock()) newTile = level.layerBG.get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, level, newPosition, newTile, pressedButtons)) {
                 if (newTile != TELEPORT) level.popTile(position);

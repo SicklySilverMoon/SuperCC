@@ -142,9 +142,6 @@ public enum Tile {
     public boolean isCloneBlock(){
         return BLOCK_UP.ordinal() <= ordinal() && ordinal() <= BLOCK_RIGHT.ordinal();
     }
-    public boolean isIceBlock(){
-        return ICE_BLOCK.ordinal() == ordinal();
-    }
     public boolean isMonster(){
         return BUG_UP.ordinal() <= ordinal() && ordinal() <= PARAMECIUM_RIGHT.ordinal();
     }

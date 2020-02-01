@@ -347,7 +347,6 @@ class MenuBar extends JMenuBar{
         }
     }
 
-    // TODO fromOrdinal new tws file, save a solution
     private class TWSMenu extends JMenu{
         TWSMenu(){
             super("TWS");
@@ -435,7 +434,7 @@ class MenuBar extends JMenuBar{
             saveSolution.setEnabled(false);
             add(saveSolution);
             addIcon(saveSolution, "/resources/icons/save.gif");
-    
+
             JMenuItem verify = new JMenuItem("Verify tws");
             verify.addActionListener(e -> {
                 new VerifyTWS(emulator);

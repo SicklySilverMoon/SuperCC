@@ -82,7 +82,7 @@ public class CreatureList implements Iterable<Creature> {
         Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
         if (monster.getCreatureType().isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + monster.getDirection().ordinal());
-        if (!monster.getCreatureType().isAffectedByCB() && monster.getCreatureType() != CreatureID.ICE_BLOCK) direction = monster.getDirection();
+        if (!monster.getCreatureType().isAffectedByCB() && !monster.getCreatureType().isIceBlock()) direction = monster.getDirection();
         if (direction == null) return;
         if (monster.getCreatureType() == BLOB){
             Position p = monster.getPosition().clone();
@@ -92,6 +92,10 @@ public class CreatureList implements Iterable<Creature> {
         }
         else if (monster.canEnter(direction, level.layerFG.get(monster.getPosition().move(direction)), level)){
             if (monster.tick(new Direction[] {direction}, level, false)) level.insertTile(clonerPosition, tile);
+
+            if (monster.getCreatureType().isDirtBlock() && level.getLayerBG().get(clonerPosition) != CLONE_MACHINE) {
+                level.popTile(clonerPosition);
+            }
         }
     }
 
@@ -170,9 +174,9 @@ public class CreatureList implements Iterable<Creature> {
         else {
             Tile tile = level.layerFG.get(position);
             Tile tilebg = level.layerBG.get(position);
-            if (!tile.isCreature() ^ (tile.isIceBlock() && tilebg.isCloneBlock())) return;
+            if (!tile.isCreature() ^ (tile == Tile.ICE_BLOCK && tilebg.isCloneBlock())) return;
             Creature clone = new Creature(position, tile);
-            if (tile.isIceBlock()) direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
+            if (tile == Tile.ICE_BLOCK) direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
             else direction = clone.getDirection();
 
 
@@ -183,7 +187,7 @@ public class CreatureList implements Iterable<Creature> {
                 if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
                 else newClones.add(clone);
 
-                if (clone.getCreatureType() == CreatureID.ICE_BLOCK) level.layerFG.set(position, Tile.ICE_BLOCK);
+                if (clone.getCreatureType().isIceBlock()) level.layerFG.set(position, Tile.ICE_BLOCK);
             }
         }
     }
