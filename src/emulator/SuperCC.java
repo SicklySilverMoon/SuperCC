@@ -178,12 +178,12 @@ public class SuperCC {
         }
         if (flags.save) {
             savestates.addRewindState(level, b);
+
+            if (savestates.isUndesirableSaveState()) { //Just a little pop up window that tells the user that they reached a prior marked undesirable state
+                throwMessage("Undesirable State Reached");
+            }
         }
         if (flags.repaint) window.repaint(false);
-
-        if (savestates.isUndesirableSaveState()) { //Just a little pop up window that tells the user that they reached a prior marked undesirable state
-            throwMessage("Undesirable State Reached");
-        }
 
         return tickTwice;
     }

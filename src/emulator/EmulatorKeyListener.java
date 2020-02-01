@@ -43,14 +43,14 @@ public class EmulatorKeyListener extends KeyAdapter {
         Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
         if (k == null) {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
-                if (e.getKeyCode() == 47) { //Hardcoded value for the '/' key, should switch this to a proper keybind
-                    emulator.getSavestates().addUndesirableSavestate();
-                    emulator.showAction("Undesirable State saved");
-                }
                 if (e.isControlDown() && 48 <= keyCode && keyCode <= 57) { //Values for 0 through 9
                     boolean recording = emulator.getSavestates().checkpointRecorder(keyCode-48);
                     if (recording) emulator.showAction("Started Checkpoint Record");
                     else emulator.showAction("Finished Checkpoint Record");
+                }
+                if (e.getKeyCode() == 47) { //Hardcoded value for the '/' key, should switch this to a proper keybind
+                    emulator.getSavestates().addUndesirableSavestate();
+                    emulator.showAction("Undesirable State saved");
                 }
                 else {
                     if (!e.isControlDown()) { //Just so you can't accidentally save a state into these
