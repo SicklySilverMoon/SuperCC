@@ -24,12 +24,11 @@ public class SavestateManager implements Serializable {
     private ByteList moves;
     private transient SavestateCompressor compressor;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
-    private transient int playbackIndex = 1;
+    private transient int playbackIndex = 0;
     private ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
     private ByteList[] checkpoints = new ByteList[10];
     private boolean[] recordingCheckpoints = new boolean[10];
     private int[] checkpointStartIndex = new int[10];
-    private boolean checkpointRestart = false; //If you restart then set a checkpoint it breaks due to a weird index out of bounds array
 
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
@@ -83,7 +82,6 @@ public class SavestateManager implements Serializable {
             currentNode = currentNode.getParent();
             playbackIndex--;
         }
-        checkpointRestart = true;
     }
     
     public void rewind(){
@@ -186,7 +184,6 @@ public class SavestateManager implements Serializable {
             return true;
         }
         else {
-            if (!checkpointRestart) checkpointStartIndex[key]--; //The very first time you run this you get a weird thing where its 1 ahead of where it should be
             checkpoints[key] = moves.sublist(checkpointStartIndex[key], moves.size()); //Puts all the moves recorded into this list
             recordingCheckpoints[key] = false;
             return false;
@@ -200,7 +197,7 @@ public class SavestateManager implements Serializable {
         level.load(currentNode.getData());
         if (!playbackNodes.contains(currentNode)) {
             playbackNodes = currentNode.getHistory();
-            playbackIndex = playbackNodes.size();
+            playbackIndex = playbackNodes.size() - 1;
             moves = savestateMoves.get(key).clone();
         }
         else {
