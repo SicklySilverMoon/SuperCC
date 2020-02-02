@@ -121,7 +121,7 @@ public class EmulatorKeyListener extends KeyAdapter {
         Key[] allKeys = Key.values();
         for (int i = 0; i < allKeys.length; i++) {
             allKeys[i].keyCode = controls[i];
-            keyMap.put((int) controls[i], allKeys[i]);
+            keyMap.put(controls[i], allKeys[i]);
         }
     }
     

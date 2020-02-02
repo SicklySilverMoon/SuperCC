@@ -80,14 +80,15 @@ public class SuccPaths {
     }
     public int[] getControls() {
         try {
-            return new int[]{Integer.parseInt(settingsMap.get("Controls:Up")),
-                    Integer.parseInt(settingsMap.get("Controls:Left")),
-                    Integer.parseInt(settingsMap.get("Controls:Down")),
-                    Integer.parseInt(settingsMap.get("Controls:Right")),
-                    Integer.parseInt(settingsMap.get("Controls:HalfWait")),
-                    Integer.parseInt(settingsMap.get("Controls:FullWait")),
-                    Integer.parseInt(settingsMap.get("Controls:Rewind")),
-                    Integer.parseInt(settingsMap.get("Controls:Play"))};
+            int up = Integer.parseInt(settingsMap.get("Controls:Up"));
+            int left = Integer.parseInt(settingsMap.get("Controls:Left"));
+            int down = Integer.parseInt(settingsMap.get("Controls:Down"));
+            int right = Integer.parseInt(settingsMap.get("Controls:Right"));
+            int halfWait = Integer.parseInt(settingsMap.get("Controls:HalfWait"));
+            int fullWait = Integer.parseInt(settingsMap.get("Controls:FullWait"));
+            int rewind = Integer.parseInt(settingsMap.get("Controls:Rewind"));
+            int play = Integer.parseInt(settingsMap.get("Controls:Play"));
+        return new int[]{up, left, down, right, halfWait, fullWait, rewind, play};
         }
         catch (NumberFormatException e) {
             int[] controls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};
