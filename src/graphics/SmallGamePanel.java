@@ -158,7 +158,8 @@ public class SmallGamePanel extends GamePanel {
         Position previousPos = positionList.get(0);
         boolean[][] tileEnterCount = new boolean[32*32][offsets.length];
         tileEnterCount[previousPos.getIndex()][0] = true;
-        int oldOffset = 0, offset = 0;
+        int oldOffset = 0, offset;
+        g.setColor(Color.BLACK);
         for(Position pos : positionList) {
             int tile = pos.getIndex();
             if (tile == previousPos.getIndex()) continue;
@@ -167,7 +168,6 @@ public class SmallGamePanel extends GamePanel {
             }
             else offset = oldOffset;
             if (offset == offsets.length) offset = 0;
-            g.setColor(Color.BLACK);
             int x1 = (previousPos.getX() - screenTopLeft.getX()) * tileWidth + ((int) (tileWidth * offsets[oldOffset]));
             int y1 = (previousPos.getY() - screenTopLeft.getY()) * tileHeight + ((int) (tileHeight * offsets[oldOffset]));
             int x2 = (pos.getX() - screenTopLeft.getX()) * tileWidth + ((int) (tileWidth * offsets[offset]));
