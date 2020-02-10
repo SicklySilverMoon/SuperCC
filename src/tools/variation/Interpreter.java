@@ -23,7 +23,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final HashMap<String, Object> variables;
     private Level level;
     private final byte[] startingState;
-    private final ByteList startingMoveList;
+    private ByteList startingMoveList;
     public int atSequence = 0;
     public int atMove = 0;
     public boolean inSequence = false;
@@ -46,7 +46,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.level = emulator.getLevel();
         this.startingState = this.level.save();
         this.manager = new VariationManager(emulator, statements, variables, this.level, this);
-        this.startingMoveList = this.manager.moveLists[0].clone();
         this.sequenceIndex = manager.sequenceIndex;
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
         this.vt = vt;
@@ -55,11 +54,11 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void interpret() {
         console.setText("");
         displayPermutationCount();
-        if(manager.getSequenceCount() == 0) {
+        if(!manager.validate()) {
             hadError = true;
-            print("Script must contain at least 1 sequence\n", new Color(255, 68, 68));
             return;
         }
+        this.startingMoveList = this.manager.moveLists[0].clone();
         int fromStatement = 0;
         count = 0;
         do {
@@ -238,12 +237,12 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     @Override
     public void executeTerminate(Stmt.Terminate stmt) {
         int index = 0;
-        if(stmt.index != null) {
-            index = ((Double) stmt.index.evaluate(this)).intValue();
-        }
         if(!inSequence && manager.getPermutation(atSequence - 1).length == 0) {
             manager.terminateZero(atSequence - 1);
             throw new TerminateException();
+        }
+        if(stmt.index != null) {
+            index = ((Double) stmt.index.evaluate(this)).intValue();
         }
         else {
             int atSeq = atSequence;

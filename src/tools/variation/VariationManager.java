@@ -4,6 +4,7 @@ import emulator.SuperCC;
 import game.Level;
 import util.ByteList;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -155,6 +156,20 @@ public class VariationManager {
             total *= seq.permutation.getPermutationCount();
         }
         return total;
+    }
+
+    public boolean validate() {
+        if(getSequenceCount() == 0) {
+            interpreter.print("Script must contain at least 1 sequence\n", new Color(255, 68, 68));
+            return false;
+        }
+        for(Stmt.Sequence sequence : sequences) {
+            if(sequence.permutation.upperBound == 0) {
+                interpreter.print("Sequence upper bound must be at least 1\n", new Color(255, 68, 68));
+                return false;
+            }
+        }
+        return true;
     }
 
     public void printPermutations() {

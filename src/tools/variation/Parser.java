@@ -189,13 +189,21 @@ public class Parser {
         Integer lowerLimit = null;
         Integer upperLimit = null;
         if(peek().type != TokenType.RIGHT_PAREN) {
-            lowerLimit = Integer.parseInt(getNextToken().lexeme);
+            try {
+                lowerLimit = Integer.parseInt(getNextToken().lexeme);
+            } catch(Exception e) {
+                throw error(getPreviousToken(), "Expected integer");
+            }
             if(peek().type == TokenType.COMMA) {
                 expect(TokenType.COMMA, "Expected ','");
             }
         }
         if(peek().type != TokenType.RIGHT_PAREN) {
-            upperLimit = Integer.parseInt(getNextToken().lexeme);
+            try {
+                upperLimit = Integer.parseInt(getNextToken().lexeme);
+            } catch(Exception e) {
+                throw error(getPreviousToken(), "Expected integer");
+            }
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
         expect(TokenType.LEFT_BRACE, "Expected '{'");
