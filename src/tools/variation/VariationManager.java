@@ -109,6 +109,13 @@ public class VariationManager {
         }
     }
 
+    public void terminateZero(int index) {
+        sequences.get(index).permutation.reset();
+        for(int i = index + 1; i < getSequenceCount(); i++) {
+            sequences.get(i).permutation.end();
+        }
+    }
+
     private void setSequences(ArrayList<Stmt> statements) {
         for(Stmt stmt : statements) {
             if(stmt instanceof Stmt.Sequence) {

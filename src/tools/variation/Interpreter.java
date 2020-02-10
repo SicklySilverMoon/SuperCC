@@ -247,6 +247,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         if(stmt.index != null) {
             index = ((Double) stmt.index.evaluate(this)).intValue();
         }
+        if(!inSequence && manager.getPermutation(atSequence - 1).length == 0) {
+            manager.terminateZero(atSequence - 1);
+            throw new TerminateException();
+        }
         else {
             int atSeq = atSequence;
             int atMo = atMove;
