@@ -9,7 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Permutation {
-    private MovePool movePool;
+    private MovePool movePoolOptional;
+    private MovePool movePoolForced;
     public Integer lowerBound;
     public Integer upperBound;
     private int[] permutation;
@@ -33,12 +34,13 @@ public class Permutation {
         toMove.put('h', SuperCC.WAIT);
     }
 
-    public Permutation(MovePool movePool, Integer lowerBound, Integer upperBound, String lexicographic) {
-        this.movePool = movePool;
+    public Permutation(MovePool movePoolOptional, MovePool movePoolForced, Integer lowerBound, Integer upperBound, String lexicographic) {
+        this.movePoolOptional = movePoolOptional;
+        this.movePoolForced = movePoolForced;
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
         setBounds();
-        this.set = new Multiset(this.lowerBound, this.upperBound, movePool, lexicographic);
+        this.set = new Multiset(this.lowerBound, this.upperBound, movePoolOptional, movePoolForced, lexicographic);
         this.subset = this.set.getSubset();
         this.currentSize = this.lowerBound;
         this.lexicographic = lexicographic;
@@ -108,7 +110,7 @@ public class Permutation {
     // Returns double due to potentially large value
     public double getPermutationCount() {
         double count = 0;
-        Multiset m = new Multiset(lowerBound, upperBound, movePool, lexicographic);
+        Multiset m = new Multiset(lowerBound, upperBound, movePoolOptional, movePoolForced, lexicographic);
         int[] s = m.getSubset();
         do {
             count += uniquePermutations(m.currentSize, s);
@@ -164,9 +166,10 @@ public class Permutation {
     }
 
     private void setBounds() {
+        int size = movePoolOptional.size + movePoolForced.size;
         if(lowerBound == null && upperBound == null) {
-            lowerBound = movePool.size;
-            upperBound = movePool.size;
+            lowerBound = size;
+            upperBound = size;
         }
         else if(upperBound == null) {
             upperBound = lowerBound;
@@ -176,7 +179,8 @@ public class Permutation {
             upperBound = lowerBound;
             lowerBound = temp;
         }
-        upperBound = Math.min(upperBound, movePool.size);
-        lowerBound = Math.min(lowerBound, movePool.size);
+        upperBound = Math.min(upperBound, size);
+        lowerBound = Math.min(lowerBound, size);
+        lowerBound = Math.max(lowerBound, movePoolForced.size);
     }
 }

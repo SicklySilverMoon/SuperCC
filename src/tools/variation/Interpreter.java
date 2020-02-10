@@ -54,16 +54,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     public void interpret() {
         console.setText("");
-        //manager.printPermutations();
         displayPermutationCount();
         if(manager.getSequenceCount() == 0) {
             hadError = true;
             print("Script must contain at least 1 sequence\n", new Color(255, 68, 68));
-            return;
-        }
-        else if(manager.getPermutation(0).length == 0) {
-            hadError = true;
-            print("First sequence mustn't be of length 0\n", new Color(255, 68, 68));
             return;
         }
         int fromStatement = 0;
