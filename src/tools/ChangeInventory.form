@@ -50,31 +50,39 @@
               <text value="Red"/>
             </properties>
           </component>
-          <component id="5882a" class="javax.swing.JSpinner" binding="spinnerBlue">
+          <component id="4b9ad" class="javax.swing.JTextField" binding="textBlue">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="50" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="0"/>
+            </properties>
           </component>
-          <component id="afc71" class="javax.swing.JSpinner" binding="spinnerRed">
+          <component id="3a6c8" class="javax.swing.JTextField" binding="textRed">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="0"/>
+            </properties>
           </component>
-          <component id="2ffb6" class="javax.swing.JSpinner" binding="spinnerGreen">
+          <component id="edaaa" class="javax.swing.JTextField" binding="textGreen">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="0"/>
+            </properties>
           </component>
-          <component id="fd0ff" class="javax.swing.JSpinner" binding="spinnerYellow">
+          <component id="32f06" class="javax.swing.JTextField" binding="textYellow">
             <constraints>
               <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="0"/>
+            </properties>
           </component>
         </children>
       </grid>
@@ -128,31 +136,39 @@
                   <text value="Fire Boots"/>
                 </properties>
               </component>
-              <component id="70be8" class="javax.swing.JSpinner" binding="spinnerFlippers">
+              <component id="bcb4e" class="javax.swing.JCheckBox" binding="checkFlippers">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="50" height="-1"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value=""/>
+                </properties>
               </component>
-              <component id="4c0d7" class="javax.swing.JSpinner" binding="spinnerFire">
+              <component id="2e5bf" class="javax.swing.JCheckBox" binding="checkFire">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value=""/>
+                </properties>
               </component>
-              <component id="8e67" class="javax.swing.JSpinner" binding="spinnerIce">
+              <component id="c23bb" class="javax.swing.JCheckBox" binding="checkIce">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value=""/>
+                </properties>
               </component>
-              <component id="9f990" class="javax.swing.JSpinner" binding="spinnerSuction">
+              <component id="f555e" class="javax.swing.JCheckBox" binding="checkSuction">
                 <constraints>
                   <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value=""/>
+                </properties>
               </component>
             </children>
           </grid>
@@ -174,11 +190,13 @@
               <text value="Chips Left"/>
             </properties>
           </component>
-          <component id="db47c" class="javax.swing.JSpinner" binding="spinnerChips">
+          <component id="69843" class="javax.swing.JTextField" binding="textChips">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="0"/>
+            </properties>
           </component>
         </children>
       </grid>

@@ -10,20 +10,20 @@ public class ChangeInventory extends JPanel {
     private JPanel mainPanel;
     private JPanel boots2;
     private JPanel keys;
-    private JSpinner spinnerBlue;
-    private JSpinner spinnerRed;
-    private JSpinner spinnerGreen;
-    private JSpinner spinnerYellow;
+    private JTextField textBlue;
+    private JTextField textRed;
+    private JTextField textGreen;
+    private JTextField textYellow;
     private JPanel boots;
     private JPanel chips;
-    private JSpinner spinnerChips;
-    private JSpinner spinnerFlippers;
-    private JSpinner spinnerFire;
-    private JSpinner spinnerIce;
-    private JSpinner spinnerSuction;
+    private JTextField textChips;
+    private JCheckBox checkFlippers;
+    private JCheckBox checkFire;
+    private JCheckBox checkIce;
+    private JCheckBox checkSuction;
     
-    private final JSpinner[] allKeySpinners = new JSpinner[] {spinnerBlue, spinnerRed, spinnerGreen, spinnerYellow};
-    private final JSpinner[] allBootSpinners = new JSpinner[] {spinnerFlippers, spinnerFire, spinnerIce, spinnerSuction};
+    private final JTextField[] allKeyTextFields = new JTextField[] {textBlue, textRed, textGreen, textYellow};
+    private final JCheckBox[] allBootCheckboxes = new JCheckBox[] {checkFlippers, checkFire, checkIce, checkSuction};
     
     public static final int KEYS_MAX_VALUE = 2 * 32 * 32 - 1;
     
@@ -39,22 +39,22 @@ public class ChangeInventory extends JPanel {
     
     public void updateChanges(SuperCC emulator){
         short[] keys = emulator.getLevel().getKeys();
-        for (int i = 0; i < allKeySpinners.length; i++) keys[i] = (short) (KEYS_MAX_VALUE & ((java.lang.Number) allKeySpinners[i].getValue()).intValue());
+        for (int i = 0; i < allKeyTextFields.length; i++) keys[i] = (short) (KEYS_MAX_VALUE & Integer.parseInt(allKeyTextFields[i].getText()));
         byte[] boots = emulator.getLevel().getBoots();
-        for (int i = 0; i < allKeySpinners.length; i++) {
-            if (((java.lang.Number) allBootSpinners[i].getValue()).intValue() == 0) boots[i] = 0;
+        for (int i = 0; i < allBootCheckboxes.length; i++) {
+            if (!allBootCheckboxes[i].isSelected()) boots[i] = 0;
             else boots[i] = 1;
         }
-        emulator.getLevel().cheats.setChipsLeft((short) (KEYS_MAX_VALUE & ((java.lang.Number) spinnerChips.getValue()).intValue()));
+        emulator.getLevel().cheats.setChipsLeft(Integer.parseInt(textChips.getText()));
         emulator.getMainWindow().repaint(false);
     }
     
     public ChangeInventory(SuperCC emulator){
         short[] keys = emulator.getLevel().getKeys();
-        for (int i = 0; i < allKeySpinners.length; i++) allKeySpinners[i].setValue(keys[i]);
+        for (int i = 0; i < allKeyTextFields.length; i++) allKeyTextFields[i].setText(String.valueOf(keys[i]));
         byte[] boots = emulator.getLevel().getBoots();
-        for (int i = 0; i < allBootSpinners.length; i++) allBootSpinners[i].setValue(boots[i]);
-        spinnerChips.setValue(emulator.getLevel().getChipsLeft());
+        for (int i = 0; i < allBootCheckboxes.length; i++) allBootCheckboxes[i].setSelected(boots[i] == 1);
+        textChips.setText(String.valueOf(emulator.getLevel().getChipsLeft()));
         JFrame frame = new JFrame("Inventory");
         frame.setContentPane(mainPanel);
         frame.pack();
