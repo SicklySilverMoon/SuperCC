@@ -20,4 +20,18 @@ public class MovePool {
         moves.put(move.move, value + move.number);
         size += move.number;
     }
+
+    public void add(MovePool movePool) {
+        for(String key : movePool.moves.keySet()) {
+            int keyValue = movePool.moves.get(key);
+            if(moves.get(key) == null) {
+                moves.put(key, keyValue);
+            }
+            else {
+                int value = moves.get(key);
+                moves.put(key, value + keyValue);
+            }
+            size += keyValue;
+        }
+    }
 }

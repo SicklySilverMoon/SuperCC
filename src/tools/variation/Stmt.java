@@ -110,7 +110,8 @@ public abstract class Stmt {
     }
 
     public static class Sequence extends Stmt {
-        public final MovePool movePool;
+        public final MovePool movePoolOptional;
+        public final MovePool movePoolForced;
         public final Integer lowerLimit;
         public final Integer upperLimit;
         public final String lexicographic;
@@ -122,9 +123,10 @@ public abstract class Stmt {
         public final Stmt end;
         public final Permutation permutation;
 
-        Sequence(MovePool movePool, Integer lowerLimit, Integer upperLimit, String lexicographic,
+        Sequence(MovePool movePoolOptional, MovePool movePoolForced, Integer lowerLimit, Integer upperLimit, String lexicographic,
                  Stmt start, Stmt beforeMove, Stmt afterMove, Stmt beforeStep, Stmt afterStep, Stmt end) {
-            this.movePool = movePool;
+            this.movePoolOptional = movePoolOptional;
+            this.movePoolForced = movePoolForced;
             this.lowerLimit = lowerLimit;
             this.upperLimit = upperLimit;
             this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
@@ -134,7 +136,7 @@ public abstract class Stmt {
             this.beforeStep = beforeStep;
             this.afterStep = afterStep;
             this.end = end;
-            this.permutation = new Permutation(movePool, lowerLimit, upperLimit, this.lexicographic);
+            this.permutation = new Permutation(movePoolOptional, movePoolForced, lowerLimit, upperLimit, this.lexicographic);
         }
 
         @Override
