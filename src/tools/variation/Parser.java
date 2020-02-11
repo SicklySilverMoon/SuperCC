@@ -157,26 +157,53 @@ public class Parser {
     }
 
     private Stmt sequence() {
-        MovePool movePool = new MovePool();
+        MovePool movePoolOptional = new MovePool();
+        MovePool movePoolForced = new MovePool();
         while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-            movePool.add(new Move((String)(getNextToken().value)));
+            movePoolOptional.add(new Move((String)(getNextToken().value)));
             if(peek().type == TokenType.COMMA) {
                 expect(TokenType.COMMA, "Expected ','");
             }
         }
+        if(movePoolOptional.size == 0) {
+            throw error(getPreviousToken(), "Moves must be provided in brackets");
+        }
         expect(TokenType.RIGHT_BRACKET, "Expected ']'");
+        if(peek().type == TokenType.LEFT_BRACKET && !isEnd()) {
+            movePoolForced = movePoolOptional;
+            movePoolOptional = new MovePool();
+            expect(TokenType.LEFT_BRACKET, "Expected '['");
+            while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
+                movePoolOptional.add(new Move((String)(getNextToken().value)));
+                if(peek().type == TokenType.COMMA) {
+                    expect(TokenType.COMMA, "Expected ','");
+                }
+            }
+            if(movePoolOptional.size == 0 || movePoolForced.size == 0) {
+                throw error(getPreviousToken(), "Moves must be provided in brackets");
+            }
+            expect(TokenType.RIGHT_BRACKET, "Expected ']'");
+        }
         expect(TokenType.LEFT_PAREN, "Expected '('");
 
         Integer lowerLimit = null;
         Integer upperLimit = null;
         if(peek().type != TokenType.RIGHT_PAREN) {
-            lowerLimit = Integer.parseInt(getNextToken().lexeme);
+            try {
+                lowerLimit = Integer.parseInt(getNextToken().lexeme);
+            } catch(Exception e) {
+                throw error(getPreviousToken(), "Expected integer");
+            }
             if(peek().type == TokenType.COMMA) {
                 expect(TokenType.COMMA, "Expected ','");
             }
         }
         if(peek().type != TokenType.RIGHT_PAREN) {
-            upperLimit = Integer.parseInt(getNextToken().lexeme);
+            try {
+                upperLimit = Integer.parseInt(getNextToken().lexeme);
+            } catch(Exception e) {
+                throw error(getPreviousToken(), "Expected integer");
+            }
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
         expect(TokenType.LEFT_BRACE, "Expected '{'");
@@ -224,7 +251,7 @@ public class Parser {
             }
         }
         expect(TokenType.RIGHT_BRACE, "Expected '}'");
-        return new Stmt.Sequence(movePool, lowerLimit, upperLimit, lexicographic,
+        return new Stmt.Sequence(movePoolOptional, movePoolForced, lowerLimit, upperLimit, lexicographic,
                 start, beforeMove, afterMove, beforeStep, afterStep, end);
     }
 
