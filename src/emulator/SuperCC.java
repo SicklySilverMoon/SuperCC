@@ -333,6 +333,8 @@ public class SuperCC {
             emulator.parseArgument(args); //Parses any command line arguments given
 
             emulator.initialiseTilesheet();
+
+//            emulator.runUnitTests();
     }
 
     private void parseArgument(String[] args) { //All the command line argument parsing

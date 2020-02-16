@@ -3,8 +3,11 @@ package tools.tsp;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.*;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+import game.Direction;
+import game.Level;
+import game.MS.*;
+import game.Position;
+import game.Tile;
 import tools.TSPGUI;
 import util.ByteList;
 
@@ -46,7 +49,7 @@ public class TSPSolver {
 
     private JTextPane output;
 
-    Creature[] monsterList;
+    MSCreature[] monsterList;
 
     private final int LIMIT = 500000; // Upper bound of exploration
 
@@ -60,8 +63,8 @@ public class TSPSolver {
         this.level = emulator.getLevel();
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
-        this.monsterList = level.getMonsterList().getCreatures().clone();
-        level.getMonsterList().setCreatures(new Creature[0]);
+        this.monsterList = (MSCreature[]) level.getMonsterList().getCreatures().clone(); //TODO: FIX THE FACT THAT IT HAS TO BE A CAST!
+        level.getMonsterList().setCreatures(new MSCreature[0]);
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
@@ -112,7 +115,7 @@ public class TSPSolver {
             for(int j = 0; j < 2; j++) {
                 output.setText("Finding distances... " + (i + 1) + "/" + (inputNodeSize + 1));
                 level.load(initialState);
-                level.cheats.moveChip(new Position(nodes.get(i)));
+                level.getCheats().moveChip(new Position(nodes.get(i)));
                 if(j == 1) {
                     emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Half wait
                 }

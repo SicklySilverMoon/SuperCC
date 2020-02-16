@@ -3,6 +3,7 @@ package graphics;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
+import game.MS.*;
 import game.button.ConnectionButton;
 
 import javax.swing.*;
@@ -171,7 +172,7 @@ public abstract class GamePanel extends JPanel
         
         GamePopupMenu(GameGraphicPosition position) {
             add(new JLabel("Cheats", SwingConstants.CENTER));
-            Cheats cheats = emulator.getLevel().cheats;
+            Cheats cheats = emulator.getLevel().getCheats();
             
             Tile tileFG = emulator.getLevel().getLayerFG().get(position);
             Tile tileBG = emulator.getLevel().getLayerBG().get(position);
@@ -215,7 +216,7 @@ public abstract class GamePanel extends JPanel
                 for (Direction d : Direction.values()) {
                     JMenuItem menuItem = new JMenuItem(d.toString());
                     menuItem.addActionListener((e) -> {
-                        cheats.setDirection(c, d);
+                        cheats.setDirection((MSCreature) c, d); //TODO: FIX THE FACT THAT IT HAS TO BE A CAST!
                         updateGraphics(false);
                         emulator.getMainWindow().repaint();
                     });
@@ -285,7 +286,7 @@ public abstract class GamePanel extends JPanel
     public void mouseClicked(MouseEvent e) {}
     public void mousePressed(MouseEvent e) {}
     private void leftClick(GameGraphicPosition clickPosition) {
-        Creature chip = emulator.getLevel().getChip();
+        MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //TODO: Currently relies on MS code, not good
         if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
             byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;

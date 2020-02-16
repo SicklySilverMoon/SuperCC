@@ -2,33 +2,20 @@ package game;
 
 import java.util.ArrayList;
 
-public class SlipList extends ArrayList<Creature> {
+public abstract class SlipList extends ArrayList<Creature> {
+    protected Level level;
 
-    private Level level;
-    
-    void tick(){
-        // Iterating like this causes slide delay.
-        for (int i = size(); i > 0; i--){
-            Creature monster = get(size()-i);
-            monster.tick(monster.getSlideDirectionPriority(level.layerBG.get(monster.getPosition()), level.rng, false), level, true);
-        }
-    }
+    public abstract void tick();
 
-    void setLevel(Level level){
+    public void setLevel(Level level){
         this.level = level;
     }
+
     Level getLevel(){
         return level;
     }
 
-    void setSliplist(Creature[] slidingCreatures){
-        clear();
-        for (Creature slider : slidingCreatures){
-            Creature c = level.monsterList.creatureAt(slider.getPosition());
-            if (c == null) c = slider;
-            add(c);                // Blocks are not in the monster list, so they are added separately
-        }
-    }
+    public abstract void setSliplist(Creature[] slidingCreatures);
 
     @Override
     public String toString(){
@@ -41,5 +28,4 @@ public class SlipList extends ArrayList<Creature> {
         }
         return sb.toString();
     }
-
 }

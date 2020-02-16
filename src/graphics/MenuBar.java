@@ -10,7 +10,6 @@ import game.Step;
 import io.TWSWriter;
 import tools.*;
 import util.ByteList;
-import util.TreeNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -655,7 +654,7 @@ class MenuBar extends JMenuBar{
     
             JMenuItem toggle = new JMenuItem("Press Green Button");
             toggle.addActionListener(e -> {
-                emulator.getLevel().cheats.pressGreenButton();
+                emulator.getLevel().getCheats().pressGreenButton();
                 emulator.getMainWindow().repaint(false);
             });
             addIcon(toggle, "/resources/icons/green_button.gif");
@@ -663,7 +662,7 @@ class MenuBar extends JMenuBar{
             
             JMenuItem tank = new JMenuItem("Press Blue Button");
             tank.addActionListener(e -> {
-                emulator.getLevel().cheats.pressBlueButton();
+                emulator.getLevel().getCheats().pressBlueButton();
                 emulator.getMainWindow().repaint(false);
             });
             addIcon(tank, "/resources/icons/blue_button.gif");

@@ -1,10 +1,11 @@
-package game;
+package game.MS;
 
+import game.*;
 import game.button.*;
 
 public class Cheats {
     
-    private final Level level;
+    private final MSLevel level;
     
     // Button related cheats
     
@@ -53,18 +54,18 @@ public class Cheats {
     
     // Monster related cheats
     
-    public void setDirection(Creature creature, Direction direction) {
+    public void setDirection(MSCreature creature, Direction direction) {
         level.popTile(creature.getPosition());
         if (creature.getCreatureType() == CreatureID.BLOB) creature.setNextMoveDirectionCheat(direction);
         creature.setDirection(direction);
         level.insertTile(creature.getPosition(), creature.toTile());
     }
-    public void setPosition(Creature creature, Position position) {
+    public void setPosition(MSCreature creature, Position position) {
         level.popTile(creature.getPosition());
         creature.getPosition().setIndex(position.getIndex());
         level.insertTile(creature.getPosition(), creature.toTile());
     }
-    public void setSliding(Creature creature, boolean sliding) {
+    public void setSliding(MSCreature creature, boolean sliding) {
         creature.setSliding(sliding, level);
     }
     public void kill(Creature creature) {
@@ -145,7 +146,7 @@ public class Cheats {
         level.rng.setCurrentValue(rng);
     }
     
-    public Cheats(Level level) {
+    public Cheats(MSLevel level) {
         this.level = level;
     }
     

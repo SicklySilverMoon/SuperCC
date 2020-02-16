@@ -11,10 +11,10 @@ public class Position {
         MOVE_LEFT  = -0b000001;
     
     public static final byte UNCLICKABLE = 127;
-    
-    protected int index;
-    protected int x;
-    protected int y;
+
+    public int index;
+    public int x;
+    public int y;
     
     public boolean isValid() {
         return x >= 0 && x < 32 && y >= 0 && y < 32;

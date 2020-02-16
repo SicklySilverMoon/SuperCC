@@ -5,7 +5,6 @@ import game.Level;
 import game.Step;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import static emulator.SuperCC.CHIP_RELATIVE_CLICK;

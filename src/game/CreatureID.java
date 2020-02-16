@@ -20,8 +20,8 @@ public enum CreatureID {
     DEAD            (0b00_1111_0000000000);
     
     private final int bits;
-    
-    int getBits () {
+
+    public int getBits() {
         return bits;
     }
     
@@ -29,23 +29,23 @@ public enum CreatureID {
     public static CreatureID fromOrdinal(int ordinal) {
         return allCreatures[ordinal];
     }
-    
-    boolean isAffectedByCB(){
+
+    public boolean isAffectedByCB(){
         return this == TEETH || this == BUG || this == PARAMECIUM;
     }
-    boolean isChip(){
+    public boolean isChip(){
         return this == CHIP || this == CHIP_SLIDING;
     }
-    boolean isMonster(){
+    public boolean isMonster(){
         return this.ordinal() <= TANK_STATIONARY.ordinal();
     }
-    boolean isBlock(){
+    public boolean isBlock(){
         return this == BLOCK || this == ICE_BLOCK;
     }
-    boolean isDirtBlock() {
+    public boolean isDirtBlock() {
         return this == BLOCK;
     }
-    boolean isIceBlock() {
+    public boolean isIceBlock() {
         return this == ICE_BLOCK;
     }
     public boolean isTank() {

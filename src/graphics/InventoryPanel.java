@@ -11,7 +11,6 @@ import java.awt.image.WritableRaster;
 import static game.Tile.NUM_BOOTS;
 import static game.Tile.NUM_KEYS;
 import static graphics.GamePanel.SMALL_NUMERAL_HEIGHT;
-import static graphics.GamePanel.SMALL_NUMERAL_WIDTH;
 
 public class InventoryPanel extends JPanel {
     

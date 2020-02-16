@@ -20,7 +20,7 @@ public class RNG{
      * force floors. This advances the RNG once.
      * @return An int from 0-3 .
      */
-    int random4(){
+    public int random4(){
         return nextValue() >>> 29;
     }
 
@@ -30,7 +30,7 @@ public class RNG{
      * once.
      * @param a The array to permute
      */
-    void randomPermutation3(Object[] a){
+    public void randomPermutation3(Object[] a){
         nextValue();
         Object swap;
         int n;
@@ -48,7 +48,7 @@ public class RNG{
      * rng once.
      * @param a The array to permute
      */
-    void randomPermutation4(Object[] a){
+    public void randomPermutation4(Object[] a){
         nextValue();
         Object swap;
         int n;

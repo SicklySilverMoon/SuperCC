@@ -1,6 +1,7 @@
 package graphics;
 
 import game.*;
+import game.MS.*;
 import game.button.ConnectionButton;
 
 import java.awt.*;

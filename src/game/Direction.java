@@ -11,28 +11,28 @@ public enum Direction {
         TURN_AROUND = DOWN, TURN_FORWARD = UP;
     
     private static final Direction[] allDirections = Direction.values();
-    static Direction fromOrdinal(int ordinal){
+    public static Direction fromOrdinal(int ordinal){
         return allDirections[ordinal];
     }
     
     private final int bits;
-    
-    int getBits() {
+
+    public int getBits() {
         return bits;
     }
-    
-    Direction turn(Direction turn) {
+
+    public Direction turn(Direction turn) {
         return fromOrdinal(ordinal() + turn.ordinal() & 0b11);
     }
-    
-    Direction[] turn(Direction[] turns) {
+
+    public Direction[] turn(Direction[] turns) {
         Direction[] dirs = new Direction[turns.length];
         for (int i = 0; i < turns.length; i++){
             dirs[i] = turn(turns[i]);
         }
         return dirs;
     }
-    
+
     Direction(int bits) {
         this.bits = bits;
     }

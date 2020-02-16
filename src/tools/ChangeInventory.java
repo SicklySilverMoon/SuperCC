@@ -45,7 +45,7 @@ public class ChangeInventory extends JPanel {
             if (!allBootCheckboxes[i].isSelected()) boots[i] = 0;
             else boots[i] = 1;
         }
-        emulator.getLevel().cheats.setChipsLeft(Integer.parseInt(textChips.getText()));
+        emulator.getLevel().getCheats().setChipsLeft(Integer.parseInt(textChips.getText()));
         emulator.getMainWindow().repaint(false);
     }
     

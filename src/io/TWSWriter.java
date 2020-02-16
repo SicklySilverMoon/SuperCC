@@ -5,8 +5,6 @@ import game.Level;
 import util.ByteList;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
 
 public class TWSWriter{
     

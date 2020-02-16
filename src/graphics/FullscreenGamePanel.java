@@ -49,7 +49,7 @@
 //    }
 //
 //    @Override
-//    protected void drawMonsterList(CreatureList monsterList, BufferedImage overlay){
+//    protected void drawMonsterList(MSCreatureList monsterList, BufferedImage overlay){
 //        int i = 0;
 //        for (Creature c : monsterList){
 //            int x = c.getPosition().getX()*tileWidth, y = c.getPosition().getY()*tileHeight;
@@ -58,7 +58,7 @@
 //    }
 //
 //    @Override
-//    protected void drawSlipList(SlipList slipList, BufferedImage overlay){
+//    protected void drawSlipList(MSSlipList slipList, BufferedImage overlay){
 //        int yOffset = tileHeight - SMALL_NUMERAL_HEIGHT - 2;
 //        for (int i = 0; i < slipList.size(); i++){
 //            Creature monster = slipList.get(i);

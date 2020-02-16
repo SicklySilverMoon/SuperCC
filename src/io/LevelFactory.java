@@ -1,6 +1,7 @@
 package io;
 
 import game.*;
+import game.MS.*;
 import game.button.BlueButton;
 import game.button.BrownButton;
 import game.button.GreenButton;
@@ -53,8 +54,8 @@ public class LevelFactory {
         }
         return portals;
     }
-    private static CreatureList getMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){
-        if (monsterPositions == null) return new CreatureList(new Creature[] {});
+    private static MSCreatureList getMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){
+        if (monsterPositions == null) return new MSCreatureList(new MSCreature[] {});
         int l = 0;
         for (int i = 0; i < monsterPositions.length; i++){
             int x = monsterPositions[i][0];
@@ -64,24 +65,24 @@ public class LevelFactory {
                 l++;
             }
         }
-        Creature[] monsterList = new Creature[l];
+        MSCreature[] monsterList = new MSCreature[l];
         l = 0;
         for (int i = 0; i < monsterPositions.length; i++){
             int x = monsterPositions[i][0];
             int y = monsterPositions[i][1];
             Position position = new Position(x, y);
             if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
-                monsterList[l++] = new Creature(position, layerFG.get(position));
+                monsterList[l++] = new MSCreature(position, layerFG.get(position));
             }
         }
-        return new CreatureList(monsterList);
+        return new MSCreatureList(monsterList);
     }
-    private static Creature findPlayer(Layer layerFG){
+    private static MSCreature findPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){
             Tile tile = layerFG.get(i);
-            if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new Creature(new Position(i), tile);
+            if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new MSCreature(new Position(i), tile);
         }
-        return new Creature(new Position(0), Tile.CHIP_DOWN);
+        return new MSCreature(new Position(0), Tile.CHIP_DOWN);
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
@@ -161,13 +162,13 @@ public class LevelFactory {
      * @return A Level
      */
     static Level makeLevel(int levelNumber, int timeLimit, int chips, byte[] byteLayerFG, byte[] byteLayerBG,
-                           byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
-                           byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel){
+                             byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
+                             byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel){
 
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
 
-        return new Level(
+        return new MSLevel(
             levelNumber,
             title,
             password,
@@ -182,7 +183,7 @@ public class LevelFactory {
             layerBG,
             layerFG,
             getMonsterList(monsterPositions, layerFG, layerBG),
-            new SlipList(),
+            new MSSlipList(),
             findPlayer(layerFG),
             getTimer(timeLimit),
             chips,

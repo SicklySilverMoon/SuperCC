@@ -139,7 +139,7 @@ public class SeedSearch {
     public boolean verifySeed(int seed) {
         solution.rngSeed = seed;
         emulator.getLevel().load(startingState);
-        emulator.getLevel().cheats.setRng(seed);
+        emulator.getLevel().getCheats().setRng(seed);
         solution.loadMoves(emulator, TickFlags.LIGHT, false);
         if (!untilPosition) return emulator.getLevel().isCompleted();
         else return emulator.getLevel().getChip().getPosition().equals(endPosition) && !emulator.getLevel().getChip().isDead();

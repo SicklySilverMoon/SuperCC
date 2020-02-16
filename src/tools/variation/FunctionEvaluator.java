@@ -6,7 +6,6 @@ import game.Position;
 import util.ByteList;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class FunctionEvaluator {
     private SuperCC emulator;
