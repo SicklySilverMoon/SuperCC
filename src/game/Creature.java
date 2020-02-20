@@ -4,8 +4,6 @@ public interface Creature {
 
     Direction getDirection();
 
-    Direction getNextMoveDirectionCheat();
-
     CreatureID getCreatureType();
 
     void setCreatureType(CreatureID creatureType);
@@ -27,7 +25,5 @@ public interface Creature {
     void setSliding(boolean sliding);
 
     void setSliding(boolean sliding, Level genLevel);
-
-    void setSliding(boolean wasSliding, boolean isSliding, Level genLevel);
 
 }

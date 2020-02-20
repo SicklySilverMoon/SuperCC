@@ -2,157 +2,171 @@ package game.Lynx;
 
 import game.*;
 import game.MS.Cheats;
-import game.button.BlueButton;
-import game.button.BrownButton;
-import game.button.GreenButton;
-import game.button.RedButton;
+import game.button.*;
 
 import java.util.BitSet;
 
 public class LynxLevel extends LynxSaveState implements Level {
+
+    private static final int HALF_WAIT = 0, KEY = 1;
+    private final int LEVELSET_LENGTH;
+
+    private int levelNumber, startTime;
+    private final byte[] title, password, hint;
+    private final Position[] toggleDoors, teleports;
+    private GreenButton[] greenButtons;
+    private RedButton[] redButtons;
+    private BrownButton[] brownButtons;
+    private BlueButton[] blueButtons;
+    private int rngSeed;
+    private Step step;
+    private boolean levelWon;
+
     @Override
     public int getLevelNumber() {
-        return 0;
+        return levelNumber;
     }
 
     @Override
     public int getStartTime() {
-        return 0;
+        return startTime;
     }
 
     @Override
     public byte[] getTitle() {
-        return new byte[0];
+        return title;
     }
 
     @Override
     public byte[] getPassword() {
-        return new byte[0];
+        return password;
     }
 
     @Override
     public byte[] getHint() {
-        return new byte[0];
+        return hint;
     }
 
     @Override
     public Position[] getToggleDoors() {
-        return new Position[0];
+        return toggleDoors;
     }
 
     @Override
-    public Position[] getPortals() {
-        return new Position[0];
+    public Position[] getTeleports() {
+        return teleports;
     }
 
     @Override
     public GreenButton[] getGreenButtons() {
-        return new GreenButton[0];
+        return greenButtons;
     }
 
     @Override
     public RedButton[] getRedButtons() {
-        return new RedButton[0];
+        return redButtons;
     }
 
     @Override
     public BrownButton[] getBrownButtons() {
-        return new BrownButton[0];
+        return brownButtons;
     }
 
     @Override
     public BlueButton[] getBlueButtons() {
-        return new BlueButton[0];
+        return blueButtons;
     }
 
     @Override
     public void setGreenButtons(GreenButton[] greenButtons) {
-
+        this.greenButtons = greenButtons;
     }
 
     @Override
     public void setRedButtons(RedButton[] redButtons) {
-
+        this.redButtons = redButtons;
     }
 
     @Override
     public void setBrownButtons(BrownButton[] brownButtons) {
-
+        this.brownButtons = brownButtons;
     }
 
     @Override
     public void setBlueButtons(BlueButton[] blueButtons) {
-
+        this.blueButtons = blueButtons;
     }
 
     @Override
     public int getRngSeed() {
-        return 0;
+        return rngSeed;
     }
 
     @Override
     public Step getStep() {
-        return null;
+        return step;
     }
 
     @Override
     public Layer getLayerBG() {
-        return null;
+        return layerBG;
     }
 
     @Override
     public Layer getLayerFG() {
-        return null;
+        return layerFG;
     }
 
     @Override
-    public int getTimer() {
-        return 0;
+    public int getTimer(){
+        if (tickNumber == 0) return startTime;
+        else return startTime - tickNumber;
     }
 
     @Override
     public int getTChipTime() {
-        return 0;
+        if (tickNumber == 0) return 9999;
+        else return 9999 - tickNumber;
     }
 
     @Override
     public int getChipsLeft() {
-        return 0;
+        return chipsLeft;
     }
 
     @Override
     public Creature getChip() {
-        return null;
+        return chip;
     }
 
     @Override
     public short[] getKeys() {
-        return new short[0];
+        return keys;
     }
 
     @Override
     public byte[] getBoots() {
-        return new byte[0];
+        return boots;
     }
 
     @Override
     public CreatureList getMonsterList() {
-        return null;
+        return monsterList;
     }
 
     @Override
     public SlipList getSlipList() {
-        return null;
+        return slipList;
     }
 
     @Override
     public BitSet getOpenTraps() {
-        return null;
+        return traps;
     }
 
     @Override
     public int getLevelsetLength() {
-        return 0;
+        return LEVELSET_LENGTH;
     }
 
     @Override
@@ -162,26 +176,83 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public RNG getRNG() {
+        return rng;
+    }
+
+    @Override
+    public Button getButton(Position position, Class buttonType) {
+        Button[] buttons;
+        if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
+        else if (buttonType.equals(RedButton.class)) buttons = redButtons;
+        else if (buttonType.equals(BrownButton.class)) buttons = brownButtons;
+        else if (buttonType.equals(BlueButton.class)) buttons = blueButtons;
+        else throw new RuntimeException("Invalid class");
+        for (Button b : buttons) {
+            if (b.getButtonPosition().equals(position)) return b;
+        }
         return null;
     }
 
     @Override
-    public void setClick(int position) {
+    public int getTickNumber() {
+        return tickNumber;
+    }
 
+    @Override
+    public void setClick(int position) {
+        //TODO: why is this in the interface and half the setters such as boot and key aren't
     }
 
     @Override
     public void setLevelWon(boolean won) {
-
+        this.levelWon = won;
     }
 
     @Override
     public boolean isCompleted() {
-        return false;
+        return levelWon;
     }
 
     @Override
     public boolean tick(byte b, Direction[] directions) {
         return false;
+    }
+
+    @Override
+    public void insertTile(Position position, Tile tile) {
+
+    }
+
+    @Override
+    public void popTile(Position position) {
+
+    }
+
+    public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
+                   GreenButton[] greenButtons, RedButton[] redButtons,
+                   BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
+                   Layer layerBG, Layer layerFG, LynxCreatureList monsterList, SlipList slipList,
+                   LynxCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
+
+        super(layerBG, layerFG, monsterList, slipList, chip,
+                time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+
+        this.levelNumber = levelNumber;
+        this.startTime = time;
+        this.title = title;
+        this.password = password;
+        this.hint = hint;
+        this.toggleDoors = toggleDoors;
+        this.teleports = teleports;
+        this.greenButtons = greenButtons;
+        this.redButtons = redButtons;
+        this.brownButtons = brownButtons;
+        this.blueButtons = blueButtons;
+        this.rngSeed = rngSeed;
+        this.step = step;
+        this.LEVELSET_LENGTH = levelsetLength;
+
+        this.slipList.setLevel(this);
+        this.monsterList.setLevel(this);
     }
 }

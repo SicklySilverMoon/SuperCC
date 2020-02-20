@@ -1,10 +1,7 @@
 package game;
 
 import game.MS.*;
-import game.button.BlueButton;
-import game.button.BrownButton;
-import game.button.GreenButton;
-import game.button.RedButton;
+import game.button.*;
 
 import java.util.BitSet;
 
@@ -27,7 +24,7 @@ public interface Level extends SaveState{
 
     Position[] getToggleDoors();
 
-    Position[] getPortals();
+    Position[] getTeleports();
 
     GreenButton[] getGreenButtons();
 
@@ -103,6 +100,10 @@ public interface Level extends SaveState{
 
     RNG getRNG();
 
+    Button getButton(Position position, Class buttonType);
+
+    int getTickNumber();
+
     /**
      * @param position the last clicked position.
      */
@@ -127,4 +128,8 @@ public interface Level extends SaveState{
      * @return true if the next move should be made automatically without input
      */
     boolean tick(byte b, Direction[] directions);
+
+    void insertTile(Position position, Tile tile);
+
+    void popTile(Position position);
 }

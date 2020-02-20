@@ -1,6 +1,9 @@
 package io;
 
 import game.*;
+import game.Lynx.LynxCreature;
+import game.Lynx.LynxCreatureList;
+import game.Lynx.LynxLevel;
 import game.MS.*;
 import game.button.BlueButton;
 import game.button.BrownButton;
@@ -54,7 +57,7 @@ public class LevelFactory {
         }
         return portals;
     }
-    private static MSCreatureList getMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){
+    private static CreatureList getMSMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
         if (monsterPositions == null) return new MSCreatureList(new MSCreature[] {});
         int l = 0;
         for (int i = 0; i < monsterPositions.length; i++){
@@ -77,12 +80,42 @@ public class LevelFactory {
         }
         return new MSCreatureList(monsterList);
     }
-    private static MSCreature findPlayer(Layer layerFG){
+    private static CreatureList getLynxMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
+        if (monsterPositions == null) return new LynxCreatureList(new LynxCreature[] {});
+        int l = 0;
+        for (int i = 0; i < monsterPositions.length; i++){
+            int x = monsterPositions[i][0];
+            int y = monsterPositions[i][1];
+            int position = 32*y+x;
+            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
+                l++;
+            }
+        }
+        LynxCreature[] monsterList = new LynxCreature[l];
+        l = 0;
+        for (int i = 0; i < monsterPositions.length; i++){
+            int x = monsterPositions[i][0];
+            int y = monsterPositions[i][1];
+            Position position = new Position(x, y);
+            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
+                monsterList[l++] = new LynxCreature(position, layerFG.get(position));
+            }
+        }
+        return new LynxCreatureList(monsterList);
+    }
+    private static Creature findMSPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){
             Tile tile = layerFG.get(i);
             if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new MSCreature(new Position(i), tile);
         }
-        return new MSCreature(new Position(0), Tile.CHIP_DOWN);
+        return new MSCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
+    }
+    private static Creature findLynxPlayer(Layer layerFG){
+        for (int i = 32*32-1; i >= 0; i--){
+            Tile tile = layerFG.get(i);
+            if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new LynxCreature(new Position(i), tile);
+        }
+        return new MSCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
@@ -182,9 +215,9 @@ public class LevelFactory {
             new BitSet(trapConnections.length),
             layerBG,
             layerFG,
-            getMonsterList(monsterPositions, layerFG, layerBG),
+            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
             new MSSlipList(),
-            findPlayer(layerFG),
+            (MSCreature) findMSPlayer(layerFG),
             getTimer(timeLimit),
             chips,
             new RNG(rngSeed),
@@ -192,6 +225,30 @@ public class LevelFactory {
             step,
             lastLevel
         );
+//        return new LynxLevel(
+//            levelNumber,
+//            title,
+//            password,
+//            hint,
+//            getToggleDoors(layerFG, layerBG),
+//            getPortals(layerFG, layerBG),
+//            getGreenButtons(layerFG, layerBG),
+//            getRedButtons(cloneConnections),
+//            getBrownButtons(trapConnections),
+//            getBlueButtons(layerFG, layerBG),
+//            new BitSet(trapConnections.length),
+//            layerBG,
+//            layerFG,
+//            (LynxCreatureList) getLynxMonsterList(monsterPositions, layerFG, layerBG),
+//            new MSSlipList(), //TODO: Bound to MS currently
+//            (LynxCreature) findLynxPlayer(layerFG),
+//            getTimer(timeLimit),
+//            chips,
+//            new RNG(rngSeed),
+//            rngSeed,
+//            step,
+//            lastLevel
+//            );
     }
 
 }

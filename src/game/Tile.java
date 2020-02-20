@@ -169,7 +169,7 @@ public enum Tile {
         return str;
     }
     
-    private Tile(String s) {
+    Tile(String s) {
         this.str = s;
     }
 

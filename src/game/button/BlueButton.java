@@ -7,7 +7,7 @@ import game.Position;
 import static game.CreatureID.TANK_MOVING;
 import static game.Direction.TURN_AROUND;
 
-public class BlueButton extends Button {
+public class BlueButton extends Button { //TODO: This is pretty MS-centric, please fix that
     
     @Override
     public void press(Level level) {

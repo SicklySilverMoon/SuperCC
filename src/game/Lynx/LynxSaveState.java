@@ -1,9 +1,6 @@
 package game.Lynx;
 
-import game.Creature;
-import game.Layer;
-import game.RNG;
-import game.SaveState;
+import game.*;
 
 import java.util.BitSet;
 
@@ -14,14 +11,14 @@ public class LynxSaveState implements SaveState {
 
     public Layer layerBG;
     public Layer layerFG;
-    public Creature chip;
+    public LynxCreature chip;
     public int tickNumber;
     public int chipsLeft;
     public short[] keys;
     public byte[] boots;
     public RNG rng;
-//    public MSCreatureList monsterList;
-//    public SlipList slipList;
+    public LynxCreatureList monsterList;
+    public SlipList slipList;
 
     protected int mouseGoal;
     protected BitSet traps;
@@ -34,5 +31,21 @@ public class LynxSaveState implements SaveState {
     @Override
     public void load(byte[] savestate) {
 
+    }
+
+    protected LynxSaveState(Layer layerBG, Layer layerFG, LynxCreatureList monsterList, SlipList slipList, LynxCreature chip,
+                          int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
+        this.layerBG = layerBG;
+        this.layerFG = layerFG;
+        this.monsterList = monsterList;
+        this.slipList = slipList;
+        this.chip = chip;
+        this.tickNumber = 0;
+        this.chipsLeft = chipsLeft;
+        this.keys = keys;
+        this.boots = boots;
+        this.rng = rng;
+        this.mouseGoal = mouseGoal;
+        this.traps = traps;
     }
 }

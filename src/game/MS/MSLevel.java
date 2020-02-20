@@ -16,11 +16,11 @@ public class MSLevel extends MSSaveState implements Level {
     public final Position INITIAL_MONSTER_POSITION =
             (monsterList.size() == 0) ? null : monsterList.get(0).getPosition(); //this is needed or else half the levels aren't playable due to a crash from having an empty monster list
     public final int INITIAL_CHIPS_AMOUNT = chipsLeft;
-    final int LEVELSET_LENGTH;
+    private final int LEVELSET_LENGTH;
 
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
-    final Position[] toggleDoors, portals;
+    private final Position[] toggleDoors, teleports;
     private GreenButton[] greenButtons;
     private RedButton[] redButtons;
     private BrownButton[] brownButtons;
@@ -29,10 +29,10 @@ public class MSLevel extends MSSaveState implements Level {
     private Step step;
     private boolean levelWon;
 
-    private boolean ResetStep = false; //Stuff for data reset
-    private Position AutopsyPosition = new Position(22, 0);
+//    private boolean ResetStep = false; //Stuff for data reset
+//    private Position AutopsyPosition = new Position(22, 0);
     
-    public final Cheats cheats;
+    private final Cheats cheats;
     
     @Override
     public int getLevelNumber() {
@@ -59,8 +59,8 @@ public class MSLevel extends MSSaveState implements Level {
         return toggleDoors;
     }
     @Override
-    public Position[] getPortals() {
-        return portals;
+    public Position[] getTeleports() {
+        return teleports;
     }
     @Override
     public GreenButton[] getGreenButtons() {
@@ -190,7 +190,7 @@ public class MSLevel extends MSSaveState implements Level {
         this.boots = boots;
     }
     @Override
-    public MSCreatureList getMonsterList(){
+    public CreatureList getMonsterList(){
         return monsterList;
     }
     @Override
@@ -213,6 +213,10 @@ public class MSLevel extends MSSaveState implements Level {
     public RNG getRNG() {
         return rng;
     }
+    @Override
+    public int getTickNumber() {
+        return tickNumber;
+    }
     /**
      * @param position the last clicked position.
      */
@@ -229,10 +233,10 @@ public class MSLevel extends MSSaveState implements Level {
         return levelWon;
     }
     
-    public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] portals,
+    public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
-                   Layer layerBG, Layer layerFG, MSCreatureList monsterList, MSSlipList slipList,
+                   Layer layerBG, Layer layerFG, CreatureList monsterList, MSSlipList slipList,
                    MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
         
         super(layerBG, layerFG, monsterList, slipList, chip,
@@ -244,7 +248,7 @@ public class MSLevel extends MSSaveState implements Level {
         this.password = password;
         this.hint = hint;
         this.toggleDoors = toggleDoors;
-        this.portals = portals;
+        this.teleports = teleports;
         this.greenButtons = greenButtons;
         this.redButtons = redButtons;
         this.brownButtons = brownButtons;
@@ -263,18 +267,21 @@ public class MSLevel extends MSSaveState implements Level {
             }
         }
     }
-    
-    void popTile(Position position){
+
+    @Override
+    public void popTile(Position position){
         layerFG.set(position, layerBG.get(position));
         layerBG.set(position, FLOOR);
     }
-    void insertTile(Position position, Tile tile){
+    @Override
+    public void insertTile(Position position, Tile tile){
         Tile fgTile = layerFG.get(position);
         if (!(fgTile.equals(FLOOR) && !tile.isMonster())) layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
     }
-    
-    Button getButton(Position position, Class buttonType) {
+
+    @Override
+    public Button getButton(Position position, Class buttonType) {
         Button[] buttons;
         if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
         else if (buttonType.equals(RedButton.class)) buttons = redButtons;
@@ -355,11 +362,11 @@ public class MSLevel extends MSSaveState implements Level {
             layerFG.set(chip.getPosition(), EXITED_CHIP);
             chip.kill();
         }
-        if (!ResetStep && (getLayerBG().get(AutopsyPosition).isCreature())) { //Gotta love data resetting
-            ResetStep = true;
-            return false;
-        }
-        else return chip.isDead();
+//        if (!ResetStep && (getLayerBG().get(AutopsyPosition).isCreature())) { //Gotta love data resetting
+//            ResetStep = true;
+//            return false;
+//        }
+        /*else*/ return chip.isDead();
     }
     
     /**

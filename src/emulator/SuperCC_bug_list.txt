@@ -1,36 +1,3 @@
 SuperCC bug list:
 
-Priority: Cosmetic
-1. Invalid tiles don't always show- Floor/Thin Wall shows no indication that a tile is buried there, among others.
-
-Priority: Medium-High
-3. Blue and Green buttons added via the cheat menu will cause a Null Pointer exception when pressed via any means
-
-Things MSCC does but TW and SuCC don't:
-Priority: Low-Medium
-1. https://wiki.bitbusters.club/Tank_Top_Glitch
-
-Fixed Bugs:
-
-Priority: VERY High (Mainly fixed)
-1. TWS reading sometimes desyncs for TWSes with mouse moves, resulting in moves after the mouse move being offset by [1/2]
-(desyncs a lot of mouse routes)
-
-Priority: Low
-2. Block/Block results in a block being flicked. Intended behavior: treated as Block/Floor, erasing the lower block when pushed, except when the attempted push is out of a teleport, which results in flicking the top block off of the lower block.
-
-Priority: Low
-3. Block/Clone Machine should clone a block in the pushed direction.
-
-Priority: Cosmetic-Medium
-4. Collecting 10 keys of 1 colour then rewinding or restarting and collecting more of that same key causes the key digit to glitch out (line 79 of GamePanel.java, something to do with the j variable)
-
-Mouse issues (All fixed):
-
-Mouse bug 1 (Fixed):
-If a mouse move is made via boosting so it occurs on the first half of the turn it doesn't add a half wait after the move like it should and allows for an erroneous extra move that turn
-(cclp4 68, down then up then click up left of Chip, should add a half wait after but doesn't)
-
-Mouse bug 2 (Not a bug, intended behaviour under MSCC):
-Currently: second mouse move cancels first mouse move
-What should happen: first move executes, the second move the next turn unless canceled by something within that next turn
+None currently known

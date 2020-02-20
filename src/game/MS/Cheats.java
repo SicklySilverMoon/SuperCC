@@ -3,7 +3,7 @@ package game.MS;
 import game.*;
 import game.button.*;
 
-public class Cheats {
+public class Cheats { //TODO: Make independent from MS, use abstract class
     
     private final MSLevel level;
     

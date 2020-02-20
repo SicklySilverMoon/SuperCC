@@ -9,7 +9,7 @@ public abstract class CreatureList implements Iterable<Creature> {
     public static Direction direction;
     public int numDeadMonsters;
 
-    protected Level genLevel;
+    protected Level level;
     protected Creature[] list;
     protected List<Creature> newClones;
     protected boolean blobStep;
@@ -46,6 +46,8 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public abstract void initialise();
 
+    public abstract void finalise();
+
     public abstract void tick();
 
     public abstract void addClone(Position position);
@@ -79,6 +81,8 @@ public abstract class CreatureList implements Iterable<Creature> {
             }
         };
     }
+
+    public abstract void setLevel(Level level);
 
     @Override
     public void forEach(Consumer<? super Creature> action) {

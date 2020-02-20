@@ -1,10 +1,6 @@
 package game.MS;
 
-import game.Creature;
-import game.Layer;
-import game.RNG;
-import game.SaveState;
-import game.SlipList;
+import game.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.BitSet;
@@ -23,7 +19,7 @@ public class MSSaveState implements SaveState {
     public short[] keys;
     public byte[] boots;
     public RNG rng;
-    public MSCreatureList monsterList;
+    public CreatureList monsterList;
     public MSSlipList slipList;
     
     protected int mouseGoal;
@@ -120,7 +116,7 @@ public class MSSaveState implements SaveState {
         }
     }
     
-    protected MSSaveState(Layer layerBG, Layer layerFG, MSCreatureList monsterList, MSSlipList slipList, MSCreature chip,
+    protected MSSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, MSSlipList slipList, MSCreature chip,
                           int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
@@ -136,7 +132,7 @@ public class MSSaveState implements SaveState {
         this.traps = traps;
     }
 
-    private class SavestateReader extends ByteArrayInputStream{
+    private class SavestateReader extends ByteArrayInputStream { //TODO: This entire thing can be moved to (hopefully) the general savestate interface and worked with from there
         
         int readUnsignedByte(){
             return read() & 0xFF;
@@ -185,10 +181,10 @@ public class MSSaveState implements SaveState {
             if (version == COMPRESSED_V1 || version == COMPRESSED_V2) return readLayerRLE();
             else return readBytes(32*32);
         }
-        MSCreature[] readMonsterArray(int length){
-            MSCreature[] monsters = new MSCreature[length];
+        Creature[] readMonsterArray(int length){
+            Creature[] monsters = new Creature[length];
             for (int i = 0; i < length; i++){
-                monsters[i] = new MSCreature(readShort());
+                monsters[i] = new MSCreature(readShort()); //TODO: Bound to MS currently
             }
             return monsters;
         }

@@ -40,7 +40,7 @@ public class MSCreature implements Creature {
         this.position = position;
     }
 
-    Direction[] getDirectionPriority(MSCreature chip, RNG rng){
+    Direction[] getDirectionPriority(Creature chip, RNG rng){
         if (nextMoveDirectionCheat != null) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
@@ -54,7 +54,7 @@ public class MSCreature implements Creature {
             case PINK_BALL: return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
             case TANK_STATIONARY: return new Direction[] {};
             case GLIDER: return direction.turn(new Direction[] {TURN_FORWARD, TURN_LEFT, TURN_RIGHT, TURN_AROUND});
-            case TEETH: return position.seek(chip.position);
+            case TEETH: return position.seek(chip.getPosition());
             case WALKER:
                 Direction[] directions = new Direction[] {TURN_LEFT, TURN_AROUND, TURN_RIGHT};
                 rng.randomPermutation3(directions);
@@ -166,9 +166,11 @@ public class MSCreature implements Creature {
     public boolean isSliding() {
         return creatureType == CHIP_SLIDING || sliding;
     }
+    @Override
     public void setSliding(boolean sliding){
         this.sliding = sliding;
     }
+    @Override
     public void setSliding(boolean sliding, Level genLevel){
         setSliding(this.sliding, sliding, genLevel);
     }
@@ -218,17 +220,17 @@ public class MSCreature implements Creature {
         if (creatureType.isChip()) level.popTile(chipPosition);
         int portalIndex;
         for (portalIndex = 0; true; portalIndex++){
-            if (portalIndex >= level.getPortals().length) return;
-            if (level.getPortals()[portalIndex].equals(position)){
+            if (portalIndex >= level.getTeleports().length) return;
+            if (level.getTeleports()[portalIndex].equals(position)){
                 break;
             }
         }
-        int l = level.getPortals().length;
+        int l = level.getTeleports().length;
         int i = portalIndex;
         do{
             i--;
             if (i < 0) i += l;
-            position.setIndex(level.getPortals()[i].getIndex());
+            position.setIndex(level.getTeleports()[i].getIndex());
             if (level.layerFG.get(position) != TELEPORT) {
                 if (!creatureType.isChip()) { //Allows monsters  to still partial post off themselves
                     continue;
@@ -295,7 +297,7 @@ public class MSCreature implements Creature {
             default: return true;
         }
     }
-    boolean canEnter(Direction direction, Tile tile, MSLevel level){
+    boolean canEnter(Direction direction, Tile tile, Level level){
         switch (tile) {
             case FLOOR: return true;
             case WALL: return false;
@@ -319,10 +321,10 @@ public class MSCreature implements Creature {
             case FF_LEFT:
             case FF_RIGHT: return true;
             case EXIT: return !creatureType.isMonster();
-            case DOOR_BLUE: return creatureType.isChip() && level.keys[0] > 0;
-            case DOOR_RED: return creatureType.isChip() && level.keys[1] > 0;
-            case DOOR_GREEN: return creatureType.isChip() && level.keys[2] > 0;
-            case DOOR_YELLOW: return creatureType.isChip() && level.keys[3] > 0;
+            case DOOR_BLUE: return creatureType.isChip() && level.getKeys()[0] > 0;
+            case DOOR_RED: return creatureType.isChip() && level.getKeys()[1] > 0;
+            case DOOR_GREEN: return creatureType.isChip() && level.getKeys()[2] > 0;
+            case DOOR_YELLOW: return creatureType.isChip() && level.getKeys()[3] > 0;
             case ICE_SLIDE_SOUTHEAST: return direction == UP || direction == LEFT;
             case ICE_SLIDE_NORTHEAST: return direction == DOWN || direction == LEFT;
             case ICE_SLIDE_NORTHWEST: return direction == DOWN || direction == RIGHT;
@@ -331,7 +333,7 @@ public class MSCreature implements Creature {
             case BLUEWALL_REAL: return false;
             case OVERLAY_BUFFER: return false;
             case THIEF: return creatureType.isChip();
-            case SOCKET: return creatureType.isChip() && level.chipsLeft <= 0;
+            case SOCKET: return creatureType.isChip() && level.getChipsLeft() <= 0;
             case BUTTON_GREEN: return true;
             case BUTTON_RED: return true;
             case TOGGLE_CLOSED: return false;
