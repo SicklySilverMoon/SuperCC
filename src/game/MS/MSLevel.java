@@ -408,7 +408,7 @@ public class MSLevel extends MSSaveState implements Level {
         if (endTick()) return false;
         if (moveType == CLICK_EARLY) {
             if (voluntaryMoveAllowed) {
-                moveChip(chip.seek(new Position(mouseGoal))); //James is currently working on figuring out the weird TSG edge cases where sometimes it shouldn't TSG
+                moveChip(chip.seek(new Position(mouseGoal)));
                 voluntaryMoveAllowed = false;
             }
             else {

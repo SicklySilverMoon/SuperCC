@@ -5,6 +5,7 @@ import game.Level;
 import game.Position;
 
 public class LynxCreatureList extends CreatureList {
+
     @Override
     public void initialise() {
 
@@ -27,7 +28,7 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void setLevel(Level level) {
-
+        this.level = level;
     }
 
     public LynxCreatureList(LynxCreature[] creatures) {

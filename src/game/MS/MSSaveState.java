@@ -133,7 +133,7 @@ public class MSSaveState implements SaveState {
     }
 
     private class SavestateReader extends ByteArrayInputStream { //TODO: This entire thing can be moved to (hopefully) the general savestate interface and worked with from there
-        
+
         int readUnsignedByte(){
             return read() & 0xFF;
         }
@@ -202,7 +202,7 @@ public class MSSaveState implements SaveState {
 
         private final byte[] bytes;
         private int index;
-        
+
         void write(int n) {
             bytes[index] = (byte) n;
             index++;
@@ -240,7 +240,7 @@ public class MSSaveState implements SaveState {
         byte[] toByteArray() {
             return bytes;
         }
-    
+
         SavestateWriter(int size) {
             bytes = new byte[size];
         }

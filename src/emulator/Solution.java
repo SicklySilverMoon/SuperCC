@@ -127,27 +127,7 @@ public class Solution{
         return writer.toByteArray();
     }
     private static byte[] succToHalfMoves(ByteList succMoves){
-        ByteArrayOutputStream writer = new ByteArrayOutputStream();
-        for (byte b : succMoves){
-            if (b == 'U'){
-                writer.write('u');
-                writer.write('-');
-            }
-            else if (b == 'L'){
-                writer.write('l');
-                writer.write('-');
-            }
-            else if (b == 'D'){
-                writer.write('d');
-                writer.write('-');
-            }
-            else if (b == 'R'){
-                writer.write('r');
-                writer.write('-');
-            }
-            else writer.write(b);
-        }
-        return writer.toByteArray();
+        return succToHalfMoves(succMoves.toArray());
     }
 
     private static byte[] quarterToHalfMoves(byte[] quarterMoves) {

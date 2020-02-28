@@ -141,12 +141,18 @@ public class Position {
     
     @Override
     public boolean equals(Object o) {
-        return o instanceof Position && ((Position) o).equals(this);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Position position = (Position) o;
+        return index == position.index &&
+                x == position.x &&
+                y == position.y;
     }
-    
-    public boolean equals(Position p){
-        assert p != null; //100% null should never get passed as a position so you need to know if it does
-        return index == p.index;
+
+    @Override
+    public int hashCode() {
+        //Whilst this is just the index it is possible for index to be set manually so its just run again here
+        return (y << 5) | x;
     }
     
 }

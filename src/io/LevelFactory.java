@@ -115,7 +115,7 @@ public class LevelFactory {
             Tile tile = layerFG.get(i);
             if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new LynxCreature(new Position(i), tile);
         }
-        return new MSCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
+        return new LynxCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
@@ -201,31 +201,7 @@ public class LevelFactory {
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
 
-        return new MSLevel(
-            levelNumber,
-            title,
-            password,
-            hint,
-            getToggleDoors(layerFG, layerBG),
-            getPortals(layerFG, layerBG),
-            getGreenButtons(layerFG, layerBG),
-            getRedButtons(cloneConnections),
-            getBrownButtons(trapConnections),
-            getBlueButtons(layerFG, layerBG),
-            new BitSet(trapConnections.length),
-            layerBG,
-            layerFG,
-            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
-            new MSSlipList(),
-            (MSCreature) findMSPlayer(layerFG),
-            getTimer(timeLimit),
-            chips,
-            new RNG(rngSeed),
-            rngSeed,
-            step,
-            lastLevel
-        );
-//        return new LynxLevel(
+//        return new MSLevel(
 //            levelNumber,
 //            title,
 //            password,
@@ -239,16 +215,39 @@ public class LevelFactory {
 //            new BitSet(trapConnections.length),
 //            layerBG,
 //            layerFG,
-//            (LynxCreatureList) getLynxMonsterList(monsterPositions, layerFG, layerBG),
-//            new MSSlipList(), //TODO: Bound to MS currently
-//            (LynxCreature) findLynxPlayer(layerFG),
+//            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
+//            new MSSlipList(),
+//            (MSCreature) findMSPlayer(layerFG),
 //            getTimer(timeLimit),
 //            chips,
 //            new RNG(rngSeed),
 //            rngSeed,
 //            step,
 //            lastLevel
-//            );
+//        );
+        return new LynxLevel(
+            levelNumber,
+            title,
+            password,
+            hint,
+            getToggleDoors(layerFG, layerBG),
+            getPortals(layerFG, layerBG),
+            getGreenButtons(layerFG, layerBG),
+            getRedButtons(cloneConnections),
+            getBrownButtons(trapConnections),
+            getBlueButtons(layerFG, layerBG),
+            new BitSet(trapConnections.length),
+            layerBG,
+            layerFG,
+            getLynxMonsterList(monsterPositions, layerFG, layerBG),
+            (LynxCreature) findLynxPlayer(layerFG),
+            getTimer(timeLimit),
+            chips,
+            new RNG(rngSeed),
+            rngSeed,
+            step,
+            lastLevel
+            );
     }
 
 }

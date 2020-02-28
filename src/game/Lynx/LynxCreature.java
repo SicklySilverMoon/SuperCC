@@ -2,6 +2,11 @@ package game.Lynx;
 
 import game.*;
 
+import static game.CreatureID.*;
+import static game.CreatureID.TANK_MOVING;
+import static game.Tile.BLOCK_RIGHT;
+import static game.Tile.BLOCK_UP;
+
 /**
  * Creatures are encoded as follows:
  *
@@ -75,7 +80,37 @@ public class LynxCreature implements Creature {
         //This might not even be necessary
     }
 
+    @Override
+    public String toString() {
+        if (creatureType == DEAD) return "Dead monster at position " + position;
+        return creatureType+" facing "+direction+" at position "+position;
+    }
+
+    boolean tick(Level level, boolean slidingMove) {
+        return false;
+    }
+
     public LynxCreature(Position position, Tile tile) {
         this.position = position;
+
+        if (BLOCK_UP.ordinal() <= tile.ordinal() && tile.ordinal() <= BLOCK_RIGHT.ordinal()){
+            direction = Direction.fromOrdinal((tile.ordinal() + 2) % 4);
+            creatureType = BLOCK;
+        }
+        else{
+            direction = Direction.fromOrdinal(tile.ordinal() % 4);
+            if (tile == Tile.BLOCK) creatureType = BLOCK;
+            else {
+                creatureType = CreatureID.fromOrdinal((tile.ordinal() - 0x40) >>> 2);
+            }
+        }
+        if (creatureType == TANK_STATIONARY) creatureType = TANK_MOVING;
+    }
+
+    public LynxCreature(int bitMonster) {
+        direction = Direction.fromOrdinal(bitMonster >>> 14);
+        creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);
+        if (creatureType == CHIP_SLIDING) sliding = true; //TODO: Chip sliding probably doesn't need to exist for lynx
+        position = new Position(bitMonster & 0b00_0000_1111111111);
     }
 }

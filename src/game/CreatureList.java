@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+/**
+ * The monster list. The list attribute is the actual list.
+ */
 public abstract class CreatureList implements Iterable<Creature> {
     public static Direction direction;
     public int numDeadMonsters;

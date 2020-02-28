@@ -1,6 +1,7 @@
 package emulator;
 
 import game.*;
+import game.MS.MSLevel;
 import graphics.Gui;
 import graphics.SmallGamePanel;
 import graphics.TileSheet;
@@ -199,13 +200,14 @@ public class SuperCC {
             Position screenPosition = Position.screenPosition(level.getChip().getPosition());
             Position clickedPosition = Position.clickPosition(screenPosition, b);
             directions = level.getChip().getPosition().seek(clickedPosition);
-            level.setClick(clickedPosition.getIndex());
+            level.setClick(clickedPosition.getIndex()); //If you can click the level better be MS, need to refactor later anyways TODO: <- that
             return tick(b, directions, flags);
         }
         else{
             for (int i = 0; i < BYTE_MOVEMENT_KEYS.length; i++) {
                 if (BYTE_MOVEMENT_KEYS[i] == b) {
                     directions = DIRECTIONS[i];
+                    System.out.println(level.getMonsterList());
                     return tick(b, directions, flags);
                 }
             }

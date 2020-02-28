@@ -2,6 +2,7 @@ package game.Lynx;
 
 import game.*;
 import game.MS.Cheats;
+import game.MS.MSSlipList;
 import game.button.*;
 
 import java.util.BitSet;
@@ -156,7 +157,7 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public SlipList getSlipList() {
-        return slipList;
+        return new MSSlipList(); //TODO: look into getting rid of this altogether
     }
 
     @Override
@@ -200,7 +201,7 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public void setClick(int position) {
-        //TODO: why is this in the interface and half the setters such as boot and key aren't
+        //Having set click in he interface means i don't have to add checks for MS mode into the gui areas, something i really do not want to do
     }
 
     @Override
@@ -215,6 +216,12 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public boolean tick(byte b, Direction[] directions) {
+        setLevelWon(false);//Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
+
+        moveChip(directions);
+
+        monsterList.tick();
+
         return false;
     }
 
@@ -228,13 +235,25 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     }
 
+    private void moveChip(Direction[] directions) {
+        Position oldPosition = chip.getPosition().clone();
+        for (Direction direction : directions) {
+            if (chip.isSliding()) {
+                if (!layerBG.get(chip.getPosition()).isFF()) continue;
+                if (direction == chip.getDirection()) continue;
+            }
+            chip.tick(this, false);
+            if (!chip.getPosition().equals(oldPosition)) break;
+        }
+    }
+
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
-                   Layer layerBG, Layer layerFG, LynxCreatureList monsterList, SlipList slipList,
+                   Layer layerBG, Layer layerFG, CreatureList monsterList,
                    LynxCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
 
-        super(layerBG, layerFG, monsterList, slipList, chip,
+        super(layerBG, layerFG, monsterList, chip,
                 time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
 
         this.levelNumber = levelNumber;
@@ -252,7 +271,6 @@ public class LynxLevel extends LynxSaveState implements Level {
         this.step = step;
         this.LEVELSET_LENGTH = levelsetLength;
 
-        this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
     }
 }

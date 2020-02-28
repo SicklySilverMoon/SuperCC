@@ -8,9 +8,6 @@ import game.button.*;
 import static game.CreatureID.*;
 import static game.Tile.*;
 
-/**
- * The monster list. The list attribute is the actual list.
- */
 public class MSCreatureList extends game.CreatureList {
 
     @Override
