@@ -1,6 +1,7 @@
 package tools.variation;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MovePool {
     public HashMap<String, Integer> moves = new HashMap<>();
@@ -33,5 +34,19 @@ public class MovePool {
             }
             size += keyValue;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MovePool movePool = (MovePool) o;
+        return size == movePool.size &&
+                Objects.equals(moves, movePool.moves);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(moves, size);
     }
 }

@@ -75,15 +75,18 @@ public class Parser {
                 return new Stmt.Empty();
             }
             if (isNextToken(TokenType.BREAK)) {
+                expect(TokenType.SEMICOLON, "Expected ';'");
                 return new Stmt.Break();
             }
             if (isNextToken(TokenType.RETURN)) {
+                expect(TokenType.SEMICOLON, "Expected ';'");
                 return new Stmt.Return();
             }
             if (isNextToken(TokenType.TERMINATE)) {
                 return terminate();
             }
             if (isNextToken(TokenType.CONTINUE)) {
+                expect(TokenType.SEMICOLON, "Expected ';'");
                 return new Stmt.Continue();
             }
             if (isNextToken(TokenType.ALL)) {

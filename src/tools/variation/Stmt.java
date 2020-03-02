@@ -1,6 +1,7 @@
 package tools.variation;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class Stmt {
     interface Executor {
@@ -31,6 +32,19 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executeExpression(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Expression that = (Expression) o;
+            return Objects.equals(expr, that.expr);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(expr);
+        }
     }
 
     public static class Block extends Stmt {
@@ -43,6 +57,19 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeBlock(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Block block = (Block) o;
+            return Objects.equals(statements, block.statements);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(statements);
         }
     }
 
@@ -60,6 +87,21 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeIf(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            If anIf = (If) o;
+            return Objects.equals(condition, anIf.condition) &&
+                    Objects.equals(thenBranch, anIf.thenBranch) &&
+                    Objects.equals(elseBranch, anIf.elseBranch);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(condition, thenBranch, elseBranch);
         }
     }
 
@@ -80,6 +122,22 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executeFor(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            For aFor = (For) o;
+            return Objects.equals(init, aFor.init) &&
+                    Objects.equals(condition, aFor.condition) &&
+                    Objects.equals(post, aFor.post) &&
+                    Objects.equals(body, aFor.body);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(init, condition, post, body);
+        }
     }
 
     public static class Print extends Stmt {
@@ -93,6 +151,19 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executePrint(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Print print = (Print) o;
+            return Objects.equals(expr, print.expr);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(expr);
+        }
     }
 
     public static class Empty extends Stmt {
@@ -100,12 +171,22 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executeEmpty(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return getClass() == o.getClass();
+        }
     }
 
     public static class Break extends Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeBreak(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return getClass() == o.getClass();
         }
     }
 
@@ -143,12 +224,40 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executeSequence(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Sequence sequence = (Sequence) o;
+            return movePoolOptional.equals(sequence.movePoolOptional) &&
+                    movePoolForced.equals(sequence.movePoolForced) &&
+                    Objects.equals(lowerLimit, sequence.lowerLimit) &&
+                    Objects.equals(upperLimit, sequence.upperLimit) &&
+                    lexicographic.equals(sequence.lexicographic) &&
+                    Objects.equals(start, sequence.start) &&
+                    Objects.equals(beforeMove, sequence.beforeMove) &&
+                    Objects.equals(afterMove, sequence.afterMove) &&
+                    Objects.equals(beforeStep, sequence.beforeStep) &&
+                    Objects.equals(afterStep, sequence.afterStep) &&
+                    Objects.equals(end, sequence.end);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(movePoolOptional, movePoolForced, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove, beforeStep, afterStep, end, permutation);
+        }
     }
 
     public static class Return extends Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeReturn(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return getClass() == o.getClass();
         }
     }
 
@@ -163,12 +272,30 @@ public abstract class Stmt {
         public void execute(Executor executor) {
             executor.executeTerminate(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Terminate terminate = (Terminate) o;
+            return Objects.equals(index, terminate.index);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(index);
+        }
     }
 
     public static class Continue extends Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeContinue(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return getClass() == o.getClass();
         }
     }
 
@@ -182,6 +309,19 @@ public abstract class Stmt {
         @Override
         public void execute(Executor executor) {
             executor.executeAll(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            All all = (All) o;
+            return Objects.equals(amount, all.amount);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(amount);
         }
     }
 }

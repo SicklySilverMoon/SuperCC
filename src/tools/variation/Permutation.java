@@ -181,6 +181,7 @@ public class Permutation {
         }
         upperBound = Math.min(upperBound, size);
         lowerBound = Math.min(lowerBound, size);
+        upperBound = Math.max(upperBound, movePoolForced.size);
         lowerBound = Math.max(lowerBound, movePoolForced.size);
     }
 }
