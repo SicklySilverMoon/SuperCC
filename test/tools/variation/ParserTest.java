@@ -127,6 +127,28 @@ class ParserTest {
     }
 
     @Test
+    void parseSequenceStatementOneBound() {
+        String code = "[d][u](1){}";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        MovePool movePoolOptional = new MovePool();
+        movePoolOptional.add(new Move("u"));
+        MovePool movePoolForced = new MovePool();
+        movePoolForced.add(new Move("d"));
+
+        BoundLimit limits = new BoundLimit();
+        limits.lowerLimit = 1;
+        limits.upperLimit = null;
+
+        List<Stmt> expectedStatements = Arrays.asList(
+                new Stmt.Sequence(movePoolOptional, movePoolForced, limits, "", new SequenceLifecycle())
+        );
+
+        assertEquals(expectedStatements, statements);
+    }
+
+    @Test
     void parseEmptyStatement() {
         String code = ";";
         Parser parser = new Parser();

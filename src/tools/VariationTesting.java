@@ -96,8 +96,8 @@ public class VariationTesting {
                 return;
             }
             Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
-            ArrayList<Token> tokens = tokenizer.tokenize();
-            variables = Tokenizer.prepareForInterpreter(tokens);
+            ArrayList<Token> tokens = tokenizer.getParsableTokens();
+            variables = tokenizer.getVariables();
 
             Parser parser = new Parser(tokens, console);
             statements = parser.parse();
@@ -255,7 +255,7 @@ public class VariationTesting {
         StyledDocument doc = codeOutput.getStyledDocument();
         Style style = codeOutput.addStyle("style", null);
         Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
-        ArrayList<Token> tokens = tokenizer.tokenize();
+        ArrayList<Token> tokens = tokenizer.getAllTokens();
         int lines = 1;
 
         for(Token token : tokens) {

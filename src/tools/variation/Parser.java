@@ -35,8 +35,7 @@ public class Parser {
 
     public ArrayList<Stmt> parseCode(String code) {
         Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
+        ArrayList<Token> tokens = tokenizer.getParsableTokens();
         this.tokens = tokens;
         return parse();
     }

@@ -17,7 +17,7 @@ class TokenizerTest {
         String code = "[](){},;:";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.LEFT_BRACKET, "[", null, 1),
@@ -29,7 +29,8 @@ class TokenizerTest {
                 new Token(TokenType.COMMA, ",", null, 1),
                 new Token(TokenType.SEMICOLON, ";", null, 1),
                 new Token(TokenType.COLON, ":", null, 1),
-                new Token(TokenType.EOF, "", null, 1));
+                new Token(TokenType.EOF, "", null, 1)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -39,14 +40,15 @@ class TokenizerTest {
         String code = " \t\r\n";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.SPACE, " ", null, 1),
                 new Token(TokenType.TAB, "\t", null, 1),
                 new Token(TokenType.CARRIAGE_RETURN, "\r", null, 1),
                 new Token(TokenType.NEW_LINE, "\n", null, 2),
-                new Token(TokenType.EOF, "", null, 2));
+                new Token(TokenType.EOF, "", null, 2)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -56,13 +58,14 @@ class TokenizerTest {
         String code = "3 234 12.345";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.NUMBER, "3", 3.0, 1), SPACE,
                 new Token(TokenType.NUMBER, "234", 234.0, 1), SPACE,
                 new Token(TokenType.NUMBER, "12.345", 12.345, 1),
-                new Token(TokenType.EOF, "", null, 1));
+                new Token(TokenType.EOF, "", null, 1)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -72,14 +75,15 @@ class TokenizerTest {
         String code = "r urdw 4h 12lr";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.MOVE, "r", "r", 1), SPACE,
                 new Token(TokenType.MOVE, "urdw", "urdw", 1), SPACE,
                 new Token(TokenType.MOVE, "4h", "4h", 1), SPACE,
                 new Token(TokenType.MOVE, "12lr", "12lr", 1),
-                new Token(TokenType.EOF, "", null, 1));
+                new Token(TokenType.EOF, "", null, 1)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -89,7 +93,7 @@ class TokenizerTest {
         String code = "var1=3.5 var1+=7+3 var1-=7-3 var1/=7/3 var1*=7*3 var1%=7%3 var1++ var1--";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.IDENTIFIER, "var1", "var1", 1),
@@ -124,7 +128,8 @@ class TokenizerTest {
                 new Token(TokenType.PLUS_PLUS, "++", null, 1), SPACE,
                 new Token(TokenType.IDENTIFIER, "var1", "var1", 1),
                 new Token(TokenType.MINUS_MINUS, "--", null, 1),
-                new Token(TokenType.EOF, "", null, 1));
+                new Token(TokenType.EOF, "", null, 1)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -134,7 +139,7 @@ class TokenizerTest {
         String code = "7>3 && 7>=3 || 3<7 & 3<=7 | 3!=7 ! 3==3";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.NUMBER, "7", 7.0, 1),
@@ -160,7 +165,23 @@ class TokenizerTest {
                 new Token(TokenType.NUMBER, "3", 3.0, 1),
                 new Token(TokenType.EQUAL_EQUAL, "==", null, 1),
                 new Token(TokenType.NUMBER, "3", 3.0, 1),
-                new Token(TokenType.EOF, "", null, 1));
+                new Token(TokenType.EOF, "", null, 1)
+        );
+
+        assertEquals(expectedTokens, tokens);
+    }
+
+    @Test
+    void tokenizeOther() {
+        String code = "?";
+
+        Tokenizer tokenizer = new Tokenizer(code);
+        List<Token> tokens = tokenizer.getAllTokens();
+
+        List<Token> expectedTokens = Arrays.asList(
+                new Token(TokenType.OTHER, "?", null, 1),
+                new Token(TokenType.EOF, "", null, 1)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -173,7 +194,7 @@ class TokenizerTest {
                 "move(4u,3r);";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        List<Token> tokens = tokenizer.tokenize();
+        List<Token> tokens = tokenizer.getAllTokens();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.ALL, "all", null, 1),
@@ -214,7 +235,8 @@ class TokenizerTest {
                 new Token(TokenType.MOVE, "3r", "3r", 4),
                 new Token(TokenType.RIGHT_PAREN, ")", null, 4),
                 new Token(TokenType.SEMICOLON, ";", null, 4),
-                new Token(TokenType.EOF, "", null, 4));
+                new Token(TokenType.EOF, "", null, 4)
+        );
 
         assertEquals(expectedTokens, tokens);
     }
@@ -225,8 +247,8 @@ class TokenizerTest {
                 "x+=1 var y = 2 z = 3";
 
         Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        HashMap<String, Object> variables = Tokenizer.prepareForInterpreter(tokens);
+        ArrayList<Token> tokens = tokenizer.getParsableTokens();
+        HashMap<String, Object> variables = tokenizer.getVariables();
 
         List<Token> expectedTokens = Arrays.asList(
                 new Token(TokenType.IDENTIFIER, "x", "x", 1),
@@ -241,7 +263,8 @@ class TokenizerTest {
                 new Token(TokenType.IDENTIFIER, "z", "z", 2),
                 new Token(TokenType.EQUAL, "=", null, 2),
                 new Token(TokenType.NUMBER, "3", 3.0, 2),
-                new Token(TokenType.EOF, "", null, 2));
+                new Token(TokenType.EOF, "", null, 2)
+        );
         HashMap<String, Object> expectedVariables = new HashMap<>();
         expectedVariables.put("x", null);
         expectedVariables.put("y", null);

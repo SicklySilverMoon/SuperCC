@@ -1,6 +1,6 @@
 package tools.variation;
 
 public class BoundLimit {
-    public int lowerLimit;
-    public int upperLimit;
+    public Integer lowerLimit = null;
+    public Integer upperLimit = null;
 }
