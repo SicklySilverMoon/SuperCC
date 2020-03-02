@@ -204,19 +204,18 @@ public abstract class Stmt {
         public final Stmt end;
         public final Permutation permutation;
 
-        Sequence(MovePool movePoolOptional, MovePool movePoolForced, Integer lowerLimit, Integer upperLimit, String lexicographic,
-                 Stmt start, Stmt beforeMove, Stmt afterMove, Stmt beforeStep, Stmt afterStep, Stmt end) {
+        Sequence(MovePool movePoolOptional, MovePool movePoolForced, BoundLimit limits, String lexicographic, SequenceLifecycle lifecycle) {
             this.movePoolOptional = movePoolOptional;
             this.movePoolForced = movePoolForced;
-            this.lowerLimit = lowerLimit;
-            this.upperLimit = upperLimit;
+            this.lowerLimit = limits.lowerLimit;
+            this.upperLimit = limits.upperLimit;
             this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
-            this.start = start;
-            this.beforeMove = beforeMove;
-            this.afterMove = afterMove;
-            this.beforeStep = beforeStep;
-            this.afterStep = afterStep;
-            this.end = end;
+            this.start = lifecycle.start;
+            this.beforeMove = lifecycle.beforeMove;
+            this.afterMove = lifecycle.afterMove;
+            this.beforeStep = lifecycle.beforeStep;
+            this.afterStep = lifecycle.afterStep;
+            this.end = lifecycle.end;
             this.permutation = new Permutation(movePoolOptional, movePoolForced, lowerLimit, upperLimit, this.lexicographic);
         }
 

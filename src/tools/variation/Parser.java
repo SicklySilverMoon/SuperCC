@@ -11,19 +11,20 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Parser {
-    private final ArrayList<Token> tokens;
-    private final JTextPane console;
+    private final char[] LEXICOGRAPHIC_CHARS = "urdlwh".toCharArray();
+
+    private ArrayList<Token> tokens;
+    private JTextPane console;
     private int current = 0;
     public boolean hadError = false;
 
-    public static ArrayList<Stmt.Sequence> getSequences(ArrayList<Stmt> statements) {
-        ArrayList<Stmt.Sequence> sequences = new ArrayList<>();
-        for(Stmt stmt : statements) {
-            if (stmt instanceof Stmt.Sequence) {
-                sequences.add((Stmt.Sequence) stmt);
-            }
-        }
-        return sequences;
+    public Parser() {
+
+    }
+
+    public Parser(JTextPane console) {
+        this.console = console;
+        console.setText("");
     }
 
     public Parser(ArrayList<Token> tokens, JTextPane console) {
@@ -32,13 +33,21 @@ public class Parser {
         console.setText("");
     }
 
+    public ArrayList<Stmt> parseCode(String code) {
+        Tokenizer tokenizer = new Tokenizer(code);
+        ArrayList<Token> tokens = tokenizer.tokenize();
+        Tokenizer.prepareForInterpreter(tokens);
+        this.tokens = tokens;
+        return parse();
+    }
+
     public ArrayList<Stmt> parse() {
         ArrayList<Stmt> statements = new ArrayList<>();
         while(!isEnd()) {
             try {
                 statements.add(statement(true));
             } catch(Exception e) {
-                print(peek(), "Unknown parsing error.\n  " + e.toString());
+                print(getToken(), "Unknown parsing error.\n  " + e.toString());
                 synchronize();
                 hadError = true;
                 e.printStackTrace();
@@ -52,47 +61,22 @@ public class Parser {
     }
 
     private Stmt statement(boolean isGlobal) {
+        Token token = getNextToken();
         try {
-            if (isNextToken(TokenType.LEFT_BRACE)) {
-                return new Stmt.Block(block());
+            switch(token.type) {
+                case LEFT_BRACE: return new Stmt.Block(block());
+                case IF: return ifStatement();
+                case FOR: return forStatement();
+                case PRINT: return printStatement();
+                case LEFT_BRACKET: return sequenceStatement(isGlobal);
+                case SEMICOLON: return new Stmt.Empty();
+                case BREAK: return breakStatement();
+                case RETURN: return returnStatement();
+                case TERMINATE: return terminateStatement();
+                case CONTINUE: return continueStatement();
+                case ALL: return allStatement();
+                default: current--; return expressionStatement();
             }
-            if (isNextToken(TokenType.IF)) {
-                return ifStatement();
-            }
-            if (isNextToken(TokenType.FOR)) {
-                return forStatement();
-            }
-            if (isNextToken(TokenType.PRINT)) {
-                return printStatement();
-            }
-            if (isNextToken(TokenType.LEFT_BRACKET)) {
-                if(!isGlobal) {
-                    throw error(getPreviousToken(), "Sequence must be outside conditions and loops");
-                }
-                return sequence();
-            }
-            if (isNextToken(TokenType.SEMICOLON)) {
-                return new Stmt.Empty();
-            }
-            if (isNextToken(TokenType.BREAK)) {
-                expect(TokenType.SEMICOLON, "Expected ';'");
-                return new Stmt.Break();
-            }
-            if (isNextToken(TokenType.RETURN)) {
-                expect(TokenType.SEMICOLON, "Expected ';'");
-                return new Stmt.Return();
-            }
-            if (isNextToken(TokenType.TERMINATE)) {
-                return terminate();
-            }
-            if (isNextToken(TokenType.CONTINUE)) {
-                expect(TokenType.SEMICOLON, "Expected ';'");
-                return new Stmt.Continue();
-            }
-            if (isNextToken(TokenType.ALL)) {
-                return all();
-            }
-            return expressionStatement();
         } catch(SyntaxError err) {
             synchronize();
             hadError = true;
@@ -103,7 +87,7 @@ public class Parser {
     private ArrayList<Stmt> block() {
         ArrayList<Stmt> statements = new ArrayList<>();
 
-        while(!(peek().type == TokenType.RIGHT_BRACE) && !isEnd()) {
+        while(!(getToken().type == TokenType.RIGHT_BRACE) && !isEnd()) {
             statements.add(statement());
         }
 
@@ -117,10 +101,7 @@ public class Parser {
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
 
         Stmt thenBranch = statement();
-        Stmt elseBranch = null;
-        if(isNextToken(TokenType.ELSE)) {
-            elseBranch = statement();
-        }
+        Stmt elseBranch = isNextToken(TokenType.ELSE) ? statement() : null;
 
         return new Stmt.If(condition, thenBranch, elseBranch);
     }
@@ -131,18 +112,18 @@ public class Parser {
         Stmt post = null;
 
         expect(TokenType.LEFT_PAREN, "Expected '('");
-        if(peek().type != TokenType.SEMICOLON) {
+        if(getToken().type != TokenType.SEMICOLON) {
             init = expressionStatement();
         } else {
             expect(TokenType.SEMICOLON, "Expected ';'");
         }
 
-        if(peek().type != TokenType.SEMICOLON) {
+        if(getToken().type != TokenType.SEMICOLON) {
             condition = expression();
         }
         expect(TokenType.SEMICOLON, "Expected ';'");
 
-        if(peek().type != TokenType.RIGHT_PAREN) {
+        if(getToken().type != TokenType.RIGHT_PAREN) {
             post = new Stmt.Expression(expression());
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
@@ -159,58 +140,77 @@ public class Parser {
         return new Stmt.Print(expr);
     }
 
+    private Stmt sequenceStatement(boolean isGlobal) {
+        if(!isGlobal) {
+            throw error(getPreviousToken(), "Sequence must be outside conditions and loops");
+        }
+        return sequence();
+    }
+
     private Stmt sequence() {
         MovePool movePoolOptional = new MovePool();
         MovePool movePoolForced = new MovePool();
-        while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-            movePoolOptional.add(new Move((String)(getNextToken().value)));
-            if(peek().type == TokenType.COMMA) {
-                expect(TokenType.COMMA, "Expected ','");
-            }
-        }
+        parseSequenceMovePools(movePoolOptional, movePoolForced);
+
+        BoundLimit limits = new BoundLimit();
+        parseSequenceLimits(limits);
+
+        expect(TokenType.LEFT_BRACE, "Expected '{'");
+        String lexicographic = parseSequenceLexicographic();
+
+        SequenceLifecycle lifecycle = new SequenceLifecycle();
+        parseSequenceLifecycle(lifecycle);
+        expect(TokenType.RIGHT_BRACE, "Expected '}'");
+
+        return new Stmt.Sequence(movePoolOptional, movePoolForced, limits, lexicographic, lifecycle);
+    }
+
+    private void parseSequenceMovePools(MovePool movePoolOptional, MovePool movePoolForced) {
+        collectMoves(movePoolOptional);
         if(movePoolOptional.size == 0) {
             throw error(getPreviousToken(), "Moves must be provided in brackets");
         }
         expect(TokenType.RIGHT_BRACKET, "Expected ']'");
-        if(peek().type == TokenType.LEFT_BRACKET && !isEnd()) {
-            movePoolForced = movePoolOptional;
-            movePoolOptional = new MovePool();
+        if(getToken().type == TokenType.LEFT_BRACKET && !isEnd()) {
+            movePoolForced.replace(movePoolOptional);
+            movePoolOptional.clear();
             expect(TokenType.LEFT_BRACKET, "Expected '['");
-            while(peek().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-                movePoolOptional.add(new Move((String)(getNextToken().value)));
-                if(peek().type == TokenType.COMMA) {
-                    expect(TokenType.COMMA, "Expected ','");
-                }
-            }
+            collectMoves(movePoolOptional);
             if(movePoolOptional.size == 0 || movePoolForced.size == 0) {
                 throw error(getPreviousToken(), "Moves must be provided in brackets");
             }
             expect(TokenType.RIGHT_BRACKET, "Expected ']'");
         }
-        expect(TokenType.LEFT_PAREN, "Expected '('");
+    }
 
-        Integer lowerLimit = null;
-        Integer upperLimit = null;
-        if(peek().type != TokenType.RIGHT_PAREN) {
-            try {
-                lowerLimit = Integer.parseInt(getNextToken().lexeme);
-            } catch(Exception e) {
-                throw error(getPreviousToken(), "Expected integer");
-            }
-            if(peek().type == TokenType.COMMA) {
-                expect(TokenType.COMMA, "Expected ','");
-            }
+    private void collectMoves(MovePool movePool) {
+        while(getToken().type != TokenType.RIGHT_BRACKET && !isEnd()) {
+            movePool.add(new Move((String)(getNextToken().value)));
+            consume(TokenType.COMMA);
         }
-        if(peek().type != TokenType.RIGHT_PAREN) {
-            try {
-                upperLimit = Integer.parseInt(getNextToken().lexeme);
-            } catch(Exception e) {
-                throw error(getPreviousToken(), "Expected integer");
-            }
+    }
+
+    private void parseSequenceLimits(BoundLimit limits) {
+        expect(TokenType.LEFT_PAREN, "Expected '('");
+        if(getToken().type != TokenType.RIGHT_PAREN) {
+            limits.lowerLimit = parseInteger();
+            consume(TokenType.COMMA);
+        }
+        if(getToken().type != TokenType.RIGHT_PAREN) {
+            limits.upperLimit = parseInteger();
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
-        expect(TokenType.LEFT_BRACE, "Expected '{'");
+    }
 
+    private int parseInteger() {
+        try {
+            return Integer.parseInt(getNextToken().lexeme);
+        } catch(Exception e) {
+            throw error(getPreviousToken(), "Expected integer");
+        }
+    }
+
+    private String parseSequenceLexicographic() {
         String lexicographic = "";
         if(isNextToken(TokenType.LEXICOGRAPHIC)) {
             lexicographic += getNextToken().lexeme.toLowerCase();
@@ -219,46 +219,37 @@ public class Parser {
                 throw error(getPreviousToken(), "All 6 move types required for order");
             }
         }
-
-        Stmt start = null;
-        Stmt beforeMove = null;
-        Stmt afterMove = null;
-        Stmt beforeStep = null;
-        Stmt afterStep = null;
-        Stmt end = null;
-
-        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE,
-                TokenType.BEFORE_STEP, TokenType.AFTER_STEP, TokenType.END)) {
-            Token lifecycle = getPreviousToken();
-            expect(TokenType.COLON, "Expected ':'");
-            Stmt stmt = statement();
-            switch(lifecycle.type) {
-                case START:
-                    start = stmt;
-                    break;
-                case BEFORE_MOVE:
-                    beforeMove = stmt;
-                    break;
-                case AFTER_MOVE:
-                    afterMove = stmt;
-                    break;
-                case BEFORE_STEP:
-                    beforeStep = stmt;
-                    break;
-                case AFTER_STEP:
-                    afterStep = stmt;
-                    break;
-                case END:
-                    end = stmt;
-                    break;
-            }
-        }
-        expect(TokenType.RIGHT_BRACE, "Expected '}'");
-        return new Stmt.Sequence(movePoolOptional, movePoolForced, lowerLimit, upperLimit, lexicographic,
-                start, beforeMove, afterMove, beforeStep, afterStep, end);
+        return lexicographic;
     }
 
-    private Stmt terminate() {
+    private void parseSequenceLifecycle(SequenceLifecycle lifecycle) {
+        while(isNextToken(TokenType.START, TokenType.BEFORE_MOVE, TokenType.AFTER_MOVE,
+                TokenType.BEFORE_STEP, TokenType.AFTER_STEP, TokenType.END)) {
+            Token lifecycleToken = getPreviousToken();
+            expect(TokenType.COLON, "Expected ':'");
+            Stmt stmt = statement();
+            switch(lifecycleToken.type) {
+                case START: lifecycle.start = stmt; break;
+                case BEFORE_MOVE: lifecycle.beforeMove = stmt; break;
+                case AFTER_MOVE: lifecycle.afterMove = stmt; break;
+                case BEFORE_STEP: lifecycle.beforeStep = stmt; break;
+                case AFTER_STEP: lifecycle.afterStep = stmt; break;
+                case END: lifecycle.end = stmt; break;
+            }
+        }
+    }
+
+    private Stmt breakStatement() {
+        expect(TokenType.SEMICOLON, "Expected ';'");
+        return new Stmt.Break();
+    }
+
+    private Stmt returnStatement() {
+        expect(TokenType.SEMICOLON, "Expected ';'");
+        return new Stmt.Return();
+    }
+
+    private Stmt terminateStatement() {
         Expr index = null;
         if(!isNextToken(TokenType.SEMICOLON)) {
             index = expression();
@@ -267,7 +258,12 @@ public class Parser {
         return new Stmt.Terminate(index);
     }
 
-    private Stmt all() {
+    private Stmt continueStatement() {
+        expect(TokenType.SEMICOLON, "Expected ';'");
+        return new Stmt.Continue();
+    }
+
+    private Stmt allStatement() {
         Expr amount = new Expr.Literal(1000.0);
         if(!isNextToken(TokenType.SEMICOLON)) {
             amount = expression();
@@ -298,7 +294,7 @@ public class Parser {
                 Token var = ((Expr.Variable)expr).var;
                 return new Expr.Assign(var, operator, value);
             }
-            throw error(peek(), "You can only assign to a variable");
+            throw error(getToken(), "You can only assign to a variable");
         }
         return expr;
     }
@@ -389,52 +385,45 @@ public class Parser {
         if(isNextToken(TokenType.FUNCTION)) {
             Token token = getPreviousToken();
             String name = getPreviousToken().lexeme.toLowerCase();
-            ArrayList<Expr> arguments = new ArrayList<>();
-
-            expect(TokenType.LEFT_PAREN, "Expected '('");
-            while(!isNextToken(TokenType.RIGHT_PAREN)) {
-                Expr expr = expression();
-                arguments.add(expr);
-                if(peek().type == TokenType.COMMA) {
-                    expect(TokenType.COMMA, "Expected ','");
-                }
-            }
+            ArrayList<Expr> arguments = parseFunctionArguments();
             return new Expr.Function(name, arguments, token);
         }
         return primary();
     }
 
-    private Expr primary() {
-        if(isNextToken(TokenType.NULL)) {
-            return new Expr.Literal(null);
-        }
-        if(isNextToken(TokenType.TRUE)) {
-            return new Expr.Literal(true);
-        }
-        if(isNextToken(TokenType.FALSE)) {
-            return new Expr.Literal(false);
-        }
-        if(isNextToken(TokenType.NUMBER)) {
-            return new Expr.Literal(getPreviousToken().value);
-        }
-        if(isNextToken(TokenType.MOVE)) {
-            return new Expr.Literal(new Move((String)(getPreviousToken().value)));
-        }
-        if(isNextToken(TokenType.IDENTIFIER)) {
-            return new Expr.Variable(getPreviousToken());
-        }
-        if(isNextToken(TokenType.TILE)) {
-            return new Expr.Literal(Tile.valueOf((String)getPreviousToken().value));
-        }
-        if(isNextToken(TokenType.OTHER)) {
-            throw error(getPreviousToken(), "Unexpected symbol");
-        }
-        if(isNextToken(TokenType.LEFT_PAREN)) {
+    private ArrayList<Expr> parseFunctionArguments() {
+        ArrayList<Expr> arguments = new ArrayList<>();
+
+        expect(TokenType.LEFT_PAREN, "Expected '('");
+        while(!isNextToken(TokenType.RIGHT_PAREN)) {
             Expr expr = expression();
-            expect(TokenType.RIGHT_PAREN, "Expected ')'");
-            return new Expr.Group(expr);
+            arguments.add(expr);
+            consume(TokenType.COMMA);
         }
-        throw error(peek(), "Expected expression");
+
+        return arguments;
+    }
+
+    private Expr primary() {
+        Token token = getNextToken();
+        switch(token.type) {
+            case NULL: return new Expr.Literal(null);
+            case TRUE: return new Expr.Literal(true);
+            case FALSE: return new Expr.Literal(false);
+            case NUMBER: return new Expr.Literal(token.value);
+            case MOVE: return new Expr.Literal(new Move((String)token.value));
+            case IDENTIFIER: return new Expr.Variable(token);
+            case TILE: return new Expr.Literal(Tile.valueOf((String)token.value));
+            case LEFT_PAREN: return groupExpression();
+            case OTHER: throw error(token, "Unexpected symbol");
+            default: throw error(token, "Expected expression");
+        }
+    }
+
+    private Expr groupExpression() {
+        Expr expr = expression();
+        expect(TokenType.RIGHT_PAREN, "Expected ')'");
+        return new Expr.Group(expr);
     }
 
     private Token getNextToken() {
@@ -460,15 +449,15 @@ public class Parser {
         if(isEnd()) {
             return false;
         }
-        return peek().type == type;
+        return getToken().type == type;
     }
 
-    private Token peek() {
+    private Token getToken() {
         return tokens.get(current);
     }
 
     private boolean isEnd() {
-        return peek().type == TokenType.EOF;
+        return getToken().type == TokenType.EOF;
     }
 
     private void expect(TokenType type, String message) {
@@ -479,31 +468,35 @@ public class Parser {
         throw error(getPreviousToken(), message);
     }
 
+    private void consume(TokenType type) {
+        if(getToken().type == type) {
+            getNextToken();
+        }
+    }
+
     private SyntaxError error(Token token, String message) {
         print(token, message);
-
         return new SyntaxError();
     }
 
     private void print(Token token, String message) {
-        StyledDocument doc = console.getStyledDocument();
-        Style style = console.addStyle("style", null);
-        StyleConstants.setForeground(style, new Color(255, 68, 68));
-        String str = "[Line " + token.line + " near '" + token.lexeme + "'] " + message + "\n";
-        try {
-            doc.insertString(doc.getLength(), str, style);
-        } catch (BadLocationException e) {}
+        if(console != null) {
+            StyledDocument doc = console.getStyledDocument();
+            Style style = console.addStyle("style", null);
+            StyleConstants.setForeground(style, new Color(255, 68, 68));
+            String str = "[Line " + token.line + " near '" + token.lexeme + "'] " + message + "\n";
+            try {
+                doc.insertString(doc.getLength(), str, style);
+            } catch (BadLocationException e) {
+            }
+        }
     }
 
     private void synchronize() {
-        getNextToken();
-
         while(!isEnd()) {
-            if(getPreviousToken().type == TokenType.SEMICOLON) {
-                return;
-            }
-
-            switch(peek().type) {
+            switch(getToken().type) {
+                case SEMICOLON:
+                    getNextToken();
                 case FOR:
                 case IF:
                 case PRINT:
@@ -522,9 +515,9 @@ public class Parser {
         if(lexicographic.length() != 6) {
             return false;
         }
-        String toCheck = "urdlwh";
-        for(int i = 0; i < toCheck.length(); i++) {
-            if(lexicographic.indexOf(toCheck.charAt(i)) < 0) {
+
+        for(char moveType : LEXICOGRAPHIC_CHARS) {
+            if(lexicographic.indexOf(moveType) < 0) {
                 return false;
             }
         }

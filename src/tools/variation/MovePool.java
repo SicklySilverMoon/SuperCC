@@ -36,6 +36,16 @@ public class MovePool {
         }
     }
 
+    public void clear() {
+        moves.clear();
+        size = 0;
+    }
+
+    public void replace(MovePool movePool) {
+        clear();
+        add(movePool);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -3,8 +3,6 @@ package tools.variation;
 import game.Tile;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,16 +10,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ParserTest {
-    private JTextPane console = new JTextPane();
-
     @Test
     void parseBlockStatement() {
         String code = "{1; 2;}";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Block(new ArrayList<>(Arrays.asList(
@@ -36,11 +29,8 @@ class ParserTest {
     @Test
     void parseIfStatement() {
         String code = "if(1) 2; else if(3) 4; else 5;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.If(
@@ -60,11 +50,8 @@ class ParserTest {
     @Test
     void parseForStatement() {
         String code = "for(1; 2; 3) 4;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.For(
@@ -79,13 +66,28 @@ class ParserTest {
     }
 
     @Test
+    void parseForStatementWithOnlyCondition() {
+        String code = "for(;1;) 2;";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        assertFalse(parser.hadError);
+    }
+
+    @Test
+    void parseForStatementEmpty() {
+        String code = "for(;;) 1;";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        assertFalse(parser.hadError);
+    }
+
+    @Test
     void parsePrintStatement() {
         String code = "print 1;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Print(new Expr.Literal(1.0))
@@ -97,31 +99,28 @@ class ParserTest {
     @Test
     void parseSequenceStatement() {
         String code = "[d][u](1,2){order udrlwh; start: 3; beforeMove: 4; afterMove: 5; beforeStep: 6; afterStep: 7; end: 8;}";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         MovePool movePoolOptional = new MovePool();
         movePoolOptional.add(new Move("u"));
         MovePool movePoolForced = new MovePool();
         movePoolForced.add(new Move("d"));
 
+        BoundLimit limits = new BoundLimit();
+        limits.lowerLimit = 1;
+        limits.upperLimit = 2;
+
+        SequenceLifecycle lifecycle = new SequenceLifecycle();
+        lifecycle.start = new Stmt.Expression(new Expr.Literal(3.0));
+        lifecycle.beforeMove = new Stmt.Expression(new Expr.Literal(4.0));
+        lifecycle.afterMove = new Stmt.Expression(new Expr.Literal(5.0));
+        lifecycle.beforeStep = new Stmt.Expression(new Expr.Literal(6.0));
+        lifecycle.afterStep = new Stmt.Expression(new Expr.Literal(7.0));
+        lifecycle.end = new Stmt.Expression(new Expr.Literal(8.0));
+
         List<Stmt> expectedStatements = Arrays.asList(
-                new Stmt.Sequence(
-                        movePoolOptional,
-                        movePoolForced,
-                        1,
-                        2,
-                        "udrlwh",
-                        new Stmt.Expression(new Expr.Literal(3.0)),
-                        new Stmt.Expression(new Expr.Literal(4.0)),
-                        new Stmt.Expression(new Expr.Literal(5.0)),
-                        new Stmt.Expression(new Expr.Literal(6.0)),
-                        new Stmt.Expression(new Expr.Literal(7.0)),
-                        new Stmt.Expression(new Expr.Literal(8.0))
-                )
+                new Stmt.Sequence(movePoolOptional, movePoolForced, limits, "udrlwh", lifecycle)
         );
 
         assertEquals(expectedStatements, statements);
@@ -130,11 +129,8 @@ class ParserTest {
     @Test
     void parseEmptyStatement() {
         String code = ";";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Empty()
@@ -146,11 +142,8 @@ class ParserTest {
     @Test
     void parseBreakStatement() {
         String code = "break;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Break()
@@ -162,11 +155,8 @@ class ParserTest {
     @Test
     void parseReturnStatement() {
         String code = "return;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Return()
@@ -178,11 +168,8 @@ class ParserTest {
     @Test
     void parseTerminateStatement() {
         String code = "terminate 1;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Terminate(new Expr.Literal(1.0))
@@ -194,11 +181,8 @@ class ParserTest {
     @Test
     void parseContinueStatement() {
         String code = "continue;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Continue()
@@ -210,11 +194,8 @@ class ParserTest {
     @Test
     void parseAllStatement() {
         String code = "all 1;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.All(new Expr.Literal(1.0))
@@ -226,11 +207,8 @@ class ParserTest {
     @Test
     void parseExpressionStatements() {
         String code = "null; true; false; 3.7; 2du; var1; DIRT; (d);";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Expression(new Expr.Literal(null)),
@@ -249,11 +227,8 @@ class ParserTest {
     @Test
     void parseLogicalWithPrecedence() {
         String code = "if(7>3 && 7>=3 || 3<7 and 3<=7 or 3!=7 and !(3==7)) 1;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.If(
@@ -316,11 +291,8 @@ class ParserTest {
     @Test
     void parseArithmeticWithPrecedence() {
         String code = "1 + 2 - 3 * 4 / 5 % 6;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Expression(
@@ -354,11 +326,8 @@ class ParserTest {
     @Test
     void parseAssignments() {
         String code = "var1 = 1; var2 += 2; var3 -= 3; var4 *= 4; var5 /= 5; var6 %= 6;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Expression(new Expr.Assign(
@@ -399,11 +368,8 @@ class ParserTest {
     @Test
     void parseFunction() {
         String code = "move(2u, 4ud, w);";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         List<Stmt> expectedStatements = Arrays.asList(
                 new Stmt.Expression(new Expr.Function(
@@ -423,23 +389,26 @@ class ParserTest {
     @Test
     void syntaxErrorMissingSemicolon() {
         String code = "1";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        assertTrue(parser.hadError);
+    }
+
+    @Test
+    void syntaxErrorTooShortLexicographic() {
+        String code = "[u](){order udlr;}";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
     }
 
     @Test
     void syntaxErrorInvalidLexicographic() {
-        String code = "[u](){order udlr;}";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        parser.parse();
+        String code = "[u](){order udlriw;}";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
     }
@@ -447,11 +416,8 @@ class ParserTest {
     @Test
     void syntaxErrorNoMoves() {
         String code = "[](){}";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
     }
@@ -459,11 +425,8 @@ class ParserTest {
     @Test
     void syntaxErrorInvalidAssignment() {
         String code = "1 = 2";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
     }
@@ -471,14 +434,29 @@ class ParserTest {
     @Test
     void syntaxErrorSynchronization() {
         String code = "1 = 2; 3;";
-        Tokenizer tokenizer = new Tokenizer(code);
-        ArrayList<Token> tokens = tokenizer.tokenize();
-        Tokenizer.prepareForInterpreter(tokens);
-        Parser parser = new Parser(tokens, console);
-        List<Stmt> statements = parser.parse();
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
         assertEquals(null, statements.get(0));
         assertEquals(2, statements.size());
+    }
+
+    @Test
+    void syntaxErrorSequenceOnlyInTopLevel() {
+        String code = "if(1) [u](){}";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        assertTrue(parser.hadError);
+    }
+
+    @Test
+    void syntaxErrorExpectedExpression() {
+        String code = "if(if(1)) 2;";
+        Parser parser = new Parser();
+        List<Stmt> statements = parser.parseCode(code);
+
+        assertTrue(parser.hadError);
     }
 }
