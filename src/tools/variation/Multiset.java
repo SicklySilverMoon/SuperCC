@@ -1,7 +1,6 @@
 package tools.variation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class Multiset {
@@ -41,44 +40,14 @@ public class Multiset {
 
     public void nextSubset() {
         while(!finished) {
-            int i;
-            for (i = subset.length - 1; i >= 1; i--) {
-                boolean found = false;
-                if (subset[i] != movePool[i]) {
-                    for (int j = i - 1; j >= 0; j--) {
-                        if (movePool[j] > 0) {
-                            if (subset[j] > 0) {
-                                subset[j]--;
-                                found = true;
-                            }
-                            break;
-                        }
-                    }
-                }
-                if (found) {
-                    break;
-                }
-            }
+            int i = getDistributionIndex();
             if (i == 0) {
-                if (currentSize < upperBound) {
-                    currentSize++;
-                    initialSubset();
-                    return;
-                }
-                finished = true;
+                endOfCurrentSize();
                 return;
             }
 
-            int toDistribute = 1;
-            for (int j = subset.length - 1; j >= i; j--) {
-                toDistribute += subset[j];
-                subset[j] = 0;
-            }
-            for (int j = i; j < subset.length; j++) {
-                int distributed = Math.min(toDistribute, movePool[j]);
-                toDistribute -= distributed;
-                subset[j] = distributed;
-            }
+            subset[i - 1]--;
+            distribute(i, gatherDistribution(i));
 
             if(isSubsetValid()) {
                 return;
@@ -96,34 +65,43 @@ public class Multiset {
         initialSubset();
     }
 
-    private void initialSubset() {
-        int toDistribute = currentSize;
-        for(int i = 0; i < subset.length; i++) {
+    private int getDistributionIndex() {
+        for (int i = subset.length - 1; i >= 1; i--) {
+            if (subset[i] != movePool[i] && subset[i - 1] > 0) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private void distribute(int from, int toDistribute) {
+        for(int i = from; i < subset.length; i++) {
             int distributed = Math.min(toDistribute, movePool[i]);
             toDistribute -= distributed;
             subset[i] = distributed;
         }
+    }
 
-        int i;
-        for(i = subset.length - 1; i >= 1; i--) {
-            boolean found = false;
-            if(subset[i] != movePool[i]) {
-                for(int j = i - 1; j >= 0; j--) {
-                    if(movePool[j] > 0) {
-                        if(subset[j] > 0) {
-                            found = true;
-                        }
-                        break;
-                    }
-                }
-            }
-            if(found) {
-                break;
-            }
+    private int gatherDistribution(int from) {
+        int toDistribute = 1;
+        for (int j = from; j < subset.length; j++) {
+            toDistribute += subset[j];
+            subset[j] = 0;
         }
-        if(i == 0 && currentSize > upperBound) {
-            finished = true;
+        return toDistribute;
+    }
+
+    private void endOfCurrentSize() {
+        if (currentSize < upperBound) {
+            currentSize++;
+            initialSubset();
+            return;
         }
+        finished = true;
+    }
+
+    private void initialSubset() {
+        distribute(0, currentSize);
 
         if(!isSubsetValid()) {
             nextSubset();
@@ -138,9 +116,6 @@ public class Multiset {
             if(index1 != index2) {
                 return index1 - index2;
             }
-        }
-        if(s1.length() == s2.length()) {
-            return 0;
         }
         return s1.length() - s2.length();
     }

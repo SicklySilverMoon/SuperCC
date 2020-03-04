@@ -2,6 +2,11 @@ package tools.variation;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MultisetTest {
@@ -116,6 +121,21 @@ class MultisetTest {
     }
 
     @Test
+    void subsetCountSingle() {
+        MovePool movePoolOptional = new MovePool();
+        movePoolOptional.add(new Move("u"));
+        Multiset multiset = new Multiset(1,1, movePoolOptional, new MovePool(), "urdlwh");
+
+        int subsetCount = 0;
+        while(!multiset.finished) {
+            subsetCount++;
+            multiset.nextSubset();
+        }
+
+        assertEquals(1, subsetCount);
+    }
+
+    @Test
     void subsetCountForced() {
         MovePool movePoolOptional = new MovePool();
         movePoolOptional.add(new Move("u"));
@@ -147,5 +167,66 @@ class MultisetTest {
         int[] expectedSubset = {1, 1};
 
         assertArrayEquals(expectedSubset, subset);
+    }
+
+    @Test
+    void allSubsets() {
+        MovePool movePoolOptional = new MovePool();
+        movePoolOptional.add(new Move("2u"));
+        movePoolOptional.add(new Move("r"));
+        movePoolOptional.add(new Move("3d"));
+        Multiset multiset = new Multiset(3,4, movePoolOptional, new MovePool(), "urdlwh");
+        int[] subset = multiset.getSubset();
+
+        List<List<Integer>> result = new ArrayList<>();
+        while(!multiset.finished) {
+            result.add(Arrays.stream(subset).boxed().collect(Collectors.toList()));
+            multiset.nextSubset();
+        }
+
+        List<List<Integer>> expectedResult = new ArrayList<>();
+        expectedResult.add(Arrays.asList(2, 1, 0));
+        expectedResult.add(Arrays.asList(2, 0, 1));
+        expectedResult.add(Arrays.asList(1, 1, 1));
+        expectedResult.add(Arrays.asList(1, 0, 2));
+        expectedResult.add(Arrays.asList(0, 1, 2));
+        expectedResult.add(Arrays.asList(0, 0, 3));
+        expectedResult.add(Arrays.asList(2, 1, 1));
+        expectedResult.add(Arrays.asList(2, 0, 2));
+        expectedResult.add(Arrays.asList(1, 1, 2));
+        expectedResult.add(Arrays.asList(1, 0, 3));
+        expectedResult.add(Arrays.asList(0, 1, 3));
+
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    void allSubsetsForced() {
+        MovePool movePoolOptional = new MovePool();
+        movePoolOptional.add(new Move("u"));
+        movePoolOptional.add(new Move("r"));
+        movePoolOptional.add(new Move("3d"));
+        MovePool movePoolForced = new MovePool();
+        movePoolForced.add(new Move("u"));
+        Multiset multiset = new Multiset(3,4, movePoolOptional, movePoolForced, "urdlwh");
+        int[] subset = multiset.getSubset();
+
+        List<List<Integer>> result = new ArrayList<>();
+        while(!multiset.finished) {
+            result.add(Arrays.stream(subset).boxed().collect(Collectors.toList()));
+            multiset.nextSubset();
+        }
+
+        List<List<Integer>> expectedResult = new ArrayList<>();
+        expectedResult.add(Arrays.asList(2, 1, 0));
+        expectedResult.add(Arrays.asList(2, 0, 1));
+        expectedResult.add(Arrays.asList(1, 1, 1));
+        expectedResult.add(Arrays.asList(1, 0, 2));
+        expectedResult.add(Arrays.asList(2, 1, 1));
+        expectedResult.add(Arrays.asList(2, 0, 2));
+        expectedResult.add(Arrays.asList(1, 1, 2));
+        expectedResult.add(Arrays.asList(1, 0, 3));
+
+        assertEquals(expectedResult, result);
     }
 }
