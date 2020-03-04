@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class MultisetTest {
     @Test
     void initialSubset() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        Multiset multiset = new Multiset(3,3,movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(3), "urdlwh");
 
         int[] subset = multiset.getSubset();
 
@@ -26,12 +26,11 @@ class MultisetTest {
 
     @Test
     void initialSubsetForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("3l"));
-        Multiset multiset = new Multiset(4,6, movePoolOptional, movePoolForced, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.forced.add(new Move("3l"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(4, 6), "urdlwh");
 
         int[] subset = multiset.getSubset();
 
@@ -42,13 +41,13 @@ class MultisetTest {
 
     @Test
     void initialSubsetLexicographic() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("h"));
-        movePoolOptional.add(new Move("2d"));
-        movePoolOptional.add(new Move("3ud"));
-        movePoolOptional.add(new Move("4uu"));
-        movePoolOptional.add(new Move("5u"));
-        Multiset multiset = new Multiset(15,15, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("h"));
+        movePools.optional.add(new Move("2d"));
+        movePools.optional.add(new Move("3ud"));
+        movePools.optional.add(new Move("4uu"));
+        movePools.optional.add(new Move("5u"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(15), "urdlwh");
 
         int[] subset = multiset.getSubset();
 
@@ -59,10 +58,10 @@ class MultisetTest {
 
     @Test
     void initialSubsetLowerbound() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        Multiset multiset = new Multiset(2,3, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(2, 3), "urdlwh");
 
         int[] subset = multiset.getSubset();
 
@@ -73,10 +72,10 @@ class MultisetTest {
 
     @Test
     void nextSubset() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        Multiset multiset = new Multiset(2,3, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(2, 3), "urdlwh");
         multiset.nextSubset();
 
         int[] subset = multiset.getSubset();
@@ -88,12 +87,11 @@ class MultisetTest {
 
     @Test
     void nextSubsetForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("3l"));
-        Multiset multiset = new Multiset(4,6, movePoolOptional, movePoolForced, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.forced.add(new Move("3l"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(4, 6), "urdlwh");
         multiset.nextSubset();
 
         int[] subset = multiset.getSubset();
@@ -105,11 +103,11 @@ class MultisetTest {
 
     @Test
     void subsetCount() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        movePoolOptional.add(new Move("3w"));
-        Multiset multiset = new Multiset(4,6, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.optional.add(new Move("3w"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(4, 6), "urdlwh");
 
         int subsetCount = 0;
         while(!multiset.finished) {
@@ -122,9 +120,9 @@ class MultisetTest {
 
     @Test
     void subsetCountSingle() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        Multiset multiset = new Multiset(1,1, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(1), "urdlwh");
 
         int subsetCount = 0;
         while(!multiset.finished) {
@@ -137,12 +135,11 @@ class MultisetTest {
 
     @Test
     void subsetCountForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("3w"));
-        Multiset multiset = new Multiset(4,6, movePoolOptional, movePoolForced, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.forced.add(new Move("3w"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(4, 6), "urdlwh");
 
         int subsetCount = 0;
         while(!multiset.finished) {
@@ -155,10 +152,10 @@ class MultisetTest {
 
     @Test
     void reset() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("2r"));
-        Multiset multiset = new Multiset(2,3, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(2, 3), "urdlwh");
         multiset.nextSubset();
         multiset.reset();
 
@@ -171,11 +168,11 @@ class MultisetTest {
 
     @Test
     void allSubsets() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("3d"));
-        Multiset multiset = new Multiset(3,4, movePoolOptional, new MovePool(), "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("3d"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(3, 4), "urdlwh");
         int[] subset = multiset.getSubset();
 
         List<List<Integer>> result = new ArrayList<>();
@@ -202,13 +199,12 @@ class MultisetTest {
 
     @Test
     void allSubsetsForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("3d"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("u"));
-        Multiset multiset = new Multiset(3,4, movePoolOptional, movePoolForced, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("3d"));
+        movePools.forced.add(new Move("u"));
+        Multiset multiset = new Multiset(movePools, new BoundLimit(3, 4), "urdlwh");
         int[] subset = multiset.getSubset();
 
         List<List<Integer>> result = new ArrayList<>();

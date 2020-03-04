@@ -6,20 +6,18 @@ import java.util.HashMap;
 public class Multiset {
     private MovePool movePoolForced;
     private int[] movePool;
-    private int lowerBound;
-    private int upperBound;
+    private BoundLimit limits;
     public int currentSize;
     private int[] subset;
     public boolean finished = false;
     public ArrayList<String> moves;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
 
-    public Multiset(int lowerBound, int upperBound, MovePool movePoolOptional, MovePool movePoolForced, String lexicographic) {
-        MovePool movePoolTotal = getMovePoolTotal(movePoolOptional, movePoolForced);
-        this.movePoolForced = movePoolForced;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        this.currentSize = lowerBound;
+    public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
+        MovePool movePoolTotal = getMovePoolTotal(movePools);
+        this.movePoolForced = movePools.forced;
+        this.limits = limits;
+        this.currentSize = limits.lower;
 
         int size = movePoolTotal.moves.size();
         this.movePool = new int[size];
@@ -61,7 +59,7 @@ public class Multiset {
 
     public void reset() {
         finished = false;
-        currentSize = lowerBound;
+        currentSize = limits.lower;
         initialSubset();
     }
 
@@ -92,7 +90,7 @@ public class Multiset {
     }
 
     private void endOfCurrentSize() {
-        if (currentSize < upperBound) {
+        if (currentSize < limits.upper) {
             currentSize++;
             initialSubset();
             return;
@@ -120,10 +118,9 @@ public class Multiset {
         return s1.length() - s2.length();
     }
 
-    private MovePool getMovePoolTotal(MovePool movePoolOptional, MovePool movePoolForced) {
+    private MovePool getMovePoolTotal(MovePoolContainer movePools) {
         MovePool movePoolTotal = new MovePool();
-        movePoolTotal.add(movePoolOptional);
-        movePoolTotal.add(movePoolForced);
+        movePoolTotal.add(movePools);
         return movePoolTotal;
     }
 

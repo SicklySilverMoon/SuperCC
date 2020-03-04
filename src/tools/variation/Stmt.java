@@ -191,32 +191,18 @@ public abstract class Stmt {
     }
 
     public static class Sequence extends Stmt {
-        public final MovePool movePoolOptional;
-        public final MovePool movePoolForced;
-        public final Integer lowerLimit;
-        public final Integer upperLimit;
+        public final MovePoolContainer movePools;
+        public final BoundLimit limits;
         public final String lexicographic;
-        public final Stmt start;
-        public final Stmt beforeMove;
-        public final Stmt afterMove;
-        public final Stmt beforeStep;
-        public final Stmt afterStep;
-        public final Stmt end;
+        public final SequenceLifecycle lifecycle;
         public final Permutation permutation;
 
-        Sequence(MovePool movePoolOptional, MovePool movePoolForced, BoundLimit limits, String lexicographic, SequenceLifecycle lifecycle) {
-            this.movePoolOptional = movePoolOptional;
-            this.movePoolForced = movePoolForced;
-            this.lowerLimit = limits.lowerLimit;
-            this.upperLimit = limits.upperLimit;
+        Sequence(MovePoolContainer movePools, BoundLimit limits, String lexicographic, SequenceLifecycle lifecycle) {
+            this.movePools = movePools;
+            this.limits = limits;
             this.lexicographic = (lexicographic.equals("")) ? "urdlwh" : lexicographic;
-            this.start = lifecycle.start;
-            this.beforeMove = lifecycle.beforeMove;
-            this.afterMove = lifecycle.afterMove;
-            this.beforeStep = lifecycle.beforeStep;
-            this.afterStep = lifecycle.afterStep;
-            this.end = lifecycle.end;
-            this.permutation = new Permutation(movePoolOptional, movePoolForced, lowerLimit, upperLimit, this.lexicographic);
+            this.lifecycle = lifecycle;
+            this.permutation = new Permutation(movePools, limits, this.lexicographic);
         }
 
         @Override
@@ -229,22 +215,15 @@ public abstract class Stmt {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Sequence sequence = (Sequence) o;
-            return movePoolOptional.equals(sequence.movePoolOptional) &&
-                    movePoolForced.equals(sequence.movePoolForced) &&
-                    Objects.equals(lowerLimit, sequence.lowerLimit) &&
-                    Objects.equals(upperLimit, sequence.upperLimit) &&
+            return movePools.equals(sequence.movePools) &&
+                    limits.equals(sequence.limits) &&
                     lexicographic.equals(sequence.lexicographic) &&
-                    Objects.equals(start, sequence.start) &&
-                    Objects.equals(beforeMove, sequence.beforeMove) &&
-                    Objects.equals(afterMove, sequence.afterMove) &&
-                    Objects.equals(beforeStep, sequence.beforeStep) &&
-                    Objects.equals(afterStep, sequence.afterStep) &&
-                    Objects.equals(end, sequence.end);
+                    lifecycle.equals(sequence.lifecycle);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(movePoolOptional, movePoolForced, lowerLimit, upperLimit, lexicographic, start, beforeMove, afterMove, beforeStep, afterStep, end, permutation);
+            return Objects.hash(movePools, limits, lexicographic, lifecycle);
         }
     }
 

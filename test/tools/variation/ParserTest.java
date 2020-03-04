@@ -102,14 +102,11 @@ class ParserTest {
         Parser parser = new Parser();
         List<Stmt> statements = parser.parseCode(code);
 
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("d"));
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.forced.add(new Move("d"));
 
-        BoundLimit limits = new BoundLimit();
-        limits.lowerLimit = 1;
-        limits.upperLimit = 2;
+        BoundLimit limits = new BoundLimit(1, 2);
 
         SequenceLifecycle lifecycle = new SequenceLifecycle();
         lifecycle.start = new Stmt.Expression(new Expr.Literal(3.0));
@@ -120,7 +117,7 @@ class ParserTest {
         lifecycle.end = new Stmt.Expression(new Expr.Literal(8.0));
 
         List<Stmt> expectedStatements = Arrays.asList(
-                new Stmt.Sequence(movePoolOptional, movePoolForced, limits, "udrlwh", lifecycle)
+                new Stmt.Sequence(movePools, limits, "udrlwh", lifecycle)
         );
 
         assertEquals(expectedStatements, statements);
@@ -132,17 +129,14 @@ class ParserTest {
         Parser parser = new Parser();
         List<Stmt> statements = parser.parseCode(code);
 
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("u"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("d"));
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.forced.add(new Move("d"));
 
-        BoundLimit limits = new BoundLimit();
-        limits.lowerLimit = 1;
-        limits.upperLimit = null;
+        BoundLimit limits = new BoundLimit(1, null);
 
         List<Stmt> expectedStatements = Arrays.asList(
-                new Stmt.Sequence(movePoolOptional, movePoolForced, limits, "", new SequenceLifecycle())
+                new Stmt.Sequence(movePools, limits, "", new SequenceLifecycle())
         );
 
         assertEquals(expectedStatements, statements);

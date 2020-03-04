@@ -3,6 +3,7 @@ package tools.variation;
 import org.junit.jupiter.api.Test;
 import util.ByteList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,63 +13,62 @@ import static org.junit.jupiter.api.Assertions.*;
 class PermutationTest {
     @Test
     void boundWhenBothBoundsNull() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), null, null, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(), "urdlwh");
 
-        assertEquals(5, permutation.lowerBound);
-        assertEquals(5, permutation.upperBound);
+        assertEquals(5, permutation.limits.lower);
+        assertEquals(5, permutation.limits.upper);
     }
 
     @Test
     void boundWhenUpperBoundNull() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 4, null, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(4), "urdlwh");
 
-        assertEquals(4, permutation.lowerBound);
-        assertEquals(4, permutation.upperBound);
+        assertEquals(4, permutation.limits.lower);
+        assertEquals(4, permutation.limits.upper);
     }
 
     @Test
     void boundSwap() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 5, 3, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(5, 3), "urdlwh");
 
-        assertEquals(3, permutation.lowerBound);
-        assertEquals(5, permutation.upperBound);
+        assertEquals(3, permutation.limits.lower);
+        assertEquals(5, permutation.limits.upper);
     }
 
     @Test
     void boundClip() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 7, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6, 7), "urdlwh");
 
-        assertEquals(5, permutation.lowerBound);
-        assertEquals(5, permutation.upperBound);
+        assertEquals(5, permutation.limits.lower);
+        assertEquals(5, permutation.limits.upper);
     }
 
     @Test
     void boundClipForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("3d"));
-        Permutation permutation = new Permutation(movePoolOptional, movePoolForced, 1, 2, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        movePools.forced.add(new Move("3d"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(1, 2), "urdlwh");
 
-        assertEquals(3, permutation.lowerBound);
-        assertEquals(3, permutation.upperBound);
+        assertEquals(3, permutation.limits.lower);
+        assertEquals(3, permutation.limits.upper);
     }
 
     @Test
     void initialPermutation() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
 
         int[] permutationRaw = permutation.getRawPermutation();
 
@@ -79,13 +79,12 @@ class PermutationTest {
 
     @Test
     void initialPermutationForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("4lr"));
-        Permutation permutation = new Permutation(movePoolOptional, movePoolForced, 8, 10, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        movePools.forced.add(new Move("4lr"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(8, 10), "urdlwh");
 
         int[] permutationRaw = permutation.getRawPermutation();
 
@@ -96,11 +95,11 @@ class PermutationTest {
 
     @Test
     void nextPermutation() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
         permutation.nextPermutation();
 
         int[] permutationRaw = permutation.getRawPermutation();
@@ -112,32 +111,31 @@ class PermutationTest {
 
     @Test
     void permutationCount() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 5, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(5, 6), "urdlwh");
 
         assertEquals(120, permutation.getPermutationCount());
     }
 
     @Test
     void permutationCountForced() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        MovePool movePoolForced = new MovePool();
-        movePoolForced.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, movePoolForced, 5, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.forced.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(5, 6), "urdlwh");
 
         assertEquals(90, permutation.getPermutationCount());
     }
 
     @Test
     void reset() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("5u"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 4, 5, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("5u"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(4, 5), "urdlwh");
         permutation.nextPermutation();
         permutation.reset();
 
@@ -150,11 +148,11 @@ class PermutationTest {
 
     @Test
     void terminate() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
         permutation.terminate(0);
 
         int[] permutationRaw = permutation.getRawPermutation();
@@ -166,11 +164,11 @@ class PermutationTest {
 
     @Test
     void end() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
         permutation.end();
 
         int[] permutationRaw = permutation.getRawPermutation();
@@ -182,11 +180,11 @@ class PermutationTest {
 
     @Test
     void getPermutation() {
-        MovePool movePoolOptional = new MovePool();
-        movePoolOptional.add(new Move("r"));
-        movePoolOptional.add(new Move("2u"));
-        movePoolOptional.add(new Move("3du"));
-        Permutation permutation = new Permutation(movePoolOptional, new MovePool(), 6, 6, "urdlwh");
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("r"));
+        movePools.optional.add(new Move("2u"));
+        movePools.optional.add(new Move("3du"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
 
         List<ByteList> byteList = Arrays.asList(permutation.getPermutation());
         List<String> moveStrings = byteList.stream()
@@ -196,5 +194,109 @@ class PermutationTest {
         List<String> expectedMoveStrings = Arrays.asList("u", "u", "r", "du", "du", "du");
 
         assertEquals(expectedMoveStrings, moveStrings);
+    }
+
+    @Test
+    void allPermutationsSingleSubset() {
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.optional.add(new Move("d"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(4), "urdlwh");
+
+        int[] permutationRaw = permutation.getRawPermutation();
+        List<List<Integer>> result = new ArrayList<>();
+        while(!permutation.finished) {
+            result.add(Arrays.stream(permutationRaw).boxed().collect(Collectors.toList()));
+            permutation.nextPermutation();
+        }
+
+        List<List<Integer>> exprectedResult = new ArrayList<>();
+        exprectedResult.add(Arrays.asList(0, 1, 1, 2));
+        exprectedResult.add(Arrays.asList(0, 1, 2, 1));
+        exprectedResult.add(Arrays.asList(0, 2, 1, 1));
+        exprectedResult.add(Arrays.asList(1, 0, 1, 2));
+        exprectedResult.add(Arrays.asList(1, 0, 2, 1));
+        exprectedResult.add(Arrays.asList(1, 1, 0, 2));
+        exprectedResult.add(Arrays.asList(1, 1, 2, 0));
+        exprectedResult.add(Arrays.asList(1, 2, 0, 1));
+        exprectedResult.add(Arrays.asList(1, 2, 1, 0));
+        exprectedResult.add(Arrays.asList(2, 0, 1, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 0, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 1, 0));
+
+        assertEquals(exprectedResult, result);
+    }
+
+    @Test
+    void allPermutationsMultipleSubsets() {
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.optional.add(new Move("d"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(2, 3), "urdlwh");
+
+        List<List<Integer>> result = new ArrayList<>();
+        while(!permutation.finished) {
+            int[] permutationRaw = permutation.getRawPermutation();
+            result.add(Arrays.stream(permutationRaw).boxed().collect(Collectors.toList()));
+            permutation.nextPermutation();
+        }
+
+        List<List<Integer>> exprectedResult = new ArrayList<>();
+        exprectedResult.add(Arrays.asList(0, 1));
+        exprectedResult.add(Arrays.asList(1, 0));
+        exprectedResult.add(Arrays.asList(0, 2));
+        exprectedResult.add(Arrays.asList(2, 0));
+        exprectedResult.add(Arrays.asList(1, 1));
+        exprectedResult.add(Arrays.asList(1, 2));
+        exprectedResult.add(Arrays.asList(2, 1));
+        exprectedResult.add(Arrays.asList(0, 1, 1));
+        exprectedResult.add(Arrays.asList(1, 0, 1));
+        exprectedResult.add(Arrays.asList(1, 1, 0));
+        exprectedResult.add(Arrays.asList(0, 1, 2));
+        exprectedResult.add(Arrays.asList(0, 2, 1));
+        exprectedResult.add(Arrays.asList(1, 0, 2));
+        exprectedResult.add(Arrays.asList(1, 2, 0));
+        exprectedResult.add(Arrays.asList(2, 0, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 0));
+        exprectedResult.add(Arrays.asList(1, 1, 2));
+        exprectedResult.add(Arrays.asList(1, 2, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 1));
+
+        assertEquals(exprectedResult, result);
+    }
+
+    @Test
+    void allPermutationsMultipleSubsetsForced() {
+        MovePoolContainer movePools = new MovePoolContainer();
+        movePools.optional.add(new Move("u"));
+        movePools.optional.add(new Move("2r"));
+        movePools.forced.add(new Move("d"));
+        Permutation permutation = new Permutation(movePools, new BoundLimit(2, 3), "urdlwh");
+
+        List<List<Integer>> result = new ArrayList<>();
+        while(!permutation.finished) {
+            int[] permutationRaw = permutation.getRawPermutation();
+            result.add(Arrays.stream(permutationRaw).boxed().collect(Collectors.toList()));
+            permutation.nextPermutation();
+        }
+
+        List<List<Integer>> exprectedResult = new ArrayList<>();
+        exprectedResult.add(Arrays.asList(0, 2));
+        exprectedResult.add(Arrays.asList(2, 0));
+        exprectedResult.add(Arrays.asList(1, 2));
+        exprectedResult.add(Arrays.asList(2, 1));
+        exprectedResult.add(Arrays.asList(0, 1, 2));
+        exprectedResult.add(Arrays.asList(0, 2, 1));
+        exprectedResult.add(Arrays.asList(1, 0, 2));
+        exprectedResult.add(Arrays.asList(1, 2, 0));
+        exprectedResult.add(Arrays.asList(2, 0, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 0));
+        exprectedResult.add(Arrays.asList(1, 1, 2));
+        exprectedResult.add(Arrays.asList(1, 2, 1));
+        exprectedResult.add(Arrays.asList(2, 1, 1));
+
+        assertEquals(exprectedResult, result);
     }
 }

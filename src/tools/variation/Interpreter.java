@@ -183,16 +183,16 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         inSequence = true;
         manager.setVariables(atSequence);
         ByteList[] permutation = manager.getPermutation(atSequence);
-        if(stmt.start != null) {
-            stmt.start.execute(this);
+        if(stmt.lifecycle.start != null) {
+            stmt.lifecycle.start.execute(this);
         }
         for(atMove = 0; atMove < permutation.length;) {
-            if(stmt.beforeMove != null) {
-                stmt.beforeMove.execute(this);
+            if(stmt.lifecycle.beforeMove != null) {
+                stmt.lifecycle.beforeMove.execute(this);
             }
             for(byte move : permutation[atMove]) {
-                if(stmt.beforeStep != null) {
-                    stmt.beforeStep.execute(this);
+                if(stmt.lifecycle.beforeStep != null) {
+                    stmt.lifecycle.beforeStep.execute(this);
                 }
                 if (move == 'w') {
                     emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
@@ -206,17 +206,17 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                     moveList.add(move);
                     checkMove();
                 }
-                if(stmt.afterStep != null) {
-                    stmt.afterStep.execute(this);
+                if(stmt.lifecycle.afterStep != null) {
+                    stmt.lifecycle.afterStep.execute(this);
                 }
             }
             atMove++;
-            if(stmt.afterMove != null) {
-                stmt.afterMove.execute(this);
+            if(stmt.lifecycle.afterMove != null) {
+                stmt.lifecycle.afterMove.execute(this);
             }
         }
-        if(stmt.end != null) {
-            stmt.end.execute(this);
+        if(stmt.lifecycle.end != null) {
+            stmt.lifecycle.end.execute(this);
         }
         atSequence++;
         inSequence = false;

@@ -147,9 +147,8 @@ public class Parser {
     }
 
     private Stmt sequence() {
-        MovePool movePoolOptional = new MovePool();
-        MovePool movePoolForced = new MovePool();
-        parseSequenceMovePools(movePoolOptional, movePoolForced);
+        MovePoolContainer movePools = new MovePoolContainer();
+        parseSequenceMovePools(movePools);
 
         BoundLimit limits = new BoundLimit();
         parseSequenceLimits(limits);
@@ -161,10 +160,13 @@ public class Parser {
         parseSequenceLifecycle(lifecycle);
         expect(TokenType.RIGHT_BRACE, "Expected '}'");
 
-        return new Stmt.Sequence(movePoolOptional, movePoolForced, limits, lexicographic, lifecycle);
+        return new Stmt.Sequence(movePools, limits, lexicographic, lifecycle);
     }
 
-    private void parseSequenceMovePools(MovePool movePoolOptional, MovePool movePoolForced) {
+    private void parseSequenceMovePools(MovePoolContainer movePools) {
+        MovePool movePoolOptional = movePools.optional;
+        MovePool movePoolForced = movePools.forced;
+
         collectMoves(movePoolOptional);
         if(movePoolOptional.size == 0) {
             throw error(getPreviousToken(), "Moves must be provided in brackets");
@@ -192,11 +194,11 @@ public class Parser {
     private void parseSequenceLimits(BoundLimit limits) {
         expect(TokenType.LEFT_PAREN, "Expected '('");
         if(getToken().type != TokenType.RIGHT_PAREN) {
-            limits.lowerLimit = parseInteger();
+            limits.lower = parseInteger();
             consume(TokenType.COMMA);
         }
         if(getToken().type != TokenType.RIGHT_PAREN) {
-            limits.upperLimit = parseInteger();
+            limits.upper = parseInteger();
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
     }

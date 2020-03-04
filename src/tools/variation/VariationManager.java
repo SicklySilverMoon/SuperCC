@@ -164,7 +164,7 @@ public class VariationManager {
             return false;
         }
         for(Stmt.Sequence sequence : sequences) {
-            if(sequence.permutation.upperBound == 0) {
+            if(sequence.permutation.limits.upper == 0) {
                 interpreter.print("Sequence upper bound must be at least 1\n", new Color(255, 68, 68));
                 return false;
             }

@@ -36,6 +36,11 @@ public class MovePool {
         }
     }
 
+    public void add(MovePoolContainer movePools) {
+        add(movePools.optional);
+        add(movePools.forced);
+    }
+
     public void clear() {
         moves.clear();
         size = 0;
