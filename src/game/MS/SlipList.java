@@ -5,9 +5,9 @@ import game.Level;
 
 import java.util.ArrayList;
 
-public class MSSlipList extends game.SlipList {
+public class SlipList extends ArrayList<Creature> { //This should only ever be used for MS
+    protected Level level;
 
-    @Override
     public void tick(){
         // Iterating like this causes slide delay.
         for (int i = size(); i > 0; i--){
@@ -16,7 +16,14 @@ public class MSSlipList extends game.SlipList {
         }
     }
 
-    @Override
+    public void setLevel(Level level){
+        this.level = level;
+    }
+
+    Level getLevel(){
+        return level;
+    }
+
     public void setSliplist(Creature[] slidingCreatures){
         clear();
         for (Creature slider : slidingCreatures){
@@ -26,4 +33,15 @@ public class MSSlipList extends game.SlipList {
         }
     }
 
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size(); i++){
+            sb.append(i+1);
+            sb.append('\t');
+            sb.append(get(i));
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
 }

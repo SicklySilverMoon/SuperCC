@@ -3,7 +3,6 @@ package io;
 import game.*;
 import game.Lynx.LynxCreature;
 import game.Lynx.LynxCreatureList;
-import game.Lynx.LynxLevel;
 import game.MS.*;
 import game.button.BlueButton;
 import game.button.BrownButton;
@@ -201,31 +200,7 @@ public class LevelFactory {
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
 
-//        return new MSLevel(
-//            levelNumber,
-//            title,
-//            password,
-//            hint,
-//            getToggleDoors(layerFG, layerBG),
-//            getPortals(layerFG, layerBG),
-//            getGreenButtons(layerFG, layerBG),
-//            getRedButtons(cloneConnections),
-//            getBrownButtons(trapConnections),
-//            getBlueButtons(layerFG, layerBG),
-//            new BitSet(trapConnections.length),
-//            layerBG,
-//            layerFG,
-//            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
-//            new MSSlipList(),
-//            (MSCreature) findMSPlayer(layerFG),
-//            getTimer(timeLimit),
-//            chips,
-//            new RNG(rngSeed),
-//            rngSeed,
-//            step,
-//            lastLevel
-//        );
-        return new LynxLevel(
+        return new MSLevel(
             levelNumber,
             title,
             password,
@@ -239,15 +214,39 @@ public class LevelFactory {
             new BitSet(trapConnections.length),
             layerBG,
             layerFG,
-            getLynxMonsterList(monsterPositions, layerFG, layerBG),
-            (LynxCreature) findLynxPlayer(layerFG),
+            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
+            new SlipList(),
+            (MSCreature) findMSPlayer(layerFG),
             getTimer(timeLimit),
             chips,
             new RNG(rngSeed),
             rngSeed,
             step,
             lastLevel
-            );
+        );
+//        return new LynxLevel(
+//            levelNumber,
+//            title,
+//            password,
+//            hint,
+//            getToggleDoors(layerFG, layerBG),
+//            getPortals(layerFG, layerBG),
+//            getGreenButtons(layerFG, layerBG),
+//            getRedButtons(cloneConnections),
+//            getBrownButtons(trapConnections),
+//            getBlueButtons(layerFG, layerBG),
+//            new BitSet(trapConnections.length),
+//            layerBG,
+//            layerFG,
+//            getLynxMonsterList(monsterPositions, layerFG, layerBG),
+//            (LynxCreature) findLynxPlayer(layerFG),
+//            getTimer(timeLimit),
+//            chips,
+//            new RNG(rngSeed),
+//            rngSeed,
+//            step,
+//            lastLevel
+//            );
     }
 
 }

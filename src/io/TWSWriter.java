@@ -73,21 +73,18 @@ public class TWSWriter{
             write(0);
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
-
-            int endingSlide = 0; //TODO: Refactor this, its not really appropriate here
-            if (level.isCompleted() && level.getChip().isSliding()) endingSlide = 1; //Its an evil hack but i don't think there's any other way to resolve this, or anywhere i can move this
-
             writeShort(level.getLevelNumber());
             byte[] password = level.getPassword();
             for (int i = 0; i < 4; i++) write(password[i]);
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.halfMoves.length - 2 - endingSlide);
-            /* minus 2 because the time value is always 2 extra for unknown reasons (likely tick counting differences between TW and SuCC).
-            endingSlide because if Chip ends up sliding into an exit it doesn't tick the timer,
-            however TW (which moves in 1/4 steps even in MS) does tick the quarter step timer,
-            so we have to subtract one here whenever this situation happens */
+            writeInt(2 * solution.halfMoves.length - 2);
+            /* minus 2 because the time value is always 2 extra for unknown reasons
+            (likely tick counting differences between TW and SuCC).
+            there's actually an issue here in that if Chip slides into the exit in MS Mode
+            SuCC writes a time value one higher than it should be,
+            this however can't be helped without introducing potential side effects */
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     

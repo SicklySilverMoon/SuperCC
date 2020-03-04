@@ -2,7 +2,7 @@ package game.Lynx;
 
 import game.*;
 import game.MS.Cheats;
-import game.MS.MSSlipList;
+import game.MS.SlipList;
 import game.button.*;
 
 import java.util.BitSet;
@@ -157,7 +157,7 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public SlipList getSlipList() {
-        return new MSSlipList(); //TODO: look into getting rid of this altogether
+        return new SlipList(); //TODO: look into getting rid of this altogether
     }
 
     @Override

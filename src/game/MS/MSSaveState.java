@@ -20,7 +20,7 @@ public class MSSaveState implements SaveState {
     public byte[] boots;
     public RNG rng;
     public CreatureList monsterList;
-    public MSSlipList slipList;
+    public SlipList slipList;
     
     protected int mouseGoal;
     protected BitSet traps;
@@ -116,7 +116,7 @@ public class MSSaveState implements SaveState {
         }
     }
     
-    protected MSSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, MSSlipList slipList, MSCreature chip,
+    protected MSSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, MSCreature chip,
                           int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;

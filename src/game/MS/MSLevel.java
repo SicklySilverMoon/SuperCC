@@ -1,7 +1,6 @@
 package game.MS;
 
 import game.*;
-import game.SlipList;
 import game.button.*;
 
 import java.util.BitSet;
@@ -236,7 +235,7 @@ public class MSLevel extends MSSaveState implements Level {
     public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
-                   Layer layerBG, Layer layerFG, CreatureList monsterList, MSSlipList slipList,
+                   Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
                    MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
         
         super(layerBG, layerFG, monsterList, slipList, chip,

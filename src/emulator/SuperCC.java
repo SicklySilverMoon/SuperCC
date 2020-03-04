@@ -207,7 +207,7 @@ public class SuperCC {
             for (int i = 0; i < BYTE_MOVEMENT_KEYS.length; i++) {
                 if (BYTE_MOVEMENT_KEYS[i] == b) {
                     directions = DIRECTIONS[i];
-                    System.out.println(level.getMonsterList());
+//                    System.out.println(level.getMonsterList());
                     return tick(b, directions, flags);
                 }
             }

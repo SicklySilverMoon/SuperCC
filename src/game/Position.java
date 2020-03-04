@@ -151,7 +151,7 @@ public class Position {
 
     @Override
     public int hashCode() {
-        //Whilst this is just the index it is possible for index to be set manually so its just run again here
+        //Whilst this is just the index equation it is possible for index to be set manually so its just run again here
         return (y << 5) | x;
     }
     
