@@ -175,7 +175,13 @@ public class Creature{
             else if (level.getSlipList().contains(this)) {
                 new RuntimeException("adding block twice on level "+level.getLevelNumber()+" "+new String(level.getTitle())).printStackTrace();
             }
-            else level.getSlipList().add(this);
+            else {
+                level.getSlipList().add(this);
+                if (!creatureType.isBlock()) {
+                    direction = applySlidingTile(direction, level.layerBG.get(position), level.rng); //When a creature first enters a sliding tile its direction is updated to face whatever direction its going to move next after that tile takes effect
+                    CreatureList.direction = this.getDirection();
+                }
+            }
         }
         Position newPosition = position.move(direction); //Dirty hack to make sure blocks in traps affect slide delay properly
         if (creatureType.isBlock() && wasSliding && level.layerBG.get(position) == TRAP
