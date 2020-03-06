@@ -23,7 +23,9 @@ public abstract class CreatureList implements Iterable<Creature> {
     }
 
     public Creature creatureAt(Position position){
-        for (Creature c : list) if (c.getPosition().equals(position)) return c;
+        for (Creature c : list) {
+            if (c.getPosition().equals(position)) return c;
+        }
         return null;
     }
 

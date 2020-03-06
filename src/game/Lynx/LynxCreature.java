@@ -7,18 +7,13 @@ import static game.CreatureID.TANK_MOVING;
 import static game.Tile.BLOCK_RIGHT;
 import static game.Tile.BLOCK_UP;
 
-/**
- * Creatures are encoded as follows:
- *
- *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
- *    DIRECTION | MONSTER |    ROW    |    COL
- */
 public class LynxCreature implements Creature {
 
     private Position position;
     private CreatureID creatureType;
     private Direction direction;
     private boolean sliding;
+    private int traveledTicks;
 
     @Override
     public Direction getDirection() {
@@ -84,6 +79,15 @@ public class LynxCreature implements Creature {
     public String toString() {
         if (creatureType == DEAD) return "Dead monster at position " + position;
         return creatureType+" facing "+direction+" at position "+position;
+    }
+
+    /** Returns a number representing ticks between tiles.
+     *
+     * @return An int between 0 and 7 (inclusive)
+     * that represents how many quarter moves the creature has been traveling between tiles
+     */
+    public int getTicksTraveled() {
+        return traveledTicks;
     }
 
     boolean tick(Level level, boolean slidingMove) {

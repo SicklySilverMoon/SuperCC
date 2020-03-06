@@ -13,12 +13,6 @@ import static game.CreatureID.CHIP;
 import static game.Direction.*;
 import static game.Tile.*;
 
-/**
- * Creatures are encoded as follows:
- *
- *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
- *    DIRECTION | MONSTER |    ROW    |    COL
- */
 public class MSCreature implements Creature {
 
     private Position position;
@@ -885,6 +879,7 @@ public class MSCreature implements Creature {
         position = new Position(bitMonster & 0b00_0000_1111111111);
     }
 
+    @Override
     public int bits(){
         return direction.getBits() | creatureType.getBits() | position.getIndex();
     }

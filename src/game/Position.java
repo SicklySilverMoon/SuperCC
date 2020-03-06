@@ -138,7 +138,7 @@ public class Position {
     public Position clone(){
         return new Position(index);
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -147,6 +147,10 @@ public class Position {
         return index == position.index &&
                 x == position.x &&
                 y == position.y;
+    }
+
+    public boolean equals(Position pos) {
+        return (index == pos.index && x == pos.x && y == pos.y);
     }
 
     @Override
