@@ -13,7 +13,7 @@ public class LynxCreature implements Creature {
     private CreatureID creatureType;
     private Direction direction;
     private boolean sliding;
-    private int traveledTicks;
+    private int timeTraveled;
 
     @Override
     public Direction getDirection() {
@@ -81,13 +81,14 @@ public class LynxCreature implements Creature {
         return creatureType+" facing "+direction+" at position "+position;
     }
 
-    /** Returns a number representing ticks between tiles.
+    /** Returns a number representing how long the creature has been traveling between tiles.
+     * Of note is that for all creatures except blobs this value increases by 2 for every tick completed.
      *
      * @return An int between 0 and 7 (inclusive)
      * that represents how many quarter moves the creature has been traveling between tiles
      */
-    public int getTicksTraveled() {
-        return traveledTicks;
+    public int getTimeTraveled() {
+        return timeTraveled;
     }
 
     boolean tick(Level level, boolean slidingMove) {
