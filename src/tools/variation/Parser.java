@@ -9,6 +9,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Parser {
     private final char[] LEXICOGRAPHIC_CHARS = "urdlwh".toCharArray();
@@ -38,6 +39,11 @@ public class Parser {
         ArrayList<Token> tokens = tokenizer.getParsableTokens();
         this.tokens = tokens;
         return parse();
+    }
+
+    public HashMap<String, Object> getVariables(String code) {
+        Tokenizer tokenizer = new Tokenizer(code);
+        return tokenizer.getVariables();
     }
 
     public ArrayList<Stmt> parse() {
@@ -100,15 +106,15 @@ public class Parser {
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
 
         Stmt thenBranch = statement();
-        Stmt elseBranch = isNextToken(TokenType.ELSE) ? statement() : null;
+        Stmt elseBranch = isNextToken(TokenType.ELSE) ? statement() : new Stmt.Empty();
 
         return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt forStatement() {
-        Stmt init = null;
+        Stmt init = new Stmt.Empty();
         Expr condition = null;
-        Stmt post = null;
+        Stmt post = new Stmt.Empty();
 
         expect(TokenType.LEFT_PAREN, "Expected '('");
         if(getToken().type != TokenType.SEMICOLON) {

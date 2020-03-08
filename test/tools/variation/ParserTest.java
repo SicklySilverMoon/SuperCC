@@ -297,7 +297,7 @@ class ParserTest {
                                 )
                         ),
                         new Stmt.Expression(new Expr.Literal(1.0)),
-                        null
+                        new Stmt.Empty()
                 )
         );
 
@@ -454,7 +454,7 @@ class ParserTest {
         List<Stmt> statements = parser.parseCode(code);
 
         assertTrue(parser.hadError);
-        assertEquals(null, statements.get(0));
+        assertNull(statements.get(0));
         assertEquals(2, statements.size());
     }
 

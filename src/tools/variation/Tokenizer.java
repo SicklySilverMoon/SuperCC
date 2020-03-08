@@ -329,11 +329,13 @@ public class Tokenizer {
     }
 
     private char getNextChar() {
+        if(isEnd()) return '\0';
         current++;
         return code.charAt(current - 1);
     }
 
     private char getPrevChar() {
+        if(isEnd()) return '\0';
         current--;
         return code.charAt(current);
     }

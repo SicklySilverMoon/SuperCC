@@ -15,6 +15,8 @@ import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.function.DoubleBinaryOperator;
 
 public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final SuperCC emulator;
@@ -22,8 +24,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private final JTextPane console;
     private final HashMap<String, Object> variables;
     private Level level;
-    private final byte[] startingState;
-    private ByteList startingMoveList;
     public int atSequence = 0;
     public int atMove = 0;
     public boolean inSequence = false;
@@ -33,18 +33,18 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public ByteList moveList;
     private int amount = 1;
     public ArrayList<Solution> solutions = new ArrayList<>();
-    public long count = 0;
     private boolean hadError = false;
     private VariationTesting vt;
+    private int fromStatement = 0;
+    public long variationCount = 0;
 
-    public Interpreter(SuperCC emulator, VariationTesting vt, ArrayList<Stmt> statements,
-                       HashMap<String, Object> variables, JTextPane console) {
+    public Interpreter(SuperCC emulator, VariationTesting vt, JTextPane console, String code) {
+        Parser parser = new Parser();
+        this.statements = parser.parseCode(code);
+        this.variables = parser.getVariables(code);
         this.emulator = emulator;
-        this.statements = statements;
-        this.variables = variables;
         this.console = console;
         this.level = emulator.getLevel();
-        this.startingState = this.level.save();
         this.manager = new VariationManager(emulator, statements, variables, this.level, this);
         this.sequenceIndex = manager.sequenceIndex;
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
@@ -52,17 +52,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     public void interpret() {
-        console.setText("");
-        displayPermutationCount();
-        if(!manager.validate()) {
-            hadError = true;
-            return;
-        }
-        this.startingMoveList = this.manager.moveLists[0].clone();
-        int fromStatement = 0;
-        count = 0;
-        do {
-            count++;
+        begin();
+        while(!vt.killFlag && !isFinished()) {
+            variationCount++;
             try {
                 level.load(manager.saveStates[atSequence]);
                 moveList = manager.moveLists[atSequence];
@@ -72,11 +64,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 }
             }
             catch(TerminateException te) {
-                atSequence = manager.nextPermutation();
-                if(atSequence == -1) {
-                    break;
-                }
-                fromStatement = sequenceIndex[atSequence];
+                getNextPermutation();
                 continue;
             }
             catch(ReturnException re) {
@@ -88,35 +76,57 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 String str = "[Line " + err.token.line + " near '" + err.token.lexeme + "'] " + err.getMessage() + "\n";
                 print(str, new Color(255, 68, 68));
                 hadError = true;
-                break;
             }
             catch(Exception e) {
                 String str = "Unknown runtime error.\n  " + e.toString();
                 print(str, new Color(255, 68, 68));
                 hadError = true;
                 e.printStackTrace();
-                break;
             }
-            atSequence = manager.nextPermutation();
-            if(atSequence == -1) {
-                break;
-            }
-            fromStatement = sequenceIndex[atSequence];
-        }while(!manager.finished && !vt.killFlag);
+            getNextPermutation();
+        }
+        finish();
+    }
+
+    private void begin() {
+        console.setText("");
+        displayPermutationCount();
+        if(!manager.validate()) {
+            hadError = true;
+        }
+    }
+
+    private void getNextPermutation() {
+        atSequence = manager.nextPermutation();
+        if(atSequence == -1) {
+            return;
+        }
+        fromStatement = sequenceIndex[atSequence];
+    }
+
+    private boolean isFinished() {
+        return hadError || atSequence == -1;
+    }
+
+    private void finish() {
         if(vt.killFlag) {
             print("Search stopped!\n", new Color(255, 68, 68));
         }
         if(!hadError) {
-            String str = "Successfully tested " + String.format("%,d", count) + " variations.\nFound " +
+            String str = "Successfully tested " + String.format("%,d", variationCount) + " variations.\nFound " +
                     String.format("%,d", solutions.size()) + " solutions.";
             print(str, new Color(0, 153, 0));
         }
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
-        for(byte move : startingMoveList) {
-            emulator.tick(move, TickFlags.PRELOADING);
+        if(manager.getSequenceCount() > 0) {
+            for (byte move : manager.moveLists[0]) {
+                emulator.tick(move, TickFlags.PRELOADING);
+            }
         }
-        emulator.repaint(true);
+        if(vt.hasGui) {
+            emulator.repaint(true);
+        }
     }
 
     @Override
@@ -136,25 +146,21 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         if(isTruthy(stmt.condition.evaluate(this))) {
             stmt.thenBranch.execute(this);
         }
-        else if(stmt.elseBranch != null) {
+        else {
             stmt.elseBranch.execute(this);
         }
     }
 
     @Override
     public void executeFor(Stmt.For stmt) {
-        if(stmt.init != null) {
-            stmt.init.execute(this);
-        }
+        stmt.init.execute(this);
         while(isTruthy(stmt.condition.evaluate(this))) {
             try {
                 stmt.body.execute(this);
             } catch(BreakException b) {
                 break;
             }
-            if(stmt.post != null) {
-                stmt.post.execute(this);
-            }
+            stmt.post.execute(this);
         }
     }
 
@@ -183,41 +189,18 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         inSequence = true;
         manager.setVariables(atSequence);
         ByteList[] permutation = manager.getPermutation(atSequence);
-        if(stmt.lifecycle.start != null) {
-            stmt.lifecycle.start.execute(this);
-        }
+        stmt.lifecycle.start.execute(this);
         for(atMove = 0; atMove < permutation.length;) {
-            if(stmt.lifecycle.beforeMove != null) {
-                stmt.lifecycle.beforeMove.execute(this);
-            }
+            stmt.lifecycle.beforeMove.execute(this);
             for(byte move : permutation[atMove]) {
-                if(stmt.lifecycle.beforeStep != null) {
-                    stmt.lifecycle.beforeStep.execute(this);
-                }
-                if (move == 'w') {
-                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                    moveList.add(SuperCC.WAIT);
-                    checkMove();
-                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                    moveList.add(SuperCC.WAIT);
-                    checkMove();
-                } else {
-                    emulator.tick(move, TickFlags.LIGHT);
-                    moveList.add(move);
-                    checkMove();
-                }
-                if(stmt.lifecycle.afterStep != null) {
-                    stmt.lifecycle.afterStep.execute(this);
-                }
+                stmt.lifecycle.beforeStep.execute(this);
+                doMove(move);
+                stmt.lifecycle.afterStep.execute(this);
             }
             atMove++;
-            if(stmt.lifecycle.afterMove != null) {
-                stmt.lifecycle.afterMove.execute(this);
-            }
+            stmt.lifecycle.afterMove.execute(this);
         }
-        if(stmt.lifecycle.end != null) {
-            stmt.lifecycle.end.execute(this);
-        }
+        stmt.lifecycle.end.execute(this);
         atSequence++;
         inSequence = false;
     }
@@ -236,24 +219,20 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public void executeTerminate(Stmt.Terminate stmt) {
-        int index = 0;
         if(!inSequence && manager.getPermutation(atSequence - 1).length == 0) {
             manager.terminateZero(atSequence - 1);
             throw new TerminateException();
         }
+
+        int index;
         if(stmt.index != null) {
             index = ((Double) stmt.index.evaluate(this)).intValue();
         }
         else {
-            int atSeq = atSequence;
-            int atMo = atMove;
-            if(!inSequence) {
-                atMo = -1;
-            }
-            for(int i = 0; i < atSeq; i++) {
+            index = inSequence ? atMove : -1;
+            for(int i = 0; i < atSequence; i++) {
                 index += manager.getPermutation(i).length;
             }
-            index += atMo;
         }
         manager.terminate(index);
         throw new TerminateException();
@@ -282,7 +261,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
                 return (double)left + (double)right;
             case MINUS:
                 checkIfNumber(expr.operator, left, right);
-                    return (double)left - (double)right;
+                return (double)left - (double)right;
             case STAR:
                 checkIfNumber(expr.operator, left, right);
                 return (double)left * (double)right;
@@ -366,41 +345,25 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
 
     @Override
     public Object evaluateAssign(Expr.Assign expr) {
-        Object value = getValue(expr.var);
+        Object value = variables.get(expr.var.value);
         if(value == null && expr.operator.type != TokenType.EQUAL) {
             throw new RuntimeError(expr.var, "Variable undefined");
         }
         Object exprValue = expr.value.evaluate(this);
-        double newValue;
         switch(expr.operator.type) {
             case EQUAL:
                 variables.put(expr.var.lexeme, exprValue);
                 return exprValue;
             case PLUS_EQUAL:
-                checkIfNumber(expr.operator, exprValue, value);
-                newValue = (double)value + (double)exprValue;
-                variables.put(expr.var.lexeme, newValue);
-                return newValue;
+                return applyAssignment((a, b) -> a + b, value, exprValue, expr);
             case MINUS_EQUAL:
-                checkIfNumber(expr.operator, exprValue, value);
-                newValue = (double)value - (double)exprValue;
-                variables.put(expr.var.lexeme, newValue);
-                return newValue;
+                return applyAssignment((a, b) -> a - b, value, exprValue, expr);
             case STAR_EQUAL:
-                checkIfNumber(expr.operator, exprValue, value);
-                newValue = (double)value * (double)exprValue;
-                variables.put(expr.var.lexeme, newValue);
-                return newValue;
+                return applyAssignment((a, b) -> a * b, value, exprValue, expr);
             case SLASH_EQUAL:
-                checkIfNumber(expr.operator, exprValue, value);
-                newValue = (double)value / (double)exprValue;
-                variables.put(expr.var.lexeme, newValue);
-                return newValue;
+                return applyAssignment((a, b) -> a / b, value, exprValue, expr);
             case MODULO_EQUAL:
-                checkIfNumber(expr.operator, exprValue, value);
-                newValue = (double)value % (double)exprValue;
-                variables.put(expr.var.lexeme, newValue);
-                return newValue;
+                return applyAssignment((a, b) -> a % b, value, exprValue, expr);
         }
         return null;
     }
@@ -410,13 +373,6 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         return evaluator.evaluate(expr);
     }
 
-    private void checkIfNumber(Token operator, Object left) {
-        if(left instanceof Double) {
-            return;
-        }
-        throw new RuntimeError(operator, "Operand must be a number");
-    }
-
     private void checkIfNumber(Token operator, Object left, Object right) {
         if(left instanceof Double && right instanceof Double) {
             return;
@@ -424,7 +380,22 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         throw new RuntimeError(operator, "Operand must be a number");
     }
 
-    public void checkMove() {
+    public void doMove(byte move) {
+        if (move == 'w') {
+            tick(SuperCC.WAIT);
+            tick(SuperCC.WAIT);
+        } else {
+            tick(move);
+        }
+    }
+
+    private void tick(byte move) {
+        emulator.tick(move, TickFlags.LIGHT);
+        moveList.add(move);
+        checkMove();
+    }
+
+    private void checkMove() {
         if(level.isCompleted()) {
             executeReturn(null);
         }
@@ -434,12 +405,11 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         }
     }
 
-    private Object getValue(Token token) {
-        try {
-            return variables.get(token.value);
-        } catch(NullPointerException e) {
-            throw new RuntimeError(token, "Undefined variable");
-        }
+    private double applyAssignment(DoubleBinaryOperator op, Object value, Object exprValue, Expr.Assign expr) {
+        checkIfNumber(expr.operator, exprValue, value);
+        double newValue = op.applyAsDouble((double)value, (double)exprValue);
+        variables.put(expr.var.lexeme, newValue);
+        return newValue;
     }
 
     private boolean isTruthy(Object value) {
@@ -453,13 +423,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     private boolean isEqual(Object left, Object right) {
-        if(left == null && right == null) {
-            return true;
-        }
-        if(left == null) {
-            return false;
-        }
-        return left.equals(right);
+        return Objects.equals(left, right);
     }
 
     private class BreakException extends RuntimeException {

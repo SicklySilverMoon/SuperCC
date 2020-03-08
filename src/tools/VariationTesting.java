@@ -28,12 +28,11 @@ public class VariationTesting {
     private JScrollPane editor;
     private JScrollPane output;
     private ArrayList<JLabel> lineNumbers = new ArrayList<>();
-    private ArrayList<Stmt> statements;
-    private HashMap<String, Object> variables;
     private Interpreter interpreter;
     public boolean killFlag = false;
     public static boolean running = false;
     private static final HashMap<TokenType, Color> colors;
+    public boolean hasGui = true;
 
     static {
         colors = new HashMap<>();
@@ -80,6 +79,15 @@ public class VariationTesting {
         setGUI();
     }
 
+    public VariationTesting(SuperCC emulator, boolean hasGui) {
+        this.emulator = emulator;
+        this.console = new JTextPane();
+        this.hasGui = hasGui;
+        if(hasGui) {
+            setGUI();
+        }
+    }
+
     private void setGUI() {
         setTextPanes();
         setScrollPanes();
@@ -95,18 +103,8 @@ public class VariationTesting {
                 killFlag = true;
                 return;
             }
-            Tokenizer tokenizer = new Tokenizer(codeEditor.getText());
-            ArrayList<Token> tokens = tokenizer.getParsableTokens();
-            variables = tokenizer.getVariables();
 
-            Parser parser = new Parser(tokens, console);
-            statements = parser.parse();
-
-            if(parser.hadError) {
-                return;
-            }
-
-            interpreter = new Interpreter(emulator, this, statements, variables, console);
+            interpreter = new Interpreter(emulator, this, console, codeEditor.getText());
             interpreter.displayPermutationCount();
 
             new VariationTestingThread().start();
@@ -301,6 +299,14 @@ public class VariationTesting {
         }
     }
 
+    public JTextPane getConsole() {
+        return console;
+    }
+
+    public void clearConsole() {
+        console.setText("");
+    }
+
     public static boolean isRunning() {
         return running;
     }
@@ -315,8 +321,8 @@ public class VariationTesting {
             killFlag = false;
             runButton.setText("Run");
 
-            if(interpreter.solutions.size() > 0) {
-                VariationResult result = new VariationResult(emulator, interpreter.count, interpreter.solutions);
+            if(hasGui && interpreter.solutions.size() > 0) {
+                VariationResult result = new VariationResult(emulator, interpreter.variationCount, interpreter.solutions);
             }
         }
     }

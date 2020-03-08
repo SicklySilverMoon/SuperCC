@@ -3,12 +3,12 @@ package tools.variation;
 import java.util.Objects;
 
 public class SequenceLifecycle {
-    public Stmt start;
-    public Stmt beforeMove;
-    public Stmt afterMove;
-    public Stmt beforeStep;
-    public Stmt afterStep;
-    public Stmt end;
+    public Stmt start = new Stmt.Empty();
+    public Stmt beforeMove = new Stmt.Empty();
+    public Stmt afterMove = new Stmt.Empty();
+    public Stmt beforeStep = new Stmt.Empty();
+    public Stmt afterStep = new Stmt.Empty();
+    public Stmt end = new Stmt.Empty();
 
     @Override
     public boolean equals(Object o) {
