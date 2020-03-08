@@ -146,7 +146,7 @@ public class LynxSaveState implements SaveState {
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];
             for (int i = 0; i < length; i++){
-                monsters[i] = new LynxCreature(readShort()); //TODO: Bound to MS currently
+                monsters[i] = new LynxCreature(readShort());
             }
             return monsters;
         }

@@ -3,11 +3,7 @@ package tools.tsp;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.Direction;
-import game.Level;
-import game.MS.*;
-import game.Position;
-import game.Tile;
+import game.*;
 import tools.TSPGUI;
 import util.ByteList;
 
@@ -49,7 +45,7 @@ public class TSPSolver {
 
     private JTextPane output;
 
-    MSCreature[] monsterList;
+    Creature[] monsterList;
 
     private final int LIMIT = 500000; // Upper bound of exploration
 
@@ -63,8 +59,8 @@ public class TSPSolver {
         this.level = emulator.getLevel();
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
-        this.monsterList = (MSCreature[]) level.getMonsterList().getCreatures().clone(); //TODO: FIX THE FACT THAT IT HAS TO BE A CAST!
-        level.getMonsterList().setCreatures(new MSCreature[0]);
+        this.monsterList = level.getMonsterList().getCreatures().clone();
+        level.getMonsterList().setCreatures(new Creature[0]);
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
