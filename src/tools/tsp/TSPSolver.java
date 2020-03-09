@@ -4,7 +4,6 @@ import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import tools.TSPGUI;
 import util.ByteList;
 
@@ -13,11 +12,12 @@ import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 public class TSPSolver {
+    public final int INFINITE_DISTANCE = 9999;
     private SuperCC emulator;
     private TSPGUI gui;
     private Level level;
     private byte[] startState;
-    private byte[] directions;
+    private byte[] directions = { SuperCC.UP, SuperCC.RIGHT, SuperCC.DOWN, SuperCC.LEFT };
     private byte[] initialState;
     private ArrayList<Integer> nodes = new ArrayList<>();
     private boolean[][] boostNodes;
@@ -28,36 +28,52 @@ public class TSPSolver {
     private PathNode[][] pathsBoost;
     private int startTime;
 
-    private int toBeVisited = 0;
-    private boolean shouldBeVisited = false;
-    private int visitedTime = 0;
-
     private int inputNodeSize;
     private int exitNodeSize;
 
     private ArrayList<TSPGUI.RestrictionNode> restrictionNodes;
 
-    private double startTemp;
-    private double endTemp;
-    private double cooling;
-    private int iterations;
+    private SimulatedAnnealingParameters simulatedAnnealingParameters;
 
     private int chosenExit;
 
     private JTextPane output;
 
-    Creature[] monsterList;
+    private Creature[] monsterList;
+
+    private int[][] currentDistances;
+    private PathNode[][] currentPaths;
+    private boolean[][] currentBoostNodes;
+    private int deltaTime;
 
     private final int LIMIT = 500000; // Upper bound of exploration
 
     public TSPSolver(SuperCC emulator, TSPGUI gui, ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes,
-                     ArrayList<TSPGUI.RestrictionNode> restrictionNodes,
-                     double startTemp, double endTemp, double cooling, int iterations,
-                     boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall,
-                     JTextPane output) {
+                     ArrayList<TSPGUI.RestrictionNode> restrictionNodes, SimulatedAnnealingParameters simulatedAnnealingParameters,
+                     ActingWallParameters actingWallParameters, JTextPane output) {
         this.emulator = emulator;
         this.gui = gui;
         this.level = emulator.getLevel();
+        setupState();
+        this.initialState = normalizeState(actingWallParameters);
+        setupNodes(inputNodes, exitNodes);
+        this.boostNodes = new boolean[nodes.size()][nodes.size()];
+        this.boostNodesBoost = new boolean[nodes.size()][nodes.size()];
+        this.distances = new int[nodes.size()][nodes.size()];
+        this.distancesBoost = new int[nodes.size()][nodes.size()];
+        setupDistances();
+        this.paths = new PathNode[nodes.size()][nodes.size()];
+        this.pathsBoost = new PathNode[nodes.size()][nodes.size()];
+        this.startTime = level.getTChipTime();
+        this.inputNodeSize = inputNodes.size();
+        this.exitNodeSize = exitNodes.size();
+        this.restrictionNodes = restrictionNodes;
+        setupRestrictionNodes();
+        this.simulatedAnnealingParameters = simulatedAnnealingParameters;
+        this.output = output;
+    }
+
+    private void setupState() {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
         this.monsterList = level.getMonsterList().getCreatures().clone();
@@ -65,134 +81,190 @@ public class TSPSolver {
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-        this.directions = new byte[]{ SuperCC.UP, SuperCC.RIGHT, SuperCC.DOWN, SuperCC.LEFT };
-        this.initialState = normalizeState(isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall);
+    }
 
-        for(int i = 0; i < inputNodes.size(); i++) {
-            this.nodes.add(inputNodes.get(i).index);
+    private void setupNodes(ArrayList<TSPGUI.ListNode> inputNodes, ArrayList<TSPGUI.ListNode> exitNodes) {
+        for(TSPGUI.ListNode node : inputNodes) {
+            this.nodes.add(node.index);
         }
-        for(int i = 0; i < exitNodes.size(); i++) {
-            this.nodes.add(exitNodes.get(i).index);
+        for(TSPGUI.ListNode node : exitNodes) {
+            this.nodes.add(node.index);
         }
+    }
 
-        this.boostNodes = new boolean[nodes.size()][nodes.size()];
-        this.boostNodesBoost = new boolean[nodes.size()][nodes.size()];
-        this.distances = new int[nodes.size()][nodes.size()];
-        this.distancesBoost = new int[nodes.size()][nodes.size()];
+    private void setupDistances() {
         for(int i = 0 ; i < nodes.size(); i++) {
             for(int j = 0; j < nodes.size(); j++) {
-                distances[i][j] = 9999;
-                distancesBoost[i][j] = 9999;
+                distances[i][j] = INFINITE_DISTANCE;
+                distancesBoost[i][j] = INFINITE_DISTANCE;
             }
         }
-        this.paths = new PathNode[nodes.size()][nodes.size()];
-        this.pathsBoost = new PathNode[nodes.size()][nodes.size()];
-        this.startTime = level.getTChipTime();
+    }
 
-        this.inputNodeSize = inputNodes.size();
-        this.exitNodeSize = exitNodes.size();
-
-        this.restrictionNodes = restrictionNodes;
-
+    private void setupRestrictionNodes() {
         for(TSPGUI.RestrictionNode node : restrictionNodes) {
             node.beforeIndex = nodes.indexOf(node.before.index) - 1;
             node.afterIndex = nodes.indexOf(node.after.index) - 1;
         }
-
-        this.startTemp = startTemp;
-        this.endTemp = endTemp;
-        this.cooling = cooling;
-        this.iterations = iterations;
-
-        this.output = output;
     }
 
-    public void solve() {
-        for(int i = 0; i < inputNodeSize + 1; i++) {
-            for(int j = 0; j < 2; j++) {
-                output.setText("Finding distances... " + (i + 1) + "/" + (inputNodeSize + 1));
-                level.load(initialState);
-                level.cheats.moveChip(new Position(nodes.get(i)));
-                if(j == 1) {
-                    emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Half wait
-                }
+    public void solve() throws Exception {
+        gatherNormal();
+        gatherBoost();
+        level.load(startState);
+        validate();
+        if(!gui.killFlag) {
+            solveWithSA();
+        } else {
+            output.setText("Stopped");
+        }
+    }
 
-                int[][] currentDistances = (j == 0) ? distances : distancesBoost;
-                PathNode[][] currentPaths = (j == 0) ? paths : pathsBoost;
-                boolean[][] currentBoostNodes = (j == 0) ? boostNodes : boostNodesBoost;
+    public void gatherNormal() {
+        currentDistances = distances;
+        currentPaths = paths;
+        currentBoostNodes = boostNodes;
+        deltaTime = 0;
+        search();
+    }
 
-                PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
-                states.add(new PathNode(level.save(), new ByteList(), startTime, (byte) 'u'));
+    public void gatherBoost() {
+        currentDistances = distancesBoost;
+        currentPaths = pathsBoost;
+        currentBoostNodes = boostNodesBoost;
+        deltaTime = -1;
+        search();
+    }
 
-                int[] visited = new int[32 * 32 * 4];
-                int[] visitedCount = new int[32 * 32 * 4];
-                int statesExplored = 0;
+    private void search() {
+        boolean isBoost = deltaTime == -1;
+        for(int from = 0; from < inputNodeSize + 1; from++) {
+            outputDistanceProgress(from, isBoost);
+            level.load(initialState);
+            level.cheats.moveChip(new Position(nodes.get(from)));
+            if(isBoost) {
+                emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Half wait
+            }
+            searchBFS(from);
+        }
+    }
 
-                while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
-                    statesExplored++;
-                    PathNode node = states.poll();
-                    byte[] state = node.state;
-                    level.load(state);
+    private void outputDistanceProgress(int from, boolean isBoost) {
+        int current = from + 1;
+        if(isBoost) current += inputNodeSize + 1;
+        int total = (inputNodeSize + 1) * 2;
+        output.setText("Finding distances... " + current + "/" + total);
+    }
 
-                    int index = level.getChip().getPosition().getIndex() + 1024 * getDirectionIndex(node.lastMove);
-                    Tile t = level.getLayerBG().get(index % 1024);
+    private void validate() throws Exception {
+        String errorString = validateInputNodeAccessibility() + validateExitAccessibility();
 
-                    if (visited[index] < level.getTChipTime()) {
-                        visited[index] = level.getTChipTime();
-                        visitedCount[index] = 0;
-                    }
+        if(!errorString.equals("")) {
+            throw new Exception(errorString);
+        }
+    }
 
-                    if (visitedCount[index] >= 2) {
-                        continue;
-                    }
-
-                    visitedCount[index]++;
-
-                    if (nodes.contains(index % 1024)) {
-                        int deltaTime = (j == 0) ? 0 : -1;
-                        if (currentDistances[i][nodes.indexOf(index % 1024)] > startTime - level.getTChipTime() + deltaTime) {
-                            currentDistances[i][nodes.indexOf(index % 1024)] = startTime - level.getTChipTime() + deltaTime;
-                            currentPaths[i][nodes.indexOf(index % 1024)] = node;
-                            currentBoostNodes[i][nodes.indexOf(index % 1024)] = false;
-                        }
-                    }
-
-                    for (int d = 0; d < directions.length; d++) {
-                        if (d > 0) {
-                            level.load(state);
-                        }
-                        boolean can = true;
-                        if (level.getChip().isSliding()) {
-                            can = checkSliding(directions[d], index, visited, visitedCount, i, t, node, j);
-                        }
-                        if (can) {
-                            emulator.tick(directions[d], TickFlags.LIGHT);
-                            ByteList newMoves = node.moves.clone();
-                            newMoves.add(directions[d]);
-                            states.add(new PathNode(level.save(), newMoves, level.getTChipTime(), directions[d]));
-                        }
-                    }
-
-                    if (shouldBeVisited) {
-                        visitedCount[toBeVisited]++;
-                        shouldBeVisited = false;
-                        if (visited[toBeVisited] < level.getTChipTime()) {
-                            visited[toBeVisited] = visitedTime;
-                            visitedCount[toBeVisited] = 0;
-                        }
-                    }
-                }
+    private String validateInputNodeAccessibility() {
+        String errorString = "";
+        for(int i = 1; i < inputNodeSize + 1; i++) {
+            if(distances[0][i] == INFINITE_DISTANCE) {
+                errorString += "    " +
+                        emulator.getLevel().getLayerFG().get(nodes.get(i)).toString() +
+                        " at " +
+                        new Position(nodes.get(i)).toString() +
+                        " inaccessible!\n";
             }
         }
+        return errorString;
+    }
 
+    private String validateExitAccessibility() {
+        boolean isExitAccessible = false;
+        for(int i = inputNodeSize + 1; i < nodes.size(); i++) {
+            if(distances[0][i] != INFINITE_DISTANCE) {
+                isExitAccessible = true;
+                break;
+            }
+        }
+        if(!isExitAccessible) {
+            return "    No exit accessible!";
+        }
+        return "";
+    }
+
+    private void solveWithSA() {
         level.getMonsterList().setCreatures(monsterList);
-        SimulatedAnnealing sa = new SimulatedAnnealing(gui, startTemp, endTemp, cooling, iterations, distances,
-                distancesBoost, boostNodes, boostNodesBoost, inputNodeSize, exitNodeSize, restrictionNodes, output);
+        SimulatedAnnealing sa = new SimulatedAnnealing(gui, level.getStartTime(), simulatedAnnealingParameters, distances, distancesBoost,
+                boostNodes, boostNodesBoost, inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();
         chosenExit = sa.bestExit;
 
-        complete(solution);
+        createSolution(solution);
         output.setText("Finished!");
+    }
+
+    private void searchBFS(int from) {
+        PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
+        states.add(new PathNode(level.save(), new ByteList(), startTime, (byte) 'u'));
+
+        int[] visitedAt = new int[1024 * 4];
+        int[] visitedCount = new int[1024 * 4];
+        int statesExplored = 0;
+
+        while (!states.isEmpty() && statesExplored < LIMIT && !gui.killFlag) {
+            statesExplored++;
+            PathNode node = states.poll();
+            byte[] state = node.state;
+            level.load(state);
+
+            int index = level.getChip().getPosition().getIndex() + 1024 * getDirectionIndex(node.lastMove);
+            Tile onTile = level.getLayerBG().get(index % 1024);
+            if(!onTile.isSliding()) {
+                index %= 1024;
+            }
+
+            if (visitedAt[index] < level.getTChipTime()) {
+                visitedAt[index] = level.getTChipTime();
+                visitedCount[index] = 0;
+            }
+
+            if (visitedCount[index] > 0) {
+                continue;
+            }
+
+            visitedCount[index]++;
+
+            getToNode(from, index, node, false);
+
+            for (int direction = 0; direction < directions.length; direction++) {
+                if (direction > 0) {
+                    level.load(state);
+                }
+                boolean can = true;
+                if (level.getChip().isSliding()) {
+                    can = handleSliding(directions[direction], index, visitedAt, visitedCount, from, onTile, node);
+                }
+                if (can) {
+                    emulator.tick(directions[direction], TickFlags.LIGHT);
+                    ByteList newMoves = node.moves.clone();
+                    newMoves.add(directions[direction]);
+                    states.add(new PathNode(level.save(), newMoves, level.getTChipTime(), directions[direction]));
+                }
+            }
+        }
+    }
+
+    private boolean getToNode(int from, int to, PathNode node, boolean isBoost) {
+        if (nodes.contains(to % 1024)) {
+            to = nodes.indexOf(to % 1024);
+            if (currentDistances[from][to] > startTime - level.getTChipTime() + deltaTime) {
+                currentDistances[from][to] = startTime - level.getTChipTime() + deltaTime;
+                currentPaths[from][to] = node;
+                currentBoostNodes[from][to] = isBoost;
+            }
+            return true;
+        }
+        return false;
     }
 
     private int getDirectionIndex(byte d) {
@@ -203,9 +275,9 @@ public class TSPSolver {
         return 0;
     }
 
-    private byte[] normalizeState(boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall) {
+    private byte[] normalizeState(ActingWallParameters actingWallParameters) {
         int start = 0;
-        for(int i = 0; i < 32 * 32; i++) {
+        for(int i = 0; i < 1024; i++) {
             Tile t = level.getLayerFG().get(i);
             if(t.isChip()) {
                 start = i;
@@ -213,12 +285,12 @@ public class TSPSolver {
             if(!isTSPTile(t)) {
                 level.getLayerFG().set(i, Tile.FLOOR);
             }
-            if(isActingWall(t, isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall)) {
+            if(isActingWall(t, actingWallParameters)) {
                 level.getLayerFG().set(i, Tile.BOMB);
             }
             if(t == Tile.BLOCK || t.isTransparent()) {
                 Tile bgT = level.getLayerBG().get(i);
-                if(isActingWall(bgT, isWaterWall, isFireWall, isBombWall, isThiefWall, isTrapWall)) {
+                if(isActingWall(bgT, actingWallParameters)) {
                     level.getLayerFG().set(i, Tile.WALL);
                 }
             }
@@ -230,86 +302,63 @@ public class TSPSolver {
         return level.save();
     }
 
-    private boolean isActingWall(Tile t, boolean isWaterWall, boolean isFireWall, boolean isBombWall, boolean isThiefWall, boolean isTrapWall) {
-        if(t == Tile.WATER && isWaterWall) {
+    private boolean isActingWall(Tile t, ActingWallParameters actingWallParameters) {
+        if(t == Tile.WATER && actingWallParameters.isWaterWall) {
             return true;
         }
-        if(t == Tile.FIRE && isFireWall) {
+        if(t == Tile.FIRE && actingWallParameters.isFireWall) {
             return true;
         }
-        if(t == Tile.BOMB && isBombWall) {
+        if(t == Tile.BOMB && actingWallParameters.isBombWall) {
             return true;
         }
-        if(t == Tile.THIEF && isThiefWall) {
+        if(t == Tile.THIEF && actingWallParameters.isThiefWall) {
             return true;
         }
-        if(t == Tile.TRAP && isTrapWall) {
+        if(t == Tile.TRAP && actingWallParameters.isTrapWall) {
             return true;
         }
         return false;
     }
 
     private boolean isTSPTile(Tile t) {
-        if(t == Tile.FLOOR || t == Tile.WALL || t.isChip() ||
+        return (t == Tile.FLOOR || t == Tile.WALL || t.isChip() ||
            t.isIce() || t.isFF() || t == Tile.TELEPORT || t == Tile.BLUEWALL_REAL ||
            t == Tile.HIDDENWALL_TEMP || t == Tile.INVISIBLE_WALL || t == Tile.CLONE_MACHINE ||
            t == Tile.THIN_WALL_LEFT || t == Tile.THIN_WALL_RIGHT || t == Tile.THIN_WALL_DOWN_RIGHT ||
-           t == Tile.THIN_WALL_DOWN || t == Tile.THIN_WALL_UP) {
-            return true;
-        }
-        return false;
+           t == Tile.THIN_WALL_DOWN || t == Tile.THIN_WALL_UP);
     }
 
-    private boolean checkSliding(byte d, int position, int[] visited, int[] visitedCount, int i, Tile on, PathNode node, int j) {
-        int delta = 0;
+    private boolean handleSliding(byte direction, int position, int[] visitedAt, int[] visitedCount, int from, Tile onTile, PathNode node) {
         Direction dir = level.getChip().getDirection();
+        int delta = getDelta(dir);
+        int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(direction);
+        Tile newTile = level.getLayerFG().get(newPosition % 1024);
 
-        if(dir == Direction.UP) delta = -32;
-        else if(dir == Direction.RIGHT) delta = 1;
-        else if(dir == Direction.DOWN) delta = 32;
-        else if(dir == Direction.LEFT) delta = -1;
-
-        int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(d);
-        Tile t = level.getLayerFG().get(newPosition % 1024);
-
-        if(!canEnter(d, newPosition) && !isThinWall(t)) {
+        if(!canEnter(direction, newPosition) && !isThinWall(newTile)) {
             return false;
         }
 
         if(!canEnter(dirToByte(dir), newPosition)) {
-            return !on.isIce();
+            return !onTile.isIce();
         }
 
-        int[][] currentDistances = (j == 0) ? distances : distancesBoost;
-        PathNode[][] currentPaths = (j == 0) ? paths : pathsBoost;
-        boolean[][] currentBoostNodes = (j == 0) ? boostNodes : boostNodesBoost;
-
-        boolean ret = true;
-        if(!t.isIce() && !t.isFF() && t != Tile.TELEPORT) {
-            if (nodes.contains(newPosition % 1024)) {
-                int deltaTime = (j == 0) ? 0 : -1;
-                if(currentDistances[i][nodes.indexOf(newPosition % 1024)] > startTime - level.getTChipTime() + deltaTime) {
-                    currentDistances[i][nodes.indexOf(newPosition % 1024)] = startTime - level.getTChipTime() + deltaTime;
-                    currentPaths[i][nodes.indexOf(newPosition % 1024)] = node;
-                    if(level.getTChipTime() % 2 == 1) {
-                        currentBoostNodes[i][nodes.indexOf(newPosition % 1024)] = true;
-                    }
-                    else {
-                        currentBoostNodes[i][nodes.indexOf(newPosition % 1024)] = false;
-                    }
-                }
-            }
-            else if(visitedCount[newPosition] >= 2) {
+        if(!newTile.isSliding()) {
+            boolean isBoost = level.getTChipTime() % 2 == 1;
+            boolean gotTo = getToNode(from, newPosition, node, isBoost);
+            if(!gotTo && visitedCount[newPosition] >= 1) {
                 return false;
             }
-            toBeVisited = newPosition;
-            shouldBeVisited = true;
-            visitedTime = level.getTChipTime();
+            return true;
         }
-        else if(!directionEquals(level.getChip().getDirection(), d) && (t.isIce() || t == Tile.TELEPORT)) {
-            ret = false;
-        }
-        return ret;
+        return canOverride(direction, newTile);
+    }
+
+    private int getDelta(Direction dir) {
+        if(dir == Direction.UP) return -32;
+        if(dir == Direction.RIGHT) return 1;
+        if(dir == Direction.DOWN) return 32;
+        return -1;
     }
 
     private byte dirToByte(Direction dir) {
@@ -365,7 +414,11 @@ public class TSPSolver {
         }
     }
 
-    private void complete(int[] solution) {
+    private boolean canOverride(byte d, Tile t) {
+        return directionEquals(level.getChip().getDirection(), d) || t.isFF();
+    }
+
+    private void createSolution(int[] solution) {
         output.setText("Reconstructing solution...");
         level.load(startState);
 
@@ -406,6 +459,14 @@ public class TSPSolver {
 
         Solution tspSolution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
         tspSolution.load(emulator);
+    }
+
+    public int[][] getDistances() {
+        return distances;
+    }
+
+    public int[][] getDistancesBoost() {
+        return distancesBoost;
     }
 
     private class PathNode {
