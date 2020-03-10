@@ -36,6 +36,14 @@ public class Multiset {
         initialSubset();
     }
 
+    /**
+     * This algorithm represents subsets as arrays where each index represents a move in specified order.
+     * The value at each index is the amount of these moves.
+     * If each value is interpreted as a digit, the next subset is the next possible smaller number.
+     * E.g. in default order (urdlwh), if the move pool consists of [2u, r, 3d, l] and the size of subset is 4,
+     * the first subset is [2, 1, 1, 0], and the next one is [2, 1, 0, 1] then [2, 0, 2, 0] then [2, 0, 1, 1] etc.
+     * 2110 -> 2101 -> 2020 -> 2011, where each digit has a limit
+     */
     public void nextSubset() {
         while(!finished) {
             int i = getDistributionIndex();

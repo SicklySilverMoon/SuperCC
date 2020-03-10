@@ -103,10 +103,7 @@ public class VariationTesting {
                 killFlag = true;
                 return;
             }
-
             interpreter = new Interpreter(emulator, this, console, codeEditor.getText());
-            interpreter.displayPermutationCount();
-
             new VariationTestingThread().start();
         });
     }

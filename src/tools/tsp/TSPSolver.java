@@ -9,6 +9,7 @@ import util.ByteList;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.PriorityQueue;
 
 public class TSPSolver {
@@ -94,10 +95,8 @@ public class TSPSolver {
 
     private void setupDistances() {
         for(int i = 0 ; i < nodes.size(); i++) {
-            for(int j = 0; j < nodes.size(); j++) {
-                distances[i][j] = INFINITE_DISTANCE;
-                distancesBoost[i][j] = INFINITE_DISTANCE;
-            }
+            Arrays.fill(distances[i], INFINITE_DISTANCE);
+            Arrays.fill(distancesBoost[i], INFINITE_DISTANCE);
         }
     }
 
@@ -139,6 +138,9 @@ public class TSPSolver {
     private void search() {
         boolean isBoost = deltaTime == -1;
         for(int from = 0; from < inputNodeSize + 1; from++) {
+            if(isBoost && !canBoost(nodes.get(from))) {
+                continue;
+            }
             outputDistanceProgress(from, isBoost);
             level.load(initialState);
             level.cheats.moveChip(new Position(nodes.get(from)));
@@ -154,6 +156,17 @@ public class TSPSolver {
         if(isBoost) current += inputNodeSize + 1;
         int total = (inputNodeSize + 1) * 2;
         output.setText("Finding distances... " + current + "/" + total);
+    }
+
+    private boolean canBoost(int position) {
+        for(Direction dir : new Direction[] {Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT}) {
+            int delta = getDelta(dir);
+            int newPosition = position + delta;
+            if(newPosition >= 0 && newPosition < 1024 && level.getLayerFG().get(newPosition).isSliding()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void validate() throws Exception {

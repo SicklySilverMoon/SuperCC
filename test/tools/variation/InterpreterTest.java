@@ -85,13 +85,13 @@ class InterpreterTest {
     @Test
     void interpretConditionals() {
         emulator.loadLevel(1);
-        String code = "[u](){} if(true) print 1; else print 2; if(false) else if(true) print 3; else print 4;";
+        String code = "[u](){} if(true) print 1; else print 2; if(false) print 3; else if(true) print 4; else print 5;";
 
         Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\n3"));
+        assertTrue(consoleText.contains("1\r\n4"));
     }
 
     @Test

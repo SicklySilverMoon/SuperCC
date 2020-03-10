@@ -28,12 +28,10 @@ public class Parser {
         console.setText("");
     }
 
-    public Parser(ArrayList<Token> tokens, JTextPane console) {
-        this.tokens = tokens;
-        this.console = console;
-        console.setText("");
-    }
-
+    /**
+     * Uses the recursive descent parsing technique.
+     * @return Array of statements for the interpreter to execute.
+     */
     public ArrayList<Stmt> parseCode(String code) {
         Tokenizer tokenizer = new Tokenizer(code);
         ArrayList<Token> tokens = tokenizer.getParsableTokens();
@@ -192,7 +190,7 @@ public class Parser {
 
     private void collectMoves(MovePool movePool) {
         while(getToken().type != TokenType.RIGHT_BRACKET && !isEnd()) {
-            movePool.add(new Move((String)(getNextToken().value)));
+            movePool.add(parseMove());
             consume(TokenType.COMMA);
         }
     }
@@ -207,6 +205,14 @@ public class Parser {
             limits.upper = parseInteger();
         }
         expect(TokenType.RIGHT_PAREN, "Expected ')'");
+    }
+
+    private Move parseMove() {
+        try {
+            return new Move((String)(getNextToken().value));
+        } catch(Exception e) {
+            throw error(getPreviousToken(), "Expected move");
+        }
     }
 
     private int parseInteger() {

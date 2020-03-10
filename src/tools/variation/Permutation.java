@@ -42,10 +42,14 @@ public class Permutation {
         initialPermutation();
     }
 
-    public int[] getSubset() {
-        return subset;
-    }
-
+    /**
+     * This algorithm represents permutations as arrays where each index i is the i-th move.
+     * The value at each index is its specified order within the permutation.
+     * If each value is interpreted as a digit, the next permutation is the next possible larger number.
+     * E.g. in default order (urdlwh), if the move pool consists of [2u, r, l],
+     * the first permutation is [1, 1, 2, 3], and the next one is [1, 1, 3, 2] then [1, 2, 1, 3] then [1, 2, 3, 1] etc.
+     * 1123 -> 1132 -> 1213 -> 1231
+     */
     public void nextPermutation() {
         int i = getFirstDescendingIndex();
         if(i == -1) {

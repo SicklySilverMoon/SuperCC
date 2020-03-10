@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.function.DoubleBinaryOperator;
 
 public class Interpreter implements Expr.Evaluator, Stmt.Executor {
+    private Parser parser;
     private final SuperCC emulator;
     private final ArrayList<Stmt> statements;
     private final JTextPane console;
@@ -39,7 +40,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public long variationCount = 0;
 
     public Interpreter(SuperCC emulator, VariationTesting vt, JTextPane console, String code) {
-        Parser parser = new Parser();
+        this.parser = new Parser(console);
         this.statements = parser.parseCode(code);
         this.variables = parser.getVariables(code);
         this.emulator = emulator;
@@ -52,7 +53,12 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     public void interpret() {
+        if(parser.hadError) {
+            return;
+        }
+
         begin();
+        long timeStart = System.currentTimeMillis();
         while(!vt.killFlag && !isFinished()) {
             variationCount++;
             try {
@@ -85,7 +91,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             }
             getNextPermutation();
         }
-        finish();
+        long timeEnd = System.currentTimeMillis();
+        double totalTime = (double)(timeEnd - timeStart)/1000;
+        long varsPerSecond = Math.round(variationCount/totalTime);
+        finish(totalTime, varsPerSecond);
     }
 
     private void begin() {
@@ -108,13 +117,14 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         return hadError || atSequence == -1;
     }
 
-    private void finish() {
+    private void finish(double totalTime, long varsPerSecond) {
         if(vt.killFlag) {
             print("Search stopped!\n", new Color(255, 68, 68));
         }
         if(!hadError) {
-            String str = "Successfully tested " + String.format("%,d", variationCount) + " variations.\nFound " +
-                    String.format("%,d", solutions.size()) + " solutions.";
+            String str = "Successfully tested " + String.format("%,d", variationCount) + " variations.\n" +
+                    "Found " + String.format("%,d", solutions.size()) + " solutions.\n" +
+                    "Ran for " + totalTime + "s at " + String.format("%,d", varsPerSecond) + " vars/s.";
             print(str, new Color(0, 153, 0));
         }
         emulator.getSavestates().restart();

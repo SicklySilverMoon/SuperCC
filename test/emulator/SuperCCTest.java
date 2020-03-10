@@ -3,7 +3,6 @@ package emulator;
 import game.Direction;
 import game.Level;
 import game.Tile;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -15,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SuperCCTest {
     private SuperCC emulator = new SuperCC(false);
 
-    boolean[] solveLevelset() {
+    boolean[] solveOfficialLevelset() {
         boolean[] solved = new boolean[149];
         Arrays.fill(solved, Boolean.TRUE);
 
@@ -48,7 +47,7 @@ class SuperCCTest {
     void solveCHIPS() {
         emulator.openLevelset(new File("testData/sets/CHIPS.DAT"));
         emulator.setTWSFile(new File("testData/tws/public_CHIPS.dac.tws"));
-        boolean[] solved = solveLevelset();
+        boolean[] solved = solveOfficialLevelset();
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -60,7 +59,7 @@ class SuperCCTest {
     void solveCCLP1() {
         emulator.openLevelset(new File("testData/sets/CCLP1.DAT"));
         emulator.setTWSFile(new File("testData/tws/public_CCLP1.dac.tws"));
-        boolean[] solved = solveLevelset();
+        boolean[] solved = solveOfficialLevelset();
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -72,7 +71,7 @@ class SuperCCTest {
     void solveCCLP2() {
         emulator.openLevelset(new File("testData/sets/CCLP2.DAT"));
         emulator.setTWSFile(new File("testData/tws/public_CCLP2.dac.tws"));
-        boolean[] solved = solveLevelset();
+        boolean[] solved = solveOfficialLevelset();
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -84,7 +83,7 @@ class SuperCCTest {
     void solveCCLP3() {
         emulator.openLevelset(new File("testData/sets/CCLP3.DAT"));
         emulator.setTWSFile(new File("testData/tws/public_CCLP3.dac.tws"));
-        boolean[] solved = solveLevelset();
+        boolean[] solved = solveOfficialLevelset();
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -96,7 +95,7 @@ class SuperCCTest {
     void solveCCLP4() {
         emulator.openLevelset(new File("testData/sets/CCLP4.DAT"));
         emulator.setTWSFile(new File("testData/tws/public_CCLP4.dac.tws"));
-        boolean[] solved = solveLevelset();
+        boolean[] solved = solveOfficialLevelset();
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
