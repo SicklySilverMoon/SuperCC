@@ -1,6 +1,7 @@
 package tools.variation;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class Expr {
     interface Evaluator {
@@ -31,6 +32,21 @@ public abstract class Expr {
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateBinary(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Binary binary = (Binary) o;
+            return Objects.equals(left, binary.left) &&
+                    Objects.equals(operator, binary.operator) &&
+                    Objects.equals(right, binary.right);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(left, operator, right);
+        }
     }
 
     static public class Literal extends Expr {
@@ -44,6 +60,19 @@ public abstract class Expr {
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateLiteral(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Literal literal = (Literal) o;
+            return Objects.equals(value, literal.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
+        }
     }
 
     static public class Group extends Expr {
@@ -56,6 +85,19 @@ public abstract class Expr {
         @Override
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateGroup(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Group group = (Group) o;
+            return Objects.equals(expr, group.expr);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(expr);
         }
     }
 
@@ -74,6 +116,21 @@ public abstract class Expr {
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateLogical(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Logical logical = (Logical) o;
+            return Objects.equals(left, logical.left) &&
+                    Objects.equals(operator, logical.operator) &&
+                    Objects.equals(right, logical.right);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(left, operator, right);
+        }
     }
 
     static public class Unary extends Expr {
@@ -89,6 +146,20 @@ public abstract class Expr {
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateUnary(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Unary unary = (Unary) o;
+            return Objects.equals(operator, unary.operator) &&
+                    Objects.equals(right, unary.right);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(operator, right);
+        }
     }
 
     static public class Variable extends Expr {
@@ -101,6 +172,19 @@ public abstract class Expr {
         @Override
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateVariable(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Variable variable = (Variable) o;
+            return Objects.equals(var, variable.var);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(var);
         }
     }
 
@@ -119,6 +203,21 @@ public abstract class Expr {
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateAssign(this);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Assign assign = (Assign) o;
+            return Objects.equals(var, assign.var) &&
+                    Objects.equals(operator, assign.operator) &&
+                    Objects.equals(value, assign.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(var, operator, value);
+        }
     }
 
     static public class Function extends Expr {
@@ -135,6 +234,21 @@ public abstract class Expr {
         @Override
         public Object evaluate(Evaluator evaluator) {
             return evaluator.evaluateFunction(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Function function = (Function) o;
+            return Objects.equals(name, function.name) &&
+                    Objects.equals(arguments, function.arguments) &&
+                    Objects.equals(token, function.token);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, arguments, token);
         }
     }
 }

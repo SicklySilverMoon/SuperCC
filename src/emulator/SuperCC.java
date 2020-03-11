@@ -32,6 +32,7 @@ public class SuperCC {
     public TWSReader twsReader;
     private SuccPaths paths;
     private EmulatorKeyListener controls;
+    public boolean hasGui = true;
 
     public void setControls(EmulatorKeyListener l) {
         controls = l;
@@ -132,6 +133,11 @@ public class SuperCC {
         window = new Gui(this);
     }
 
+    // GUI-less emulator - used for tests
+    public SuperCC(boolean hasGui) {
+        this.hasGui = hasGui;
+    }
+
     public void openLevelset(File levelset){
         try{
             dat = new DatParser(levelset);
@@ -154,8 +160,10 @@ public class SuperCC {
                 level = dat.parseLevel(levelNumber, rngSeed, step);
                 savestates = new SavestateManager(level);
                 solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
-                window.repaint(true);
-                window.setTitle("SuperCC - " + new String(level.getTitle()));
+                if(hasGui) {
+                    window.repaint(true);
+                    window.setTitle("SuperCC - " + new String(level.getTitle()));
+                }
             }
         }
         catch (Exception e){
@@ -216,52 +224,6 @@ public class SuperCC {
     public void showAction(String s){
         getMainWindow().getLastActionPanel().update(s);
         getMainWindow().getLastActionPanel().repaint();
-    }
-    
-    private void runUnitTests() {
-        String[] levelsets = new String[] {
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CHIPS.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP1.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP2.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP3.DAT",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\CCLP4.DAT",
-//            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\data\\0markustest.dat"
-        };
-        String[] twss = new String[] {
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CHIPS.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP1.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP2.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP3.dac.tws",
-            "C:\\Users\\SIMMOBILE5\\Documents\\My Games\\Chip's\\DATs+Saves\\public_CCLP4.dac.tws",
-//            "C:\\Users\\Markus\\Downloads\\CCTools\\tworld-2.2.0\\save\\0markustest.tws"
-        };
-        
-        for (int i = 0; i < levelsets.length; i++) {
-            openLevelset(new File(levelsets[i]));
-            setTWSFile(new File(twss[i]));
-            System.out.println(new File(levelsets[i]).getName());
-            
-            for (int j = 1; j <= 149; j++) {
-                loadLevel(j);
-                try {
-                    Solution s = twsReader.readSolution(level);
-                    // System.out.println(s.efficiency);
-                    s.load(this);
-                    for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
-                        level.tick(WAIT, new Direction[] {});
-                    }
-                    if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
-                        System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
-                    }
-                }
-                catch (Exception exc) {
-                    System.out.println("Error loading "+level.getLevelNumber()+" "+new String(level.getTitle()));
-                    exc.printStackTrace();
-                }
-            }
-            
-        }
-        
     }
 
     private void testTWS(String levelset, String tws) {

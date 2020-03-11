@@ -3,7 +3,6 @@ package tools.variation;
 import game.Tile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Tokenizer {
@@ -66,62 +65,69 @@ public class Tokenizer {
         keywords.put("distanceto", TokenType.FUNCTION);
         keywords.put("gettimeleft", TokenType.FUNCTION);
 
-        for(Tile t : Tile.values()) {
+        for (Tile t : Tile.values()) {
             keywords.put(t.name().toLowerCase(), TokenType.TILE);
         }
     }
 
-    public static HashMap<String, Object> prepareForInterpreter(ArrayList<Token> tokens) {
-        removeUnimportant(tokens);
-        return getVariables(tokens);
+    public Tokenizer(String code) {
+        this.code = code;
+        this.tokens = new ArrayList<>();
+        tokenize();
     }
 
-    private static void removeUnimportant(ArrayList<Token> tokens) {
-        for(int i = tokens.size() - 1; i >= 0; i--) {
-            Token token = tokens.get(i);
-            switch(token.type) {
-                case SPACE:
-                case TAB:
-                case CARRIAGE_RETURN:
-                case NEW_LINE:
-                case COMMENT:
-                    tokens.remove(i);
-                    break;
-            }
-        }
+    public ArrayList<Token> getAllTokens() {
+        return tokens;
     }
 
-    private static HashMap<String, Object> getVariables(ArrayList<Token> tokens) {
+    public ArrayList<Token> getParsableTokens() {
+        return getFilteredTokens(TokenType.SPACE, TokenType.TAB, TokenType.CARRIAGE_RETURN,
+                TokenType.NEW_LINE, TokenType.COMMENT, TokenType.VAR);
+    }
+
+    public HashMap<String, Object> getVariables() {
         HashMap<String, Object> variables = new HashMap<>();
-        for(int i = tokens.size() - 1; i >= 0; i--) {
-            Token token = tokens.get(i);
-            switch(token.type) {
-                case VAR:
-                    variables.put(tokens.get(i + 1).lexeme, null);
-                    tokens.remove(i);
-                    break;
+        ArrayList<Token> filteredTokens = getFilteredTokens(TokenType.SPACE, TokenType.TAB, TokenType.CARRIAGE_RETURN,
+                TokenType.NEW_LINE, TokenType.COMMENT);
+        for (int i = 0; i < filteredTokens.size(); i++) {
+            Token token = filteredTokens.get(i);
+            if (token.type == TokenType.VAR) {
+                variables.put(filteredTokens.get(i + 1).lexeme, null);
             }
         }
         return variables;
     }
 
-    public Tokenizer(String code) {
-        this.code = code;
-        this.tokens = new ArrayList<Token>();
+    private ArrayList<Token> getFilteredTokens(TokenType... types) {
+        ArrayList<Token> newTokens = new ArrayList<>();
+        for (Token token : tokens) {
+            if (!isTokenType(token, types)) {
+                newTokens.add(token);
+            }
+        }
+        return newTokens;
     }
 
-    public ArrayList<Token> tokenize() {
-        while(!isEnd()) {
+    private boolean isTokenType(Token token, TokenType... types) {
+        for (TokenType type : types) {
+            if (token.type == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void tokenize() {
+        while (!isEnd()) {
             start = current;
             getNextToken();
         }
         addToken(TokenType.EOF);
-        return tokens;
     }
 
     private void getNextToken() {
         char c = getNextChar();
-        switch(c) {
+        switch (c) {
             case '[': addToken(TokenType.LEFT_BRACKET); break;
             case ']': addToken(TokenType.RIGHT_BRACKET); break;
             case '(': addToken(TokenType.LEFT_PAREN); break;
@@ -129,168 +135,209 @@ public class Tokenizer {
             case '{': addToken(TokenType.LEFT_BRACE); break;
             case '}': addToken(TokenType.RIGHT_BRACE); break;
             case ',': addToken(TokenType.COMMA); break;
-            case ';': addToken(TokenType.SEMICOLON); break;
+            case ';': addToken(TokenType.SEMICOLON);break;
             case ':': addToken(TokenType.COLON); break;
             case '+': processPlus(); break;
             case '-': processMinus(); break;
             case '/': processSlash(); break;
-            case '*': addToken(isNextChar('=') ? TokenType.STAR_EQUAL : TokenType.STAR); break;
-            case '%': addToken(isNextChar('=') ? TokenType.MODULO_EQUAL : TokenType.MODULO); break;
-            case '=': addToken(isNextChar('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
+            case '*': processStar(); break;
+            case '%': processModulo(); break;
+            case '=': processEqual(); break;
             case '&': processAnd(); break;
             case '|': processOr(); break;
             case '!': processBang(); break;
-            case '<': addToken(isNextChar('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
-            case '>': addToken(isNextChar('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
+            case '<': processLess(); break;
+            case '>': processGreater(); break;
             case ' ': addToken(TokenType.SPACE); break;
             case '\t': addToken(TokenType.TAB); break;
             case '\r': addToken(TokenType.CARRIAGE_RETURN); break;
             case '\n': line++; addToken(TokenType.NEW_LINE); break;
-            default: processOther(c); break;
+            default: processOther(c);
         }
     }
 
     private void processPlus() {
-        if(isNextChar('+')) {
-            addToken(TokenType.PLUS_PLUS);
-        }
-        else if(isNextChar('=')) {
-            addToken(TokenType.PLUS_EQUAL);
-        }
-        else {
-            addToken(TokenType.PLUS);
+        char c = getNextChar();
+        switch(c) {
+            case '+': addToken(TokenType.PLUS_PLUS); break;
+            case '=': addToken(TokenType.PLUS_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.PLUS);
         }
     }
 
     private void processMinus() {
-        if(isNextChar('-')) {
-            addToken(TokenType.MINUS_MINUS);
-        }
-        else if(isNextChar('=')) {
-            addToken(TokenType.MINUS_EQUAL);
-        }
-        else {
-            addToken(TokenType.MINUS);
+        char c = getNextChar();
+        switch(c) {
+            case '-': addToken(TokenType.MINUS_MINUS); break;
+            case '=': addToken(TokenType.MINUS_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.MINUS);
         }
     }
+
     private void processSlash() {
-        if(isNextChar('/')) {
-            while(peek() != '\n' && !isEnd()) {
-                getNextChar();
-            }
-            addToken(TokenType.COMMENT);
+        char c = getNextChar();
+        switch(c) {
+            case '/': processComment(); break;
+            case '=': addToken(TokenType.SLASH_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.SLASH);
         }
-        else if(isNextChar('=')) {
-            addToken(TokenType.SLASH_EQUAL);
+    }
+
+    private void processComment() {
+        while (getChar() != '\n' && !isEnd()) {
+            getNextChar();
         }
-        else {
-            addToken(TokenType.SLASH);
+        addToken(TokenType.COMMENT);
+    }
+
+    private void processStar() {
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.STAR_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.STAR);
+        }
+    }
+
+    private void processModulo() {
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.MODULO_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.MODULO);
+        }
+    }
+
+    private void processEqual() {
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.EQUAL_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.EQUAL);
         }
     }
 
     private void processAnd() {
-        if(isNextChar('&')) {
-            addToken(TokenType.AND_AND);
-        }
-        else {
-            addToken(TokenType.OTHER);
+        char c = getNextChar();
+        switch(c) {
+            case '&': addToken(TokenType.AND_AND); break;
+            default: getPrevChar(); addToken(TokenType.OTHER);
         }
     }
 
     private void processOr() {
-        if(isNextChar('|')) {
-            addToken(TokenType.OR_OR);
-        }
-        else {
-            addToken(TokenType.OTHER);
+        char c = getNextChar();
+        switch(c) {
+            case '|': addToken(TokenType.OR_OR); break;
+            default: getPrevChar(); addToken(TokenType.OTHER);
         }
     }
 
     private void processBang() {
-        if(isNextChar('=')) {
-            addToken(TokenType.BANG_EQUAL);
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.BANG_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.BANG);
         }
-        else {
-            addToken(TokenType.BANG);
+    }
+
+    private void processLess() {
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.LESS_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.LESS);
+        }
+    }
+
+    private void processGreater() {
+        char c = getNextChar();
+        switch(c) {
+            case '=': addToken(TokenType.GREATER_EQUAL); break;
+            default: getPrevChar(); addToken(TokenType.GREATER);
         }
     }
 
     private void processOther(char c) {
-        if(isDigit(c)) {
+        if (isDigit(c)) {
             processNumber();
-        }
-        else if(isAlpha(c)) {
+        } else if (isAlpha(c)) {
             processIdentifier();
-        }
-        else {
+        } else {
             addToken(TokenType.OTHER);
         }
     }
 
     private void processNumber() {
-        while(isDigit(peek())) {
+        while (isDigit(getChar())) {
             getNextChar();
         }
-        if(moves.contains(peek() + "")) {
-            while(moves.contains(peek() + "")) {
+        if (getChar() == '.') {
+            getNextChar();
+            while (isDigit(getChar())) {
                 getNextChar();
             }
-            String substr = code.substring(start, current);
-            addToken(TokenType.MOVE, substr.toLowerCase());
+        } else if (isMove(getChar())) {
+            processMultipleMoves();
             return;
-        }
-        else if(peek() == '.' && isDigit(peekNext())) {
-            getNextChar();
-            while(isDigit(peek())) {
-                getNextChar();
-            }
         }
         String substr = code.substring(start, current);
         addToken(TokenType.NUMBER, Double.parseDouble(substr));
     }
 
+    private boolean isMove(char c) {
+        return moves.contains(c + "");
+    }
+
+    private void processMultipleMoves() {
+        while (isMove(getChar())) {
+            getNextChar();
+        }
+        String substr = code.substring(start, current);
+        addToken(TokenType.MOVE, substr.toLowerCase());
+    }
+
     private void processIdentifier() {
-        while(isAlphaNumeric(peek())) {
+        while (isAlphaNumeric(getChar())) {
             getNextChar();
         }
         String substr = code.substring(start, current);
         TokenType type = keywords.get(substr.toLowerCase());
-        if(type == null) {
-            boolean move = true;
-            for(int i = 0; i < substr.length(); i++) {
-                if(!moves.contains(substr.charAt(i) + "")) {
-                    move = false;
-                    break;
-                }
-            }
-            if(move) {
-                addToken(TokenType.MOVE, substr.toLowerCase());
-                return;
-            }
-            addToken(TokenType.IDENTIFIER, substr);
+        if (type == null) {
+            type = TokenType.OTHER;
         }
-        else if(type == TokenType.TILE) {
-            addToken(type, substr.toUpperCase());
-        }
-        else {
-            addToken(type);
+        switch (type) {
+            case OTHER: processNonKeyword(substr); break;
+            case TILE: addToken(type, substr.toUpperCase()); break;
+            default: addToken(type);
         }
     }
 
+    private void processNonKeyword(String substr) {
+        if (isMoveString(substr)) {
+            addToken(TokenType.MOVE, substr.toLowerCase());
+        } else {
+            addToken(TokenType.IDENTIFIER, substr);
+        }
+    }
+
+    private boolean isMoveString(String substr) {
+        boolean move = true;
+        for (int i = 0; i < substr.length(); i++) {
+            if (!isMove(substr.charAt(i))) {
+                move = false;
+                break;
+            }
+        }
+        return move;
+    }
+
     private char getNextChar() {
+        if(isEnd()) return '\0';
         current++;
         return code.charAt(current - 1);
     }
 
-    private boolean isNextChar(char c) {
-        if(isEnd()) {
-            return false;
-        }
-        if(code.charAt(current) != c) {
-            return false;
-        }
-        current++;
-        return true;
+    private char getPrevChar() {
+        if(isEnd()) return '\0';
+        current--;
+        return code.charAt(current);
     }
 
     private boolean isDigit(char c) {
@@ -307,18 +354,11 @@ public class Tokenizer {
         return isDigit(c) || isAlpha(c);
     }
 
-    private char peek() {
-        if(isEnd()) {
+    private char getChar() {
+        if (isEnd()) {
             return '\0';
         }
         return code.charAt(current);
-    }
-
-    private char peekNext() {
-        if(current + 1 >= code.length()) {
-            return '\0';
-        }
-        return code.charAt(current + 1);
     }
 
     private boolean isEnd() {
