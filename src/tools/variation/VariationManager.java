@@ -7,6 +7,7 @@ import util.ByteList;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class VariationManager {
@@ -18,6 +19,7 @@ public class VariationManager {
     public int[] sequenceIndex;
     public byte[][] saveStates;
     public ByteList[] moveLists;
+    private ArrayList<Double> cumulativeTotalPermutations = new ArrayList<>();
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
                      Level level, Interpreter interpreter) {
@@ -26,6 +28,7 @@ public class VariationManager {
         this.variableStates = new ArrayList<>(sequences.size());
         this.level = level;
         this.interpreter = interpreter;
+        calculatePermutationCount();
         if(sequences.size() == 0) {
             return;
         }
@@ -145,12 +148,26 @@ public class VariationManager {
         return sequences.size();
     }
 
-    public double getPermutationCount() {
+    public void calculatePermutationCount() {
         double total = 1;
-        for(Stmt.Sequence seq : sequences) {
-            total *= seq.permutation.getPermutationCount();
+        cumulativeTotalPermutations.add(total);
+        for(int i = sequences.size() - 1; i >= 0; i--) {
+            total *= sequences.get(i).permutation.permutationCount;
+            cumulativeTotalPermutations.add(total);
         }
-        return total;
+        Collections.reverse(cumulativeTotalPermutations);
+    }
+
+    public double getPermutationIndex() {
+        int index = 0;
+        for(int i = 0; i < sequences.size(); i++) {
+            index += sequences.get(i).permutation.getPermutationIndex() * cumulativeTotalPermutations.get(i + 1);
+        }
+        return index;
+    }
+
+    public double getTotalPermutationCount() {
+        return cumulativeTotalPermutations.get(0);
     }
 
     public boolean validate() {

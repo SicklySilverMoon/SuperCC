@@ -38,6 +38,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private VariationTesting vt;
     private int fromStatement = 0;
     public long variationCount = 0;
+    public double totalPermutationCount;
 
     public Interpreter(SuperCC emulator, VariationTesting vt, JTextPane console, String code) {
         this.parser = new Parser(console);
@@ -50,6 +51,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.sequenceIndex = manager.sequenceIndex;
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
         this.vt = vt;
+        this.totalPermutationCount = manager.getTotalPermutationCount();
     }
 
     public void interpret() {
@@ -471,9 +473,12 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     public void displayPermutationCount() {
-        double total = manager.getPermutationCount();
-        String type = (total > Permutation.LIMIT) ? "more than " : "up to ";
-        String str = "Upper bound: " + type + String.format("%,.0f", total) + " variations\n";
+        String type = (totalPermutationCount > Permutation.LIMIT) ? "more than " : "up to ";
+        String str = "Upper bound: " + type + String.format("%,.0f", totalPermutationCount) + " variations\n";
         print(str, Color.white);
+    }
+
+    public double getPermutationIndex() {
+        return manager.getPermutationIndex();
     }
 }

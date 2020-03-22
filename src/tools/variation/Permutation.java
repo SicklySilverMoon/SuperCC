@@ -15,6 +15,7 @@ public class Permutation {
     private int[] subset;
     private int currentSize;
     private String lexicographic;
+    public double permutationCount;
 
     public static double LIMIT = 1e18;
 
@@ -38,6 +39,7 @@ public class Permutation {
         this.subset = this.set.getSubset();
         this.currentSize = this.limits.lower;
         this.lexicographic = lexicographic;
+        this.permutationCount = calculatePermutationCount();
 
         initialPermutation();
     }
@@ -84,15 +86,8 @@ public class Permutation {
     }
 
     // Returns double due to potentially large value
-    public double getPermutationCount() {
-        double count = 0;
-        Multiset m = new Multiset(movePools, limits, lexicographic);
-        int[] s = m.getSubset();
-        do {
-            count += uniquePermutations(m.currentSize, s);
-            m.nextSubset();
-        } while(!m.finished && count < LIMIT);
-        return count;
+    private double calculatePermutationCount() {
+        return set.getTotalPermutationCount();
     }
 
     public void reset() {
@@ -114,6 +109,27 @@ public class Permutation {
     public void end() {
         terminate(-1);
         finished = true;
+    }
+
+    public double getPermutationIndex() {
+        double index = 0;
+        double potential = uniquePermutations(currentSize, subset);
+        int[] currentSubset = subset.clone();
+
+        for(int position = 0, currentLength = currentSize; position < currentSize - 1 && potential > 1; position++, currentLength--) {
+            int offset = 0;
+            for(int i = 0; i < permutation[position]; i++) {
+                offset += currentSubset[i];
+            }
+            index += (potential * offset) / currentLength;
+
+            potential *= currentSubset[permutation[position]];
+            potential /= currentLength;
+
+            currentSubset[permutation[position]]--;
+        }
+
+        return index + set.getCumulativePermutationCount();
     }
 
     private int getFirstDescendingIndex() {
@@ -156,6 +172,16 @@ public class Permutation {
         }
     }
 
+    private void initialPermutation() {
+        permutation = new int[currentSize];
+        int i = 0;
+        for(int j = 0; j < subset.length; j++) {
+            for(int k = 0; k < subset[j]; k++) {
+                permutation[i++] = j;
+            }
+        }
+    }
+
     private double factorial(int n) {
         if(n == 0 || n == 1) {
             return 1;
@@ -165,19 +191,9 @@ public class Permutation {
 
     private double uniquePermutations(int n, int[] moves) {
         double denominator = 1;
-        for(int i = 0; i < moves.length; i++) {
-            denominator *= factorial(moves[i]);
+        for (int move : moves) {
+            denominator *= factorial(move);
         }
         return factorial(n)/denominator;
-    }
-
-    private void initialPermutation() {
-        permutation = new int[currentSize];
-        int i = 0;
-        for(int j = 0; j < subset.length; j++) {
-            for(int k = 0; k < subset[j]; k++) {
-                permutation[i++] = j;
-            }
-        }
     }
 }
