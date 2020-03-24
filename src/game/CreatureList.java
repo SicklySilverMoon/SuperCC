@@ -141,7 +141,7 @@ public class CreatureList implements Iterable<Creature> {
                         Tile tile = resetClone.toTile(); //Needed to not cause tile erasure
                         resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
                         boolean SpecialTileInteraction = false;
-                        if (level.getChip().getPosition().equals(row31Position)|| resetNewTile.isSwimmingChip()) { //Swimming Chip is now checked along side normal Chip
+                        if (level.getChip().getPosition().equals(row31Position)|| resetNewTile.isChip() || resetNewTile.isSwimmingChip()) { //Swimming Chip is now checked along side normal Chip
                             level.chip.kill();
                         }
                         if (resetNewTile.isButton()) { //Buttons now push properly
