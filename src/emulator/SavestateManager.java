@@ -25,7 +25,7 @@ public class SavestateManager implements Serializable {
     private transient SavestateCompressor compressor;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 0;
-    private ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
+    private transient ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
     private ByteList[] checkpoints = new ByteList[10];
     private boolean[] recordingCheckpoints = new boolean[10];
     private int[] checkpointStartIndex = new int[10];
@@ -56,6 +56,7 @@ public class SavestateManager implements Serializable {
         throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         compressor = new SavestateCompressor();
+        undesirableSavestates = new ArrayList<>();
         pause = false;
         playbackWaitTime = STANDARD_WAIT_TIME;
         playbackIndex = currentNode.depth();

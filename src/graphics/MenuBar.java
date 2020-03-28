@@ -295,7 +295,7 @@ class MenuBar extends JMenuBar{
     
             addSeparator();
     
-            JMenuItem saveSavestates = new JMenuItem("Save all states");
+            JMenuItem saveSavestates = new JMenuItem("Save all states to disk");
             saveSavestates.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 try{
@@ -322,7 +322,7 @@ class MenuBar extends JMenuBar{
             addIcon(saveSavestates, "/resources/icons/saveAs.gif");
             add(saveSavestates);
     
-            JMenuItem loadStates = new JMenuItem("Load states");
+            JMenuItem loadStates = new JMenuItem("Load states from disk");
             loadStates.addActionListener(event -> {
                 try{
                     JFileChooser fc = new JFileChooser();
