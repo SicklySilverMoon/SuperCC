@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="851" height="467"/>
+      <xy x="20" y="20" width="953" height="467"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -23,7 +23,7 @@
         </constraints>
         <properties>
           <editable value="false"/>
-          <text value="SuCC is a Chip's Challenge (MS ruleset) Optimizing/TASing tool.&#10;&#10;Savestates can be saved with shift and a keypress and loaded simply by pressing that key. &#10;&#10;Shift and / will save what's known as an undesirable savestate where if you ever reach that game state the program will alert you.&#10;&#10;Checkpoint recordings are both started and ended with the same key combo: control, shift, and a number key, and later loaded with &#10;just control and that same number key. Checkpoints record and replay moves whenever needed.&#10;&#10;SuCC can also save and load solutions (ctrl+s and ctrl+o respectively) as well as even write to a TWS (Tile World Solution) file from the TWS menu.&#10;Alongside this is the ability to copy out and paste solutions in (ctrl+c, ctrl+v), either an entire JSON solution (such as the save files used) &#10;or a collection of moves to be added onto the end of the current solution.&#10;&#10;SuCC has a robust cheat engine as well that can be accessed from the cheat menu and from right clicking on map tiles, both of which have different effects.&#10;&#10;Disclaimer: Ice Blocks are known to not be emulated properly in situations involving slide delay."/>
+          <text value="SuCC is a Chip's Challenge Optimizing/TASing tool.&#10;&#10;Savestates can be saved with shift and a keypress and loaded simply by pressing that key. &#10;&#10;Checkpoint recordings are both started and ended with the same key combo: control, shift, and a number key, and later loaded with &#10;just control and that same number key. Checkpoints record and replay moves whenever needed.&#10;&#10;All current savestates and checkpoints can be saved and loaded for future use under the &quot;Solution&quot; menu option.&#10;&#10;Shift and / will save what's known as an undesirable savestate where if you ever reach that game state the program will alert you, (of note is that these can not be saved to disk).&#10;&#10;SuCC can also save and load solutions (ctrl+s and ctrl+o respectively) as well as even write to a TWS (Tile World Solution) file from the TWS menu.&#10;Alongside this is the ability to copy out and paste solutions in (ctrl+c, ctrl+v), either an entire JSON solution (such as the save files used) &#10;or a collection of moves to be added onto the end of the current solution.&#10;&#10;SuCC has a robust cheat engine as well that can be accessed from the cheat menu and from right clicking on map tiles, both of which have different effects.&#10;&#10;Disclaimer: Ice Blocks are known to not be emulated properly in situations involving slide delay."/>
         </properties>
       </component>
     </children>

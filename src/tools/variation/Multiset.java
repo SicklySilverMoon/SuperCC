@@ -1,26 +1,23 @@
 package tools.variation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class Multiset {
     private MovePool movePoolForced;
     private int[] movePool;
-    private int lowerBound;
-    private int upperBound;
+    private BoundLimit limits;
     public int currentSize;
     private int[] subset;
     public boolean finished = false;
     public ArrayList<String> moves;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
 
-    public Multiset(int lowerBound, int upperBound, MovePool movePoolOptional, MovePool movePoolForced, String lexicographic) {
-        MovePool movePoolTotal = getMovePoolTotal(movePoolOptional, movePoolForced);
-        this.movePoolForced = movePoolForced;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        this.currentSize = lowerBound;
+    public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
+        MovePool movePoolTotal = getMovePoolTotal(movePools);
+        this.movePoolForced = movePools.forced;
+        this.limits = limits;
+        this.currentSize = limits.lower;
 
         int size = movePoolTotal.moves.size();
         this.movePool = new int[size];
@@ -39,46 +36,24 @@ public class Multiset {
         initialSubset();
     }
 
+    /**
+     * This algorithm represents subsets as arrays where each index represents a move in specified order.
+     * The value at each index is the amount of these moves.
+     * If each value is interpreted as a digit, the next subset is the next possible smaller number.
+     * E.g. in default order (urdlwh), if the move pool consists of [2u, r, 3d, l] and the size of subset is 4,
+     * the first subset is [2, 1, 1, 0], and the next one is [2, 1, 0, 1] then [2, 0, 2, 0] then [2, 0, 1, 1] etc.
+     * 2110 -> 2101 -> 2020 -> 2011, where each digit has a limit
+     */
     public void nextSubset() {
         while(!finished) {
-            int i;
-            for (i = subset.length - 1; i >= 1; i--) {
-                boolean found = false;
-                if (subset[i] != movePool[i]) {
-                    for (int j = i - 1; j >= 0; j--) {
-                        if (movePool[j] > 0) {
-                            if (subset[j] > 0) {
-                                subset[j]--;
-                                found = true;
-                            }
-                            break;
-                        }
-                    }
-                }
-                if (found) {
-                    break;
-                }
-            }
+            int i = getDistributionIndex();
             if (i == 0) {
-                if (currentSize < upperBound) {
-                    currentSize++;
-                    initialSubset();
-                    return;
-                }
-                finished = true;
+                endOfCurrentSize();
                 return;
             }
 
-            int toDistribute = 1;
-            for (int j = subset.length - 1; j >= i; j--) {
-                toDistribute += subset[j];
-                subset[j] = 0;
-            }
-            for (int j = i; j < subset.length; j++) {
-                int distributed = Math.min(toDistribute, movePool[j]);
-                toDistribute -= distributed;
-                subset[j] = distributed;
-            }
+            subset[i - 1]--;
+            distribute(i, gatherDistribution(i));
 
             if(isSubsetValid()) {
                 return;
@@ -92,38 +67,47 @@ public class Multiset {
 
     public void reset() {
         finished = false;
-        currentSize = lowerBound;
+        currentSize = limits.lower;
         initialSubset();
     }
 
-    private void initialSubset() {
-        int toDistribute = currentSize;
-        for(int i = 0; i < subset.length; i++) {
+    private int getDistributionIndex() {
+        for (int i = subset.length - 1; i >= 1; i--) {
+            if (subset[i] != movePool[i] && subset[i - 1] > 0) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private void distribute(int from, int toDistribute) {
+        for(int i = from; i < subset.length; i++) {
             int distributed = Math.min(toDistribute, movePool[i]);
             toDistribute -= distributed;
             subset[i] = distributed;
         }
+    }
 
-        int i;
-        for(i = subset.length - 1; i >= 1; i--) {
-            boolean found = false;
-            if(subset[i] != movePool[i]) {
-                for(int j = i - 1; j >= 0; j--) {
-                    if(movePool[j] > 0) {
-                        if(subset[j] > 0) {
-                            found = true;
-                        }
-                        break;
-                    }
-                }
-            }
-            if(found) {
-                break;
-            }
+    private int gatherDistribution(int from) {
+        int toDistribute = 1;
+        for (int j = from; j < subset.length; j++) {
+            toDistribute += subset[j];
+            subset[j] = 0;
         }
-        if(i == 0 && currentSize > upperBound) {
-            finished = true;
+        return toDistribute;
+    }
+
+    private void endOfCurrentSize() {
+        if (currentSize < limits.upper) {
+            currentSize++;
+            initialSubset();
+            return;
         }
+        finished = true;
+    }
+
+    private void initialSubset() {
+        distribute(0, currentSize);
 
         if(!isSubsetValid()) {
             nextSubset();
@@ -139,16 +123,12 @@ public class Multiset {
                 return index1 - index2;
             }
         }
-        if(s1.length() == s2.length()) {
-            return 0;
-        }
         return s1.length() - s2.length();
     }
 
-    private MovePool getMovePoolTotal(MovePool movePoolOptional, MovePool movePoolForced) {
+    private MovePool getMovePoolTotal(MovePoolContainer movePools) {
         MovePool movePoolTotal = new MovePool();
-        movePoolTotal.add(movePoolOptional);
-        movePoolTotal.add(movePoolForced);
+        movePoolTotal.add(movePools);
         return movePoolTotal;
     }
 

@@ -1,7 +1,6 @@
 package tools.variation;
 
 import emulator.SuperCC;
-import emulator.TickFlags;
 import game.Position;
 import util.ByteList;
 
@@ -21,81 +20,81 @@ public class FunctionEvaluator {
     public Object evaluate(Expr.Function function) {
         switch(function.name) {
             case "previousmove":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return previousMove();
             case "nextmove":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return nextMove();
             case "getmove":
-                checkArgs(function, 1);
+                checkArgCount(function, 1);
                 Object index = function.arguments.get(0).evaluate(interpreter);
                 checkIfNumber(function, index);
                 return getMoveAt(((Double)index).intValue());
             case "getoppositemove":
-                checkArgs(function, 1);
+                checkArgCount(function, 1);
                 Object move = function.arguments.get(0).evaluate(interpreter);
                 checkIfMove(function, move);
                 return getOppositeMove((Move)move);
             case "movesexecuted":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return movesExecuted();
             case "movecount":
-                checkArgs(function, 1);
+                checkArgCount(function, 1);
                 move = function.arguments.get(0).evaluate(interpreter);
                 checkIfMove(function, move);
                 return moveCount((Move)move);
             case "seqlength":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return seqLength();
             case "getchipsleft":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getChipsLeft();
             case "getredkeycount":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getKeys()[1];
             case "getyellowkeycount":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getKeys()[3];
             case "getgreenkeycount":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getKeys()[2];
             case "getbluekeycount":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getKeys()[0];
             case "hasflippers":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return emulator.getLevel().getBoots()[0] != 0;
             case "hasfireboots":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return emulator.getLevel().getBoots()[1] != 0;
             case "hassuctionboots":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return emulator.getLevel().getBoots()[3] != 0;
             case "hasiceskates":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return emulator.getLevel().getBoots()[2] != 0;
             case "getforegroundtile":
-                checkArgs(function, 2);
+                checkArgCount(function, 2);
                 Object x = function.arguments.get(0).evaluate(interpreter);
                 Object y = function.arguments.get(1).evaluate(interpreter);
                 checkIfNumber(function, x, y);
                 return emulator.getLevel().getLayerFG().get(new Position(((Double)x).intValue(), ((Double)y).intValue()));
             case "getbackgroundtile":
-                checkArgs(function, 2);
+                checkArgCount(function, 2);
                 x = function.arguments.get(0).evaluate(interpreter);
                 y = function.arguments.get(1).evaluate(interpreter);
                 checkIfNumber(function, x, y);
                 return emulator.getLevel().getLayerBG().get(new Position(((Double)x).intValue(), ((Double)y).intValue()));
             case "getplayerx":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getChip().getPosition().getX();
             case "getplayery":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 return (double)emulator.getLevel().getChip().getPosition().getY();
             case "move":
                 return move(function.arguments);
             case "distanceto":
-                checkArgs(function, 2);
+                checkArgCount(function, 2);
                 x = function.arguments.get(0).evaluate(interpreter);
                 y = function.arguments.get(1).evaluate(interpreter);
                 checkIfNumber(function, x, y);
@@ -103,7 +102,7 @@ public class FunctionEvaluator {
                 int playerY = emulator.getLevel().getChip().getPosition().getY();
                 return Math.abs(playerX - ((Double)x).intValue()) + Math.abs(playerY - ((Double)y).intValue());
             case "gettimeleft":
-                checkArgs(function, 0);
+                checkArgCount(function, 0);
                 int time = emulator.getLevel().getTimer();
                 if(time < 0) time += 10001;
                 return (double)time / 10;
@@ -247,18 +246,7 @@ public class FunctionEvaluator {
             for(int i = 0; i < move.number; i++) {
                 for(int j = 0; j < str.length(); j++) {
                     byte moveDir = toByte(str.charAt(j));
-                    if (moveDir == 'w') {
-                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                        interpreter.moveList.add(SuperCC.WAIT);
-                        interpreter.checkMove();
-                        emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
-                        interpreter.moveList.add(SuperCC.WAIT);
-                        interpreter.checkMove();
-                    } else {
-                        emulator.tick(moveDir, TickFlags.LIGHT);
-                        interpreter.moveList.add(moveDir);
-                        interpreter.checkMove();
-                    }
+                    interpreter.doMove(moveDir);
                 }
             }
         }
@@ -282,7 +270,7 @@ public class FunctionEvaluator {
         }
     }
 
-    private void checkArgs(Expr.Function function, int required) {
+    private void checkArgCount(Expr.Function function, int required) {
         if(function.arguments.size() != required) {
             throw new Interpreter.RuntimeError(function.token,
                     "Expected " + required + " arguments, got " + function.arguments.size());
@@ -293,20 +281,14 @@ public class FunctionEvaluator {
         if(arg1 instanceof Move) {
             return;
         }
-        throw new Interpreter.RuntimeError(function.token, "Argument must be a number");
+        throw new Interpreter.RuntimeError(function.token, "Argument must be a move");
     }
 
-    private void checkIfNumber(Expr.Function function, Object arg1) {
-        if(arg1 instanceof Double) {
-            return;
+    private void checkIfNumber(Expr.Function function, Object... args) {
+        for(Object arg : args) {
+            if(!(arg instanceof Double)) {
+                throw new Interpreter.RuntimeError(function.token, "Argument must be a number");
+            }
         }
-        throw new Interpreter.RuntimeError(function.token, "Argument must be a number");
-    }
-
-    private void checkIfNumber(Expr.Function function, Object arg1, Object arg2) {
-        if(arg1 instanceof Double && arg2 instanceof Double) {
-            return;
-        }
-        throw new Interpreter.RuntimeError(function.token, "Argument must be a number");
     }
 }

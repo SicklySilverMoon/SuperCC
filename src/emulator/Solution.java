@@ -69,7 +69,9 @@ public class Solution{
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
         }
-        emulator.getMainWindow().repaint(true);
+        if(emulator.hasGui) {
+            emulator.getMainWindow().repaint(true);
+        }
     }
     
     public void loadMoves(SuperCC emulator, TickFlags tickFlags, boolean repaint){

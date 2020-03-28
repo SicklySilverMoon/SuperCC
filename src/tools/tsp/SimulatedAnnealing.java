@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class SimulatedAnnealing {
-    TSPGUI gui;
-    private double temparature;
+    private TSPGUI gui;
+    private double temperature;
     private double end;
     private double cooling;
     private int iterations;
@@ -16,24 +16,26 @@ public class SimulatedAnnealing {
     private int[][] distancesBoost;
     private boolean[][] boostNodes;
     private boolean[][] boostNodesBoost;
-    Random r = new Random();
     private int[] bestSolution;
     private int bestDistance;
     private int inputNodeSize;
     private int exitNodeSize;
     public int bestExit;
     private int exitChosen;
+    private int startTime;
     private ArrayList<TSPGUI.RestrictionNode> restrictionNodes;
     private JTextPane output;
+    private Random r = new Random();
 
-    public SimulatedAnnealing(TSPGUI gui, double temparature, double end, double cooling, int iterations, int[][] distances,
+    public SimulatedAnnealing(TSPGUI gui, int startTime, SimulatedAnnealingParameters simulatedAnnealingParameters, int[][] distances,
                               int[][] distancesBoost, boolean[][] boostNodes, boolean[][] boostNodesBoost,
                               int inputNodeSize, int exitNodeSize, ArrayList<TSPGUI.RestrictionNode> restrictionNodes, JTextPane output) {
         this.gui = gui;
-        this.temparature = temparature;
-        this.end = end;
-        this.cooling = cooling;
-        this.iterations = iterations;
+        this.startTime = startTime <= 0 ? 9999 : startTime;
+        this.temperature = simulatedAnnealingParameters.startTemp;
+        this.end = simulatedAnnealingParameters.endTemp;
+        this.cooling = simulatedAnnealingParameters.cooling;
+        this.iterations = simulatedAnnealingParameters.iterations;
         this.distances = distances;
         this.distancesBoost = distancesBoost;
         this.boostNodes = boostNodes;
@@ -59,21 +61,23 @@ public class SimulatedAnnealing {
         int[] solution = bestSolution.clone();
         int distance = bestDistance;
 
-        while(temparature > end && !gui.killFlag) {
-            temparature *= cooling;
-            output.setText("Calculating shortest path...\nTemperature: " + temparature + "\nCurrent best: " + bestDistance);
+        while(temperature > end && !gui.killFlag) {
+            temperature *= cooling;
+            output.setText("Calculating shortest path...\nTemperature: " +
+                    temperature + "\nCurrent best: " +
+                    ((double)(startTime - bestDistance + 2)/10));
             int startDistance = distance;
             for(int i = 0; i < iterations; i++) {
                 int[] newSolution = solution.clone();
                 mutate(newSolution);
                 handleRestrictions(newSolution);
-                int newDistance = calculateDistance(newSolution);
 
+                int newDistance = calculateDistance(newSolution);
                 if(newDistance < distance) {
                     distance = newDistance;
                     solution = newSolution.clone();
                 }
-                else if(Math.exp(((double)distance - newDistance)/temparature) > r.nextDouble()) {
+                else if(shouldAccept(distance, newDistance)) {
                     distance = newDistance;
                     solution = newSolution.clone();
                 }
@@ -85,7 +89,7 @@ public class SimulatedAnnealing {
                 }
             }
             if(distance < startDistance) {
-                temparature /= cooling;
+                temperature /= cooling;
             }
         }
         return bestSolution;
@@ -99,9 +103,7 @@ public class SimulatedAnnealing {
 
         for(int i = solution.length - 1; i > 0; i--) {
             int index = r.nextInt(i + 1);
-            int temp = solution[index];
-            solution[index] = solution[i];
-            solution[i] = temp;
+            swap(solution, i, index);
         }
 
         return solution;
@@ -149,24 +151,21 @@ public class SimulatedAnnealing {
 
         int type = r.nextInt(3);
 
-        if(type == 0) {
-            int temp = solution[index1];
-            solution[index1] = solution[index2];
-            solution[index2] = temp;
-        }
-        else if(type == 1) {
-            int temp = solution[index1];
-            for(int i = index1 + 1; i <= index2; i++) {
-                solution[i - 1] = solution[i];
-            }
-            solution[index2] = temp;
-        }
-        else if(type == 2) {
-            for(int i = index1; i <= (index1 + index2)/2; i++) {
-                int temp = solution[i];
-                solution[i] = solution[solution.length - i - 1];
-                solution[solution.length - i - 1] = temp;
-            }
+        switch(type) {
+            case 0:
+                swap(solution, index1, index2);
+                break;
+            case 1:
+                int temp = solution[index1];
+                for(int i = index1 + 1; i <= index2; i++) {
+                    solution[i - 1] = solution[i];
+                }
+                solution[index2] = temp;
+                break;
+            case 2:
+                for(int i = index1; i <= (index1 + index2)/2; i++) {
+                    swap(solution, i, solution.length - i - 1);
+                }
         }
     }
 
@@ -180,10 +179,18 @@ public class SimulatedAnnealing {
         for(int i = 0; i < restrictionNodes.size(); i++) {
             TSPGUI.RestrictionNode node = restrictionNodes.get(i);
             if(indexes[node.beforeIndex] > indexes[node.afterIndex]) {
-                int temp = solution[indexes[node.beforeIndex]];
-                solution[indexes[node.beforeIndex]] = solution[indexes[node.afterIndex]];
-                solution[indexes[node.afterIndex]] = temp;
+                swap(solution, indexes[node.beforeIndex], indexes[node.afterIndex]);
             }
         }
+    }
+
+    private boolean shouldAccept(int distance, int newDistance) {
+        return Math.exp(((double)distance - newDistance)/ temperature) > r.nextDouble();
+    }
+
+    private void swap(int[] solution, int i, int j) {
+        int temp = solution[i];
+        solution[i] = solution[j];
+        solution[j] = temp;
     }
 }

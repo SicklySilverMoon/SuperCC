@@ -18,7 +18,6 @@ public class VariationManager {
     public int[] sequenceIndex;
     public byte[][] saveStates;
     public ByteList[] moveLists;
-    public boolean finished = false;
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
                      Level level, Interpreter interpreter) {
@@ -59,24 +58,18 @@ public class VariationManager {
     }
 
     public int nextPermutation() {
-        int i;
-        for(i = sequences.size() - 1; i >= 0; i--) {
+        for(int i = sequences.size() - 1; i >= 0; i--) {
             Stmt.Sequence seq = sequences.get(i);
             seq.permutation.nextPermutation();
             if(seq.permutation.finished) {
-                if(i > 0) {
-                    seq.permutation.reset();
-                }
+                seq.permutation.reset();
             }
             else  {
-                break;
+                loadVariables(i);
+                return i;
             }
         }
-        if(i == -1) {
-            return -1;
-        }
-        loadVariables(i);
-        return i;
+        return -1;
     }
 
     public void setVariables(int index) {
@@ -101,9 +94,7 @@ public class VariationManager {
             sum += getPermutation(i).length;
             if(index < sum) {
                 sequences.get(i).permutation.terminate(index - prevSum);
-                for(int j = i + 1; j < getSequenceCount(); j++) {
-                    sequences.get(j).permutation.end();
-                }
+                endSequences(i + 1);
                 return;
             }
             prevSum = sum;
@@ -112,7 +103,11 @@ public class VariationManager {
 
     public void terminateZero(int index) {
         sequences.get(index).permutation.reset();
-        for(int i = index + 1; i < getSequenceCount(); i++) {
+        endSequences(index + 1);
+    }
+
+    private void endSequences(int from) {
+        for(int i = from; i < getSequenceCount(); i++) {
             sequences.get(i).permutation.end();
         }
     }
@@ -164,35 +159,12 @@ public class VariationManager {
             return false;
         }
         for(Stmt.Sequence sequence : sequences) {
-            if(sequence.permutation.upperBound == 0) {
+            if(sequence.permutation.limits.upper == 0) {
                 interpreter.print("Sequence upper bound must be at least 1\n", new Color(255, 68, 68));
                 return false;
             }
         }
         return true;
-    }
-
-    public void printPermutations() {
-        int count = 0;
-        int[] subset = sequences.get(0).permutation.getSubset();
-        do {
-            for(int i = 0; i < getSequenceCount(); i++) {
-                Stmt.Sequence seq = sequences.get(i);
-                for(ByteList list : seq.permutation.getPermutation()) {
-                    for(byte b : list) {
-                        System.out.print((char)b);
-                    }
-                }
-                count++;
-                System.out.print(" | [");
-                for(int s : subset) {
-                    System.out.print(s + ", ");
-                }
-                System.out.print("]");
-            }
-            System.out.println();
-        }while(nextPermutation() != -1);
-        System.out.println("Count: " + count);
     }
 
     private byte lowercase(byte b) {

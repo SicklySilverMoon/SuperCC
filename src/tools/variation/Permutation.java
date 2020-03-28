@@ -1,18 +1,14 @@
 package tools.variation;
 
-import emulator.EmulatorKeyListener;
 import emulator.SuperCC;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import util.ByteList;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
 public class Permutation {
-    private MovePool movePoolOptional;
-    private MovePool movePoolForced;
-    public Integer lowerBound;
-    public Integer upperBound;
+    private MovePoolContainer movePools;
+    public BoundLimit limits;
     private int[] permutation;
     public boolean finished = false;
     private Multiset set;
@@ -34,56 +30,36 @@ public class Permutation {
         toMove.put('h', SuperCC.WAIT);
     }
 
-    public Permutation(MovePool movePoolOptional, MovePool movePoolForced, Integer lowerBound, Integer upperBound, String lexicographic) {
-        this.movePoolOptional = movePoolOptional;
-        this.movePoolForced = movePoolForced;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        setBounds();
-        this.set = new Multiset(this.lowerBound, this.upperBound, movePoolOptional, movePoolForced, lexicographic);
+    public Permutation(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
+        this.movePools = movePools;
+        this.limits = limits;
+        limits.setBounds(movePools);
+        this.set = new Multiset(movePools, limits, lexicographic);
         this.subset = this.set.getSubset();
-        this.currentSize = this.lowerBound;
+        this.currentSize = this.limits.lower;
         this.lexicographic = lexicographic;
 
         initialPermutation();
     }
 
-    public int[] getSubset() {
-        return subset;
-    }
-
+    /**
+     * This algorithm represents permutations as arrays where each index i is the i-th move.
+     * The value at each index is its specified order within the permutation.
+     * If each value is interpreted as a digit, the next permutation is the next possible larger number.
+     * E.g. in default order (urdlwh), if the move pool consists of [2u, r, l],
+     * the first permutation is [1, 1, 2, 3], and the next one is [1, 1, 3, 2] then [1, 2, 1, 3] then [1, 2, 3, 1] etc.
+     * 1123 -> 1132 -> 1213 -> 1231
+     */
     public void nextPermutation() {
-        int k, l;
-        for(k = currentSize - 2; k >= 0; k--) {
-            if(permutation[k] < permutation[k + 1]) {
-                break;
-            }
-        }
-        if(k < 0) {
-            set.nextSubset();
-            if(!set.finished) {
-                currentSize = set.currentSize;
-                initialPermutation();
-                return;
-            }
-            finished = true;
+        int i = getFirstDescendingIndex();
+        if(i == -1) {
+            endOfCurrentSubset();
             return;
         }
-        for(l = currentSize - 1; l > k; l--) {
-            if(permutation[k] < permutation[l]) {
-                break;
-            }
-        }
+        int j = getNextLargerIndex(i);
 
-        int temp = permutation[k];
-        permutation[k] = permutation[l];
-        permutation[l] = temp;
-
-        for(int i = 0; i < (currentSize - k - 1)/2; i++) {
-            temp = permutation[k + i + 1];
-            permutation[k + i + 1] = permutation[currentSize - 1 - i];
-            permutation[currentSize - 1 - i] = temp;
-        }
+        swap(i, j);
+        reverseSubarray(i + 1);
     }
 
     public ByteList[] getPermutation() {
@@ -110,7 +86,7 @@ public class Permutation {
     // Returns double due to potentially large value
     public double getPermutationCount() {
         double count = 0;
-        Multiset m = new Multiset(lowerBound, upperBound, movePoolOptional, movePoolForced, lexicographic);
+        Multiset m = new Multiset(movePools, limits, lexicographic);
         int[] s = m.getSubset();
         do {
             count += uniquePermutations(m.currentSize, s);
@@ -122,7 +98,7 @@ public class Permutation {
     public void reset() {
         set.reset();
         finished = false;
-        currentSize = lowerBound;
+        currentSize = limits.lower;
         initialPermutation();
     }
 
@@ -140,6 +116,46 @@ public class Permutation {
         finished = true;
     }
 
+    private int getFirstDescendingIndex() {
+        for(int i = currentSize - 2; i >= 0; i--) {
+            if(permutation[i] < permutation[i + 1]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void endOfCurrentSubset() {
+        set.nextSubset();
+        if(!set.finished) {
+            currentSize = set.currentSize;
+            initialPermutation();
+            return;
+        }
+        finished = true;
+    }
+
+    private int getNextLargerIndex(int to) {
+        for(int i = currentSize - 1; i > to; i--) {
+            if(permutation[to] < permutation[i]) {
+                return i;
+            }
+        }
+        return to;
+    }
+
+    private void swap(int i, int j) {
+        int temp = permutation[i];
+        permutation[i] = permutation[j];
+        permutation[j] = temp;
+    }
+
+    private void reverseSubarray(int from) {
+        for(int i = 0; i < (currentSize - from)/2; i++) {
+            swap(from + i, currentSize - 1 - i);
+        }
+    }
+
     private double factorial(int n) {
         if(n == 0 || n == 1) {
             return 1;
@@ -148,11 +164,11 @@ public class Permutation {
     }
 
     private double uniquePermutations(int n, int[] moves) {
-        double denom = 1;
+        double denominator = 1;
         for(int i = 0; i < moves.length; i++) {
-            denom *= factorial(moves[i]);
+            denominator *= factorial(moves[i]);
         }
-        return factorial(n)/denom;
+        return factorial(n)/denominator;
     }
 
     private void initialPermutation() {
@@ -163,24 +179,5 @@ public class Permutation {
                 permutation[i++] = j;
             }
         }
-    }
-
-    private void setBounds() {
-        int size = movePoolOptional.size + movePoolForced.size;
-        if(lowerBound == null && upperBound == null) {
-            lowerBound = size;
-            upperBound = size;
-        }
-        else if(upperBound == null) {
-            upperBound = lowerBound;
-        }
-        if(upperBound < lowerBound) {
-            int temp = upperBound;
-            upperBound = lowerBound;
-            lowerBound = temp;
-        }
-        upperBound = Math.min(upperBound, size);
-        lowerBound = Math.min(lowerBound, size);
-        lowerBound = Math.max(lowerBound, movePoolForced.size);
     }
 }
