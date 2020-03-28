@@ -143,7 +143,7 @@ public class TSPSolver {
             }
             outputDistanceProgress(from, isBoost);
             level.load(initialState);
-            level.cheats.moveChip(new Position(nodes.get(from)));
+            level.getCheats().moveChip(new Position(nodes.get(from)));
             if(isBoost) {
                 emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Half wait
             }
