@@ -109,7 +109,7 @@ class MenuBar extends JMenuBar{
                         int n = Integer.parseInt(s);
                         emulator.loadLevel(n, 0, Step.EVEN, true);
                     } catch (NumberFormatException nfe) {
-                        JOptionPane.showMessageDialog(window, "Not a number");
+                        JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
                 }
             });
@@ -119,7 +119,7 @@ class MenuBar extends JMenuBar{
 
             add(new JSeparator());
 
-            JMenuItem toggleStep = new JMenuItem("Toogle odd/even step");
+            JMenuItem toggleStep = new JMenuItem("Toggle odd/even step");
             toggleStep.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) {
                     Level oldLevel = emulator.getLevel();
@@ -140,7 +140,7 @@ class MenuBar extends JMenuBar{
                         int n = Integer.parseInt(s);
                         emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true);
                     } catch (NumberFormatException nfe) {
-                        JOptionPane.showMessageDialog(window, "Not a number");
+                        JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
                 }
             });
