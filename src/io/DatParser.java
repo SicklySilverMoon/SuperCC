@@ -6,6 +6,9 @@ import game.Step;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class for reading the .dat format.
@@ -172,7 +175,7 @@ public class DatParser{
         DatReader reader = new DatReader(file);
         try {
             int signature = reader.readInt32();
-            if (signature != MSCC_SIGNATURE && signature != TWORLD_LYNX_SIGNATURE) {
+            if (!SIGNATURES.contains(signature)) {
                 throw new IOException("Invalid signature");
             }
             final int levels = reader.readWord();
