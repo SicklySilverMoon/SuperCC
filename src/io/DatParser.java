@@ -14,7 +14,9 @@ import java.io.IOException;
 public class DatParser{
 
     private final static int MSCC_SIGNATURE = 0x0002AAAC;
+    private final static int MSCC_PG_SIGNATURE = 0x0003AAAC;
     private final static int TWORLD_LYNX_SIGNATURE = 0x0102AAAC;
+    private final static Set<Integer> SIGNATURES = new HashSet<>(Arrays.asList(MSCC_SIGNATURE, MSCC_PG_SIGNATURE, TWORLD_LYNX_SIGNATURE));
 
     private final File file;
     private long[] levelStart;
