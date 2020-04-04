@@ -256,7 +256,8 @@ public class MSLevel extends MSSaveState implements Level {
         this.step = step;
         this.cheats = new Cheats(this);
         this.LEVELSET_LENGTH = levelsetLength;
-        
+
+        Creature.setLevel(this);
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
 
@@ -300,7 +301,8 @@ public class MSLevel extends MSSaveState implements Level {
         }
         return null;
     }
-    boolean isTrapOpen(Position position) {
+    @Override
+    public boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
             if (b.getTargetPosition().equals(position) && b.isOpen(this)) return true;
         }
@@ -324,8 +326,8 @@ public class MSLevel extends MSSaveState implements Level {
     private void moveChipSliding(){
         Direction direction = chip.getDirection();
         Tile bgTile = layerBG.get(chip.getPosition());
-        if (bgTile.isFF()) chip.tick(new Direction[] {direction}, this, true);
-        else chip.tick(chip.getSlideDirectionPriority(bgTile, rng, true), this, true);
+        if (bgTile.isFF()) chip.tick(new Direction[] {direction}, true);
+        else chip.tick(chip.getSlideDirectionPriority(bgTile, rng, true), true);
     }
     
     private void moveChip(Direction[] directions){
@@ -335,7 +337,7 @@ public class MSLevel extends MSSaveState implements Level {
                 if (!layerBG.get(chip.getPosition()).isFF()) continue;
                 if (direction == chip.getDirection()) continue;
             }
-            chip.tick(new Direction[] {direction}, this, false);
+            chip.tick(new Direction[] {direction}, false);
             if (!chip.getPosition().equals(oldPosition)) break;
         }
     }
@@ -450,7 +452,7 @@ public class MSLevel extends MSSaveState implements Level {
         }
         if (position.x == 12) { //Sliding state reset
             if (chip.isSliding()) { //Is chip sliding?
-                chip.setSliding(false, this); //Stop Chip from sliding
+                chip.setSliding(chip.isSliding(), false); //Stop Chip from sliding
                 layerBG.set(position, WALL); //Place a wall (1 for data)
             }
             else {layerBG.set(position, FLOOR);} //if Chip isn't sliding place a floor (0 for data)

@@ -66,7 +66,7 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
         level.insertTile(creature.getPosition(), creature.toTile());
     }
     public void setSliding(MSCreature creature, boolean sliding) {
-        creature.setSliding(sliding, level);
+        creature.setSliding(creature.isSliding(), sliding);
     }
     public void kill(Creature creature) {
         level.getMonsterList().initialise();

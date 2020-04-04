@@ -6,41 +6,64 @@ package game;
  *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
  *    DIRECTION | MONSTER |    ROW    |    COL
  */
-public interface Creature {
+public abstract class Creature {
+    protected Position position;
+    protected CreatureID creatureType;
+    protected Direction direction;
+    protected static Level level;
+    protected boolean sliding;
 
-    Direction getDirection();
+    public Direction getDirection() {
+        return direction;
+    }
 
-    CreatureID getCreatureType();
+    public CreatureID getCreatureType() {
+        return creatureType;
+    }
 
-    void setCreatureType(CreatureID creatureType);
+    public void setCreatureType(CreatureID creatureType) {
+        this.creatureType = creatureType;
+    }
 
-    void kill();
+    public void kill() {
+        creatureType = CreatureID.DEAD;
+    }
 
-    boolean isDead();
+    public boolean isDead() {
+        return creatureType == CreatureID.DEAD;
+    }
 
-    Position getPosition();
+    public Position getPosition() {
+        return position;
+    }
 
     /** Turns the creature to face a specified direction.
      *
      * @param turn the direction the creature should turn.
      */
-    void turn(Direction turn);
+    public void turn(Direction turn) {
+        direction = direction.turn(turn);
+    }
 
-    /**
-     * @return A boolean representing if the creature is sliding.
-     */
-    boolean isSliding();
-
-    Tile toTile();
+    public abstract Tile toTile();
 
     /** Returns an int representing a creature.
      *
      * @return An int with the bits arranged according to the creature bit encoding.
      */
-    int bits();
+    public abstract int bits();
 
-    void setSliding(boolean sliding);
+    /**
+     * @return A boolean representing if the creature is sliding.
+     */
+    public abstract boolean isSliding();
 
-    void setSliding(boolean sliding, Level genLevel);
+    public void setSliding(boolean sliding) {
+        this.sliding = sliding;
+    }
+
+    public static void setLevel(Level newLevel) {
+        level = newLevel;
+    }
 
 }

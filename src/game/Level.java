@@ -102,6 +102,8 @@ public interface Level extends SaveState{
 
     Button getButton(Position position, Class buttonType);
 
+    boolean isTrapOpen(Position position);
+
     int getTickNumber();
 
     /**

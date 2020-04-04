@@ -10,8 +10,6 @@ public class LynxSaveState implements SaveState {
 
     private static final byte UNCOMPRESSED_V2 = 6;
     private static final byte UNCOMPRESSED_V1 = 4;
-
-    public Layer layerBG;
     public Layer layerFG;
     public LynxCreature chip;
     public int tickNumber;
@@ -46,7 +44,6 @@ public class LynxSaveState implements SaveState {
         SavestateWriter writer = new SavestateWriter(length);
         writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
         writer.writeShort((short) chip.bits());
-        writer.write(layerBG.getBytes());
         writer.write(layerFG.getBytes());
         writer.writeShort(tickNumber);
         writer.writeShort(chipsLeft);
@@ -67,7 +64,6 @@ public class LynxSaveState implements SaveState {
         int version = reader.read();
         if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {
             chip = new LynxCreature(reader.readShort());
-            layerBG.load(reader.readLayer(version));
             layerFG.load(reader.readLayer(version));
             tickNumber = (short) reader.readShort();
             chipsLeft = (short) reader.readShort();
@@ -79,9 +75,8 @@ public class LynxSaveState implements SaveState {
         }
     }
 
-    protected LynxSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, LynxCreature chip,
+    protected LynxSaveState(Layer layerFG, CreatureList monsterList, LynxCreature chip,
                           int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
-        this.layerBG = layerBG;
         this.layerFG = layerFG;
         this.monsterList = monsterList;
         this.chip = chip;
