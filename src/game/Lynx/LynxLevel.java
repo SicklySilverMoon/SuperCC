@@ -109,6 +109,11 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     @Override
+    public boolean supportsLayerBG() {
+        return false;
+    }
+
+    @Override
     public Layer getLayerBG() {
         throw new UnsupportedOperationException("Background Layer does not exist under Lynx");
     }

@@ -46,6 +46,8 @@ public interface Level extends SaveState{
 
     Step getStep();
 
+    boolean supportsLayerBG();
+
     Layer getLayerBG();
 
     Layer getLayerFG();

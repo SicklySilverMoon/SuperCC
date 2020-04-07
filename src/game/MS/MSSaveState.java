@@ -184,7 +184,7 @@ public class MSSaveState implements SaveState {
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];
             for (int i = 0; i < length; i++){
-                monsters[i] = new MSCreature(readShort()); //TODO: Bound to MS currently
+                monsters[i] = new MSCreature(readShort());
             }
             return monsters;
         }

@@ -101,7 +101,12 @@ public class MSLevel extends MSSaveState implements Level {
     public Step getStep(){
         return step;
     }
-    
+
+    @Override
+    public boolean supportsLayerBG() {
+        return true;
+    }
+
     @Override
     public Layer getLayerBG() {
         return layerBG;

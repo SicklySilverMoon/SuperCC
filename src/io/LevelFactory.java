@@ -3,13 +3,16 @@ package io;
 import game.*;
 import game.Lynx.LynxCreature;
 import game.Lynx.LynxCreatureList;
+import game.Lynx.LynxLevel;
 import game.MS.*;
 import game.button.BlueButton;
 import game.button.BrownButton;
 import game.button.GreenButton;
 import game.button.RedButton;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 /**
  * A class for turning creating a Level object using only the data from the
@@ -79,28 +82,18 @@ public class LevelFactory {
         }
         return new MSCreatureList(monsterList);
     }
-    private static CreatureList getLynxMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
-        if (monsterPositions == null) return new LynxCreatureList(new LynxCreature[] {});
-        int l = 0;
-        for (int i = 0; i < monsterPositions.length; i++){
-            int x = monsterPositions[i][0];
-            int y = monsterPositions[i][1];
-            int position = 32*y+x;
-            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
-                l++;
+    private static CreatureList getLynxMonsterList(Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
+        List<LynxCreature> creatures = new ArrayList<>();
+        int index = 0;
+        for (Tile tile: layerFG) {
+            if (tile.isCreature() || tile == Tile.BLOCK || tile.isChip() || tile.isSwimmingChip()) {
+                creatures.add(new LynxCreature(new Position(index), tile));
+
+                layerFG.set(index, layerBG.get(index)); //Lynx doesn't have a lowerImage layer, so every creature's tile needs to be popped
             }
+            index++;
         }
-        LynxCreature[] monsterList = new LynxCreature[l];
-        l = 0;
-        for (int i = 0; i < monsterPositions.length; i++){
-            int x = monsterPositions[i][0];
-            int y = monsterPositions[i][1];
-            Position position = new Position(x, y);
-            if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
-                monsterList[l++] = new LynxCreature(position, layerFG.get(position));
-            }
-        }
-        return new LynxCreatureList(monsterList);
+        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]));
     }
     private static Creature findMSPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){
@@ -114,7 +107,7 @@ public class LevelFactory {
             Tile tile = layerFG.get(i);
             if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new LynxCreature(new Position(i), tile);
         }
-        return new LynxCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
+        return new LynxCreature(new Position(0), Tile.CHIP_DOWN);
     }
     private static int getTimer(int timeLimit){
         if (timeLimit == 0) return -2;
@@ -200,31 +193,7 @@ public class LevelFactory {
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
 
-        return new MSLevel(
-            levelNumber,
-            title,
-            password,
-            hint,
-            getToggleDoors(layerFG, layerBG),
-            getPortals(layerFG, layerBG),
-            getGreenButtons(layerFG, layerBG),
-            getRedButtons(cloneConnections),
-            getBrownButtons(trapConnections),
-            getBlueButtons(layerFG, layerBG),
-            new BitSet(trapConnections.length),
-            layerBG,
-            layerFG,
-            getMSMonsterList(monsterPositions, layerFG, layerBG), //TODO: Bound to MS currently
-            new SlipList(),
-            (MSCreature) findMSPlayer(layerFG),
-            getTimer(timeLimit),
-            chips,
-            new RNG(rngSeed),
-            rngSeed,
-            step,
-            lastLevel
-        );
-//        return new LynxLevel(
+//        return new MSLevel(
 //            levelNumber,
 //            title,
 //            password,
@@ -238,15 +207,38 @@ public class LevelFactory {
 //            new BitSet(trapConnections.length),
 //            layerBG,
 //            layerFG,
-//            getLynxMonsterList(monsterPositions, layerFG, layerBG),
-//            (LynxCreature) findLynxPlayer(layerFG),
+//            getMSMonsterList(monsterPositions, layerFG, layerBG),
+//            new SlipList(),
+//            (MSCreature) findMSPlayer(layerFG),
 //            getTimer(timeLimit),
 //            chips,
 //            new RNG(rngSeed),
 //            rngSeed,
 //            step,
 //            lastLevel
-//            );
+//        );
+        return new LynxLevel(
+            levelNumber,
+            title,
+            password,
+            hint,
+            getToggleDoors(layerFG, layerBG),
+            getPortals(layerFG, layerBG),
+            getGreenButtons(layerFG, layerBG),
+            getRedButtons(cloneConnections),
+            getBrownButtons(trapConnections),
+            getBlueButtons(layerFG, layerBG),
+            new BitSet(trapConnections.length),
+            layerFG,
+            getLynxMonsterList(layerFG, layerBG),
+            (LynxCreature) findLynxPlayer(layerFG),
+            getTimer(timeLimit),
+            chips,
+            new RNG(rngSeed),
+            rngSeed,
+            step,
+            lastLevel
+            );
     }
 
 }

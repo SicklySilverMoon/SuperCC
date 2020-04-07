@@ -31,8 +31,8 @@
 //            return;
 //        }
 //
-//        WritableRaster rasterFG = fg.getRaster();
-//        WritableRaster rasterBG = bg.getRaster();
+//        WritableRaster rasterFG = upperImage.getRaster();
+//        WritableRaster rasterBG = lowerImage.getRaster();
 //
 //        for (int i = 0; i < 32*32; i++){
 //            if (fromScratch | layerFG[i] != previousFG[i]){
@@ -49,27 +49,27 @@
 //    }
 //
 //    @Override
-//    protected void drawMonsterList(MSCreatureList monsterList, BufferedImage overlay){
+//    protected void drawMonsterListNumbers(MSCreatureList monsterList, BufferedImage overlayImage){
 //        int i = 0;
 //        for (Creature c : monsterList){
 //            int x = c.getPosition().getX()*tileWidth, y = c.getPosition().getY()*tileHeight;
-//            drawNumber(++i, blackDigits, x, y, overlay.getRaster());
+//            drawNumber(++i, blackDigits, x, y, overlayImage.getRaster());
 //        }
 //    }
 //
 //    @Override
-//    protected void drawSlipList(MSSlipList slipList, BufferedImage overlay){
+//    protected void drawSlipListNumbers(MSSlipList slipList, BufferedImage overlayImage){
 //        int yOffset = tileHeight - SMALL_NUMERAL_HEIGHT - 2;
 //        for (int i = 0; i < slipList.size(); i++){
 //            Creature monster = slipList.get(i);
 //            int x = monster.getPosition().getX()*tileWidth, y = monster.getPosition().getY()*tileHeight + yOffset;
-//            drawNumber(i+1, blueDigits, x, y, overlay.getRaster());
+//            drawNumber(i+1, blueDigits, x, y, overlayImage.getRaster());
 //        }
 //    }
 //
 //    @Override
-//    protected void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay){
-//        Graphics2D g = overlay.createGraphics();
+//    protected void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlayImage){
+//        Graphics2D g = overlayImage.createGraphics();
 //        g.setColor(Color.BLACK);
 //        for (ConnectionButton connection : connections){
 //            GameGraphicPosition pos1 = new GameGraphicPosition(connection.getButtonPosition(), tileWidth, tileHeight, screenTopLeft),
@@ -101,10 +101,10 @@
 //    }
 //
 //    @Override
-//    protected void drawChipHistory(Position currentPosition, BufferedImage overlay){
+//    protected void drawChipHistory(Position currentPosition, BufferedImage overlayImage){
 //        List<Position> history = emulator.getSavestates().getChipHistory();
 //        history.add(currentPosition);
-//        drawPositionList(history, overlay.createGraphics());
+//        drawPositionList(history, overlayImage.createGraphics());
 //    }
 //
 //    @Override
@@ -131,10 +131,10 @@
 //
 //    @Override
 //    protected void initialiseLayers() {
-//        bg = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-//        fg = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-//        bbg = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-//        WritableRaster bbgRaster = bbg.getRaster();
+//        lowerImage = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+//        upperImage = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+//        backingImage = new BufferedImage(32*tileWidth, 32*tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+//        WritableRaster bbgRaster = backingImage.getRaster();
 //        for (int i = 0; i < 32*32; i++){
 //            int x = tileWidth * (i % 32), y = tileHeight * (i / 32);
 //            bbgRaster.setPixels(x, y, tileWidth, tileHeight, tileImage[0]);

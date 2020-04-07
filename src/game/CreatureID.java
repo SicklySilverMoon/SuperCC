@@ -16,7 +16,7 @@ public enum CreatureID {
     CHIP            (0b00_1011_0000000000),
     ICE_BLOCK       (0b00_1100_0000000000),
     CHIP_SLIDING    (0b00_1101_0000000000),
-    UNUSED_2        (0b00_1110_0000000000),
+    CHIP_SWIMMING   (0b00_1110_0000000000),
     DEAD            (0b00_1111_0000000000);
     
     private final int bits;

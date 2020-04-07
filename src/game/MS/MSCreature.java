@@ -168,6 +168,10 @@ public class MSCreature extends Creature {
         }
     }
 
+    @Override
+    public int getTimeTraveled() {
+        return 0; //See javadocs for this in Level
+    }
 
     private void teleport(Direction direction, Position position, List<Button> pressedButtons) {
         Position chipPosition = level.getChip().getPosition();

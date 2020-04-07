@@ -47,6 +47,14 @@ public abstract class Creature {
 
     public abstract Tile toTile();
 
+    /** Returns a number representing how long the creature has been traveling between tiles.
+     * Of note is that this is only useful for lynx and will always be 0 in MS.
+     *
+     * @return An int between 0 and 7 (inclusive)
+     * that represents how long the creature has been traveling between tiles
+     */
+    public abstract int getTimeTraveled();
+
     /** Returns an int representing a creature.
      *
      * @return An int with the bits arranged according to the creature bit encoding.

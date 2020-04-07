@@ -5,8 +5,7 @@ import game.*;
 import static game.CreatureID.*;
 import static game.Direction.*;
 import static game.Direction.TURN_AROUND;
-import static game.Tile.BLOCK_RIGHT;
-import static game.Tile.BLOCK_UP;
+import static game.Tile.*;
 
 public class LynxCreature extends Creature {
 
@@ -18,8 +17,20 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public Tile toTile() {
-        return null; //This might not even be necessary
+    public Tile toTile() { //Used exclusively for drawing creatures, please do not use for anything else
+        switch (creatureType) {
+            case BLOCK:
+                return Tile.BLOCK;
+            case CHIP:
+                return Tile.fromOrdinal(Tile.CHIP_UP.ordinal() | direction.ordinal());
+            case TANK_MOVING:
+            case TANK_STATIONARY:
+                return Tile.fromOrdinal(TANK_UP.ordinal() | direction.ordinal());
+            case CHIP_SWIMMING:
+                return Tile.fromOrdinal(CHIP_SWIMMING_UP.ordinal() | direction.ordinal());
+            default:
+                return Tile.fromOrdinal((creatureType.ordinal() << 2) + 0x40 | direction.ordinal());
+        }
     }
 
     @Override
@@ -33,14 +44,10 @@ public class LynxCreature extends Creature {
         return creatureType+" facing "+direction+" at position "+position;
     }
 
-    /** Returns a number representing how long the creature has been traveling between tiles.
-     * Of note is that for all creatures except blobs this value increases by 2 for every tick completed.
-     *
-     * @return An int between 0 and 7 (inclusive)
-     * that represents how many quarter moves the creature has been traveling between tiles
-     */
+
+    @Override
     public int getTimeTraveled() {
-        return timeTraveled;
+        return timeTraveled & 0b111; //timeTraveled should always be between 0 and 7 anyways but just to be safe
     }
 
     boolean tick() {
@@ -271,13 +278,24 @@ public class LynxCreature extends Creature {
 
         if (BLOCK_UP.ordinal() <= tile.ordinal() && tile.ordinal() <= BLOCK_RIGHT.ordinal()){
             direction = Direction.fromOrdinal((tile.ordinal() + 2) % 4);
-            creatureType = BLOCK;
+            creatureType = CreatureID.BLOCK;
         }
         else {
             direction = Direction.fromOrdinal(tile.ordinal() % 4);
-            if (tile == Tile.BLOCK) creatureType = BLOCK;
-            else {
-                creatureType = CreatureID.fromOrdinal((tile.ordinal() - 0x40) >>> 2);
+            switch (tile) {
+                case BLOCK:
+                    direction = UP;
+                    creatureType = CreatureID.BLOCK;
+                    break;
+                case CHIP_SWIMMING_UP:
+                case CHIP_SWIMMING_LEFT:
+                case CHIP_SWIMMING_DOWN:
+                case CHIP_SWIMMING_RIGHT:
+                    creatureType = CHIP_SWIMMING;
+                    break;
+                default:
+                    creatureType = CreatureID.fromOrdinal((tile.ordinal() - 0x40) >>> 2);
+                    break;
             }
         }
         if (creatureType == TANK_STATIONARY) creatureType = TANK_MOVING;

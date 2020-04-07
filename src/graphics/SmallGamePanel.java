@@ -14,8 +14,8 @@ public class SmallGamePanel extends GamePanel {
     
     private Position screenBottomRight;                 // not included
     private int windowSizeX, windowSizeY;
-    private byte[] previousFG = new byte[32*32];
-    private byte[] previousBG = new byte[32*32];
+    private byte[] previousLayerFG = new byte[32*32];
+    private byte[] previousLayerBG = new byte[32*32];
     private Position previousScreenTopLeft = new Position(-1, -1);
     
     private static final double[] offsets = new double[] {
@@ -79,9 +79,22 @@ public class SmallGamePanel extends GamePanel {
     
     @Override
     protected void drawLevel(Level level, boolean fromScratch) {
+        if (level.supportsLayerBG()) drawLevelWithBGSupport(level, fromScratch);
+        else drawLevelWithoutBGSupport(level, fromScratch);
+    }
+
+    protected void drawLevelWithBGSupport(Level level, boolean fromScratch) {
         byte[] layerBG;
         byte[] layerFG;
-    
+
+        WritableRaster rasterFG;
+        WritableRaster rasterBG;
+
+        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
+
+        rasterFG = upperImage.getRaster();
+        rasterBG = lowerImage.getRaster();
+
         try{
             layerFG = level.getLayerFG().getBytes();
             layerBG = level.getLayerBG().getBytes();
@@ -89,17 +102,12 @@ public class SmallGamePanel extends GamePanel {
         catch (NullPointerException npe){
             return;
         }
-    
-        WritableRaster rasterFG = fg.getRaster();
-        WritableRaster rasterBG = bg.getRaster();
-    
-        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
-    
-        for (int xPos = 0; xPos < windowSizeX; xPos++){
+
+        for (int xPos = 0; xPos < windowSizeX; xPos++) {
             for (int yPos = 0; yPos < windowSizeY; yPos++) {
                 Position p = new Position(screenTopLeft.getX() + xPos, screenTopLeft.getY() + yPos);
                 int i = p.getIndex();
-                if (fromScratch || layerFG[i] != previousFG[i-screenMotion] || layerBG[i] != previousBG[i-screenMotion]) {
+                if (fromScratch || layerFG[i] != previousLayerFG[i - screenMotion] || layerBG[i] != previousLayerBG[i - screenMotion]) {
                     int x = tileWidth * xPos, y = tileHeight * yPos;
                     rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[i]]);
                     rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
@@ -109,13 +117,91 @@ public class SmallGamePanel extends GamePanel {
                 }
             }
         }
-        previousBG = layerBG.clone();
-        previousFG = layerFG.clone();
+        previousLayerFG = layerFG.clone();
+        previousLayerBG = layerBG.clone();
+        previousScreenTopLeft = screenTopLeft.clone();
+    }
+
+    protected void drawLevelWithoutBGSupport(Level level, boolean fromScratch) {
+        byte[] layerFG;
+
+        Graphics graphicsCreatures;
+        WritableRaster rasterTerrain;
+
+        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
+
+        upperImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        graphicsCreatures = upperImage.getGraphics();
+        rasterTerrain = lowerImage.getRaster();
+        /* We create a blank/transparent image since we have to redraw the creature list every time we want a
+        transparent image/raster to draw overtop of, so we just create a blank image the correct size and go from there */
+        try{
+            layerFG = level.getLayerFG().getBytes();
+        }
+        catch (NullPointerException npe){
+            return;
+        }
+
+        for (int xPos = 0; xPos < windowSizeX; xPos++) {
+            for (int yPos = 0; yPos < windowSizeY; yPos++) {
+                Position p = new Position(screenTopLeft.getX() + xPos, screenTopLeft.getY() + yPos);
+                int i = p.getIndex();
+                if (fromScratch || layerFG[i] != previousLayerFG[i - screenMotion]) {
+                    int x = tileWidth * xPos, y = tileHeight * yPos;
+
+                    rasterTerrain.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
+                    /* If there's no bottom layer than that means we have to draw the creature list on top of
+                    everything else, however it would be extremely wasteful to create an entire other raster for
+                    that and leave the BG raster and BBG raster unused and only use the FG raster and the new creature
+                    raster so instead I draw the FG layer onto the BG raster and draw the creature list on the FG
+                    raster to avoid creating new rasters and having unused ones */
+                }
+            }
+        }
+        for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
+            int x = creature.getPosition().x * tileWidth;
+            int y = creature.getPosition().y * tileHeight;
+
+            int vPixelsBetweenTiles = tileHeight / 8;//Lynx has values between 0 and 7 for this, and i don't want to extend level for something so trivial, so I just hardcode it here for now
+            int hPixelsBetweenTiles = tileWidth / 8;
+            switch (creature.getDirection()) {
+                case UP:
+                    y -= vPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+                case LEFT:
+                    x -= hPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+                case DOWN:
+                    y += vPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+                case RIGHT:
+                    x += hPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+            }
+            Image creatureImage;
+            switch (creature.getCreatureType()) { //creatureImages is laid out the same way as the creatures in the tilesheet
+                default:
+                    creatureImage = creatureImages[creature.getCreatureType().ordinal() + 1][creature.getDirection().ordinal()];
+                    break;
+                case BLOCK:
+                    creatureImage = creatureImages[11][creature.getDirection().ordinal()];
+                    break;
+                case CHIP:
+                    creatureImage = creatureImages[10][creature.getDirection().ordinal()];
+                    break;
+                case CHIP_SWIMMING:
+                    creatureImage = creatureImages[0][creature.getDirection().ordinal()];
+                    break;
+            }
+            graphicsCreatures.drawImage(creatureImage, x, y, tileWidth, tileHeight, null);
+        }
+
+        previousLayerFG = layerFG.clone();
         previousScreenTopLeft = screenTopLeft.clone();
     }
     
     @Override
-    protected void drawMonsterList(CreatureList monsterList, BufferedImage overlay){
+    protected void drawMonsterListNumbers(CreatureList monsterList, BufferedImage overlay){
         int i = 0;
         for (Creature c : monsterList){
             if (onScreen(c.getPosition())) {
@@ -127,7 +213,7 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    protected void drawSlipList(SlipList slipList, BufferedImage overlay){
+    protected void drawSlipListNumbers(SlipList slipList, BufferedImage overlay){
         int yOffset = tileHeight - SMALL_NUMERAL_HEIGHT - 2;
         for (int i = 0; i < slipList.size(); i++){
             Creature monster = slipList.get(i);
@@ -208,13 +294,40 @@ public class SmallGamePanel extends GamePanel {
                                            tileWidth - 2 * bgBorderSize, tileHeight - 2 * bgBorderSize, bgTileImage[i]);
         }
     }
+
+    @Override
+    protected void initialiseCreatureGraphics(BufferedImage allTiles) {
+        creatureImages = new Image[12][4]; //11 creatures (plus blocks), each has 4 direction images
+        for (int i = 0; i < 10; i++) {
+            int offset = 60 + i*4; //60 is Swimming Chip N's tile
+            int x = offset / 16;
+            for (int j = 0; j < 4; j++) {
+                int y = (offset + j) % 16;
+                creatureImages[i][j] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            }
+        }
+        for (int k=0; k<4; k++) { //Chip's graphics are separate from the rest of the creatures so we handle them here
+            int offset = 108; //Chip's tile
+            int x = offset / 16;
+            int y = (offset + k) % 16;
+            creatureImages[10][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+        }
+        for (int l=0; l<4; l++) { //See above, blocks this time
+            int offset;
+            if (l < 2) offset = 14; //Clone Block N's tile
+            else offset = 16; //Clone blocks are split across 2 columns, gotta account for that
+            int x = offset / 16;
+            int y = (offset + (l % 2)) % 16;
+            creatureImages[11][l] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+        }
+    }
     
     @Override
     protected void initialiseLayers() {
-        bg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        fg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        bbg = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        WritableRaster bbgRaster = bbg.getRaster();
+        lowerImage = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        upperImage = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        backingImage = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        WritableRaster bbgRaster = backingImage.getRaster();
         for (int i = 0; i < windowSizeX * windowSizeY; i++){
             int x = tileWidth * (i % windowSizeX), y = tileHeight * (i / windowSizeX);
             bbgRaster.setPixels(x, y, tileWidth, tileHeight, tileImage[0]);

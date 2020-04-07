@@ -31,17 +31,19 @@ public abstract class GamePanel extends JPanel
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
     static int[][] tileImage, bgTileImage;
+    static Image[][] creatureImages;
     
-    protected boolean showBG = true, showMonsterList = true, showSlipList = true; //Makes sure that the BG layer, the slip list, and the monster list show by default
+    protected boolean showBG = true, showMonsterListNumbers = true, showSlipListNumbers = true; //Makes sure that the BG layer, the slip list, and the monster list show by default
     protected boolean showTrapConnections, showCloneConnections, showHistory;
 
     // The background image
-    protected BufferedImage bg;
+    protected BufferedImage lowerImage;
     // The foreground image
-    protected BufferedImage fg;
+    protected BufferedImage upperImage;
     // The image behind the background (32*32 floor tiles)
-    protected BufferedImage bbg;
-    protected BufferedImage overlay;
+    protected BufferedImage backingImage;
+    //Where extras are drawn (slip/monster list #s, move history, etc.)
+    protected BufferedImage overlayImage;
     
     protected SuperCC emulator;
     
@@ -67,10 +69,10 @@ public abstract class GamePanel extends JPanel
     
     @Override
     public void paintComponent(Graphics g){
-        g.drawImage(bbg, 0, 0, null);
-        g.drawImage(bg, 0, 0, null);
-        g.drawImage(fg, 0, 0, null);
-        g.drawImage(overlay, 0, 0, null);
+        g.drawImage(backingImage, 0, 0, null);
+        g.drawImage(lowerImage, 0, 0, null);
+        g.drawImage(upperImage, 0, 0, null);
+        g.drawImage(overlayImage, 0, 0, null);
     }
     
     public static void drawNumber(int n, int[][] digitRaster, int x, int y, WritableRaster raster){
@@ -81,8 +83,8 @@ public abstract class GamePanel extends JPanel
         }
     }
     protected abstract void drawLevel(Level level, boolean fromScratch);
-    protected abstract void drawMonsterList(CreatureList monsterList, BufferedImage overlay);
-    protected abstract void drawSlipList(SlipList monsterList, BufferedImage overlay);
+    protected abstract void drawMonsterListNumbers(CreatureList monsterList, BufferedImage overlay);
+    protected abstract void drawSlipListNumbers(SlipList monsterList, BufferedImage overlay);
     protected abstract void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay);
     public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
@@ -90,12 +92,12 @@ public abstract class GamePanel extends JPanel
     void updateGraphics(boolean fromScratch) {
         Level level = emulator.getLevel();
         drawLevel(level, fromScratch);
-        overlay = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        if (showMonsterList) drawMonsterList(level.getMonsterList(), overlay);
-        if (showSlipList) drawSlipList(level.getSlipList(), overlay);
-        if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlay);
-        if (showTrapConnections) drawButtonConnections(level.getBrownButtons(), overlay);
-        if (showHistory) drawChipHistory(level.getChip().getPosition(), overlay);
+        overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        if (showMonsterListNumbers) drawMonsterListNumbers(level.getMonsterList(), overlayImage);
+        if (showSlipListNumbers) drawSlipListNumbers(level.getSlipList(), overlayImage);
+        if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlayImage);
+        if (showTrapConnections) drawButtonConnections(level.getBrownButtons(), overlayImage);
+        if (showHistory) drawChipHistory(level.getChip().getPosition(), overlayImage);
     
     }
     
@@ -103,10 +105,10 @@ public abstract class GamePanel extends JPanel
         showBG = visible;
     }
     public void setMonsterListVisible(boolean visible){
-        showMonsterList = visible;
+        showMonsterListNumbers = visible;
     }
     public void setSlipListVisible(boolean visible){
-        showSlipList = visible;
+        showSlipListNumbers = visible;
     }
     public void setTrapsVisible(boolean visible){
         showTrapConnections = visible;
@@ -151,6 +153,7 @@ public abstract class GamePanel extends JPanel
     }
     protected abstract void initialiseTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
+    protected abstract void initialiseCreatureGraphics(BufferedImage tilespng);
     protected abstract void initialiseLayers();
 
     public void initialise(SuperCC emulator, Image tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
@@ -161,6 +164,7 @@ public abstract class GamePanel extends JPanel
         initialiseDigits();
         initialiseTileGraphics((BufferedImage) tilespng);
         initialiseBGTileGraphics((BufferedImage) tilespng);
+        initialiseCreatureGraphics((BufferedImage) tilespng);
         initialiseLayers();
         if (getMouseListeners().length == 0) { //Just so you don't add extra mouse listeners when you update tilesize or something
             addMouseListener(this);
@@ -310,10 +314,14 @@ public abstract class GamePanel extends JPanel
     public void mouseDragged(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {
         GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
-        Tile bgTile = emulator.getLevel().getLayerBG().get(pos),
+        Tile bgTile = null;
+        Tile fgTile;
+        if (emulator.getLevel().supportsLayerBG()) bgTile = emulator.getLevel().getLayerBG().get(pos);
             fgTile = emulator.getLevel().getLayerFG().get(pos);
         String str = pos.toString() + " " + fgTile;
-        if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+        if (emulator.getLevel().supportsLayerBG()) {
+            if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+        }
         emulator.showAction(str);
     }
     

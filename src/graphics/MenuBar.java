@@ -466,9 +466,8 @@ class MenuBar extends JMenuBar{
                     }
                     try {
                         BufferedImage tilesetImage = tileSheet.getTileSheet(tileWidth, tileHeight);
-                        window.getGamePanel().setTileSheet(tileSheet);
-                        window.getGamePanel().initialiseTileGraphics(tilesetImage);
-                        window.getGamePanel().initialiseBGTileGraphics(tilesetImage);
+                        window.getGamePanel().initialise(emulator, tilesetImage, tileSheet,
+                                window.getGamePanel().getTileWidth(), window.getGamePanel().getTileHeight());
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(true);
 
