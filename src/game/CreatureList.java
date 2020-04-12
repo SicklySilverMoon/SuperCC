@@ -1,5 +1,6 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -9,7 +10,7 @@ import java.util.function.Consumer;
  * The monster list. The list attribute is the actual list.
  */
 public abstract class CreatureList implements Iterable<Creature> {
-    public static Direction direction;
+    public Direction direction;
     public int numDeadMonsters;
 
     protected Level level;
@@ -87,7 +88,10 @@ public abstract class CreatureList implements Iterable<Creature> {
         };
     }
 
-    public abstract void setLevel(Level level);
+    public void setLevel(Level level){
+        this.level = level;
+        newClones = new ArrayList<>();
+    }
 
     @Override
     public void forEach(Consumer<? super Creature> action) {

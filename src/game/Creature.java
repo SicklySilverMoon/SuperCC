@@ -10,8 +10,10 @@ public abstract class Creature {
     protected Position position;
     protected CreatureID creatureType;
     protected Direction direction;
-    protected static Level level;
     protected boolean sliding;
+
+    protected static Level level;
+    protected static CreatureList monsterList;
 
     public Direction getDirection() {
         return direction;
@@ -72,6 +74,10 @@ public abstract class Creature {
 
     public static void setLevel(Level newLevel) {
         level = newLevel;
+    }
+
+    public static void setMonsterList(CreatureList newList) {
+        monsterList = newList;
     }
 
 }

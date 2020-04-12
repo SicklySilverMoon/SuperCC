@@ -185,11 +185,6 @@ public class MSCreatureList extends game.CreatureList {
 
     }
 
-    public void setLevel(Level level){
-        this.level = level;
-        newClones = new ArrayList<>();
-    }
-
     public MSCreatureList(MSCreature[] monsters){
         super(monsters);
     }

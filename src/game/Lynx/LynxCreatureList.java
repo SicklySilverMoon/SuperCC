@@ -28,11 +28,6 @@ public class LynxCreatureList extends CreatureList {
 
     }
 
-    @Override
-    public void setLevel(Level level) {
-        this.level = level;
-    }
-
     public LynxCreatureList(LynxCreature[] creatures) {
         super(creatures);
     }

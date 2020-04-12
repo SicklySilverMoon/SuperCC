@@ -137,7 +137,7 @@ public class MSCreature extends Creature {
                 level.getSlipList().add(this);
                 if (!creatureType.isBlock()) {
                     direction = applySlidingTile(direction, level.getLayerBG().get(position), level.rng); //When a creature first enters a sliding tile its direction is updated to face whatever direction its going to move next after that tile takes effect
-                    CreatureList.direction = this.getDirection();
+                    monsterList.direction = this.getDirection();
                 }
             }
         }
@@ -767,9 +767,9 @@ public class MSCreature extends Creature {
     }
 
     boolean tick(Direction[] directions, boolean slidingMove){
-        MSLevel level = (MSLevel) Creature.level;
+        MSLevel level = (MSLevel) this.level;
         MSCreature oldCreature = clone();
-        if (!creatureType.isChip() && !isSliding()) MSCreatureList.direction = direction;
+        if (!creatureType.isChip() && !isSliding()) monsterList.direction = direction;
         for (Direction newDirection : directions){
 
             LinkedList<Button> pressedButtons = new LinkedList<>();
@@ -795,11 +795,11 @@ public class MSCreature extends Creature {
                 }
                 if (!creatureType.isChip()) {
                     if (level.getLayerBG().get(position).isChip()) level.getChip().kill();
-                    if (!isSliding()) MSCreatureList.direction = newDirection;
+                    if (!isSliding()) monsterList.direction = newDirection;
                 }
                 return true;
             }
-            if (!creatureType.isChip() && !isSliding()) MSCreatureList.direction = newDirection;
+            if (!creatureType.isChip() && !isSliding()) monsterList.direction = newDirection;
 
         }
         setSliding(this.sliding, oldCreature.sliding);

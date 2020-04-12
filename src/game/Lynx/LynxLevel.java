@@ -275,6 +275,7 @@ public class LynxLevel extends LynxSaveState implements Level {
         this.LEVELSET_LENGTH = levelsetLength;
 
         Creature.setLevel(this);
+        Creature.setMonsterList(monsterList);
         this.monsterList.setLevel(this);
     }
 }

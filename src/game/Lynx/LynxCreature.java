@@ -116,20 +116,10 @@ public class LynxCreature extends Creature {
                 return direction != UP;
             case THIN_WALL_RIGHT:
                 return direction != LEFT;
-            case BLOCK:
             case DIRT:
                 return isChip;
             case ICE:
             case FF_DOWN:
-                return true;
-//            case BLOCK_UP:
-//                break;
-//            case BLOCK_LEFT:
-//                break;
-//            case BLOCK_DOWN:
-//                break;
-//            case BLOCK_RIGHT:
-//                break;
             case FF_UP:
             case FF_RIGHT:
             case FF_LEFT:
@@ -153,9 +143,9 @@ public class LynxCreature extends Creature {
             case ICE_SLIDE_NORTHEAST:
                 return direction != UP && direction != RIGHT;
             case BLUEWALL_FAKE:
-                return false;
-            case BLUEWALL_REAL:
                 return isChip;
+            case BLUEWALL_REAL:
+                return false;
             case OVERLAY_BUFFER:
                 return false;
             case THIEF:
@@ -187,12 +177,9 @@ public class LynxCreature extends Creature {
                 return false;
             case FF_RANDOM:
                 return true;
-//            case DROWNED_CHIP:
-//                break;
-//            case BURNED_CHIP:
-//                break;
-//            case BOMBED_CHIP:
-//                break;
+            case DROWNED_CHIP:
+            case BURNED_CHIP:
+            case BOMBED_CHIP:
             case UNUSED_36:
             case UNUSED_37:
             case ICE_BLOCK: //Doesn't exist in lynx
@@ -200,47 +187,6 @@ public class LynxCreature extends Creature {
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2:
                 return false;
-            case CHIP_SWIMMING_UP: //TODO: Monsters ideally shouldn't ever exist as tiles
-            case CHIP_SWIMMING_LEFT:
-            case CHIP_SWIMMING_DOWN:
-            case CHIP_SWIMMING_RIGHT:
-            case BUG_UP:
-            case BUG_LEFT:
-            case BUG_DOWN:
-            case BUG_RIGHT:
-            case FIREBALL_UP:
-            case FIREBALL_LEFT:
-            case FIREBALL_DOWN:
-            case FIREBALL_RIGHT:
-            case BALL_UP:
-            case BALL_LEFT:
-            case BALL_DOWN:
-            case BALL_RIGHT:
-            case TANK_UP:
-            case TANK_LEFT:
-            case TANK_DOWN:
-            case TANK_RIGHT:
-            case GLIDER_UP:
-            case GLIDER_LEFT:
-            case GLIDER_DOWN:
-            case GLIDER_RIGHT:
-            case TEETH_UP:
-            case TEETH_LEFT:
-            case TEETH_DOWN:
-            case TEETH_RIGHT:
-            case WALKER_UP:
-            case WALKER_LEFT:
-            case WALKER_DOWN:
-            case WALKER_RIGHT:
-            case BLOB_UP:
-            case BLOB_LEFT:
-            case BLOB_DOWN:
-            case BLOB_RIGHT:
-            case PARAMECIUM_UP:
-            case PARAMECIUM_LEFT:
-            case PARAMECIUM_DOWN:
-            case PARAMECIUM_RIGHT:
-                return isChip;
             case KEY_BLUE:
             case KEY_RED:
                 return true;

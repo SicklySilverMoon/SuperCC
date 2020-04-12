@@ -311,14 +311,12 @@ public class SmallGamePanel extends GamePanel {
             int x = offset / 16;
             int y = (offset + k) % 16;
             creatureImages[10][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-        }
-        for (int l=0; l<4; l++) { //See above, blocks this time
-            int offset;
-            if (l < 2) offset = 14; //Clone Block N's tile
-            else offset = 16; //Clone blocks are split across 2 columns, gotta account for that
-            int x = offset / 16;
-            int y = (offset + (l % 2)) % 16;
-            creatureImages[11][l] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+
+            if (k < 2) offset = 14; //Clone blocks start at 14
+            else offset = 16; //And they're split across 2 columns for some reason
+            x = offset / 16;
+            y = (offset + (k % 2)) % 16;
+            creatureImages[11][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
         }
     }
     

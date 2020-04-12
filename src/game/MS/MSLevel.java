@@ -263,6 +263,7 @@ public class MSLevel extends MSSaveState implements Level {
         this.LEVELSET_LENGTH = levelsetLength;
 
         Creature.setLevel(this);
+        Creature.setMonsterList(monsterList);
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
 
