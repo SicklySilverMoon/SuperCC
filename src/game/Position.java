@@ -5,7 +5,8 @@ import static java.lang.Math.abs;
 
 public class Position {
     
-    private static final int  MOVE_DOWN  =  0b100000,
+    private static final int
+        MOVE_DOWN  =  0b100000,
         MOVE_UP    = -0b100000,
         MOVE_RIGHT =  0b000001,
         MOVE_LEFT  = -0b000001;

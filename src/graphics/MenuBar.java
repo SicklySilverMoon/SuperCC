@@ -278,6 +278,7 @@ class MenuBar extends JMenuBar{
                                 case 45: b = SuperCC.WAIT; break;
                             }
                             emulator.tick(b, TickFlags.GAME_PLAY);
+                            if (level.getChip().isDead()) break;
                         }
                         emulator.showAction("Pasted moves");
                     }
