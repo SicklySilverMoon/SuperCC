@@ -1,7 +1,5 @@
 package game.MS;
 
-import java.util.ArrayList;
-
 import game.*;
 import game.button.*;
 
@@ -56,7 +54,7 @@ public class MSCreatureList extends game.CreatureList {
             monster.tick(directions, false);
             if (!monster.getPosition().equals(p)) level.insertTile(clonerPosition, tile);
         }
-        else if (monster.canEnter(direction, level.getLayerFG().get(monster.getPosition().move(direction)), level)){
+        else if (monster.canEnter(direction, level.getLayerFG().get(monster.getPosition().move(direction)))){
             if (monster.tick(new Direction[] {direction}, false)) level.insertTile(clonerPosition, tile);
 
             if (monster.getCreatureType().isDirtBlock() && level.getLayerBG().get(clonerPosition) != CLONE_MACHINE) {
@@ -104,7 +102,7 @@ public class MSCreatureList extends game.CreatureList {
                 if (resetClone.getDirection()==Direction.UP) { //If the creature is facing up
                     Position row31Position = new Position(position.x, 31); //Create a new variable for the creature's position
                     Tile resetNewTile = level.getLayerFG().get(row31Position); //Makes it so that the next section checks X, 31 and not X, 0
-                    if (resetClone.canEnter(direction, resetNewTile, level)) { //If the creature can clone to X, 31
+                    if (resetClone.canEnter(direction, resetNewTile)) { //If the creature can clone to X, 31
                         Tile tile = resetClone.toTile(); //Needed to not cause tile erasure
                         resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
                         boolean SpecialTileInteraction = false;
@@ -150,7 +148,7 @@ public class MSCreatureList extends game.CreatureList {
             Position newPosition = clone.getPosition().move(direction);
             Tile newTile = level.getLayerFG().get(newPosition);
 
-            if (clone.canEnter(direction, newTile, level) || newTile == clone.toTile()) {
+            if (clone.canEnter(direction, newTile) || newTile == clone.toTile()) {
                 if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
                 else newClones.add(clone);
 

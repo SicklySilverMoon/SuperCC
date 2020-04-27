@@ -18,14 +18,12 @@ public class MSCreature extends Creature {
     private Direction nextMoveDirectionCheat = null;
 
     // Direction-related methods
-    protected void setDirection(Direction direction){
-        this.direction = direction;
-    }
     protected void setPosition(Position position){ //So you can make a creature teleport 32 tiles at once to data reset properly
         this.position = position;
     }
 
-    Direction[] getDirectionPriority(Creature chip, RNG rng){
+    @Override
+    public Direction[] getDirectionPriority(Creature chip, RNG rng){
         if (nextMoveDirectionCheat != null) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
@@ -143,7 +141,7 @@ public class MSCreature extends Creature {
         }
         Position newPosition = position.move(direction); //Dirty hack to make sure blocks in traps affect slide delay properly
         if (creatureType.isBlock() && wasSliding && level.getLayerBG().get(position) == TRAP
-            && (!canLeave(direction, level.getLayerBG().get(position)) || !canEnter(direction, level.getLayerFG().get(newPosition), level))){
+            && (!canLeave(direction, level.getLayerBG().get(position)) || !canEnter(direction, level.getLayerFG().get(newPosition)))){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
@@ -214,11 +212,11 @@ public class MSCreature extends Creature {
                     }
                 }
 
-                if (canEnter(direction, level.getLayerBG().get(exitPosition), level) && block.canLeave(direction, level.getLayerBG().get(exitPosition))) {
+                if (canEnter(direction, level.getLayerBG().get(exitPosition)) && block.canLeave(direction, level.getLayerBG().get(exitPosition))) {
                     Position blockPushPosition = exitPosition.move(direction);
                     if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
                         blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
-                    if (block.canEnter(direction, level.getLayerFG().get(blockPushPosition), level)){
+                    if (block.canEnter(direction, level.getLayerFG().get(blockPushPosition))){
                         if (block.tryMove(direction, false, pressedButtons)) break;
                     }
                 }
@@ -235,11 +233,11 @@ public class MSCreature extends Creature {
                     continue; //Continues through the teleport array like in MSCC
                 }
 
-                if (block.tryMove(direction, false, pressedButtons) && (canEnter(direction, exitTile, level))) {
+                if (block.tryMove(direction, false, pressedButtons) && (canEnter(direction, exitTile))) {
                     break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
                 }
             }
-            if (canEnter(direction, exitTile, level)) break;
+            if (canEnter(direction, exitTile)) break;
         }
         while (i != portalIndex);
     }
@@ -255,7 +253,8 @@ public class MSCreature extends Creature {
             default: return true;
         }
     }
-    boolean canEnter(Direction direction, Tile tile, Level level){
+    @Override
+    public boolean canEnter(Direction direction, Tile tile){
         switch (tile) {
             case FLOOR: return true;
             case WALL: return false;
@@ -714,13 +713,13 @@ public class MSCreature extends Creature {
         if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.getLayerBG().get(newPosition);
         if (newTile.isPickup()) {
             if (isChip) {
-                if (canEnter(direction, level.getLayerBG().get(newPosition), level) || level.getLayerBG().get(newPosition) == Tile.BLOCK) pickupCheck = true;
+                if (canEnter(direction, level.getLayerBG().get(newPosition)) || level.getLayerBG().get(newPosition) == Tile.BLOCK) pickupCheck = true;
             }
             else if (newTile.isKey()) pickupCheck = true;
         }
 
         if ((!newTile.isTransparent() && (isBlock || blockMachineCheck))
-                || canEnter(direction, level.getLayerBG().get(newPosition), level) //Look at this if statement, this is all just to get transparency to work
+                || canEnter(direction, level.getLayerBG().get(newPosition)) //Look at this if statement, this is all just to get transparency to work
                 || (pickupCheck && blockMachineCheck)
                 || (isBlock && (newTile.isBoot() || (newTile.isChip() || newTile.isSwimmingChip())))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 

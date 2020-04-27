@@ -418,14 +418,14 @@ class MenuBar extends JMenuBar{
 
             JMenuItem loadSolution = new JMenuItem("Load solution");
             loadSolution.addActionListener(event -> {
-                Thread t = new Thread(() -> {
+                //Thread t = new Thread(() -> {
                     try {
                         emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
                     } catch (IOException e) {
                         emulator.throwError("Error while loading solution");
                     }
-                });
-                t.start();
+                //});
+                //t.start();
             });
             add(loadSolution);
             addIcon(loadSolution, "/resources/icons/skip.gif");

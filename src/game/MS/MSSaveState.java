@@ -3,6 +3,7 @@ package game.MS;
 import game.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class MSSaveState implements SaveState {
         writer.writeMonsterList(slipList);
         writer.writeShort(idleMoves);
         writer.writeBool(voluntaryMoveAllowed);
-        
+
         return writer.toByteArray();
     }
     
@@ -114,6 +115,11 @@ public class MSSaveState implements SaveState {
             monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
             slipList.setSliplist(reader.readMonsterArray(reader.readShort()));
         }
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     protected MSSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, MSCreature chip,
@@ -132,7 +138,7 @@ public class MSSaveState implements SaveState {
         this.traps = traps;
     }
 
-    private class SavestateReader extends ByteArrayInputStream { //TODO: This entire thing can be moved to (hopefully) the general savestate interface and worked with from there
+    private static class SavestateReader extends ByteArrayInputStream { //TODO: This entire thing can be moved to (hopefully) the general savestate interface and worked with from there
 
         int readUnsignedByte(){
             return read() & 0xFF;
@@ -198,7 +204,7 @@ public class MSSaveState implements SaveState {
 
     }
 
-    private class SavestateWriter {
+    private static class SavestateWriter {
 
         private final byte[] bytes;
         private int index;

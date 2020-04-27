@@ -155,6 +155,7 @@ public class DatParser{
                 optionalFieldsLength -= fieldLength;
             }
 
+            reader.close();
             return LevelFactory.makeLevel(levelNumber, timeLimit, chips, layerFG, layerBG, title, trapConnections,
                     cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel());
         }
@@ -188,6 +189,7 @@ public class DatParser{
                 byteN += bytesInLevel;
                 reader.skip(bytesInLevel);
             }
+            reader.close();
         }
         catch (IOException e){
             reader.close();
@@ -195,7 +197,7 @@ public class DatParser{
         }
     }
     
-    private class DatReader extends FileInputStream{
+    private static class DatReader extends FileInputStream{
         private int readUnsignedByte() throws IOException{
             return read() & 0xFF;
         }

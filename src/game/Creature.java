@@ -19,9 +19,15 @@ public abstract class Creature {
         return direction;
     }
 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
     public CreatureID getCreatureType() {
         return creatureType;
     }
+
+    public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;
@@ -56,6 +62,14 @@ public abstract class Creature {
      * that represents how long the creature has been traveling between tiles
      */
     public abstract int getTimeTraveled();
+
+    /** Returns a boolean representing if the creature can enter the given tile in the given direction.
+     *
+     * @param direction The direction the creature is moving.
+     * @param tile The tile the creature is attempting to enter.
+     * @return
+     */
+    public abstract boolean canEnter(Direction direction, Tile tile);
 
     /** Returns an int representing a creature.
      *

@@ -51,20 +51,12 @@ public class LynxCreature extends Creature {
     }
 
     boolean tick() {
-        Direction[] directions = getDirectionPriority(level.getChip());
 
-        for (Direction dir : directions) {
-            Position dest = position.move(dir);
-            Tile currentTile = level.getLayerFG().get(dest);
-            Tile destTile = level.getLayerFG().get(dest);
-
-            if (!canLeave(dir, currentTile) || !canEnter(dir, destTile)) break;
-
-        }
         return false;
     }
 
-    Direction[] getDirectionPriority(Creature chip) {
+    @Override
+    public Direction[] getDirectionPriority(Creature chip, RNG rng) {
         if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
 
         switch (creatureType) {
@@ -92,7 +84,8 @@ public class LynxCreature extends Creature {
         return new Direction[] {};
     }
 
-    private boolean canEnter(Direction direction, Tile tile) {
+    @Override
+    public boolean canEnter(Direction direction, Tile tile) {
         boolean isChip = creatureType.isChip();
 
         switch (tile){

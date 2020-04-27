@@ -268,7 +268,7 @@ public class SavestateManager implements Serializable {
         return chipHistory;
     }
     
-    private class SavestateCompressor implements Runnable{
+    private static class SavestateCompressor implements Runnable{
         
         private static final int LAYER_BG_LOCATION = 3,
             LAYER_FG_LOCATION = LAYER_BG_LOCATION + 32 * 32,
