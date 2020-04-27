@@ -22,7 +22,7 @@ public class SavestateManager implements Serializable {
     private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
     private ByteList moves;
-    private transient SavestateCompressor compressor;
+    private transient SuperCC emulator;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 0;
     private transient ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
@@ -43,11 +43,11 @@ public class SavestateManager implements Serializable {
         STANDARD_WAIT_TIME / 8
     };
     public static final int NUM_SPEEDS = waitTimes.length;
-    
+
     public void setPlaybackSpeed(int i) {
         playbackWaitTime = waitTimes[i];
     }
-    
+
     public void setNode(TreeNode<byte[]> node) {
         currentNode = node;
     }
@@ -55,7 +55,6 @@ public class SavestateManager implements Serializable {
     private void readObject(java.io.ObjectInputStream in)
         throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        compressor = new SavestateCompressor();
         undesirableSavestates = new ArrayList<>();
         pause = false;
         playbackWaitTime = STANDARD_WAIT_TIME;
@@ -72,7 +71,7 @@ public class SavestateManager implements Serializable {
             moves.removeLast();
         }
         currentNode = new TreeNode<>(level.save(), currentNode);
-        compressor.add(currentNode);
+        emulator.savestateCompressor.add(currentNode);
         playbackNodes.add(currentNode);
         moves.add(b);
         playbackIndex = playbackNodes.size() - 1;
@@ -255,11 +254,12 @@ public class SavestateManager implements Serializable {
         return currentNode;
     }
     
-    public SavestateManager(Level level){
+    public SavestateManager(SuperCC emulator, Level level){
+        this.emulator = emulator;
+        emulator.savestateCompressor.initialise();
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
         moves = new ByteList();
-        compressor = new SavestateCompressor();
     }
     
     public LinkedList<Position> getChipHistory(){
@@ -267,99 +267,12 @@ public class SavestateManager implements Serializable {
         for (TreeNode<byte[]> node : currentNode.getHistory()) chipHistory.add(SaveState.getChip(node.getData()).getPosition());
         return chipHistory;
     }
-    
-    private static class SavestateCompressor implements Runnable{
-        
-        private static final int LAYER_BG_LOCATION = 3,
-            LAYER_FG_LOCATION = LAYER_BG_LOCATION + 32 * 32,
-            LAYER_FG_END = LAYER_FG_LOCATION + 32 * 32;
-        
-        private final Stack<TreeNode<byte[]>> uncompressedSavestates;
-        private final ByteList list;
-        
-        private final Thread thread;
-        
-        void add(TreeNode<byte[]> n){
-            uncompressedSavestates.add(n);
-            synchronized(thread) {
-                thread.notify();
-            }
-        }
-        
-        @Override
-        public void run(){
-            while (true) {
-                try {
-                    if (uncompressedSavestates.isEmpty()) {
-                        synchronized (thread) {
-                            thread.wait();
-                        }
-                    }
-                    else {
-                        compress(uncompressedSavestates.pop());
-                    }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        
-        private void rleCompress(byte[] uncompressed, ByteList out, int startIndex, int length){
-            int lastOrdinal = uncompressed[startIndex];
-            int ordinal;
-            int copyCount = -1;
-            for (int i = startIndex; i < startIndex + length; i++) {
-                ordinal = uncompressed[i];
-                if (ordinal == lastOrdinal){
-                    if (copyCount == 255){
-                        out.add(RLE_MULTIPLE);
-                        out.add(copyCount);
-                        copyCount = 0;
-                        out.add(ordinal);
-                    }
-                    else copyCount++;
-                }
-                else {
-                    if (copyCount != 0){
-                        out.add(RLE_MULTIPLE);
-                        out.add(copyCount);
-                    }
-                    out.add(lastOrdinal);
-                    copyCount = 0;
-                    lastOrdinal = ordinal;
-                }
-            }
-            if (copyCount != 0){
-                out.add(RLE_MULTIPLE);
-                out.add(copyCount);
-            }
-            out.add(lastOrdinal);
-            out.add(RLE_END);
-        }
-        
-        private void compress(TreeNode<byte[]> n){
-            list.clear();
-            byte[] uncompressedState = n.getData();
-            rleCompress(uncompressedState, list, LAYER_BG_LOCATION, 32*32);
-            rleCompress(uncompressedState, list, LAYER_FG_LOCATION, 32*32);
-            byte[] out = new byte[uncompressedState.length - 2 * 32 * 32 + list.size()];
-            out[0] = COMPRESSED_V2;
-            out[1] = uncompressedState[1];
-            out[2] = uncompressedState[2];
-            list.copy(out, 3);
-            System.arraycopy(uncompressedState, LAYER_FG_END, out, 3+list.size(), uncompressedState.length - 2 * 32 * 32 - 3);
-            n.setData(out);
-        }
-        
-        SavestateCompressor(){
-            uncompressedSavestates = new Stack<>();
-            list = new ByteList();
-            thread = new Thread(() -> run());
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.start();
-        }
-        
+
+    public void setEmulator(SuperCC emulator) {
+        this.emulator = emulator;
+        emulator.savestateCompressor.initialise();
+        /* Yes having this here does make the method do more than its name implies, however seeing as the only reason
+        emulator is used is in order to have access to the compressor, and whenever emulator is changed it means that
+        a new savestate manager was created/read from a file, meaning that the compressor should be reset as well */
     }
-    
 }

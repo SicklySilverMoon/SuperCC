@@ -332,7 +332,9 @@ class MenuBar extends JMenuBar{
                     if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
                         FileInputStream fis = new FileInputStream(fc.getSelectedFile());
                         ObjectInputStream ois = new ObjectInputStream(fis);
-                        emulator.setSavestates((SavestateManager) ois.readObject());
+                        SavestateManager savestates = (SavestateManager) ois.readObject();
+                        savestates.setEmulator(emulator);
+                        emulator.setSavestates(savestates);
                         ois.close();
                         fis.close();
                     }

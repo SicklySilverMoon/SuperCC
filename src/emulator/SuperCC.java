@@ -26,6 +26,7 @@ public class SuperCC {
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private SavestateManager savestates;
+    SavestateCompressor savestateCompressor = new SavestateCompressor();
     private Level level;
     private Gui window;
     private DatParser dat;
@@ -159,7 +160,7 @@ public class SuperCC {
             }
             else {
                 level = dat.parseLevel(levelNumber, rngSeed, step);
-                savestates = new SavestateManager(level);
+                savestates = new SavestateManager(this, level);
                 solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
                 if(hasGui) {
                     window.repaint(true);
