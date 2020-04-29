@@ -14,6 +14,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VariationTesting {
     private JTextPane codeEditor;
@@ -23,6 +25,8 @@ public class VariationTesting {
     private JButton runButton;
     private JPanel editorPanel;
     private JPanel consolePanel;
+    private JProgressBar progressBar;
+    private JLabel solutionsFoundLabel;
     private JTextPane console;
     private JLayeredPane editorArea;
     private JScrollPane editor;
@@ -104,7 +108,10 @@ public class VariationTesting {
                 return;
             }
             interpreter = new Interpreter(emulator, this, console, codeEditor.getText());
+            this.progressBar.setMaximum(Integer.MAX_VALUE);
             new VariationTestingThread().start();
+            Timer timer = new Timer(true);
+            timer.scheduleAtFixedRate(new VariationTestingProgressTask(), 0, 100);
         });
     }
 
@@ -320,6 +327,20 @@ public class VariationTesting {
 
             if(hasGui && interpreter.solutions.size() > 0) {
                 VariationResult result = new VariationResult(emulator, interpreter.variationCount, interpreter.solutions);
+            }
+        }
+    }
+
+    private class VariationTestingProgressTask extends TimerTask {
+        public void run() {
+            solutionsFoundLabel.setText("Solutions found: " + interpreter.solutions.size());
+            double normalization = Integer.MAX_VALUE/interpreter.totalPermutationCount;
+            double permutationIndex = interpreter.getPermutationIndex() * normalization;
+            progressBar.setValue((int)permutationIndex);
+            double percentage = permutationIndex/Integer.MAX_VALUE * 100;
+            progressBar.setString(String.format("%.3f", percentage) + "%");
+            if(killFlag || !running) {
+                cancel();
             }
         }
     }

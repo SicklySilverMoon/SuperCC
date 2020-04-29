@@ -12,6 +12,10 @@ public class Multiset {
     public boolean finished = false;
     public ArrayList<String> moves;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
+    private ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
+    private int setIndex = 0;
+
+    public static double LIMIT = 1e18;
 
     public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         MovePool movePoolTotal = getMovePoolTotal(movePools);
@@ -34,6 +38,7 @@ public class Multiset {
             this.movePool[i] = movePoolTotal.moves.get(moves.get(i));
         }
         initialSubset();
+        calculatePermutationCount();
     }
 
     /**
@@ -49,6 +54,7 @@ public class Multiset {
             int i = getDistributionIndex();
             if (i == 0) {
                 endOfCurrentSize();
+                setIndex++;
                 return;
             }
 
@@ -56,6 +62,7 @@ public class Multiset {
             distribute(i, gatherDistribution(i));
 
             if(isSubsetValid()) {
+                setIndex++;
                 return;
             }
         }
@@ -69,6 +76,15 @@ public class Multiset {
         finished = false;
         currentSize = limits.lower;
         initialSubset();
+        setIndex = 0;
+    }
+
+    public double getTotalPermutationCount() {
+        return cumulativePermutationCounts.get(cumulativePermutationCounts.size() - 1);
+    }
+
+    public double getCumulativePermutationCount() {
+        return cumulativePermutationCounts.get(setIndex);
     }
 
     private int getDistributionIndex() {
@@ -139,5 +155,31 @@ public class Multiset {
             }
         }
         return true;
+    }
+
+    private void calculatePermutationCount() {
+        double count = 0;
+        cumulativePermutationCounts.add(count);
+        do {
+            count += uniquePermutations(currentSize, subset);
+            cumulativePermutationCounts.add(count);
+            nextSubset();
+        } while(!finished && count < LIMIT);
+        reset();
+    }
+
+    private double factorial(int n) {
+        if(n == 0 || n == 1) {
+            return 1;
+        }
+        return (double)n * factorial(n - 1);
+    }
+
+    private double uniquePermutations(int n, int[] moves) {
+        double denominator = 1;
+        for (int move : moves) {
+            denominator *= factorial(move);
+        }
+        return factorial(n)/denominator;
     }
 }
