@@ -38,9 +38,6 @@ class MenuBar extends JMenuBar{
 
     private SuperCC emulator;
     private Gui window;
-
-//    private JPanel aboutPanel;
-//    private JLabel aboutLabel;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -458,7 +455,7 @@ class MenuBar extends JMenuBar{
                 JRadioButton msccEditor = new JRadioButton(tilesetNames[i]);
                 TileSheet tileSheet = tileSheets[i];
                 msccEditor.addActionListener(e -> {
-                    int tileWidth = 0, tileHeight = 0;
+                    int tileWidth, tileHeight;
                     try {
                         tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
                         tileHeight = emulator.getMainWindow().getGamePanel().getTileHeight();

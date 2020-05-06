@@ -20,7 +20,7 @@ public class LynxCreatureList extends CreatureList {
     @Override
     public void tick() {
         for (int i = list.length - 1; i >= 0; i--) {
-            //todo: https://wiki.bitbusters.club/Release_desynchronization#Explanation, see this section
+            //todo: the god damn trap sliding thing
             Creature creature = list[i];
             if (creature.getTimeTraveled() != 0 || creature.getCreatureType() == DEAD) continue;
 
@@ -31,6 +31,13 @@ public class LynxCreatureList extends CreatureList {
                 creature.setDirection(dir);
                 break;
             }
+        }
+
+        for (int i = list.length - 1; i >= 0; i--) {
+            //Actual movement should be done here
+            Creature creature = list[i];
+            if (creature.getCreatureType() == DEAD) continue;
+            creature.tick();
         }
     }
 

@@ -156,7 +156,7 @@ public class GifSequenceWriter {
         return(node);
     }
     
-    /**
+    /*
      public GifSequenceWriter(
      BufferedOutputStream outputStream,
      int imageType,

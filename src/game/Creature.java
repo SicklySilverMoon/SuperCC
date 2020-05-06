@@ -1,7 +1,7 @@
 package game;
 
 /**
- * Creatures are encoded as follows:
+ * Creatures are (at minimum, subclasses can extend this as needed) encoded as follows:
  *
  *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
  *    DIRECTION | MONSTER |    ROW    |    COL
@@ -28,6 +28,8 @@ public abstract class Creature {
     }
 
     public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
+
+    protected abstract Direction applySlidingTile(Direction direction, Tile tile, RNG rng);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;
@@ -67,9 +69,17 @@ public abstract class Creature {
      *
      * @param direction The direction the creature is moving.
      * @param tile The tile the creature is attempting to enter.
-     * @return
+     * @return A boolean representing if the creature can enter the provided tile.
      */
     public abstract boolean canEnter(Direction direction, Tile tile);
+
+    /** Advances the creature one tick (uses the creature's internal state).
+     * Currently used only by Lynx as MS Creatures are always downcasted and
+     * have their specialized tick method used.
+     *
+     * @return A boolean representing if the creature's advancement succeeded or not.
+     */
+    public abstract boolean tick();
 
     /** Returns an int representing a creature.
      *

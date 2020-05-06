@@ -200,6 +200,16 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     @Override
+    public Button getButton(Position position) {
+        for (Button[] buttons : new Button[][] {greenButtons, redButtons, brownButtons, blueButtons}) {
+            for (Button b : buttons) {
+                if (b.getButtonPosition().equals(position)) return b;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
             if (b.getTargetPosition().equals(position) && b.isOpen(this)) return true;

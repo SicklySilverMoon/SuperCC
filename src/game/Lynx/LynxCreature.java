@@ -10,6 +10,7 @@ import static game.Tile.*;
 public class LynxCreature extends Creature {
 
     private int timeTraveled;
+    private int animationTimer; //Exists primarily for death effect timings, but adds future ability to implement actual animations
 
     @Override
     public boolean isSliding() {
@@ -50,7 +51,44 @@ public class LynxCreature extends Creature {
         return timeTraveled & 0b111; //timeTraveled should always be between 0 and 7 anyways but just to be safe
     }
 
-    boolean tick() {
+    @Override
+    public boolean tick() {
+        timeTraveled = (timeTraveled + 2) & 0b111; //Mod 8
+        //Needs to be changed to include blobs only moving by 1 and sliding moving by an extra 2
+
+        if (timeTraveled != 0) return true;
+
+        Tile newTile = level.getLayerFG().get(position);
+        switch (newTile) {
+            case WATER:
+                if (creatureType != GLIDER) kill(); //todo: splash
+                break;
+            case ICE:
+            case FF_DOWN:
+            case FF_UP:
+            case FF_RIGHT:
+            case FF_LEFT:
+            case ICE_SLIDE_SOUTHEAST:
+            case ICE_SLIDE_SOUTHWEST:
+            case ICE_SLIDE_NORTHWEST:
+            case ICE_SLIDE_NORTHEAST:
+            case FF_RANDOM:
+                direction = applySlidingTile(direction, newTile, null);
+                sliding = true;
+                break;
+            case BUTTON_GREEN:
+            case BUTTON_RED:
+            case BUTTON_BROWN:
+            case BUTTON_BLUE:
+                level.getButton(position).press(level);
+                break;
+            case TELEPORT:
+                //todo: oh christ
+                break;
+            case BOMB:
+                kill(); //TODO: splash but hot
+                break;
+        }
 
         return false;
     }
@@ -82,6 +120,47 @@ public class LynxCreature extends Creature {
                 return new Direction[] {};
         }
         return new Direction[] {};
+    }
+
+    @Override
+    protected Direction applySlidingTile(Direction direction, Tile tile, RNG rng){
+        switch (tile){
+            case FF_DOWN:
+                return DOWN;
+            case FF_UP:
+                return UP;
+            case FF_RIGHT:
+                return RIGHT;
+            case FF_LEFT:
+                return LEFT;
+            case FF_RANDOM:
+                //todo
+            case ICE_SLIDE_SOUTHEAST:
+                if (direction == UP) return RIGHT;
+                else if (direction == LEFT) return DOWN;
+                else return direction;
+            case ICE_SLIDE_NORTHEAST:
+                if (direction == DOWN) return RIGHT;
+                else if (direction == LEFT) return UP;
+                else return direction;
+            case ICE_SLIDE_NORTHWEST:
+                if (direction == DOWN) return LEFT;
+                else if (direction == RIGHT) return UP;
+                else return direction;
+            case ICE_SLIDE_SOUTHWEST:
+                if (direction == UP) return LEFT;
+                else if (direction == RIGHT) return DOWN;
+                else return direction;
+            case TRAP:
+                return direction;
+        }
+        return direction;
+    }
+
+    @Override
+    public void kill() {
+        creatureType = DEAD;
+        animationTimer = 0;
     }
 
     @Override
@@ -200,7 +279,7 @@ public class LynxCreature extends Creature {
         }
     }
 
-    private boolean canLeave(Direction dir, Tile lower) {
+    private boolean canLeave(Tile lower) {
         switch (lower){
             case THIN_WALL_UP: return direction != UP;
             case THIN_WALL_RIGHT: return direction != RIGHT;

@@ -299,7 +299,9 @@ public class MSLevel extends MSSaveState implements Level {
         }
         return null;
     }
-    Button getButton(Position position) {
+
+    @Override
+    public Button getButton(Position position) {
         for (Button[] buttons : new Button[][] {greenButtons, redButtons, brownButtons, blueButtons}) {
             for (Button b : buttons) {
                 if (b.getButtonPosition().equals(position)) return b;

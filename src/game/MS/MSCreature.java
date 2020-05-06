@@ -54,8 +54,9 @@ public class MSCreature extends Creature {
     public Direction[] seek(Position position){
         return this.position.seek(position);
     }
-    
-    private static Direction applySlidingTile(Direction direction, Tile tile, RNG rng){
+
+    @Override
+    protected Direction applySlidingTile(Direction direction, Tile tile, RNG rng){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -766,7 +767,7 @@ public class MSCreature extends Creature {
     }
 
     boolean tick(Direction[] directions, boolean slidingMove){
-        MSLevel level = (MSLevel) this.level;
+        MSLevel level = (MSLevel) Creature.level;
         MSCreature oldCreature = clone();
         if (!creatureType.isChip() && !isSliding()) monsterList.direction = direction;
         for (Direction newDirection : directions){
@@ -806,6 +807,11 @@ public class MSCreature extends Creature {
         if (!creatureType.isChip() &&!(creatureType.isBlock() && level.getLayerBG().get(position) == FF_RANDOM)) setDirection(oldCreature.direction);
         else level.getLayerFG().set(position, toTile());
         return false;
+    }
+
+    @Override
+    public boolean tick() { //Ideally shouldn't be used for MS, the method this calls should be used instead
+        return tick(new Direction[]{direction}, sliding);
     }
     
     public MSCreature(Direction direction, CreatureID creatureType, Position position){
