@@ -14,7 +14,7 @@ public class SuccPaths {
     
     private void updateSettingsFile() {
         try (PrintWriter writer = new PrintWriter(settingsFile, "ISO_8859_1")) {
-            writer.println("[Paths]");
+            writer.println("[Paths]"); //todo: refactor this into loops lol
             writer.printf("%s = %s", "Levelset", settingsMap.get("Paths:Levelset"));
             writer.println();
             writer.printf("%s = %s", "TWS", settingsMap.get("Paths:TWS"));
@@ -191,8 +191,7 @@ public class SuccPaths {
                     int pivot = line.indexOf('=');
                     if (pivot > 0)
                     {
-                        String
-                                name = line.substring(0, pivot - 1).trim(),
+                        String name = line.substring(0, pivot - 1).trim(),
                                 value = line.substring(pivot + 1).trim();
                         if (!name.isEmpty())
                             settingsMap.put(section + ':' + name, value);
