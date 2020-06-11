@@ -159,18 +159,18 @@ public class SimulatedAnnealing {
         int type = r.nextInt(3);
 
         switch(type) {
-            case 0:
+            case 0: // Inserts index1 right after index2, shifting the subarray to the left
                 temp = solution[index1];
                 for(int i = index1 + 1; i <= index2; i++) {
                     solution[i - 1] = solution[i];
                 }
                 solution[index2] = temp;
                 break;
-            case 1:
+            case 1: // Performs 2-opt
                 opt2(solution, index1, index2);
                 break;
-            case 2:
-                int index3 = index2;
+            case 2: // Performs 3-opt (excluding 2-opt equivalents)
+                int index3 = index2; // index1 < index2 < index3
                 while(index3 == index1 || index3 == index2) {
                     index3 = r.nextInt(solution.length + 1);
                 }
@@ -198,22 +198,22 @@ public class SimulatedAnnealing {
 
     private void opt3(int[] solution, int index1, int index2, int index3, int type) {
         switch(type) {
-            case 0:
-                for(int i = index1; i < Math.floor((index1+index2)/2); i++) swap(solution, i, index1 + index2 - i - 1);
-                for(int i = index2; i < Math.floor((index2+index3)/2); i++) swap(solution, i, index2 + index3 - i - 1);
-                for(int i = index1; i < Math.floor((index1+index3)/2); i++) swap(solution, i, index1 + index3 - i - 1);
+            case 0: // [12][34] -> [34][12]
+                for(int i = index1; i < (index1+index2)/2; i++) swap(solution, i, index1 + index2 - i - 1);
+                for(int i = index2; i < (index2+index3)/2; i++) swap(solution, i, index2 + index3 - i - 1);
+                for(int i = index1; i < (index1+index3)/2; i++) swap(solution, i, index1 + index3 - i - 1);
                 break;
-            case 1:
-                for(int i = index2; i < Math.floor((index2+index3)/2); i++) swap(solution, i, index2 + index3 - i - 1);
-                for(int i = index1; i < Math.floor((index1+index3)/2); i++) swap(solution, i, index1 + index3 - i - 1);
+            case 1: // [12][34] -> [34][21]
+                for(int i = index2; i < (index2+index3)/2; i++) swap(solution, i, index2 + index3 - i - 1);
+                for(int i = index1; i < (index1+index3)/2; i++) swap(solution, i, index1 + index3 - i - 1);
                 break;
-            case 2:
-                for(int i = index1; i < Math.floor((index1+index2)/2); i++) swap(solution, i, index1 + index2 - i - 1);
-                for(int i = index1; i < Math.floor((index1+index3)/2); i++) swap(solution, i, index1 + index3 - i - 1);
+            case 2: // [12][34] -> [43][12]
+                for(int i = index1; i < (index1+index2)/2; i++) swap(solution, i, index1 + index2 - i - 1);
+                for(int i = index1; i < (index1+index3)/2; i++) swap(solution, i, index1 + index3 - i - 1);
                 break;
-            case 3:
-                for(int i = index1; i < Math.floor((index1+index2)/2); i++) swap(solution, i, index1 + index2 - i - 1);
-                for(int i = index2; i < Math.floor((index2+index3)/2); i++) swap(solution, i, index2 + index3 - i - 1);
+            case 3: // [12][34] -> [21][43]
+                for(int i = index1; i < (index1+index2)/2; i++) swap(solution, i, index1 + index2 - i - 1);
+                for(int i = index2; i < (index2+index3)/2; i++) swap(solution, i, index2 + index3 - i - 1);
         }
     }
 
