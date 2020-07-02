@@ -26,7 +26,7 @@ public class SuperCC {
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private SavestateManager savestates;
-    SavestateCompressor savestateCompressor = new SavestateCompressor();
+//    SavestateCompressor savestateCompressor = new SavestateCompressor();
     private Level level;
     private Gui window;
     private DatParser dat;
@@ -65,7 +65,7 @@ public class SuperCC {
         return b == 'U' || b == 'L' || b == 'D' || b == 'R' || b == '_';
     }
     
-    private static byte capital(byte b){
+    public static byte capital(byte b){
         if (b == '-') return '_';
         return (byte) Character.toUpperCase((char) b);
     }
@@ -75,15 +75,8 @@ public class SuperCC {
         else if (b == 'L') return new byte[] {'l', '-'};
         else if (b == 'D') return new byte[] {'d', '-'};
         else if (b == 'R') return new byte[] {'r', '-'};
+        else if (b == '_') return new byte[] {'-', '-'};
         else return new byte[] {b};
-    }
-
-    public static char[] lowerCaseChar(char b) {
-        if (b == 'U') return new char[] {'u', '-'};
-        else if (b == 'L') return new char[] {'l', '-'};
-        else if (b == 'D') return new char[] {'d', '-'};
-        else if (b == 'R') return new char[] {'r', '-'};
-        else return new char[] {b};
     }
     
     public int lastLevelNumber() {
@@ -183,7 +176,7 @@ public class SuperCC {
         if (level == null) return false;
         boolean tickTwice = level.tick(b, directions);
         if (flags.doubleTick && tickTwice) {
-            if (b != '-') b = capital(b); //Avoids a really weird situation where a mouse goal set in prior moves off a sliding tile can cause the wait to become capitalized due to the mouse move becoming a TSG move (note that even though the move panel will only display 1 '-' it actually takes 2 half moves)
+            b = capital(b); //todo: see the todo in Solution about capitalization and switching to another system
             level.tick(b, DIRECTIONS[4]);
         }
         if (flags.save) {
@@ -209,7 +202,7 @@ public class SuperCC {
             Position screenPosition = Position.screenPosition(level.getChip().getPosition());
             Position clickedPosition = Position.clickPosition(screenPosition, b);
             directions = level.getChip().getPosition().seek(clickedPosition);
-            level.setClick(clickedPosition.getIndex()); //If you can click the level better be MS, need to refactor later anyways TODO: <- that
+            level.setClick(clickedPosition.getIndex());
             return tick(b, directions, flags);
         }
         else{

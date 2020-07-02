@@ -32,6 +32,7 @@ public class SavestateManager implements Serializable {
 
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
+    private static final long serialVersionUID = -703363945281237768L;
     private transient int playbackWaitTime = STANDARD_WAIT_TIME;
     private static final int[] waitTimes = new int[]{
         STANDARD_WAIT_TIME * 8,
@@ -61,7 +62,7 @@ public class SavestateManager implements Serializable {
         playbackIndex = currentNode.depth();
         playbackNodes = new ArrayList<>(playbackIndex*2);
         playbackNodes.addAll(currentNode.getHistory());
-        System.out.println(currentNode.depth());
+        System.out.println("Current node depth: " + currentNode.depth());
     }
 
     public void addRewindState(Level level, byte b){
@@ -71,7 +72,7 @@ public class SavestateManager implements Serializable {
             moves.removeLast();
         }
         currentNode = new TreeNode<>(level.save(), currentNode);
-        emulator.savestateCompressor.add(currentNode);
+//        emulator.savestateCompressor.add(currentNode);
         playbackNodes.add(currentNode);
         moves.add(b);
         playbackIndex = playbackNodes.size() - 1;
@@ -256,7 +257,7 @@ public class SavestateManager implements Serializable {
     
     public SavestateManager(SuperCC emulator, Level level){
         this.emulator = emulator;
-        emulator.savestateCompressor.initialise();
+//        emulator.savestateCompressor.initialise();
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
         moves = new ByteList();
@@ -270,7 +271,7 @@ public class SavestateManager implements Serializable {
 
     public void setEmulator(SuperCC emulator) {
         this.emulator = emulator;
-        emulator.savestateCompressor.initialise();
+//        emulator.savestateCompressor.initialise();
         /* Yes having this here does make the method do more than its name implies, however seeing as the only reason
         emulator is used is in order to have access to the compressor, and whenever emulator is changed it means that
         a new savestate manager was created/read from a file, meaning that the compressor should be reset as well */

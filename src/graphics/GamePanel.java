@@ -295,7 +295,7 @@ public abstract class GamePanel extends JPanel
             byte b = clickPosition.clickByte(chip.getPosition());
             if (b == UNCLICKABLE) return;
             emulator.showAction("Clicked " + clickPosition);
-            ((MSLevel) emulator.getLevel()).setClick(clickPosition.getIndex());
+            emulator.getLevel().setClick(clickPosition.getIndex());
             Direction[] directions = chip.seek(clickPosition);
             emulator.tick(b, directions, TickFlags.GAME_PLAY);
         }

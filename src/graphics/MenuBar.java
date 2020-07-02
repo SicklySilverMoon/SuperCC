@@ -19,12 +19,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
@@ -43,7 +44,7 @@ class MenuBar extends JMenuBar{
         try {
             m.setIcon(new ImageIcon(ImageIO.read(getClass().getResource(path))));
         }
-        catch (Exception e) {}
+        catch (Exception ignored) {}
     }
 
     private class LevelMenu extends JMenu{
@@ -52,17 +53,13 @@ class MenuBar extends JMenuBar{
 
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) {
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("dat, ccl", "dat", "ccl"));
-                    fc.setCurrentDirectory(new File(emulator.getPaths().getLevelsetPath()));
-                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        emulator.getPaths().setLevelsetPath(fc.getSelectedFile().getParent());
-                        emulator.openLevelset(fc.getSelectedFile());
-                    }
+                File levelset = openFile(emulator.getPaths().getLevelsetPath(), "dat", "ccl");
+                if (levelset != null) {
+                    emulator.getPaths().setLevelsetPath(levelset.getParent());
+                    emulator.openLevelset(levelset);
                 }
             });
-            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK + SHIFT_MASK));
+            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
             addIcon(openLevelset, "/resources/icons/open.gif");
             add(openLevelset);
 
@@ -77,7 +74,7 @@ class MenuBar extends JMenuBar{
                     window.repaint(false);
                 }
             });
-            restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, CTRL_MASK));
+            restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, InputEvent.CTRL_MASK));
             addIcon(restart, "/resources/icons/restart.gif");
             add(restart);
     
@@ -85,7 +82,7 @@ class MenuBar extends JMenuBar{
             next.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1);
             });
-            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, CTRL_MASK));
+            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, InputEvent.CTRL_MASK));
             addIcon(next, "/resources/icons/right.gif");
             add(next);
 
@@ -93,7 +90,7 @@ class MenuBar extends JMenuBar{
             previous.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1);
             });
-            previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, CTRL_MASK));
+            previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, InputEvent.CTRL_MASK));
             addIcon(previous, "/resources/icons/left.gif");
             add(previous);
 
@@ -110,7 +107,7 @@ class MenuBar extends JMenuBar{
                     }
                 }
             });
-            goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, CTRL_MASK));
+            goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, InputEvent.CTRL_MASK));
             addIcon(goTo, "/resources/icons/goto.gif");
             add(goTo);
 
@@ -152,34 +149,17 @@ class MenuBar extends JMenuBar{
             super("Solution");
 
             JMenuItem saveAs = new JMenuItem("Save as"); //TODO: make saving a solution or opening from a new file adjust sccpath so things actually change and you don't have to go get the new solution each time
-            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK + SHIFT_MASK));
+            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
-                try{
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
-                    fc.setCurrentDirectory(new File(emulator.getJSONPath()));
-                    fc.setSelectedFile(new File(emulator.getJSONPath()));
-                    if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        File file = fc.getSelectedFile();
-                        String filename = file.toString();
-                        if (!filename .endsWith(".json")) filename += ".json";
-                        FileOutputStream fos = new FileOutputStream(filename);
-                        fos.write(solution.toString().getBytes());
-                        fos.close();
-                    }
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                    emulator.throwError("Could not save file: "+e.getMessage());
-                }
+                saveNewFile(solution.toString().getBytes(ISO_8859_1), emulator.getJSONPath(), "json");
             });
             addIcon(saveAs, "/resources/icons/saveAs.gif");
             add(saveAs);
     
             JMenuItem save = new JMenuItem("Save");
-            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, CTRL_MASK));
+            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.CTRL_MASK));
             save.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
@@ -197,21 +177,12 @@ class MenuBar extends JMenuBar{
             add(save);
     
             JMenuItem open = new JMenuItem("Open");
-            open.setAccelerator(KeyStroke.getKeyStroke(VK_O, CTRL_MASK));
+            open.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.CTRL_MASK));
             open.addActionListener(event -> {
-                try{
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
-                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
-                    fc.setSelectedFile(new File(emulator.getJSONPath()));
-                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath()), StandardCharsets.ISO_8859_1));
-                        solution.load(emulator);
-                    }
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                    emulator.throwError("Could not load file:\n" + e.getMessage());
+                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
+                if (fileBytes != null) {
+                    Solution solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
+                    solution.load(emulator);
                 }
             });
             addIcon(open, "/resources/icons/open.gif");
@@ -219,19 +190,10 @@ class MenuBar extends JMenuBar{
             
             JMenuItem seedSearch = new JMenuItem("Search for seeds");
             seedSearch.addActionListener(event -> {
-                try{
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("json", "json"));
-                    fc.setCurrentDirectory(new File(emulator.getJSONPath()).getParentFile());
-                    fc.setSelectedFile(new File(emulator.getJSONPath()));
-                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        Solution solution = Solution.fromJSON(new String(Files.readAllBytes(fc.getSelectedFile().toPath()), StandardCharsets.ISO_8859_1));
-                        new SeedSearch(emulator, solution);
-                    }
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                    emulator.throwError("Could not load file:\n" + e.getMessage());
+                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
+                if (fileBytes != null) {
+                    Solution solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
+                    new SeedSearch(emulator, solution);
                 }
             });
             addIcon(seedSearch, "/resources/icons/open.gif");
@@ -240,7 +202,7 @@ class MenuBar extends JMenuBar{
             addSeparator();
     
             JMenuItem copy = new JMenuItem("Copy solution");
-            copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, CTRL_MASK));
+            copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, InputEvent.CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
@@ -252,11 +214,10 @@ class MenuBar extends JMenuBar{
             add(copy);
     
             JMenuItem paste = new JMenuItem("Paste solution");
-            paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, CTRL_MASK));
+            paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, InputEvent.CTRL_MASK));
             paste.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
-                //Solution s = emulator.getSolution();
                 try {
                     Solution.fromJSON((String) t.getTransferData(DataFlavor.stringFlavor)).load(emulator);
                     emulator.showAction("Pasted solution");
@@ -265,15 +226,8 @@ class MenuBar extends JMenuBar{
                 catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
                     try {
                         for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
-                            char[] lowerCaseArray = SuperCC.lowerCaseChar(ch);
-                            byte b = (byte) lowerCaseArray[0];
-                            switch (b){
-                                case 85: b = SuperCC.UP; break;
-                                case 76: b = SuperCC.LEFT; break;
-                                case 68: b = SuperCC.DOWN; break;
-                                case 82: b = SuperCC.RIGHT; break;
-                                case 45: b = SuperCC.WAIT; break;
-                            }
+                            byte[] lowerCaseArray = SuperCC.lowerCase((byte) ch);
+                            byte b = lowerCaseArray[0];
                             emulator.tick(b, TickFlags.GAME_PLAY);
                             if (level.getChip().isDead()) break;
                         }
@@ -294,26 +248,17 @@ class MenuBar extends JMenuBar{
     
             JMenuItem saveSavestates = new JMenuItem("Save all states to disk");
             saveSavestates.addActionListener(event -> {
-                Level l = emulator.getLevel();
-                try{
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
-                    fc.setCurrentDirectory(new File(emulator.getSerPath()).getParentFile());
-                    fc.setSelectedFile(new File(emulator.getSerPath()));
-                    if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        File file = fc.getSelectedFile();
-                        String filename = file.toString();
-                        if (!filename .endsWith(".ser")) filename += ".ser";
-                        FileOutputStream fos = new FileOutputStream(filename);
-                        ObjectOutputStream out = new ObjectOutputStream(fos);
-                        out.writeObject(emulator.getSavestates());
-                        out.close();
-                        fos.close();
-                    }
-                }
-                catch (IOException e){
+                try {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ObjectOutputStream out = new ObjectOutputStream(bos);
+                    out.writeObject(emulator.getSavestates());
+                    out.flush();
+                    saveNewFile(bos.toByteArray(), emulator.getSerPath(), "ser");
+                    out.close();
+                    bos.close();
+                } catch (IOException e) {
                     e.printStackTrace();
-                    emulator.throwError("Could not save file: "+e.getMessage());
+                    emulator.throwError("Could not save file:" + e.getMessage());
                 }
             });
             addIcon(saveSavestates, "/resources/icons/saveAs.gif");
@@ -321,28 +266,22 @@ class MenuBar extends JMenuBar{
     
             JMenuItem loadStates = new JMenuItem("Load states from disk");
             loadStates.addActionListener(event -> {
-                try{
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileFilter(new FileNameExtensionFilter("ser", "ser"));
-                    fc.setCurrentDirectory(new File(emulator.getSerPath()).getParentFile());
-                    fc.setSelectedFile(new File(emulator.getSerPath()));
-                    if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                        FileInputStream fis = new FileInputStream(fc.getSelectedFile());
-                        ObjectInputStream ois = new ObjectInputStream(fis);
-                        SavestateManager savestates = (SavestateManager) ois.readObject();
+                try {
+                    byte[] fileBytes = openFileBytes(emulator.getSerPath(), "ser");
+                    if (fileBytes != null) {
+                        ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
+                        SavestateManager savestates = (SavestateManager) new ObjectInputStream(bis).readObject();
                         savestates.setEmulator(emulator);
                         emulator.setSavestates(savestates);
-                        ois.close();
-                        fis.close();
                     }
                 }
-                catch (IOException | ClassNotFoundException e){
+                catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
+                    emulator.throwError("could not open file: " + e.getMessage());
                 }
             });
             addIcon(loadStates, "/resources/icons/open.gif");
             add(loadStates);
-            
         }
     }
 
@@ -352,62 +291,50 @@ class MenuBar extends JMenuBar{
 
             JMenuItem newTWS = new JMenuItem("Write solution to new tws");
             newTWS.addActionListener(event -> {
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("tws", "tws"));
-                fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
-                fc.setSelectedFile(new File(emulator.getPaths().getTwsPath()));
-                if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    String filename = file.toString();
-                    if (!filename.endsWith(".tws")) filename += ".tws";
-                    file = new File(filename);
-                    SavestateManager savestates = emulator.getSavestates();
-                    Level level = emulator.getLevel();
-                    Solution solution = new Solution(savestates.getMoveList(),
-                            level.getRngSeed(),
-                            level.getStep());
+                SavestateManager savestates = emulator.getSavestates();
+                Level level = emulator.getLevel();
+                Solution solution = new Solution(savestates.getMoveList(),
+                        level.getRngSeed(),
+                        level.getStep());
 
-                    ByteList twsMouseMovesX = new ByteList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
-                    ByteList twsMouseMovesY = new ByteList();
-                    ByteList twsMouseMoves = new ByteList();
-                    savestates.addSavestate(-1); //Ideally a savestate should never be possible to be saved to this key
-                    ListIterator<Byte> itr = savestates.getMoveList().listIterator(true);
-                    while (itr.hasPrevious()) {
-                        byte b = itr.previous();
-                        if (SuperCC.isClick(b)) { //Use to math out the relative click position for TWS writing with mouse moves
-                            Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-                            Position clickedPosition = Position.clickPosition(screenPosition, b);
-                            int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
-                            int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
+                ByteList twsMouseMovesX = new ByteList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
+                ByteList twsMouseMovesY = new ByteList();
+                ByteList twsMouseMoves = new ByteList();
+                savestates.addSavestate(-1); //Ideally a savestate should never be possible to be saved to this key
+                ListIterator<Byte> itr = savestates.getMoveList().listIterator(true);
+                while (itr.hasPrevious()) {
+                    byte b = itr.previous();
+                    if (SuperCC.isClick(b)) { //Use to math out the relative click position for TWS writing with mouse moves
+                        Position screenPosition = Position.screenPosition(level.getChip().getPosition());
+                        Position clickedPosition = Position.clickPosition(screenPosition, b);
+                        int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
+                        int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
 
-                            twsMouseMovesX.add(relativeClickX);
-                            twsMouseMovesY.add(relativeClickY);
-                        }
-                        savestates.rewind();
+                        twsMouseMovesX.add(relativeClickX);
+                        twsMouseMovesY.add(relativeClickY);
                     }
-                    twsMouseMovesX.reverse(); //We were rewind through the entire solution so now we have to reverse the resulting list
-                    twsMouseMovesY.reverse();
-                    for (int i = 0; i < twsMouseMovesX.size(); i++){
-                        twsMouseMoves.add(twsMouseMovesX.get(i));
-                        twsMouseMoves.add(twsMouseMovesY.get(i));
-                    }
-
-                    savestates.load(-1, level);
-
-                    TWSWriter.write(file, level, solution, twsMouseMoves);
+                    savestates.rewind();
                 }
+                twsMouseMovesX.reverse(); //We were rewind through the entire solution so now we have to reverse the resulting list
+                twsMouseMovesY.reverse();
+                for (int i = 0; i < twsMouseMovesX.size(); i++){
+                    twsMouseMoves.add(twsMouseMovesX.get(i));
+                    twsMouseMoves.add(twsMouseMovesY.get(i));
+                }
+
+                savestates.load(-1, level);
+                Path tws = saveNewFile(TWSWriter.write(level, solution, twsMouseMoves), emulator.getPaths().getTwsPath(), "tws");
+                emulator.getPaths().setTwsPath(tws.getParent().toString());
             });
             add(newTWS);
             addIcon(newTWS, "/resources/icons/new.gif");
 
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(new FileNameExtensionFilter("tws", "tws"));
-                fc.setCurrentDirectory(new File(emulator.getPaths().getTwsPath()));
-                if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
-                    emulator.getPaths().setTwsPath(fc.getSelectedFile().getParent());
-                    emulator.setTWSFile(fc.getSelectedFile());
+                File file = openFile(emulator.getPaths().getTwsPath(), "tws");
+                if (file != null) {
+                    emulator.getPaths().setTwsPath(file.getParent());
+                    emulator.setTWSFile(file);
                 }
             });
             add(openTWS);
@@ -417,14 +344,11 @@ class MenuBar extends JMenuBar{
 
             JMenuItem loadSolution = new JMenuItem("Load solution");
             loadSolution.addActionListener(event -> {
-                //Thread t = new Thread(() -> {
-                    try {
-                        emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
-                    } catch (IOException e) {
-                        emulator.throwError("Error while loading solution");
-                    }
-                //});
-                //t.start();
+                try {
+                    emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
+                } catch (IOException e) {
+                    emulator.throwError("Error while loading solution");
+                }
             });
             add(loadSolution);
             addIcon(loadSolution, "/resources/icons/skip.gif");
@@ -435,11 +359,8 @@ class MenuBar extends JMenuBar{
             addIcon(saveSolution, "/resources/icons/save.gif");
 
             JMenuItem verify = new JMenuItem("Verify tws");
-            verify.addActionListener(e -> {
-                new VerifyTWS(emulator);
-            });
+            verify.addActionListener(e -> new VerifyTWS(emulator));
             add(verify);
-
         }
     }
 
@@ -484,32 +405,29 @@ class MenuBar extends JMenuBar{
             JMenu tileSize = new JMenu("Tile size");
             ButtonGroup tileSizes = new ButtonGroup();
             int[] sizes = new int[] {16, 20, 24, 32};
-            for (int i = 0; i < sizes.length; i++) {
-                int size = sizes[i];
+            for (int size : sizes) {
                 JRadioButton sizeButton = new JRadioButton(size + "x" + size);
                 sizeButton.addActionListener((e) -> {
                     try {
                         TileSheet ts;
                         try {
                             ts = emulator.getMainWindow().getGamePanel().getTileSheet();
-                        }
-                        catch (NullPointerException npe) {
+                        } catch (NullPointerException npe) {
                             ts = Gui.DEFAULT_TILESHEET;
                         }
                         SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
                         emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheet(size, size), ts, size, size);
                         window.getInventoryPanel().initialise(emulator);
-                        window.getInventoryPanel().setPreferredSize(new Dimension(4*size+10, 2*size+10));
-                        window.getInventoryPanel().setSize(4*size+10, 2*size+10);
-                        window.setSize(200+size*gamePanel.getWindowSizeX(), 200+size*gamePanel.getWindowSizeY());
-                        window.getGamePanel().setPreferredSize(new Dimension(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY()));
-                        window.getGamePanel().setSize(size*gamePanel.getWindowSizeX(), size*gamePanel.getWindowSizeY());
+                        window.getInventoryPanel().setPreferredSize(new Dimension(4 * size + 10, 2 * size + 10));
+                        window.getInventoryPanel().setSize(4 * size + 10, 2 * size + 10);
+                        window.setSize(200 + size * gamePanel.getWindowSizeX(), 200 + size * gamePanel.getWindowSizeY());
+                        window.getGamePanel().setPreferredSize(new Dimension(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY()));
+                        window.getGamePanel().setSize(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY());
                         window.pack();
                         window.repaint(true);
 
                         emulator.getPaths().setTileSizes(new int[]{size, size});
-                    }
-                    catch (IOException e1) {
+                    } catch (IOException e1) {
                         emulator.throwError(e1.getMessage());
                     }
                 });
@@ -525,16 +443,15 @@ class MenuBar extends JMenuBar{
             JMenu windowSize = new JMenu("Game window size");
             ButtonGroup windowSizes = new ButtonGroup();
             sizes = new int[] {9, 32};
-            for (int i = 0; i < sizes.length; i++) {
-                int size = sizes[i];
+            for (int size : sizes) {
                 sizeButton = new JRadioButton(size + "x" + size);
                 sizeButton.addActionListener((e) -> {
                     SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
                     gamePanel.setWindowSize(size, size);
                     int tileWidth = gamePanel.getTileWidth(), tileHeight = gamePanel.getTileHeight();
-                    window.setSize(200+tileWidth*size, 200+tileHeight*size);
-                    window.getGamePanel().setPreferredSize(new Dimension(tileWidth*size, tileHeight*size));
-                    window.getGamePanel().setSize(tileWidth*size, tileHeight*size);
+                    window.setSize(200 + tileWidth * size, 200 + tileHeight * size);
+                    window.getGamePanel().setPreferredSize(new Dimension(tileWidth * size, tileHeight * size));
+                    window.getGamePanel().setSize(tileWidth * size, tileHeight * size);
                     window.pack();
                     window.repaint(true);
                 });
@@ -697,6 +614,59 @@ class MenuBar extends JMenuBar{
             addIcon(tspHelpPopup, "/resources/icons/help.gif");
             add(tspHelpPopup);
         }
+    }
+
+    private Path saveNewFile(byte[] out, String path, String extension) {
+        try {
+            JFileChooser fc = new JFileChooser();
+            fc.setFileFilter(new FileNameExtensionFilter(extension, extension));
+            File filePath = new File(path);
+            if (filePath.isDirectory()) fc.setCurrentDirectory(filePath);
+            else {
+                fc.setCurrentDirectory(filePath.getParentFile());
+                fc.setSelectedFile(filePath);
+            }
+            if (fc.showSaveDialog(window) == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                String filename = file.toString();
+                if (!filename.endsWith("." + extension)) filename += "." + extension;
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(out);
+                fos.close();
+                return new File(filename).toPath();
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            emulator.throwError("Could not save file: "+e.getMessage());
+        }
+        return null;
+    }
+
+    private byte[] openFileBytes(String path, String... extensions) {
+        try{
+            return Files.readAllBytes(openFile(path, extensions).toPath());
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            emulator.throwError("Could not load file:\n" + e.getMessage());
+        }
+        return null;
+    }
+
+    private File openFile(String path, String... extensions) {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new FileNameExtensionFilter(extensions[0], extensions));
+        File file = new File(path);
+        if (file.isDirectory()) fc.setCurrentDirectory(file);
+        else {
+            fc.setCurrentDirectory(file.getParentFile());
+            fc.setSelectedFile(new File(path));
+        }
+        if (fc.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+            return fc.getSelectedFile();
+        }
+        return null;
     }
 
     MenuBar(Gui window, SuperCC emulator){

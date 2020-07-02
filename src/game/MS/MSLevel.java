@@ -401,7 +401,8 @@ public class MSLevel extends MSSaveState implements Level {
         int moveType = moveType(b, isHalfMove, chip.isSliding());
         monsterList.initialise();
 
-        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad
+//        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad
+        if (!voluntaryMoveAllowed && idleMoves > 0) voluntaryMoveAllowed = true;
 
         if (isHalfMove && mouseGoal == NO_CLICK && moveType == HALF_WAIT) {
             idleMoves++;
@@ -418,11 +419,12 @@ public class MSLevel extends MSSaveState implements Level {
         if (moveType == CLICK_EARLY) { //Todo: TSG Is now broken, please fix
             if (voluntaryMoveAllowed) {
                 moveChip(chip.seek(new Position(mouseGoal)));
+                idleMoves = 0;
                 voluntaryMoveAllowed = false;
             }
-            else {
-                moveType = CLICK_LATE;
-            }
+//            else if (isHalfMove) {
+//                moveType = CLICK_LATE;
+//            }
         }
         if (endTick()) return false;
         tickNumber++;
@@ -430,11 +432,12 @@ public class MSLevel extends MSSaveState implements Level {
         if (endTick()) return false;
         if (moveType == KEY) {
             moveChip(directions);
-            idleMoves = 0; //Yup, the timer only resets on key moves, clicks keep it the same
+            idleMoves = 0;
             voluntaryMoveAllowed = false;
         }
         else if (moveType == CLICK_LATE && !chip.isSliding()) {
             moveChip(chip.seek(new Position(mouseGoal)));
+            idleMoves = 0;
             voluntaryMoveAllowed = true;
         }
         if (endTick()) return false;

@@ -455,14 +455,14 @@ public class MSCreature extends Creature {
                 return false;
             case DOOR_BLUE:
                 if (creatureType.isChip() && level.keys[0] > 0) {
-                    level.keys[0] = (byte) (level.keys[0] - 1);
+                    level.keys[0] -= 1;
                     level.getLayerFG().set(newPosition, FLOOR);
                     return true;
                 }
                 return false;
             case DOOR_RED:
                 if (creatureType.isChip() && level.keys[1] > 0) {
-                    level.keys[1] = (byte) (level.keys[1] - 1);
+                    level.keys[1] -= 1;
                     level.getLayerFG().set(newPosition, FLOOR);
                     return true;
                 }
@@ -475,7 +475,7 @@ public class MSCreature extends Creature {
                 return false;
             case DOOR_YELLOW:
                 if (creatureType.isChip() && level.keys[3] > 0) {
-                    level.keys[3] = (byte) (level.keys[3] - 1);
+                    level.keys[3] -= 1;
                     level.getLayerFG().set(newPosition, FLOOR);
                     return true;
                 }

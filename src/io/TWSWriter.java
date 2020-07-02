@@ -8,8 +8,8 @@ import java.io.*;
 
 public class TWSWriter{
     
-    public static void write(File twsFile, Level level, Solution solution, ByteList mouseMoves) {
-        try(TWSOutputStream writer = new TWSOutputStream(twsFile)) {
+    public static byte[] write(Level level, Solution solution, ByteList mouseMoves) {
+        try(TWSOutputStream writer = new TWSOutputStream()) {
             writer.writeTWSHeader(level);
             writer.writeInt(writer.solutionLength(solution));
             writer.writeLevelHeader(level, solution);
@@ -33,13 +33,15 @@ public class TWSWriter{
                     firstMove = false;
                 }
             }
+            return writer.toByteArray();
         }
         catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    private static class TWSOutputStream extends FileOutputStream{
+    private static class TWSOutputStream extends ByteArrayOutputStream{
 
         private final byte UP = 3, LEFT = 7, DOWN = 11, RIGHT = 15;
 
@@ -97,9 +99,6 @@ public class TWSWriter{
             write(i >> 8);
             write(i >> 16);
             write(i >> 24);
-        }
-        public TWSOutputStream(File file) throws IOException {
-            super(file);
         }
         public int solutionLength(Solution s) {
             int c = LEVEL_HEADER_SIZE;

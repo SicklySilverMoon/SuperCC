@@ -60,7 +60,7 @@ public class Solution{
                     }
                 }
                 boolean tickedTwice = emulator.tick(b, tickFlags);
-                if (tickedTwice) move++;
+                if (tickedTwice && (!isClick(b) && b != '-')) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
                 if (level.getChip().isDead()) {
                     break;
                 }
@@ -108,22 +108,7 @@ public class Solution{
     private static byte[] succToHalfMoves(byte[] succMoves){
         ByteArrayOutputStream writer = new ByteArrayOutputStream();
         for (byte b : succMoves){
-            if (b == 'U'){
-                writer.write('u');
-                writer.write('-');
-            }
-            else if (b == 'L'){
-                writer.write('l');
-                writer.write('-');
-            }
-            else if (b == 'D'){
-                writer.write('d');
-                writer.write('-');
-            }
-            else if (b == 'R'){
-                writer.write('r');
-                writer.write('-');
-            }
+            if (b != '-') for (byte l : SuperCC.lowerCase(b)) writer.write(l);
             else writer.write(b);
         }
         return writer.toByteArray();

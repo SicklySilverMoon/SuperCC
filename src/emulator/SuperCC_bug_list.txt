@@ -1,5 +1,6 @@
 SuperCC bug list:
 
 "the intended solution of level 63 involves bouncing the block off the chip at (19,23) back through the trap at (19,21). If this solution is loaded into SuperCC, the block gets removed from the sliplist on re-entering the trap when it should remain on the sliplist, thus the solution does not play back."
+CCLP4 53: Protect Your Fortress, several solutions don't sync (or do sync in SuCC but not TW), the trap at the end where the block lands doesn't generate the correct amount of slide delay
 
 TSG is just broken to all hell
