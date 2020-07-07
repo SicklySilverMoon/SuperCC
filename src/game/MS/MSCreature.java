@@ -140,9 +140,8 @@ public class MSCreature extends Creature {
                 }
             }
         }
-        Position newPosition = position.move(direction); //Dirty hack to make sure blocks in traps affect slide delay properly
         if (creatureType.isBlock() && isSliding && level.getLayerBG().get(position) == TRAP
-            && (!canLeave(direction, level.getLayerBG().get(position)) || !canEnter(direction, level.getLayerFG().get(newPosition)))){
+            && (!canLeave(direction, level.getLayerBG().get(position)))){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
