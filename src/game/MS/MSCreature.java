@@ -125,7 +125,7 @@ public class MSCreature extends Creature {
         MSLevel level = (MSLevel) Creature.level;
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
-            else level.slipList.remove(this);
+            else if(!(creatureType.isBlock() && level.getLayerBG().get(position) == TRAP)) level.slipList.remove(this);
         }
         else if (!wasSliding && isSliding){
             if (creatureType.isChip()) setCreatureType(CHIP_SLIDING);
@@ -141,11 +141,12 @@ public class MSCreature extends Creature {
             }
         }
         Position newPosition = position.move(direction); //Dirty hack to make sure blocks in traps affect slide delay properly
-        if (creatureType.isBlock() && wasSliding && level.getLayerBG().get(position) == TRAP
+        if (creatureType.isBlock() && isSliding && level.getLayerBG().get(position) == TRAP
             && (!canLeave(direction, level.getLayerBG().get(position)) || !canEnter(direction, level.getLayerFG().get(newPosition)))){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
+            return;
         }
         if (creatureType.isBlock() && wasSliding && level.getLayerBG().get(position) == TRAP && canLeave(direction, level.getLayerBG().get(position)))
             this.sliding = true; //This prevents errors about adding a block to the sliplist twice
@@ -738,8 +739,8 @@ public class MSCreature extends Creature {
                     level.getLayerBG().set(newPosition, FLOOR);
                 }
 
-                if (creatureType.isBlock() && wasSliding && level.getLayerFG().get(newPosition) == TRAP && canLeave(direction, level.getLayerFG().get(newPosition))) //canLeave just calls isTrapOpen in case this didn't make sense
-                    sliding = true; //A block that slides into an open trap should just slide out of it with no change in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
+                if (creatureType.isBlock() && slidingMove && level.getLayerFG().get(newPosition) == TRAP)
+                    sliding = true; //A block that slides into a trap should be properly added or maintained in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
                 //!!DIRTY HACK SECTION ENDS!!//
 
                 if (sliding && !creatureType.isMonster())
