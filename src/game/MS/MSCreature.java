@@ -126,6 +126,11 @@ public class MSCreature extends Creature {
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
             else if(!(creatureType.isBlock() && level.getLayerBG().get(position) == TRAP)) level.slipList.remove(this);
+            // Handles block colliding on trap
+            else if (creatureType.isBlock() && level.getLayerBG().get(position) == TRAP && canLeave(direction, level.getLayerBG().get(position))) {
+                level.slipList.remove(this);
+                level.slipList.add(this);
+            }
         }
         else if (!wasSliding && isSliding){
             if (creatureType.isChip()) setCreatureType(CHIP_SLIDING);
