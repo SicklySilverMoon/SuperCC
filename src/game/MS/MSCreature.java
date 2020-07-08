@@ -122,6 +122,11 @@ public class MSCreature extends Creature {
     }
 
     public void setSliding(boolean wasSliding, boolean isSliding) {
+        setSliding(wasSliding, isSliding, false);
+    }
+
+    // The entered parameter is for checking if a block has just slid into a trap since in this case it shouldn't generate slide delay
+    public void setSliding(boolean wasSliding, boolean isSliding, boolean entered) {
         MSLevel level = (MSLevel) Creature.level;
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
@@ -146,7 +151,7 @@ public class MSCreature extends Creature {
             }
         }
         if (creatureType.isBlock() && isSliding && level.getLayerBG().get(position) == TRAP
-            && (!canLeave(direction, level.getLayerBG().get(position)))){
+            && (!canLeave(direction, level.getLayerBG().get(position))) && !entered){
             level.slipList.remove(this);
             level.slipList.add(this);
             this.sliding = true;
@@ -755,7 +760,7 @@ public class MSCreature extends Creature {
                     level.getMonsterList().numDeadMonsters++;
                 }
 
-                setSliding(wasSliding, sliding);
+                setSliding(wasSliding, sliding, true);
 
                 return true;
             }
