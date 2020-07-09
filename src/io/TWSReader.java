@@ -2,6 +2,7 @@ package io;
 
 import emulator.Solution;
 import game.Level;
+import game.Ruleset;
 import game.Step;
 
 import java.io.*;
@@ -15,6 +16,7 @@ public class TWSReader{
     private HashMap<Long, Long> passLevelOffsets = new HashMap<>();
 
     private final File twsFile;
+    private final Ruleset ruleset;
 
     public Solution readSolution(Level level) throws IOException{
         byte[] password = level.getPassword();
@@ -65,7 +67,7 @@ public class TWSReader{
                 break;
             }
         }
-        Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES);
+        Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
         return s;
     }
@@ -75,7 +77,8 @@ public class TWSReader{
         twsInputStream reader = new twsInputStream(twsFile);
         try{
             if (reader.readInt() != -1717882059) throw new IOException("Invalid signature");
-            if (reader.readByte() != 2) throw new IOException("Incorrect ruleset");
+            if (reader.readByte() == 2) ruleset = Ruleset.MS;
+            else ruleset = Ruleset.LYNX;
             reader.readByte();
             reader.readByte();
             int length = reader.readByte();

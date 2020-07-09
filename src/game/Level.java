@@ -110,6 +110,8 @@ public interface Level extends SaveState{
 
     int getTickNumber();
 
+    Ruleset getRuleset();
+
     /**
      * @param position the last clicked position.
      */

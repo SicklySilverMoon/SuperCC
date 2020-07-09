@@ -147,13 +147,13 @@ public class SuperCC {
         if (levelNumber == lastLevelNumber()) levelNumber = 1; //And vice versa
         try{
             if (keepMoves && level != null && levelNumber == level.getLevelNumber()) {
-                solution = new Solution(getSavestates().getMoveList(), rngSeed, step);
+                solution = new Solution(getSavestates().getMoveList(), rngSeed, step, level.getRuleset());
                 solution.load(this);
             }
             else {
                 level = dat.parseLevel(levelNumber, rngSeed, step);
                 savestates = new SavestateManager(this, level);
-                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
+                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES, level.getRuleset());
                 if(hasGui) {
                     window.repaint(true);
                     window.setTitle("SuperCC - " + new String(level.getTitle()));

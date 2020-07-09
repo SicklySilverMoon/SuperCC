@@ -21,6 +21,7 @@ public class LynxLevel extends LynxSaveState implements Level {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
+    private final Ruleset RULESET = Ruleset.LYNX;
     private boolean levelWon;
 
     @Override
@@ -220,6 +221,11 @@ public class LynxLevel extends LynxSaveState implements Level {
     @Override
     public int getTickNumber() {
         return tickNumber;
+    }
+
+    @Override
+    public Ruleset getRuleset() {
+        return RULESET;
     }
 
     @Override

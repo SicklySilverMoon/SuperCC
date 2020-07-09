@@ -8,6 +8,9 @@ import game.Level;
 import game.Position;
 import game.Step;
 import io.TWSWriter;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import tools.*;
 import util.CharList;
 
@@ -33,6 +36,7 @@ import java.util.function.Consumer;
 
 import static java.awt.event.KeyEvent.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class MenuBar extends JMenuBar{
 
@@ -151,8 +155,8 @@ class MenuBar extends JMenuBar{
             saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
-                saveNewFile(solution.toString().getBytes(ISO_8859_1), emulator.getJSONPath(), "json");
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset());
+                saveNewFile(solution.toString().getBytes(UTF_8), emulator.getJSONPath(), "json");
             });
             addIcon(saveAs, "/resources/icons/saveAs.gif");
             add(saveAs);
@@ -161,10 +165,10 @@ class MenuBar extends JMenuBar{
             save.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.CTRL_MASK));
             save.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset());
                 try{
                     FileOutputStream fos = new FileOutputStream(emulator.getJSONPath());
-                    fos.write(solution.toString().getBytes(ISO_8859_1));
+                    fos.write(solution.toString().getBytes(UTF_8));
                     fos.close();
                 }
                 catch (IOException e){
@@ -180,7 +184,19 @@ class MenuBar extends JMenuBar{
             open.addActionListener(event -> {
                 byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
                 if (fileBytes != null) {
-                    Solution solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
+                    Solution solution;
+                    JSONParser parser = new JSONParser();
+                    String fileString = new String(fileBytes, UTF_8);
+                    JSONObject json;
+                    try {
+                        json = (JSONObject) parser.parse(fileString);
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException("Invalid solution file:\n" + emulator.getJSONPath());
+                    }
+                    String encoding = (String) json.get(Solution.ENCODE);
+
+                    if ("UTF-8".equals(encoding)) solution = Solution.fromJSON(fileString);
+                    else solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
                     solution.load(emulator);
                 }
             });
@@ -191,7 +207,19 @@ class MenuBar extends JMenuBar{
             seedSearch.addActionListener(event -> {
                 byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
                 if (fileBytes != null) {
-                    Solution solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
+                    Solution solution;
+                    JSONParser parser = new JSONParser();
+                    String fileString = new String(fileBytes, UTF_8);
+                    JSONObject json;
+                    try {
+                        json = (JSONObject) parser.parse(fileString);
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException("Invalid solution file:\n" + emulator.getJSONPath());
+                    }
+                    String encoding = (String) json.get(Solution.ENCODE);
+
+                    if ("UTF-8".equals(encoding)) solution = Solution.fromJSON(fileString);
+                    else solution = Solution.fromJSON(new String(fileBytes, ISO_8859_1));
                     new SeedSearch(emulator, solution);
                 }
             });
@@ -204,7 +232,7 @@ class MenuBar extends JMenuBar{
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, InputEvent.CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
                 emulator.showAction("Copied solution");
                 emulator.getMainWindow().repaint(false);
@@ -294,7 +322,7 @@ class MenuBar extends JMenuBar{
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(savestates.getMoveList(),
                         level.getRngSeed(),
-                        level.getStep());
+                        level.getStep(), level.getRuleset());
 
                 CharList twsMouseMovesX = new CharList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
                 CharList twsMouseMovesY = new CharList();

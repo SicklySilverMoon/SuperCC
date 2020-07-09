@@ -470,7 +470,7 @@ public class TSPSolver {
             }
         }
 
-        Solution tspSolution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep());
+        Solution tspSolution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset());
         tspSolution.load(emulator);
     }
 

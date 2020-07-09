@@ -3,6 +3,7 @@ package io;
 import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
+import game.Ruleset;
 import util.CharList;
 
 import java.io.ByteArrayOutputStream;
@@ -70,9 +71,10 @@ public class TWSWriter{
                 writeFormat4(time, relativeClick);
             }
         }
-        void writeTWSHeader (Level level) throws IOException {
+        void writeTWSHeader(Level level) throws IOException {
             writeInt(0x999B3335);                        // Signature
-            write(2);                                   // Ruleset
+            if (level.getRuleset() == Ruleset.MS) write(2);
+            else write(1); //Lynx Ruleset
             writeShort(level.getLevelNumber());
             write(0);
         }

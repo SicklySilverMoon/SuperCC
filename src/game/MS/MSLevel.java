@@ -17,6 +17,7 @@ public class MSLevel extends MSSaveState implements Level {
             (monsterList.size() == 0) ? null : monsterList.get(0).getPosition(); //this is needed or else half the levels aren't playable due to a crash from having an empty monster list
     public final int INITIAL_CHIPS_AMOUNT = chipsLeft;
     private final int LEVELSET_LENGTH;
+    private final Ruleset RULESET = Ruleset.MS;
 
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
@@ -221,6 +222,10 @@ public class MSLevel extends MSSaveState implements Level {
     @Override
     public int getTickNumber() {
         return tickNumber;
+    }
+    @Override
+    public Ruleset getRuleset() {
+        return RULESET;
     }
     /**
      * @param position the last clicked position.

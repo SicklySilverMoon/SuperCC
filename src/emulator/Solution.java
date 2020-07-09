@@ -2,6 +2,7 @@ package emulator;
 
 import game.Level;
 import game.Position;
+import game.Ruleset;
 import game.Step;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,7 +16,7 @@ import static emulator.SuperCC.*;
 
 public class Solution{
 
-    public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves";
+    public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves", ENCODE = "Encode", RULE = "Rule";
     
     public static final int QUARTER_MOVES = 0,
                             HALF_MOVES = 1,
@@ -24,6 +25,8 @@ public class Solution{
     public char[] halfMoves;
     public int rngSeed;
     public Step step;
+    public Ruleset ruleset;
+    public final String encoding = "UTF-8";
     
     public double efficiency = -1;
     
@@ -31,6 +34,8 @@ public class Solution{
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());
         json.put(SEED, Integer.toString(rngSeed));
+        json.put(RULE, ruleset.name);
+        json.put(ENCODE, encoding);
         json.put(MOVES, new String(halfMoves));
         return json;
     }
@@ -152,7 +157,9 @@ public class Solution{
             Step step = Step.valueOf((String) json.get(STEP));
             int rngSeed = Integer.parseInt((String) json.get(SEED));
             char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
-            return new Solution(halfMoves, rngSeed, step, HALF_MOVES);
+            String ruleString = (String) json.get(RULE);
+            Ruleset ruleset = Ruleset.fromName(ruleString == null ? "MS" : ruleString);
+            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset);
         }
         catch (Exception e){
             throw new IllegalArgumentException("Invalid solution file:\n" + s);
@@ -164,7 +171,7 @@ public class Solution{
         return toJSON().toJSONString();
     }
     
-    public Solution(char[] moves, int rngSeed, Step step, int format){
+    public Solution(char[] moves, int rngSeed, Step step, int format, Ruleset ruleset){
         if (format == QUARTER_MOVES) this.halfMoves = quarterToHalfMoves(moves);
         else if (format == SUCC_MOVES) this.halfMoves = succToHalfMoves(moves);
         else if (format == HALF_MOVES) this.halfMoves = moves;
@@ -172,10 +179,11 @@ public class Solution{
         this.step = step;
     }
     
-    public Solution(CharList moves, int rngSeed, Step step){
+    public Solution(CharList moves, int rngSeed, Step step, Ruleset ruleset){
         this.halfMoves = succToHalfMoves(moves);
         this.rngSeed = rngSeed;
         this.step = step;
+        this.ruleset = ruleset;
         //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
     }
 

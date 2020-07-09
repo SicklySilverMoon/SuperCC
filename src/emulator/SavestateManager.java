@@ -71,9 +71,7 @@ public class SavestateManager implements Serializable {
     @SuppressWarnings("unchecked")
     private void readObject(java.io.ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
-        int ver = stream.read();
-        System.out.println(ver);
-        if (ver == VERSION_V0) {
+        if (stream.read() == VERSION_V0) {
             savestates = (HashMap<Integer, TreeNode<byte[]>>) stream.readObject();
             savestateMoves = new HashMap<>();
             int movesLength = stream.read();
