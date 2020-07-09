@@ -34,10 +34,26 @@ public class Solution{
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());
         json.put(SEED, Integer.toString(rngSeed));
-        json.put(RULE, ruleset.name);
+        json.put(RULE, ruleset.toString());
         json.put(ENCODE, encoding);
         json.put(MOVES, new String(halfMoves));
         return json;
+    }
+
+    public static Solution fromJSON(String s){
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(s);
+            Step step = Step.valueOf((String) json.get(STEP));
+            int rngSeed = Integer.parseInt((String) json.get(SEED));
+            char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
+            String ruleString = (String) json.get(RULE);
+            Ruleset ruleset = Ruleset.valueOf(ruleString == null ? "MS" : ruleString);
+            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset);
+        }
+        catch (Exception e){
+            throw new IllegalArgumentException("Invalid solution file:\n" + s);
+        }
     }
     
     public void load(SuperCC emulator){
@@ -148,22 +164,6 @@ public class Solution{
         }
         //System.out.println(Arrays.toString(writer.toByteArray()));
         return writer.toCharArray();
-    }
-    
-    public static Solution fromJSON(String s){
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject) parser.parse(s);
-            Step step = Step.valueOf((String) json.get(STEP));
-            int rngSeed = Integer.parseInt((String) json.get(SEED));
-            char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
-            String ruleString = (String) json.get(RULE);
-            Ruleset ruleset = Ruleset.fromName(ruleString == null ? "MS" : ruleString);
-            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset);
-        }
-        catch (Exception e){
-            throw new IllegalArgumentException("Invalid solution file:\n" + s);
-        }
     }
     
     @Override
