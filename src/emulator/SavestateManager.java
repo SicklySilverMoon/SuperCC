@@ -41,7 +41,7 @@ public class SavestateManager implements Serializable {
     };
     public static final int NUM_SPEEDS = waitTimes.length;
     
-    private static final long serialVersionUID = -703363945281237768L;
+    private static final long serialVersionUID = -3232323211211410511L;
     private static final int VERSION_V0 = 0;
 
     public void setPlaybackSpeed(int i) {
@@ -53,6 +53,7 @@ public class SavestateManager implements Serializable {
     }
 
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+        stream.write(VERSION_V0);
         stream.writeObject(savestates);
         stream.write(savestateMoves.size());
         for (int i : savestateMoves.keySet()) {
@@ -70,7 +71,9 @@ public class SavestateManager implements Serializable {
     @SuppressWarnings("unchecked")
     private void readObject(java.io.ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
-        if (stream.read() == VERSION_V0) {
+        int ver = stream.read();
+        System.out.println(ver);
+        if (ver == VERSION_V0) {
             savestates = (HashMap<Integer, TreeNode<byte[]>>) stream.readObject();
             savestateMoves = new HashMap<>();
             int movesLength = stream.read();
@@ -291,6 +294,7 @@ public class SavestateManager implements Serializable {
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
         moves = new CharList();
+        for (int i=0; i < checkpoints.length; i++) checkpoints[i] = new CharList();
     }
     
     public LinkedList<Position> getChipHistory(){
