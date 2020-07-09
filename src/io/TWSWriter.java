@@ -1,14 +1,16 @@
 package io;
 
 import emulator.Solution;
+import emulator.SuperCC;
 import game.Level;
-import util.ByteList;
+import util.CharList;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class TWSWriter{
     
-    public static byte[] write(Level level, Solution solution, ByteList mouseMoves) {
+    public static byte[] write(Level level, Solution solution, CharList mouseMoves) {
         try(TWSOutputStream writer = new TWSOutputStream()) {
             writer.writeTWSHeader(level);
             writer.writeInt(writer.solutionLength(solution));
@@ -16,19 +18,19 @@ public class TWSWriter{
             int timeBetween = 0;
             boolean firstMove = true;
             int i = 0;
-            for (byte b : solution.halfMoves) {
-                if (b == '-') timeBetween += 2;
+            for (char c : solution.halfMoves) {
+                if (c == '-') timeBetween += 2;
                 else {
                     int relativeClickX;
                     int relativeClickY;
                     int twsRelativeClick = 0;
-                    if (b <= 0) {
+                    if (SuperCC.isClick(c)) {
                         relativeClickX = mouseMoves.get(i++); //Postfix ++ returns the current value of i then increments it
                         relativeClickY = mouseMoves.get(i++);
 
                         twsRelativeClick = 16 + ((relativeClickY + 9) * 19) + (relativeClickX + 9);
                     }
-                    writer.writeMove(b, timeBetween, firstMove, twsRelativeClick);
+                    writer.writeMove(c, timeBetween, firstMove, twsRelativeClick);
                     timeBetween = 2;
                     firstMove = false;
                 }
@@ -47,11 +49,11 @@ public class TWSWriter{
 
         //all key directions (u, l, d, r) use format 2 on this page http://www.muppetlabs.com/~breadbox/software/tworld/tworldff.html#3
 
-        void writeMove(byte b, int time, boolean firstMove, int relativeClick) throws IOException {
+        void writeMove(char c, int time, boolean firstMove, int relativeClick) throws IOException {
             if (!firstMove) time -= 1;
             byte twsMoveByte;
             boolean useFormat4 = false;
-            switch (b) {
+            switch (c) {
                 case 'u': twsMoveByte = UP; break;
                 case 'l': twsMoveByte = LEFT; break;
                 case 'd': twsMoveByte = DOWN; break;
@@ -101,9 +103,9 @@ public class TWSWriter{
             write(i >> 24);
         }
         public int solutionLength(Solution s) {
-            int c = LEVEL_HEADER_SIZE;
-            for (byte b : s.halfMoves) if (b != '-') c += 4;
-            return c;
+            int length = LEVEL_HEADER_SIZE;
+            for (char c : s.halfMoves) if (c != '-') length += 4;
+            return length;
         }
         void writeFormat2(byte twsMoveByte, int time) throws IOException {
             write(twsMoveByte | (time & 0b111) << 5);

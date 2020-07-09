@@ -17,14 +17,14 @@ public class EmulatorKeyListener extends KeyAdapter {
         FULL_WAIT(SuperCC.WAIT),
         REWIND,
         FORWARD;
-        private byte directionByte;
+        private char directionByte;
         private int keyCode;
 
         public int getKeyCode() {
             return keyCode;
         }
         
-        Key(byte directionByte) {
+        Key(char directionByte) {
             this.directionByte = directionByte;
         }
         Key() {}
@@ -64,15 +64,15 @@ public class EmulatorKeyListener extends KeyAdapter {
                     //Time to code in loading the checkpoint moves
                     int size = emulator.getSavestates().getCheckpoint(keyCode-48).size();
                     for (int i = 0; i < size; i++) {
-                        byte b = emulator.getSavestates().getCheckpoint(keyCode-48).get(i);
-                        switch (b){
-                            case 85: b = SuperCC.UP; break;
-                            case 76: b = SuperCC.LEFT; break;
-                            case 68: b = SuperCC.DOWN; break;
-                            case 82: b = SuperCC.RIGHT; break;
-                            case 45: b = SuperCC.WAIT; break;
+                        char c = emulator.getSavestates().getCheckpoint(keyCode-48).get(i);
+                        switch (c){
+                            case 85: c = SuperCC.UP; break;
+                            case 76: c = SuperCC.LEFT; break;
+                            case 68: c = SuperCC.DOWN; break;
+                            case 82: c = SuperCC.RIGHT; break;
+                            case 45: c = SuperCC.WAIT; break;
                         }
-                        emulator.tick(b, TickFlags.GAME_PLAY);
+                        emulator.tick(c, TickFlags.GAME_PLAY);
                     }
                 emulator.showAction("Checkpoint " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
                 }

@@ -1,5 +1,6 @@
 package game.MS;
 
+import emulator.SuperCC;
 import game.*;
 import game.button.*;
 
@@ -317,15 +318,15 @@ public class MSLevel extends MSSaveState implements Level {
         return false;
     }
     
-    private int moveType(byte b, boolean halfMove, boolean chipSliding){
-        if (b <= 0 || b == WAIT){
+    private int moveType(char c, boolean halfMove, boolean chipSliding){
+        if (SuperCC.isClick(c) || c == WAIT){
             if (mouseGoal != NO_CLICK) {
                 if (chipSliding) return CLICK_EARLY;
                 if (halfMove) return CLICK_LATE;
             }
             else return HALF_WAIT;
         }
-        else if (b == UP || b == LEFT || b == DOWN || b == RIGHT){
+        else if (c == UP || c == LEFT || c == DOWN || c == RIGHT){
             return KEY;
         }
         return HALF_WAIT;
@@ -385,7 +386,7 @@ public class MSLevel extends MSSaveState implements Level {
      *     for checking whether chip can move (in case chip moved the previous
      *     tick).
      * </p>
-     * @param b The direction in which to move. If b is positive it should be
+     * @param c The direction in which to move. If b is positive it should be
      *          one of UP, LEFT, DOWN, RIGHT and WAIT. If b is negative, it is
      *          interpreted as a mouse click. Note that the click itself is not
      *          set here - use {@link #setClick(int)} for that.
@@ -393,12 +394,12 @@ public class MSLevel extends MSSaveState implements Level {
      * @return true if the next move should be made automatically without input
      */
     @Override
-    public boolean tick(byte b, Direction[] directions){
+    public boolean tick(char c, Direction[] directions){
 
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         initialiseSlidingMonsters();
         boolean isHalfMove = (tickNumber & 0x1) != 0; //A faster version of tickNumber % 2 != 0;
-        int moveType = moveType(b, isHalfMove, chip.isSliding());
+        int moveType = moveType(c, isHalfMove, chip.isSliding());
         monsterList.initialise();
 
 //        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad

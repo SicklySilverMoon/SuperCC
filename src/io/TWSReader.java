@@ -42,7 +42,7 @@ public class TWSReader{
         int solutionLength = reader.readInt();
 
         reader.counter = 0;
-        ByteArrayOutputStream writer = new ByteArrayOutputStream();
+        CharArrayWriter writer = new CharArrayWriter();
         while (writer.size() + reader.solutionLengthOffset <= solutionLength){
             int b = reader.readByte();
             try {
@@ -65,7 +65,7 @@ public class TWSReader{
                 break;
             }
         }
-        Solution s = new Solution(writer.toByteArray(), rngSeed, step, Solution.QUARTER_MOVES);
+        Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
         return s;
     }
@@ -108,7 +108,7 @@ public class TWSReader{
         public int ineffiencies = 0;
         
         public int counter;
-        public void readFormat1(int b, ByteArrayOutputStream writer) throws IOException{
+        public void readFormat1(int b, CharArrayWriter writer) throws IOException{
             int length = b & 0b11;
             counter += length;
             int time;
@@ -124,7 +124,7 @@ public class TWSReader{
             for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
-        public void readFormat2(int b, ByteArrayOutputStream writer) throws IOException{
+        public void readFormat2(int b, CharArrayWriter writer) throws IOException{
             counter += 4;
             byte direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
@@ -132,9 +132,9 @@ public class TWSReader{
             for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
-        public void readFormat3(int b, ByteArrayOutputStream writer) throws IOException{
+        public void readFormat3(int b, Writer writer) throws IOException{
             counter += 1;
-            byte[] waits = new byte[] {'~', '~', '~'};
+            char[] waits = new char[] {'~', '~', '~'};
             writer.write(waits);
             writer.write(DIRECTIONS[(b >>> 2) & 0b11]);
             writer.write(waits);
@@ -142,7 +142,7 @@ public class TWSReader{
             writer.write(waits);
             writer.write(DIRECTIONS[(b >>> 6) & 0b11]);
         }
-        public void readFormat4(int b, ByteArrayOutputStream writer) throws IOException{
+        public void readFormat4(int b, CharArrayWriter writer) throws IOException{
             int length = ((b >>> 2) & 0b11) + 2;
             counter += length;
             int b2 = readByte();

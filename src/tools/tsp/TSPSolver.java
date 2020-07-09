@@ -5,7 +5,7 @@ import emulator.SuperCC;
 import emulator.TickFlags;
 import game.*;
 import tools.TSPGUI;
-import util.ByteList;
+import util.CharList;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class TSPSolver {
     private TSPGUI gui;
     private Level level;
     private byte[] startState;
-    private byte[] directions = { SuperCC.UP, SuperCC.RIGHT, SuperCC.DOWN, SuperCC.LEFT };
+    private char[] directions = { SuperCC.UP, SuperCC.RIGHT, SuperCC.DOWN, SuperCC.LEFT };
     private byte[] initialState;
     private ArrayList<Integer> nodes = new ArrayList<>();
     private boolean[][] boostNodes;
@@ -218,7 +218,7 @@ public class TSPSolver {
 
     private void searchBFS(int from) {
         PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
-        states.add(new PathNode(level.save(), new ByteList(), startTime, (byte) 'u'));
+        states.add(new PathNode(level.save(), new CharList(), startTime, 'u'));
 
         int[] visitedAt = new int[1024 * 4];
         int[] visitedCount = new int[1024 * 4];
@@ -259,7 +259,7 @@ public class TSPSolver {
                 }
                 if (can) {
                     emulator.tick(directions[direction], TickFlags.LIGHT);
-                    ByteList newMoves = node.moves.clone();
+                    CharList newMoves = node.moves.clone();
                     newMoves.add(directions[direction]);
                     states.add(new PathNode(level.save(), newMoves, level.getTChipTime(), directions[direction]));
                 }
@@ -280,7 +280,7 @@ public class TSPSolver {
         return false;
     }
 
-    private int getDirectionIndex(byte d) {
+    private int getDirectionIndex(char d) {
         if(d == 'u') return 0;
         if(d == 'r') return 1;
         if(d == 'd') return 2;
@@ -342,7 +342,7 @@ public class TSPSolver {
            t == Tile.THIN_WALL_DOWN || t == Tile.THIN_WALL_UP);
     }
 
-    private boolean handleSliding(byte direction, int position, int[] visitedAt, int[] visitedCount, int from, Tile onTile, PathNode node) {
+    private boolean handleSliding(char direction, int position, int[] visitedAt, int[] visitedCount, int from, Tile onTile, PathNode node) {
         Direction dir = level.getChip().getDirection();
         int delta = getDelta(dir);
         int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(direction);
@@ -352,7 +352,7 @@ public class TSPSolver {
             return false;
         }
 
-        if(!canEnter(dirToByte(dir), newPosition)) {
+        if(!canEnter(dirToChar(dir), newPosition)) {
             return !onTile.isIce();
         }
 
@@ -374,7 +374,7 @@ public class TSPSolver {
         return -1;
     }
 
-    private byte dirToByte(Direction dir) {
+    private char dirToChar(Direction dir) {
         switch(dir) {
             case UP: return 'u';
             case RIGHT: return 'r';
@@ -396,7 +396,7 @@ public class TSPSolver {
         }
     }
 
-    private boolean directionEquals(Direction dir, byte d) {
+    private boolean directionEquals(Direction dir, char d) {
         if(dir == Direction.UP && d == 'u') return true;
         if(dir == Direction.RIGHT && d == 'r') return true;
         if(dir == Direction.DOWN && d == 'd') return true;
@@ -404,7 +404,7 @@ public class TSPSolver {
         return false;
     }
 
-    private boolean canEnter(byte d, int position) {
+    private boolean canEnter(char d, int position) {
         Tile t = level.getLayerFG().get(position % 1024);
 
         switch(t) {
@@ -427,7 +427,7 @@ public class TSPSolver {
         }
     }
 
-    private boolean canOverride(byte d, Tile t) {
+    private boolean canOverride(char d, Tile t) {
         return directionEquals(level.getChip().getDirection(), d) || t.isFF();
     }
 
@@ -435,7 +435,7 @@ public class TSPSolver {
         output.setText("Reconstructing solution...");
         level.load(startState);
 
-        ArrayList<ByteList> partialSolutions = new ArrayList<>();
+        ArrayList<CharList> partialSolutions = new ArrayList<>();
 
         if(solution.length > 0) {
             partialSolutions.add(paths[0][solution[0]].moves);
@@ -464,9 +464,9 @@ public class TSPSolver {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
 
-        for(ByteList partialSolution : partialSolutions) {
-            for(Byte b : partialSolution) {
-                emulator.tick(b, TickFlags.PRELOADING);
+        for(CharList partialSolution : partialSolutions) {
+            for(Character c : partialSolution) {
+                emulator.tick(c, TickFlags.PRELOADING);
             }
         }
 
@@ -484,11 +484,11 @@ public class TSPSolver {
 
     private class PathNode {
         public byte[] state;
-        public ByteList moves;
+        public CharList moves;
         public int time;
-        byte lastMove;
+        char lastMove;
 
-        public PathNode(byte[] state, ByteList moves, int time, byte lastMove) {
+        public PathNode(byte[] state, CharList moves, int time, char lastMove) {
             this.state = state;
             this.moves = moves;
             this.time = time;

@@ -292,12 +292,12 @@ public abstract class GamePanel extends JPanel
     private void leftClick(GameGraphicPosition clickPosition) {
         MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //TODO: Currently relies on MS code, not good
         if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
-            byte b = clickPosition.clickByte(chip.getPosition());
-            if (b == UNCLICKABLE) return;
+            char c = clickPosition.clickChar(chip.getPosition());
+            if (c == UNCLICKABLE) return;
             emulator.showAction("Clicked " + clickPosition);
             emulator.getLevel().setClick(clickPosition.getIndex());
             Direction[] directions = chip.seek(clickPosition);
-            emulator.tick(b, directions, TickFlags.GAME_PLAY);
+            emulator.tick(c, directions, TickFlags.GAME_PLAY);
         }
     }
     private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {

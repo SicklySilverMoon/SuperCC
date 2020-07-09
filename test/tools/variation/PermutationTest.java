@@ -1,14 +1,15 @@
 package tools.variation;
 
 import org.junit.jupiter.api.Test;
-import util.ByteList;
+import util.CharList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PermutationTest {
     @Test
@@ -186,8 +187,8 @@ class PermutationTest {
         movePools.optional.add(new Move("3du"));
         Permutation permutation = new Permutation(movePools, new BoundLimit(6), "urdlwh");
 
-        List<ByteList> byteList = Arrays.asList(permutation.getPermutation());
-        List<String> moveStrings = byteList.stream()
+        List<CharList> charList = Arrays.asList(permutation.getPermutation());
+        List<String> moveStrings = charList.stream()
                 .map(list -> list.toString())
                 .collect(Collectors.toList());
 

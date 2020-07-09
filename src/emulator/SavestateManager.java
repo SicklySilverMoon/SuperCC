@@ -5,34 +5,30 @@ import game.Position;
 import game.SaveState;
 import graphics.Gui;
 import graphics.SmallGamePanel;
-import util.ByteList;
+import util.CharList;
 import util.TreeNode;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-
-import static game.SaveState.*;
 
 public class SavestateManager implements Serializable {
 
     private HashMap<Integer, TreeNode<byte[]>> savestates = new HashMap<>();
-    private HashMap<Integer, ByteList> savestateMoves = new HashMap<>();
+    private HashMap<Integer, CharList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
-    private ByteList moves;
+    private CharList moves;
+    private CharList[] checkpoints = new CharList[10];
     private transient SuperCC emulator;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 0;
     private transient ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
-    private ByteList[] checkpoints = new ByteList[10];
-    private boolean[] recordingCheckpoints = new boolean[10];
-    private int[] checkpointStartIndex = new int[10];
+    private transient boolean[] recordingCheckpoints = new boolean[10];
+    private transient int[] checkpointStartIndex = new int[10];
 
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
-    private static final long serialVersionUID = -703363945281237768L;
     private transient int playbackWaitTime = STANDARD_WAIT_TIME;
     private static final int[] waitTimes = new int[]{
         STANDARD_WAIT_TIME * 8,
@@ -44,6 +40,9 @@ public class SavestateManager implements Serializable {
         STANDARD_WAIT_TIME / 8
     };
     public static final int NUM_SPEEDS = waitTimes.length;
+    
+    private static final long serialVersionUID = -703363945281237768L;
+    private static final int VERSION_V0 = 0;
 
     public void setPlaybackSpeed(int i) {
         playbackWaitTime = waitTimes[i];
@@ -52,20 +51,51 @@ public class SavestateManager implements Serializable {
     public void setNode(TreeNode<byte[]> node) {
         currentNode = node;
     }
-    
-    private void readObject(java.io.ObjectInputStream in)
-        throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        undesirableSavestates = new ArrayList<>();
-        pause = false;
-        playbackWaitTime = STANDARD_WAIT_TIME;
-        playbackIndex = currentNode.depth();
-        playbackNodes = new ArrayList<>(playbackIndex*2);
-        playbackNodes.addAll(currentNode.getHistory());
-        System.out.println("Current node depth: " + currentNode.depth());
+
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+        stream.writeObject(savestates);
+        stream.write(savestateMoves.size());
+        for (int i : savestateMoves.keySet()) {
+            stream.write(i);
+            stream.writeObject(savestateMoves.get(i).toArray());
+        }
+        stream.writeObject(currentNode);
+        stream.writeObject(moves.toArray());
+        stream.write(checkpoints.length);
+        for (CharList checkpoint : checkpoints) {
+            stream.writeObject(checkpoint.toArray());
+        }
     }
 
-    public void addRewindState(Level level, byte b){
+    @SuppressWarnings("unchecked")
+    private void readObject(java.io.ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+        if (stream.read() == VERSION_V0) {
+            savestates = (HashMap<Integer, TreeNode<byte[]>>) stream.readObject();
+            savestateMoves = new HashMap<>();
+            int movesLength = stream.read();
+            for (int i=0; i < movesLength; i++) {
+                savestateMoves.put(stream.read(), (new CharList((char[]) stream.readObject())));
+            }
+            currentNode = (TreeNode<byte[]>) stream.readObject();
+            moves = new CharList((char[]) stream.readObject());
+            int checkpointLength = stream.read();
+            checkpoints = new CharList[checkpointLength];
+            for (int i=0; i < checkpointLength; i++) {
+                checkpoints[i] = new CharList((char[]) stream.readObject());
+            }
+
+            undesirableSavestates = new ArrayList<>();
+            pause = false;
+            playbackWaitTime = STANDARD_WAIT_TIME;
+            playbackIndex = currentNode.depth();
+            playbackNodes = new ArrayList<>(playbackIndex * 2);
+            playbackNodes.addAll(currentNode.getHistory());
+            System.out.println("Current node depth: " + currentNode.depth());
+        }
+    }
+
+    public void addRewindState(Level level, char c){
         pause = true;
         while (playbackNodes.get(playbackNodes.size()-1) != currentNode) {
             playbackNodes.remove(playbackNodes.size()-1);
@@ -74,7 +104,7 @@ public class SavestateManager implements Serializable {
         currentNode = new TreeNode<>(level.save(), currentNode);
 //        emulator.savestateCompressor.add(currentNode);
         playbackNodes.add(currentNode);
-        moves.add(b);
+        moves.add(c);
         playbackIndex = playbackNodes.size() - 1;
     }
     
@@ -118,11 +148,11 @@ public class SavestateManager implements Serializable {
         try {
             while (emulator.getLevel().getLevelNumber() == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
                 emulator.getLevel().load(currentNode.getData());
-                byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
-                boolean tickTwice = emulator.tick(b, replayNoSave);
+                char c = SuperCC.lowerCase(moves.get(playbackIndex))[0];
+                boolean tickTwice = emulator.tick(c, replayNoSave);
                 Thread.sleep(playbackWaitTime);
                 if (tickTwice) {
-                    emulator.tick((byte) '-', replayNoSave);
+                    emulator.tick('-', replayNoSave);
                     Thread.sleep(playbackWaitTime);
                 }
                 replay();
@@ -149,13 +179,13 @@ public class SavestateManager implements Serializable {
         window.getGamePanel().paintComponent(img.getGraphics());
         images.add(img);
         while (numHalfTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
-            byte b = SuperCC.lowerCase(moves.get(playbackIndex))[0];
-            boolean tickTwice = emulator.tick(b, TickFlags.REPLAY);
+            char c = SuperCC.lowerCase(moves.get(playbackIndex))[0];
+            boolean tickTwice = emulator.tick(c, TickFlags.REPLAY);
             img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
             window.getGamePanel().paintComponent(img.getGraphics());
             images.add(img);
             if (tickTwice && numHalfTicks-- > 0) {
-                emulator.tick((byte) '-', TickFlags.REPLAY);
+                emulator.tick('-', TickFlags.REPLAY);
                 img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
                 window.getGamePanel().paintComponent(img.getGraphics());
                 images.add(img);
@@ -233,34 +263,34 @@ public class SavestateManager implements Serializable {
         return state.getData();
     }
     
-    public ByteList getMoveList(){
+    public CharList getMoveList(){
         return moves;
     }
     
-    public byte[] getMoves(){
-        byte[] moves = new byte[playbackIndex];
+    public char[] getMoves(){
+        char[] moves = new char[playbackIndex];
         this.moves.copy(0, moves, 0, playbackIndex);
         return moves;
     }
 
-    public ByteList getCheckpoint(int key) {
+    public CharList getCheckpoint(int key) {
         return checkpoints[key];
     }
     
     public String movesToString() {
-        return moves.toString(StandardCharsets.ISO_8859_1, playbackIndex);
+        return moves.toString(playbackIndex);
     }
 
     public TreeNode<byte[]> getNode(){
         return currentNode;
     }
     
-    public SavestateManager(SuperCC emulator, Level level){
+    SavestateManager(SuperCC emulator, Level level){
         this.emulator = emulator;
 //        emulator.savestateCompressor.initialise();
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
-        moves = new ByteList();
+        moves = new CharList();
     }
     
     public LinkedList<Position> getChipHistory(){

@@ -9,7 +9,7 @@ import game.Position;
 import game.Step;
 import io.TWSWriter;
 import tools.*;
-import util.ByteList;
+import util.CharList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 
-import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
@@ -226,9 +225,9 @@ class MenuBar extends JMenuBar{
                 catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
                     try {
                         for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
-                            byte[] lowerCaseArray = SuperCC.lowerCase((byte) ch);
-                            byte b = lowerCaseArray[0];
-                            emulator.tick(b, TickFlags.GAME_PLAY);
+                            char[] lowerCaseArray = SuperCC.lowerCase(ch);
+                            char c = lowerCaseArray[0];
+                            emulator.tick(c, TickFlags.GAME_PLAY);
                             if (level.getChip().isDead()) break;
                         }
                         emulator.showAction("Pasted moves");
@@ -297,16 +296,16 @@ class MenuBar extends JMenuBar{
                         level.getRngSeed(),
                         level.getStep());
 
-                ByteList twsMouseMovesX = new ByteList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
-                ByteList twsMouseMovesY = new ByteList();
-                ByteList twsMouseMoves = new ByteList();
+                CharList twsMouseMovesX = new CharList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
+                CharList twsMouseMovesY = new CharList();
+                CharList twsMouseMoves = new CharList();
                 savestates.addSavestate(-1); //Ideally a savestate should never be possible to be saved to this key
-                ListIterator<Byte> itr = savestates.getMoveList().listIterator(true);
+                ListIterator<Character> itr = savestates.getMoveList().listIterator(true);
                 while (itr.hasPrevious()) {
-                    byte b = itr.previous();
-                    if (SuperCC.isClick(b)) { //Use to math out the relative click position for TWS writing with mouse moves
+                    char c = itr.previous();
+                    if (SuperCC.isClick(c)) { //Use to math out the relative click position for TWS writing with mouse moves
                         Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-                        Position clickedPosition = Position.clickPosition(screenPosition, b);
+                        Position clickedPosition = Position.clickPosition(screenPosition, c);
                         int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
                         int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
 

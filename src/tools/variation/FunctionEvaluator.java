@@ -2,7 +2,7 @@ package tools.variation;
 
 import emulator.SuperCC;
 import game.Position;
-import util.ByteList;
+import util.CharList;
 
 import java.util.ArrayList;
 
@@ -128,7 +128,7 @@ public class FunctionEvaluator {
                 atMove = manager.getPermutation(atSequence).length - 1;
             }
         }
-        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        CharList moves = manager.getPermutation(atSequence)[atMove];
         return getMove(moves.get(moves.size() - 1));
     }
 
@@ -152,11 +152,11 @@ public class FunctionEvaluator {
                 }
             }
         }
-        ByteList moves = manager.getPermutation(atSequence)[atMove];
+        CharList moves = manager.getPermutation(atSequence)[atMove];
         return getMove(moves.get(0));
     }
 
-    private Move getMove(byte move) {
+    private Move getMove(char move) {
         switch(move) {
             case SuperCC.UP:
                 return new Move("u");
@@ -217,12 +217,12 @@ public class FunctionEvaluator {
     }
 
     private double moveCount(Move move) {
-        byte moveByte = toByte(move.move.charAt(0));
+        char moveByte = move.move.charAt(0);
         double count = 0;
         for(int i = 0; i < manager.getSequenceCount(); i++) {
-            for(ByteList bl : manager.getPermutation(i)) {
-                for(byte b : bl) {
-                    if (b == moveByte) {
+            for(CharList cl : manager.getPermutation(i)) {
+                for(char c : cl) {
+                    if (c == moveByte) {
                         count++;
                     }
                 }
@@ -245,7 +245,7 @@ public class FunctionEvaluator {
             String str = move.move;
             for(int i = 0; i < move.number; i++) {
                 for(int j = 0; j < str.length(); j++) {
-                    byte moveDir = toByte(str.charAt(j));
+                    char moveDir = str.charAt(j);
                     interpreter.doMove(moveDir);
                 }
             }
@@ -253,22 +253,22 @@ public class FunctionEvaluator {
         return null;
     }
 
-    private byte toByte(char c) {
-        switch(c) {
-            case 'u':
-                return SuperCC.UP;
-            case 'r':
-                return SuperCC.RIGHT;
-            case 'd':
-                return SuperCC.DOWN;
-            case 'l':
-                return SuperCC.LEFT;
-            case 'w':
-                return 'w';
-            default:
-                return SuperCC.WAIT;
-        }
-    }
+//    private char toByte(char c) {
+//        switch(c) {
+//            case 'u':
+//                return SuperCC.UP;
+//            case 'r':
+//                return SuperCC.RIGHT;
+//            case 'd':
+//                return SuperCC.DOWN;
+//            case 'l':
+//                return SuperCC.LEFT;
+//            case 'w':
+//                return 'w';
+//            default:
+//                return SuperCC.WAIT;
+//        }
+//    }
 
     private void checkArgCount(Expr.Function function, int required) {
         if(function.arguments.size() != required) {

@@ -1,7 +1,7 @@
 package tools.variation;
 
 import emulator.SuperCC;
-import util.ByteList;
+import util.CharList;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public class Permutation {
 
     public static double LIMIT = 1e18;
 
-    private static final HashMap<Character, Byte> toMove;
+    private static final HashMap<Character, Character> toMove;
 
     static {
         toMove = new HashMap<>();
@@ -27,7 +27,7 @@ public class Permutation {
         toMove.put('r', SuperCC.RIGHT);
         toMove.put('d', SuperCC.DOWN);
         toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', (byte)'w');
+        toMove.put('w', 'w');
         toMove.put('h', SuperCC.WAIT);
     }
 
@@ -64,14 +64,14 @@ public class Permutation {
         reverseSubarray(i + 1);
     }
 
-    public ByteList[] getPermutation() {
+    public CharList[] getPermutation() {
         if(finished) {
             return null;
         }
-        ByteList[] moves = new ByteList[currentSize];
+        CharList[] moves = new CharList[currentSize];
 
         for(int i = 0; i < currentSize; i++) {
-            moves[i] = new ByteList();
+            moves[i] = new CharList();
             String str = this.set.moves.get(permutation[i]);
             for(int j = 0; j < str.length(); j++) {
                 moves[i].add(toMove.get(str.charAt(j)));

@@ -238,7 +238,7 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     @Override
-    public boolean tick(byte b, Direction[] directions) {
+    public boolean tick(char c, Direction[] directions) {
         setLevelWon(false);//Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
 
         monsterList.tick();

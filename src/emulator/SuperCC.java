@@ -1,7 +1,6 @@
 package emulator;
 
 import game.*;
-import game.MS.MSLevel;
 import graphics.Gui;
 import graphics.SmallGamePanel;
 import graphics.TileSheet;
@@ -19,8 +18,8 @@ import java.io.*;
 
 public class SuperCC {
 
-    public static final byte UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-';
-    private static final byte[] BYTE_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
+    public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
+    private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
         {Direction.DOWN}, {Direction.RIGHT}, {}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
@@ -65,18 +64,18 @@ public class SuperCC {
         return b == 'U' || b == 'L' || b == 'D' || b == 'R' || b == '_';
     }
     
-    public static byte capital(byte b){
-        if (b == '-') return '_';
-        return (byte) Character.toUpperCase((char) b);
+    public static char capital(char c){
+        if (c == '-') return '_';
+        return Character.toUpperCase(c);
     }
     
-    public static byte[] lowerCase(byte b) {
-        if (b == 'U') return new byte[] {'u', '-'};
-        else if (b == 'L') return new byte[] {'l', '-'};
-        else if (b == 'D') return new byte[] {'d', '-'};
-        else if (b == 'R') return new byte[] {'r', '-'};
-        else if (b == '_') return new byte[] {'-', '-'};
-        else return new byte[] {b};
+    public static char[] lowerCase(char c) {
+        if (c == 'U') return new char[] {'u', '-'};
+        else if (c == 'L') return new char[] {'l', '-'};
+        else if (c == 'D') return new char[] {'d', '-'};
+        else if (c == 'R') return new char[] {'r', '-'};
+        else if (c == '_') return new char[] {'-', '-'};
+        else return new char[] {c};
     }
     
     public int lastLevelNumber() {
@@ -154,7 +153,7 @@ public class SuperCC {
             else {
                 level = dat.parseLevel(levelNumber, rngSeed, step);
                 savestates = new SavestateManager(this, level);
-                solution = new Solution(new byte[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
+                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES);
                 if(hasGui) {
                     window.repaint(true);
                     window.setTitle("SuperCC - " + new String(level.getTitle()));
@@ -172,15 +171,15 @@ public class SuperCC {
         loadLevel(levelNumber, 0, Step.EVEN, true);
     }
 
-    public boolean tick(byte b, Direction[] directions, TickFlags flags){
+    public boolean tick(char c, Direction[] directions, TickFlags flags){
         if (level == null) return false;
-        boolean tickTwice = level.tick(b, directions);
+        boolean tickTwice = level.tick(c, directions);
         if (flags.doubleTick && tickTwice) {
-            b = capital(b); //todo: see the todo in Solution about capitalization and switching to another system
-            level.tick(b, DIRECTIONS[4]);
+            c = capital(c); //todo: see the todo in Solution about capitalization and switching to another system
+            level.tick(c, DIRECTIONS[4]);
         }
         if (flags.save) {
-            savestates.addRewindState(level, b);
+            savestates.addRewindState(level, c);
         }
         if (flags.repaint) window.repaint(false);
 
@@ -191,26 +190,25 @@ public class SuperCC {
         return tickTwice;
     }
     
-    public static boolean isClick(byte b){
-        return b <= 0;
+    public static boolean isClick(char c){
+        return c <= MAX_CLICK && c >= MIN_CLICK;
     }
     
-    public boolean tick(byte b, TickFlags flags){
+    public boolean tick(char c, TickFlags flags){
         if (level == null) return false;
         Direction[] directions;
-        if (isClick(b)){
+        if (isClick(c)){
             Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-            Position clickedPosition = Position.clickPosition(screenPosition, b);
+            Position clickedPosition = Position.clickPosition(screenPosition, c);
             directions = level.getChip().getPosition().seek(clickedPosition);
             level.setClick(clickedPosition.getIndex());
-            return tick(b, directions, flags);
+            return tick(c, directions, flags);
         }
         else{
-            for (int i = 0; i < BYTE_MOVEMENT_KEYS.length; i++) {
-                if (BYTE_MOVEMENT_KEYS[i] == b) {
+            for (int i = 0; i < CHAR_MOVEMENT_KEYS.length; i++) {
+                if (CHAR_MOVEMENT_KEYS[i] == c) {
                     directions = DIRECTIONS[i];
-//                    System.out.println(level.getMonsterList());
-                    return tick(b, directions, flags);
+                    return tick(c, directions, flags);
                 }
             }
         }

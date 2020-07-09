@@ -82,7 +82,8 @@ public class MSSaveState implements SaveState {
      * load a savestate
      * @param savestate the savestate to load
      */
-    @Override public void load(byte[] savestate){
+    @Override
+    public void load(byte[] savestate){
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {

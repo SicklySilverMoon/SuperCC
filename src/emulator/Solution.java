@@ -5,10 +5,9 @@ import game.Position;
 import game.Step;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import util.ByteList;
+import util.CharList;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.CharArrayWriter;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -22,7 +21,7 @@ public class Solution{
                             HALF_MOVES = 1,
                             SUCC_MOVES = 2;
 
-    public byte[] halfMoves;
+    public char[] halfMoves;
     public int rngSeed;
     public Step step;
     
@@ -32,7 +31,7 @@ public class Solution{
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());
         json.put(SEED, Integer.toString(rngSeed));
-        json.put(MOVES, new String(halfMoves, StandardCharsets.ISO_8859_1));
+        json.put(MOVES, new String(halfMoves));
         return json;
     }
     
@@ -42,58 +41,37 @@ public class Solution{
     
     public void load(SuperCC emulator, TickFlags tickFlags){
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false);
-        Level level = emulator.getLevel();
-        try{
-            for (int move = 0; move < halfMoves.length; move++){
-                byte b = halfMoves[move];
-                if (b == CHIP_RELATIVE_CLICK){
-                    int x = halfMoves[++move] - 9;
-                    int y = halfMoves[++move] - 9;
-                    if (x == 0 && y == 0){                      // idk about this but it fixes thief street
-                        b = '-';
-                    }
-                    else {
-                        Position chipPosition = level.getChip().getPosition();
-                        Position clickPosition = chipPosition.add(x, y);
-                        level.setClick(clickPosition.getIndex());
-                        b = clickPosition.clickByte(chipPosition);
-                    }
-                }
-                boolean tickedTwice = emulator.tick(b, tickFlags);
-                if (tickedTwice && (!isClick(b) && b != '-')) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
-                if (level.getChip().isDead()) {
-                    break;
-                }
-            }
-        }
-        catch (Exception e){
-            emulator.throwError("Something went wrong:\n"+e.getMessage());
-        }
+        tickHalfMoves(emulator, tickFlags);
         if(emulator.hasGui) {
             emulator.getMainWindow().repaint(true);
         }
     }
     
     public void loadMoves(SuperCC emulator, TickFlags tickFlags, boolean repaint){
+        tickHalfMoves(emulator, tickFlags);
+        if (repaint) emulator.getMainWindow().repaint(true);
+    }
+
+    private void tickHalfMoves(SuperCC emulator, TickFlags tickFlags) {
         Level level = emulator.getLevel();
         try{
             for (int move = 0; move < halfMoves.length; move++){
-                byte b = halfMoves[move];
-                if (b == CHIP_RELATIVE_CLICK){
+                char c = halfMoves[move];
+                if (c == CHIP_RELATIVE_CLICK){
                     int x = halfMoves[++move] - 9;
                     int y = halfMoves[++move] - 9;
                     if (x == 0 && y == 0){                      // idk about this but it fixes thief street
-                        b = '-';
+                        c = '-';
                     }
                     else {
                         Position chipPosition = level.getChip().getPosition();
                         Position clickPosition = chipPosition.add(x, y);
                         level.setClick(clickPosition.getIndex());
-                        b = clickPosition.clickByte(chipPosition);
+                        c = clickPosition.clickChar(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(b, tickFlags);
-                if (tickedTwice) move++;
+                boolean tickedTwice = emulator.tick(c, tickFlags);
+                if (tickedTwice && (!isClick(c) && c != '-')) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
                 if (level.getChip().isDead()) {
                     break;
                 }
@@ -102,40 +80,39 @@ public class Solution{
         catch (Exception e){
             emulator.throwError("Something went wrong:\n"+e.getMessage());
         }
-        if (repaint) emulator.getMainWindow().repaint(true);
     }
     
-    private static byte[] succToHalfMoves(byte[] succMoves){
-        ByteArrayOutputStream writer = new ByteArrayOutputStream();
-        for (byte b : succMoves){
-            if (b != '-') for (byte l : SuperCC.lowerCase(b)) writer.write(l);
-            else writer.write(b);
+    private static char[] succToHalfMoves(char[] succMoves){
+        CharArrayWriter writer = new CharArrayWriter();
+        for (char c : succMoves){
+            if (c != '-') for (char l : SuperCC.lowerCase(c)) writer.write(l);
+            else writer.write(c);
         }
-        return writer.toByteArray();
+        return writer.toCharArray();
     }
-    private static byte[] succToHalfMoves(ByteList succMoves){
+    private static char[] succToHalfMoves(CharList succMoves){
         return succToHalfMoves(succMoves.toArray());
     }
 
-    private static byte[] quarterToHalfMoves(byte[] quarterMoves) {
-        ByteArrayOutputStream writer = new ByteArrayOutputStream();
+    private static char[] quarterToHalfMoves(char[] quarterMoves) {
+        CharArrayWriter writer = new CharArrayWriter();
         //System.out.println(Arrays.toString(quarterMoves));
 
-        Set<Byte> cardinals = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
+        Set<Character> cardinals = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
         cardinals.add(UP);
         cardinals.add(DOWN);
         cardinals.add(LEFT);
         cardinals.add(RIGHT);
 
         for (int i = 0; i < quarterMoves.length; i += 2) {
-            byte a = quarterMoves[i];
-            byte b = 0;
+            char a = quarterMoves[i];
+            char c = 0;
             int j = i+1;
 
-            if (a == CHIP_RELATIVE_CLICK && j+2 < quarterMoves.length) j += 2; //Since mouse moves take 3 bytes this just makes sure that b is always the intended move/wait and not part of the mouse bytes
-            if (j < quarterMoves.length) b = quarterMoves[j];
+            if (a == CHIP_RELATIVE_CLICK && j+2 < quarterMoves.length) j += 2; //Since mouse moves take 3 bytes this just makes sure that c is always the intended move/wait and not part of the mouse bytes
+            if (j < quarterMoves.length) c = quarterMoves[j];
 
-            if (a == '~' && b == '~') { //It should only write a half wait if BOTH values read are quarter waits
+            if (a == '~' && c == '~') { //It should only write a half wait if BOTH values read are quarter waits
                 writer.write('-');
             }
             else { //Input priority things
@@ -143,12 +120,12 @@ public class Solution{
                     writer.write(a);
                     continue;
                 }
-                if (cardinals.contains(b) || b == CHIP_RELATIVE_CLICK) {
-                    writer.write(b);
-                    if (cardinals.contains(b)) { //Keyboard input check
+                if (cardinals.contains(c) || c == CHIP_RELATIVE_CLICK) {
+                    writer.write(c);
+                    if (cardinals.contains(c)) { //Keyboard input check
                         continue;
                     }
-                    else if (b == CHIP_RELATIVE_CLICK) {
+                    else if (c == CHIP_RELATIVE_CLICK) {
                         i = j;
                         writer.write(quarterMoves[++j]);
                         writer.write(quarterMoves[++j]);
@@ -165,7 +142,7 @@ public class Solution{
             }
         }
         //System.out.println(Arrays.toString(writer.toByteArray()));
-        return writer.toByteArray();
+        return writer.toCharArray();
     }
     
     public static Solution fromJSON(String s){
@@ -174,7 +151,7 @@ public class Solution{
             JSONObject json = (JSONObject) parser.parse(s);
             Step step = Step.valueOf((String) json.get(STEP));
             int rngSeed = Integer.parseInt((String) json.get(SEED));
-            byte[] halfMoves = ((String) json.get(MOVES)).getBytes(StandardCharsets.ISO_8859_1);
+            char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
             return new Solution(halfMoves, rngSeed, step, HALF_MOVES);
         }
         catch (Exception e){
@@ -187,7 +164,7 @@ public class Solution{
         return toJSON().toJSONString();
     }
     
-    public Solution(byte[] moves, int rngSeed, Step step, int format){
+    public Solution(char[] moves, int rngSeed, Step step, int format){
         if (format == QUARTER_MOVES) this.halfMoves = quarterToHalfMoves(moves);
         else if (format == SUCC_MOVES) this.halfMoves = succToHalfMoves(moves);
         else if (format == HALF_MOVES) this.halfMoves = moves;
@@ -195,7 +172,7 @@ public class Solution{
         this.step = step;
     }
     
-    public Solution(ByteList moves, int rngSeed, Step step){
+    public Solution(CharList moves, int rngSeed, Step step){
         this.halfMoves = succToHalfMoves(moves);
         this.rngSeed = rngSeed;
         this.step = step;

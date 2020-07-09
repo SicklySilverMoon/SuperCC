@@ -126,14 +126,14 @@ public interface Level extends SaveState{
      *     for checking whether chip can move (in case chip moved the previous
      *     tick).
      * </p>
-     * @param b The direction in which to move. If b is positive it should be
-     *          one of UP, LEFT, DOWN, RIGHT and WAIT. If b is negative, it is
+     * @param c The direction in which to move. If c is positive it should be
+     *          one of UP, LEFT, DOWN, RIGHT and WAIT. If c is negative, it is
      *          interpreted as a mouse click. Note that the click itself is not
      *          set here - use {@link #setClick(int)} for that.
      * @param directions The directions in which chip should try to move
      * @return true if the next move should be made automatically without input
      */
-    boolean tick(byte b, Direction[] directions);
+    boolean tick(char c, Direction[] directions);
 
     void insertTile(Position position, Tile tile);
 

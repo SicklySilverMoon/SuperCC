@@ -1,5 +1,7 @@
 package game;
 
+import emulator.SuperCC;
+
 import static game.Direction.*;
 import static java.lang.Math.abs;
 
@@ -83,16 +85,16 @@ public class Position {
         return new Position(screenX, screenY);
     }
     
-    public static Position clickPosition(Position screenPosition, byte clickByte){
-        int n = -clickByte - 1;
+    public static Position clickPosition(Position screenPosition, char clickChar){
+        int n = -(clickChar - SuperCC.MAX_CLICK);
         return new Position(screenPosition.getX() + n % 9, screenPosition.getY() + n / 9);
     }
     
-    public byte clickByte(Position chipPosition){
+    public char clickChar(Position chipPosition){
         Position screen = screenPosition(chipPosition);
         if (y - screen.getY() < 9 && y - screen.getY() >= 0 &&
             x - screen.getX() < 9 && x - screen.getX() >= 0){
-            return (byte) -(9 * (y - screen.getY()) + (x - screen.getX()) + 1);
+            return (char) (SuperCC.MAX_CLICK - (9 * (y - screen.getY()) + (x - screen.getX())));
         }
         return UNCLICKABLE;
     }

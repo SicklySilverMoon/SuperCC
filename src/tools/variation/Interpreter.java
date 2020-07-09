@@ -5,7 +5,7 @@ import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Level;
 import tools.VariationTesting;
-import util.ByteList;
+import util.CharList;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -31,7 +31,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public VariationManager manager;
     private int[] sequenceIndex;
     private FunctionEvaluator evaluator;
-    public ByteList moveList;
+    public CharList moveList;
     private int amount = 1;
     public ArrayList<Solution> solutions = new ArrayList<>();
     private boolean hadError = false;
@@ -132,7 +132,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
         if(manager.getSequenceCount() > 0) {
-            for (byte move : manager.moveLists[0]) {
+            for (char move : manager.moveLists[0]) {
                 emulator.tick(move, TickFlags.PRELOADING);
             }
         }
@@ -200,11 +200,11 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executeSequence(Stmt.Sequence stmt) {
         inSequence = true;
         manager.setVariables(atSequence);
-        ByteList[] permutation = manager.getPermutation(atSequence);
+        CharList[] permutation = manager.getPermutation(atSequence);
         stmt.lifecycle.start.execute(this);
         for(atMove = 0; atMove < permutation.length;) {
             stmt.lifecycle.beforeMove.execute(this);
-            for(byte move : permutation[atMove]) {
+            for(char move : permutation[atMove]) {
                 stmt.lifecycle.beforeStep.execute(this);
                 doMove(move);
                 stmt.lifecycle.afterStep.execute(this);
@@ -221,7 +221,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public void executeReturn(Stmt.Return stmt) {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
-        for(byte move : moveList) {
+        for(char move : moveList) {
             emulator.tick(move, TickFlags.PRELOADING);
         }
         solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep()));
@@ -392,7 +392,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         throw new RuntimeError(operator, "Operand must be a number");
     }
 
-    public void doMove(byte move) {
+    public void doMove(char move) {
         if (move == 'w') {
             tick(SuperCC.WAIT);
             tick(SuperCC.WAIT);
@@ -401,7 +401,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         }
     }
 
-    private void tick(byte move) {
+    private void tick(char move) {
         emulator.tick(move, TickFlags.LIGHT);
         moveList.add(move);
         checkMove();

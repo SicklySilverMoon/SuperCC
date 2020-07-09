@@ -2,7 +2,7 @@ package tools.variation;
 
 import emulator.SuperCC;
 import game.Level;
-import util.ByteList;
+import util.CharList;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class VariationManager {
     private Interpreter interpreter;
     public int[] sequenceIndex;
     public byte[][] saveStates;
-    public ByteList[] moveLists;
+    public CharList[] moveLists;
     private ArrayList<Double> cumulativeTotalPermutations = new ArrayList<>();
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
@@ -34,7 +34,7 @@ public class VariationManager {
         }
         this.sequenceIndex = new int[sequences.size()];
         this.saveStates = new byte[sequences.size()][];
-        this.moveLists = new ByteList[sequences.size()];
+        this.moveLists = new CharList[sequences.size()];
 
         for(int i = 0; i < sequences.size(); i++) {
             variableStates.add(new HashMap<>());
@@ -42,21 +42,21 @@ public class VariationManager {
 
         byte[] initialState = level.save();
         this.saveStates[0] = Arrays.copyOf(initialState, initialState.length);
-        this.moveLists[0] = new ByteList();
+        this.moveLists[0] = new CharList();
 
-        byte[] moves = emulator.getSavestates().getMoves();
+        char[] moves = emulator.getSavestates().getMoves();
         int index = emulator.getSavestates().getPlaybackIndex();
         if(emulator.getSavestates().getMoveList().size() == 0) {
             index = 0;
         }
         for(int i = 0; i < index; i++) {
-            byte move = lowercase(moves[i]);
+            char move = lowercase(moves[i]);
             moveLists[0].add(move);
         }
         setSequenceIndex(statements);
     }
 
-    public ByteList[] getPermutation(int index) {
+    public CharList[] getPermutation(int index) {
         return sequences.get(index).permutation.getPermutation();
     }
 
@@ -184,7 +184,7 @@ public class VariationManager {
         return true;
     }
 
-    private byte lowercase(byte b) {
+    private char lowercase(char b) {
         switch(b) {
             case 'U':
                 return 'u';
