@@ -184,61 +184,69 @@ public class LevelFactory {
      *                         will be in the initial monster list. Buried
      *                         monsters and monsters on clone machines may
      *                         be included. They will be ignored.
+     * @param lastLevel The last level number in the set.
+     * @param rngSeed The starting RNG seed to use.
+     * @param step The starting step to use.
+     * @param rules The ruleset to use.
      * @return A Level
      */
     static Level makeLevel(int levelNumber, int timeLimit, int chips, byte[] byteLayerFG, byte[] byteLayerBG,
                              byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
-                             byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel){
+                             byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel, Ruleset rules){
 
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
 
-        return new MSLevel(
-            levelNumber,
-            title,
-            password,
-            hint,
-            getToggleDoors(layerFG, layerBG),
-            getPortals(layerFG, layerBG),
-            getGreenButtons(layerFG, layerBG),
-            getRedButtons(cloneConnections),
-            getBrownButtons(trapConnections),
-            getBlueButtons(layerFG, layerBG),
-            new BitSet(trapConnections.length),
-            layerBG,
-            layerFG,
-            getMSMonsterList(monsterPositions, layerFG, layerBG),
-            new SlipList(),
-            (MSCreature) findMSPlayer(layerFG),
-            getTimer(timeLimit),
-            chips,
-            new RNG(rngSeed),
-            rngSeed,
-            step,
-            lastLevel
-        );
-//        return new LynxLevel(
-//            levelNumber,
-//            title,
-//            password,
-//            hint,
-//            getToggleDoors(layerFG, layerBG),
-//            getPortals(layerFG, layerBG),
-//            getGreenButtons(layerFG, layerBG),
-//            getRedButtons(cloneConnections),
-//            getBrownButtons(trapConnections),
-//            getBlueButtons(layerFG, layerBG),
-//            new BitSet(trapConnections.length),
-//            layerFG,
-//            getLynxMonsterList(layerFG, layerBG),
-//            (LynxCreature) findLynxPlayer(layerFG),
-//            getTimer(timeLimit),
-//            chips,
-//            new RNG(rngSeed),
-//            rngSeed,
-//            step,
-//            lastLevel
-//            );
+        if (rules == Ruleset.MS) {
+            return new MSLevel(
+                levelNumber,
+                title,
+                password,
+                hint,
+                getToggleDoors(layerFG, layerBG),
+                getPortals(layerFG, layerBG),
+                getGreenButtons(layerFG, layerBG),
+                getRedButtons(cloneConnections),
+                getBrownButtons(trapConnections),
+                getBlueButtons(layerFG, layerBG),
+                new BitSet(trapConnections.length),
+                layerBG,
+                layerFG,
+                getMSMonsterList(monsterPositions, layerFG, layerBG),
+                new SlipList(),
+                (MSCreature) findMSPlayer(layerFG),
+                getTimer(timeLimit),
+                chips,
+                new RNG(rngSeed),
+                rngSeed,
+                step,
+                lastLevel
+            );
+        }
+        else {
+            return new LynxLevel(
+                levelNumber,
+                title,
+                password,
+                hint,
+                getToggleDoors(layerFG, layerBG),
+                getPortals(layerFG, layerBG),
+                getGreenButtons(layerFG, layerBG),
+                getRedButtons(cloneConnections),
+                getBrownButtons(trapConnections),
+                getBlueButtons(layerFG, layerBG),
+                new BitSet(trapConnections.length),
+                layerFG,
+                getLynxMonsterList(layerFG, layerBG),
+                (LynxCreature) findLynxPlayer(layerFG),
+                getTimer(timeLimit),
+                chips,
+                new RNG(rngSeed),
+                rngSeed,
+                step,
+                lastLevel
+            );
+        }
     }
 
 }

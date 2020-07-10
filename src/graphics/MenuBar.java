@@ -6,6 +6,7 @@ import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Level;
 import game.Position;
+import game.Ruleset;
 import game.Step;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
@@ -104,7 +105,7 @@ class MenuBar extends JMenuBar{
                     if (s.length() == 0) return;
                     try {
                         int n = Integer.parseInt(s);
-                        emulator.loadLevel(n, 0, Step.EVEN, true);
+                        emulator.loadLevel(n, 0, Step.EVEN, true, Ruleset.CURRENT);
                     } catch (NumberFormatException nfe) {
                         JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
@@ -122,7 +123,7 @@ class MenuBar extends JMenuBar{
                     Level oldLevel = emulator.getLevel();
                     Step newStep = Step.EVEN;
                     if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
-                    emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true);
+                    emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true, Ruleset.CURRENT);
                 }
             });
             add(toggleStep);
@@ -135,7 +136,7 @@ class MenuBar extends JMenuBar{
                     try {
                         Level oldLevel = emulator.getLevel();
                         int n = Integer.parseInt(s);
-                        emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true);
+                        emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true, Ruleset.CURRENT);
                     } catch (NumberFormatException nfe) {
                         JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
@@ -144,6 +145,15 @@ class MenuBar extends JMenuBar{
             addIcon(rngSeed, "/resources/icons/rng.gif");
             add(rngSeed);
 
+            JMenuItem changeRules = new JMenuItem("Change ruleset");
+            changeRules.addActionListener(e -> {
+                if (!SuperCC.areToolsRunning()) {
+                    Level level = emulator.getLevel();
+                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false, level.getRuleset().swap());
+                }
+            });
+            addIcon(changeRules, "/resources/icons/change.gif");
+            add(changeRules);
         }
     }
     

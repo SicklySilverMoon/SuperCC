@@ -4,6 +4,7 @@ import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
 import game.Position;
+import game.Ruleset;
 
 import javax.swing.*;
 
@@ -43,7 +44,7 @@ public class SeedSearch {
 
     public SeedSearch(SuperCC emulator, Solution solution) {
 
-        emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false);
+        emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false, Ruleset.CURRENT);
         startingState = emulator.getLevel().save();
         
         this.emulator = emulator;

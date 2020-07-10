@@ -61,7 +61,10 @@ public class Solution{
     }
     
     public void load(SuperCC emulator, TickFlags tickFlags){
-        emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false);
+        if (emulator.getLevel().getRuleset() != ruleset)
+            if (!emulator.throwQuestion("Solution has a different ruleset than currently selected, change rulesets?")) return;
+
+        emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false, ruleset);
         tickHalfMoves(emulator, tickFlags);
         if(emulator.hasGui) {
             emulator.getMainWindow().repaint(true);
@@ -177,6 +180,7 @@ public class Solution{
         else if (format == HALF_MOVES) this.halfMoves = moves;
         this.rngSeed = rngSeed;
         this.step = step;
+        this.ruleset = ruleset;
     }
     
     public Solution(CharList moves, int rngSeed, Step step, Ruleset ruleset){

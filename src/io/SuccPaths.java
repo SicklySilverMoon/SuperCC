@@ -13,40 +13,25 @@ public class SuccPaths {
     private Map<String, String> settingsMap;
     
     private void updateSettingsFile() {
-        try (PrintWriter writer = new PrintWriter(settingsFile, "ISO_8859_1")) {
+        try (PrintWriter writer = new PrintWriter(settingsFile, "UTF-8")) {
             writer.println("[Paths]"); //todo: refactor this into loops lol
-            writer.printf("%s = %s", "Levelset", settingsMap.get("Paths:Levelset"));
-            writer.println();
-            writer.printf("%s = %s", "TWS", settingsMap.get("Paths:TWS"));
-            writer.println();
-            writer.printf("%s = %s", "succ", settingsMap.get("Paths:succ"));
-            writer.println();
-            writer.println();
+            writer.printf("%s = %s\n", "Levelset", settingsMap.get("Paths:Levelset"));
+            writer.printf("%s = %s\n", "TWS", settingsMap.get("Paths:TWS"));
+            writer.printf("%s = %s\n\n", "succ", settingsMap.get("Paths:succ"));
 
             writer.println("[Controls]");
-            writer.printf("%s = %s", "Up", settingsMap.get("Controls:Up"));
-            writer.println();
-            writer.printf("%s = %s", "Left", settingsMap.get("Controls:Left"));
-            writer.println();
-            writer.printf("%s = %s", "Down", settingsMap.get("Controls:Down"));
-            writer.println();
-            writer.printf("%s = %s", "Right", settingsMap.get("Controls:Right"));
-            writer.println();
-            writer.printf("%s = %s", "HalfWait", settingsMap.get("Controls:HalfWait"));
-            writer.println();
-            writer.printf("%s = %s", "FullWait", settingsMap.get("Controls:FullWait"));
-            writer.println();
-            writer.printf("%s = %s", "Rewind", settingsMap.get("Controls:Rewind"));
-            writer.println();
-            writer.printf("%s = %s", "Play", settingsMap.get("Controls:Play"));
-            writer.println();
-            writer.println();
+            writer.printf("%s = %s\n", "Up", settingsMap.get("Controls:Up"));
+            writer.printf("%s = %s\n", "Left", settingsMap.get("Controls:Left"));
+            writer.printf("%s = %s\n", "Down", settingsMap.get("Controls:Down"));
+            writer.printf("%s = %s\n", "Right", settingsMap.get("Controls:Right"));
+            writer.printf("%s = %s\n", "HalfWait", settingsMap.get("Controls:HalfWait"));
+            writer.printf("%s = %s\n", "FullWait", settingsMap.get("Controls:FullWait"));
+            writer.printf("%s = %s\n", "Rewind", settingsMap.get("Controls:Rewind"));
+            writer.printf("%s = %s\n\n", "Play", settingsMap.get("Controls:Play"));
 
             writer.println("[Graphics]");
-            writer.printf("%s = %s", "TilesheetNum", settingsMap.get("Graphics:TilesheetNum"));
-            writer.println();
-            writer.printf("%s = %s", "TileWidth", settingsMap.get("Graphics:TileWidth"));
-            writer.println();
+            writer.printf("%s = %s\n", "TilesheetNum", settingsMap.get("Graphics:TilesheetNum"));
+            writer.printf("%s = %s\n", "TileWidth", settingsMap.get("Graphics:TileWidth"));
             writer.printf("%s = %s", "TileHeight", settingsMap.get("Graphics:TileHeight"));
         }
         catch (IOException e) {
@@ -88,7 +73,7 @@ public class SuccPaths {
             int fullWait = Integer.parseInt(settingsMap.get("Controls:FullWait"));
             int rewind = Integer.parseInt(settingsMap.get("Controls:Rewind"));
             int play = Integer.parseInt(settingsMap.get("Controls:Play"));
-        return new int[]{up, left, down, right, halfWait, fullWait, rewind, play};
+            return new int[]{up, left, down, right, halfWait, fullWait, rewind, play};
         }
         catch (NumberFormatException e) {
             int[] controls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};

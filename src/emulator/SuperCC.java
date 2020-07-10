@@ -142,7 +142,7 @@ public class SuperCC {
         loadLevel(1);
     }
 
-    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves){
+    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves, Ruleset rules){
         if (levelNumber == 0) levelNumber = lastLevelNumber()-1; //If the level number is 0 (player goes back from level 1, load the last level)
         if (levelNumber == lastLevelNumber()) levelNumber = 1; //And vice versa
         try{
@@ -151,7 +151,7 @@ public class SuperCC {
                 solution.load(this);
             }
             else {
-                level = dat.parseLevel(levelNumber, rngSeed, step);
+                level = dat.parseLevel(levelNumber, rngSeed, step, rules);
                 savestates = new SavestateManager(this, level);
                 solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES, level.getRuleset());
                 if(hasGui) {
@@ -168,7 +168,7 @@ public class SuperCC {
 
     public synchronized void loadLevel(int levelNumber){
         SeedSearch.kill();
-        loadLevel(levelNumber, 0, Step.EVEN, true);
+        loadLevel(levelNumber, 0, Step.EVEN, true, Ruleset.CURRENT);
     }
 
     public boolean tick(char c, Direction[] directions, TickFlags flags){
@@ -297,7 +297,7 @@ public class SuperCC {
         if (args.length != 0) {
             if (args[0].equals("-h")) {
                 System.out.println("SuperCC.jar [Levelset File]/[-h] [Level Number]/[TWS File] [Level Number]/[--testTWS]\n" +
-                        "[Level Number] is optional, but [--testTWS] always has to be the 3rd argument.\n" +
+                        "[Level Number] is optional, but [--testTWS] always has to be the 3rd argument if used.\n" +
                         "If [-h] is used as the 1st argument all other arguments will be ignored.");
                 System.exit(0);
             }
@@ -358,6 +358,11 @@ public class SuperCC {
 
     public void throwMessage(String s){
         JOptionPane.showMessageDialog(getMainWindow(), s, "SuCC Message", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    public boolean throwQuestion(String s) {
+        return JOptionPane.showConfirmDialog(getMainWindow(), s, "SuCC Option",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
 
     public static void main(String[] args){

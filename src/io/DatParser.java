@@ -1,6 +1,7 @@
 package io;
 
 import game.Level;
+import game.Ruleset;
 import game.Step;
 
 import java.io.File;
@@ -23,7 +24,9 @@ public class DatParser{
 
     private final File file;
     private long[] levelStart;
-    
+
+    private Ruleset rules;
+
     public int lastLevel() {
         return levelStart.length;
     }
@@ -91,10 +94,12 @@ public class DatParser{
      * @param level The level number
      * @param rngSeed The starting rng seed
      * @param step The starting step of the level. Either Step.ODD or Step.EVEN
+     * @param rules The ruleset to use, a value of CURRENT means to keep the currently selected ruleset (defaulting to file signature)
      * @return a Level object
      */
-    public Level parseLevel(int level, int rngSeed, Step step) throws IOException{
+    public Level parseLevel(int level, int rngSeed, Step step, Ruleset rules) throws IOException{
         DatReader reader = new DatReader(file);
+        if (rules != Ruleset.CURRENT) this.rules = rules;
         try {
             reader.skip(levelStart[level]);
             final int levelNumber = reader.readWord();
@@ -157,7 +162,7 @@ public class DatParser{
 
             reader.close();
             return LevelFactory.makeLevel(levelNumber, timeLimit, chips, layerFG, layerBG, title, trapConnections,
-                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel());
+                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel(), this.rules);
         }
         catch (IOException e){
             reader.close();
@@ -179,6 +184,8 @@ public class DatParser{
             if (!SIGNATURES.contains(signature)) {
                 throw new IOException("Invalid signature");
             }
+            if (signature == MSCC_SIGNATURE || signature == MSCC_PG_SIGNATURE) rules = Ruleset.MS;
+            else rules = Ruleset.LYNX;
             final int levels = reader.readWord();
             long byteN = 4+2;
             levelStart = new long[levels+1];  // +1 because we skip level #0
