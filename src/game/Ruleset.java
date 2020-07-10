@@ -7,6 +7,7 @@ public enum Ruleset {
 
     public Ruleset swap() {
         if (this == MS) return LYNX;
-        else return MS;
+        if (this == LYNX) return MS;
+        return CURRENT;
     }
 }
