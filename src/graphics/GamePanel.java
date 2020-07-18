@@ -205,9 +205,7 @@ public abstract class GamePanel extends JPanel
                 if (c == null) {
                     if (tile.isMonster()) {
                         JMenuItem animate = new JMenuItem("Animate Monster");
-                        animate.addActionListener(e -> {
-                            cheats.animateMonster(position);
-                        });
+                        animate.addActionListener(e -> cheats.animateMonster(position));
                         add(animate);
                     }
                 }
@@ -290,7 +288,8 @@ public abstract class GamePanel extends JPanel
     public void mouseClicked(MouseEvent e) {}
     public void mousePressed(MouseEvent e) {}
     private void leftClick(GameGraphicPosition clickPosition) {
-        MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //TODO: Currently relies on MS code, not good
+        if (!emulator.getLevel().supportsClick()) return;
+        MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //Relies on MS code, might want to refactor that
         if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
             char c = clickPosition.clickChar(chip.getPosition());
             if (c == UNCLICKABLE) return;

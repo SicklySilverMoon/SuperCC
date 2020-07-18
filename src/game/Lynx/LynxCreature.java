@@ -160,7 +160,7 @@ public class LynxCreature extends Creature {
     @Override
     public void kill() {
         creatureType = DEAD;
-        animationTimer = 0;
+        animationTimer = 12; //todo: minus depending on current tick + step
     }
 
     @Override

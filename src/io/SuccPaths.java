@@ -101,10 +101,10 @@ public class SuccPaths {
             return tileSizes;
         }
     }
-    public String getJSONPath(String levelsetName, int levelNumber, String levelName) {
+    public String getJSONPath(String levelsetName, int levelNumber, String levelName, String ruleset) {
         String json = getSuccPath();
         new File(Paths.get(json, levelsetName).toString()).mkdirs();
-        return Paths.get(json, levelsetName, Integer.toString(levelNumber)+"_"+levelName+".json").toString();
+        return Paths.get(json, levelsetName, levelNumber +"_"+levelName+"-"+ruleset+".json").toString();
     }
     public String getSccPath(String levelsetName, int levelNumber, String levelName) {
         return Paths.get(getSuccPath(), levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();

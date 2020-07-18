@@ -4,10 +4,7 @@ import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.Level;
-import game.Position;
-import game.Ruleset;
-import game.Step;
+import game.*;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -105,7 +102,7 @@ class MenuBar extends JMenuBar{
                     if (s.length() == 0) return;
                     try {
                         int n = Integer.parseInt(s);
-                        emulator.loadLevel(n, 0, Step.EVEN, true, Ruleset.CURRENT);
+                        emulator.loadLevel(n, 0, Step.EVEN, true, Ruleset.CURRENT, Direction.UP);
                     } catch (NumberFormatException nfe) {
                         JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
@@ -123,7 +120,8 @@ class MenuBar extends JMenuBar{
                     Level oldLevel = emulator.getLevel();
                     Step newStep = Step.EVEN;
                     if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
-                    emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true, Ruleset.CURRENT);
+                    emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true,
+                            Ruleset.CURRENT, oldLevel.getInitialSlide());
                 }
             });
             add(toggleStep);
@@ -136,7 +134,8 @@ class MenuBar extends JMenuBar{
                     try {
                         Level oldLevel = emulator.getLevel();
                         int n = Integer.parseInt(s);
-                        emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true, Ruleset.CURRENT);
+                        emulator.loadLevel(oldLevel.getLevelNumber(), n, oldLevel.getStep(), true,
+                                Ruleset.CURRENT, oldLevel.getInitialSlide());
                     } catch (NumberFormatException nfe) {
                         JOptionPane.showMessageDialog(window, "Please Enter a Whole Number");
                     }
@@ -149,11 +148,23 @@ class MenuBar extends JMenuBar{
             changeRules.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) {
                     Level level = emulator.getLevel();
-                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false, level.getRuleset().swap());
+                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
+                            level.getRuleset().swap(), level.getInitialSlide());
                 }
             });
             addIcon(changeRules, "/resources/icons/change.gif");
             add(changeRules);
+
+            JMenuItem changeInitialSlide = new JMenuItem("Change Initial RFF Direction");
+            changeInitialSlide.addActionListener(e -> {
+                if (!SuperCC.areToolsRunning()) {
+                    Level level = emulator.getLevel();
+                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
+                            level.getRuleset(), level.getInitialSlide().turn(Direction.TURN_RIGHT));
+                }
+            });
+            addIcon(changeInitialSlide, "/resources/icons/RFF.png");
+            add(changeInitialSlide);
         }
     }
     
@@ -165,7 +176,7 @@ class MenuBar extends JMenuBar{
             saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset(), l.getInitialSlide());
                 saveNewFile(solution.toString().getBytes(UTF_8), emulator.getJSONPath(), "json");
             });
             addIcon(saveAs, "/resources/icons/saveAs.gif");
@@ -175,7 +186,7 @@ class MenuBar extends JMenuBar{
             save.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.CTRL_MASK));
             save.addActionListener(event -> {
                 Level l = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset(), l.getInitialSlide());
                 try{
                     FileOutputStream fos = new FileOutputStream(emulator.getJSONPath());
                     fos.write(solution.toString().getBytes(UTF_8));
@@ -242,7 +253,7 @@ class MenuBar extends JMenuBar{
             copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, InputEvent.CTRL_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
-                Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset());
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialSlide());
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
                 emulator.showAction("Copied solution");
                 emulator.getMainWindow().repaint(false);
@@ -332,7 +343,7 @@ class MenuBar extends JMenuBar{
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(savestates.getMoveList(),
                         level.getRngSeed(),
-                        level.getStep(), level.getRuleset());
+                        level.getStep(), level.getRuleset(), level.getInitialSlide());
 
                 CharList twsMouseMovesX = new CharList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
                 CharList twsMouseMovesY = new CharList();

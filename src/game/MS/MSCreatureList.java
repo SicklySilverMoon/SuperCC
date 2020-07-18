@@ -12,7 +12,7 @@ public class MSCreatureList extends game.CreatureList {
     public void initialise() {
         newClones.clear();
         numDeadMonsters = 0;
-        blobStep = (level.getStep() == Step.EVEN) != (level.getTickNumber() % 4 == 2);
+        blobStep = (level.getStep().isEven()) != (level.getTickNumber() % 4 == 2);
     }
 
     @Override

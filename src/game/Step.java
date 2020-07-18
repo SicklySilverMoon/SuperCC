@@ -1,18 +1,28 @@
 package game;
 
 public enum Step{
-    
+
+    EVEN,
+    EVEN1,
+    EVEN2,
+    EVEN3,
     ODD,
-    EVEN;
+    ODD1,
+    ODD2,
+    ODD3;
     
     public static Step fromTWS(int n) {
-        if (n >>> 5 == 1) return Step.ODD;
-        else return Step.EVEN;
+        n &= 0b11111000;
+        n >>>= 3;
+        return values()[n];
     }
     
     public byte toTWS() {
-        if (this == EVEN) return 0;
-        else return 0b100000;
+        int n = ordinal();
+        return (byte) (n << 3);
     }
-    
+
+    public boolean isEven() {
+        return (ordinal() < 4);
+    }
 }

@@ -1,5 +1,6 @@
 package io;
 
+import game.Direction;
 import game.Level;
 import game.Ruleset;
 import game.Step;
@@ -97,7 +98,7 @@ public class DatParser{
      * @param rules The ruleset to use, a value of CURRENT means to keep the currently selected ruleset (defaulting to file signature)
      * @return a Level object
      */
-    public Level parseLevel(int level, int rngSeed, Step step, Ruleset rules) throws IOException{
+    public Level parseLevel(int level, int rngSeed, Step step, Ruleset rules, Direction initialSlide) throws IOException{
         DatReader reader = new DatReader(file);
         if (rules != Ruleset.CURRENT) this.rules = rules;
         try {
@@ -162,7 +163,7 @@ public class DatParser{
 
             reader.close();
             return LevelFactory.makeLevel(levelNumber, timeLimit, chips, layerFG, layerBG, title, trapConnections,
-                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel(), this.rules);
+                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel(), this.rules, initialSlide);
         }
         catch (IOException e){
             reader.close();

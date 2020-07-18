@@ -1,9 +1,6 @@
 package emulator;
 
-import game.Level;
-import game.Position;
-import game.Ruleset;
-import game.Step;
+import game.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import util.CharList;
@@ -16,7 +13,7 @@ import static emulator.SuperCC.*;
 
 public class Solution{
 
-    public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves", ENCODE = "Encode", RULE = "Rule";
+    public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves", ENCODE = "Encode", RULE = "Rule", SLIDE = "Initial Slide";
     
     public static final int QUARTER_MOVES = 0,
                             HALF_MOVES = 1,
@@ -26,6 +23,7 @@ public class Solution{
     public int rngSeed;
     public Step step;
     public Ruleset ruleset;
+    public Direction initialSlide;
     public final String encoding = "UTF-8";
     
     public double efficiency = -1;
@@ -34,6 +32,7 @@ public class Solution{
         JSONObject json = new JSONObject();
         json.put(STEP, step.toString());
         json.put(SEED, Integer.toString(rngSeed));
+        json.put(SLIDE, initialSlide.toString());
         json.put(RULE, ruleset.toString());
         json.put(ENCODE, encoding);
         json.put(MOVES, new String(halfMoves));
@@ -48,8 +47,10 @@ public class Solution{
             int rngSeed = Integer.parseInt((String) json.get(SEED));
             char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
             String ruleString = (String) json.get(RULE);
+            String slideString = (String) json.get(SLIDE);
             Ruleset ruleset = Ruleset.valueOf(ruleString == null ? "MS" : ruleString);
-            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset);
+            Direction slidingDirection = Direction.valueOf(slideString == null ? "UP" : slideString);
+            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset, slidingDirection);
         }
         catch (Exception e){
             throw new IllegalArgumentException("Invalid solution file:\n" + s);
@@ -64,7 +65,7 @@ public class Solution{
         if (emulator.getLevel().getRuleset() != ruleset)
             if (!emulator.throwQuestion("Solution has a different ruleset than currently selected, change rulesets?")) return;
 
-        emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false, ruleset);
+        emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false, ruleset, initialSlide);
         tickHalfMoves(emulator, tickFlags);
         if(emulator.hasGui) {
             emulator.getMainWindow().repaint(true);
@@ -174,20 +175,22 @@ public class Solution{
         return toJSON().toJSONString();
     }
     
-    public Solution(char[] moves, int rngSeed, Step step, int format, Ruleset ruleset){
+    public Solution(char[] moves, int rngSeed, Step step, int format, Ruleset ruleset, Direction initialSlide){
         if (format == QUARTER_MOVES) this.halfMoves = quarterToHalfMoves(moves);
         else if (format == SUCC_MOVES) this.halfMoves = succToHalfMoves(moves);
         else if (format == HALF_MOVES) this.halfMoves = moves;
         this.rngSeed = rngSeed;
         this.step = step;
         this.ruleset = ruleset;
+        this.initialSlide = initialSlide;
     }
     
-    public Solution(CharList moves, int rngSeed, Step step, Ruleset ruleset){
+    public Solution(CharList moves, int rngSeed, Step step, Ruleset ruleset, Direction initialSlide){
         this.halfMoves = succToHalfMoves(moves);
         this.rngSeed = rngSeed;
         this.step = step;
         this.ruleset = ruleset;
+        this.initialSlide = initialSlide;
         //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
     }
 

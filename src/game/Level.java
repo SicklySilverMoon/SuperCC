@@ -48,6 +48,10 @@ public interface Level extends SaveState{
 
     boolean supportsLayerBG();
 
+    boolean supportsClick();
+
+    boolean hasCyclicRFF();
+
     Layer getLayerBG();
 
     Layer getLayerFG();
@@ -111,6 +115,8 @@ public interface Level extends SaveState{
     int getTickNumber();
 
     Ruleset getRuleset();
+
+    Direction getInitialSlide();
 
     /**
      * @param position the last clicked position.

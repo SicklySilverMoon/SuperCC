@@ -21,6 +21,7 @@ public class LynxLevel extends LynxSaveState implements Level {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
+    private Direction initialSlide;
     private final Ruleset RULESET = Ruleset.LYNX;
     private boolean levelWon;
 
@@ -112,6 +113,16 @@ public class LynxLevel extends LynxSaveState implements Level {
     @Override
     public boolean supportsLayerBG() {
         return false;
+    }
+
+    @Override
+    public boolean supportsClick() {
+        return false;
+    }
+
+    @Override
+    public boolean hasCyclicRFF() {
+        return true;
     }
 
     @Override
@@ -229,8 +240,13 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     @Override
+    public Direction getInitialSlide() {
+        return initialSlide;
+    }
+
+    @Override
     public void setClick(int position) {
-        //Having set click in the interface means i don't have to add checks for MS mode into the gui areas, something i really do not want to do
+        throw new UnsupportedOperationException("Mouse clicks do not exist under Lynx");
     }
 
     @Override
@@ -270,7 +286,7 @@ public class LynxLevel extends LynxSaveState implements Level {
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
                    Layer layerFG, CreatureList monsterList,
-                   LynxCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
+                   LynxCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction initialSlide){
 
         super(layerFG, monsterList, chip,
                 time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
@@ -289,6 +305,7 @@ public class LynxLevel extends LynxSaveState implements Level {
         this.rngSeed = rngSeed;
         this.step = step;
         this.LEVELSET_LENGTH = levelsetLength;
+        this.initialSlide = initialSlide;
 
         Creature.setLevel(this);
         Creature.setMonsterList(monsterList);

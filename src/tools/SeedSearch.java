@@ -44,7 +44,8 @@ public class SeedSearch {
 
     public SeedSearch(SuperCC emulator, Solution solution) {
 
-        emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false, Ruleset.CURRENT);
+        emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false,
+                Ruleset.CURRENT, solution.initialSlide);
         startingState = emulator.getLevel().save();
         
         this.emulator = emulator;

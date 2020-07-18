@@ -1,6 +1,7 @@
 package io;
 
 import emulator.Solution;
+import game.Direction;
 import game.Level;
 import game.Ruleset;
 import game.Step;
@@ -38,7 +39,9 @@ public class TWSReader{
         reader.readInt();                       // Password
         reader.readByte();                      // Other Flags (always 0)
 
-        Step step = Step.fromTWS(reader.readByte());
+        int stepSlideValue = reader.readByte();
+        Step step = Step.fromTWS(stepSlideValue);
+        Direction initialSlide = Direction.fromTWS(stepSlideValue);
 
         int rngSeed = reader.readInt();
         int solutionLength = reader.readInt();
@@ -67,7 +70,7 @@ public class TWSReader{
                 break;
             }
         }
-        Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset);
+        Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
         return s;
     }

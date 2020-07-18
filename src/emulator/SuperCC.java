@@ -49,7 +49,7 @@ public class SuperCC {
     public String getJSONPath() {
         String levelName = new String(level.getTitle()).replaceAll("[^a-zA-Z0-9 ]",""); //Delete everything except letters, numbers, and spaces so you won't get issues with illegal filenames
         //levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_"); //No longer needed as the previous line now takes care of this but kept commented in case its needed in future
-        return paths.getJSONPath(dat.getLevelsetName(), level.getLevelNumber(), levelName);
+        return paths.getJSONPath(dat.getLevelsetName(), level.getLevelNumber(), levelName, level.getRuleset().name());
     }
     
     public String getSerPath() {
@@ -142,18 +142,18 @@ public class SuperCC {
         loadLevel(1);
     }
 
-    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves, Ruleset rules){
+    public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves, Ruleset rules, Direction initialSlide){
         if (levelNumber == 0) levelNumber = lastLevelNumber()-1; //If the level number is 0 (player goes back from level 1, load the last level)
         if (levelNumber == lastLevelNumber()) levelNumber = 1; //And vice versa
         try{
             if (keepMoves && level != null && levelNumber == level.getLevelNumber()) {
-                solution = new Solution(getSavestates().getMoveList(), rngSeed, step, level.getRuleset());
+                solution = new Solution(getSavestates().getMoveList(), rngSeed, step, level.getRuleset(), initialSlide);
                 solution.load(this);
             }
             else {
-                level = dat.parseLevel(levelNumber, rngSeed, step, rules);
+                level = dat.parseLevel(levelNumber, rngSeed, step, rules, initialSlide);
                 savestates = new SavestateManager(this, level);
-                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES, level.getRuleset());
+                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES, level.getRuleset(), Direction.UP);
                 if(hasGui) {
                     window.repaint(true);
                     window.setTitle("SuperCC - " + new String(level.getTitle()));
@@ -168,7 +168,7 @@ public class SuperCC {
 
     public synchronized void loadLevel(int levelNumber){
         SeedSearch.kill();
-        loadLevel(levelNumber, 0, Step.EVEN, true, Ruleset.CURRENT);
+        loadLevel(levelNumber, 0, Step.EVEN, true, Ruleset.CURRENT, Direction.UP);
     }
 
     public boolean tick(char c, Direction[] directions, TickFlags flags){

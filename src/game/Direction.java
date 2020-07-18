@@ -33,6 +33,20 @@ public enum Direction {
         return dirs;
     }
 
+    public static Direction fromTWS(int n) {
+        n &= 0b11;
+        switch (n) {
+            case 0b00:
+                return RIGHT;
+            case 0b01:
+                return UP;
+            case 0b10:
+                return LEFT;
+            default:
+                return DOWN;
+        }
+    }
+
     Direction(int bits) {
         this.bits = bits;
     }

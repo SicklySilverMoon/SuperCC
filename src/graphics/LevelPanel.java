@@ -52,6 +52,7 @@ public class LevelPanel extends TextPanel {
         drawText(g, new String(level.getTitle()), 3);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         drawText(g, level.getStep().toString()+" step, seed: "+level.getRngSeed(), 1);
+        if (level.hasCyclicRFF()) drawText(g, "RFF Initial Direction: "+level.getInitialSlide(), 1);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
         drawText(g, "", 1);
         drawText(g, "Time: "+ timerToString(level), 1);

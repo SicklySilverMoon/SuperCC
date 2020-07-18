@@ -29,9 +29,6 @@ public class MSLevel extends MSSaveState implements Level {
     private int rngSeed;
     private Step step;
     private boolean levelWon;
-
-//    private boolean ResetStep = false; //Stuff for data reset
-//    private Position AutopsyPosition = new Position(22, 0);
     
     private final Cheats cheats;
     
@@ -107,6 +104,16 @@ public class MSLevel extends MSSaveState implements Level {
     @Override
     public boolean supportsLayerBG() {
         return true;
+    }
+
+    @Override
+    public boolean supportsClick() {
+        return true;
+    }
+
+    @Override
+    public boolean hasCyclicRFF() {
+        return false;
     }
 
     @Override
@@ -226,6 +233,10 @@ public class MSLevel extends MSSaveState implements Level {
     @Override
     public Ruleset getRuleset() {
         return RULESET;
+    }
+    @Override
+    public Direction getInitialSlide() {
+        return Direction.UP; //unused in MS, return the "default" value
     }
     /**
      * @param position the last clicked position.
