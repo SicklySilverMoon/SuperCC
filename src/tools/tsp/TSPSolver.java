@@ -28,6 +28,7 @@ public class TSPSolver {
     private PathNode[][] paths;
     private PathNode[][] pathsBoost;
     private int startTime;
+    ActingWallParameters actingWallParameters;
 
     private int inputNodeSize;
     private int exitNodeSize;
@@ -56,18 +57,19 @@ public class TSPSolver {
         this.gui = gui;
         this.level = emulator.getLevel();
         setupState();
-        this.initialState = normalizeState(actingWallParameters);
+        this.actingWallParameters = actingWallParameters;
+        this.initialState = normalizeState();
         setupNodes(inputNodes, exitNodes);
         this.boostNodes = new boolean[nodes.size()][nodes.size()];
         this.boostNodesBoost = new boolean[nodes.size()][nodes.size()];
         this.distances = new int[nodes.size()][nodes.size()];
         this.distancesBoost = new int[nodes.size()][nodes.size()];
+        this.inputNodeSize = inputNodes.size();
+        this.exitNodeSize = exitNodes.size();
         setupDistances();
         this.paths = new PathNode[nodes.size()][nodes.size()];
         this.pathsBoost = new PathNode[nodes.size()][nodes.size()];
         this.startTime = level.getTChipTime();
-        this.inputNodeSize = inputNodes.size();
-        this.exitNodeSize = exitNodes.size();
         this.restrictionNodes = restrictionNodes;
         setupRestrictionNodes();
         this.simulatedAnnealingParameters = simulatedAnnealingParameters;
@@ -217,6 +219,7 @@ public class TSPSolver {
     }
 
     private void searchBFS(int from) {
+        currentDistances[from][from] = 0;
         PriorityQueue<PathNode> states = new PriorityQueue<>(100, (a, b) -> b.time - a.time);
         states.add(new PathNode(level.save(), new CharList(), startTime, 'u'));
 
@@ -236,18 +239,17 @@ public class TSPSolver {
                 index %= 1024;
             }
 
-            if (visitedAt[index] < level.getTChipTime()) {
-                visitedAt[index] = level.getTChipTime();
-                visitedCount[index] = 0;
+            if(statesExplored > 1) {
+                if (visitedAt[index] < level.getTChipTime()) {
+                    visitedAt[index] = level.getTChipTime();
+                    visitedCount[index] = 0;
+                }
+                if (visitedCount[index] > 0) {
+                    continue;
+                }
+                visitedCount[index]++;
+                getToNode(from, index, node, false);
             }
-
-            if (visitedCount[index] > 0) {
-                continue;
-            }
-
-            visitedCount[index]++;
-
-            getToNode(from, index, node, false);
 
             for (int direction = 0; direction < directions.length; direction++) {
                 if (direction > 0) {
@@ -259,6 +261,10 @@ public class TSPSolver {
                 }
                 if (can) {
                     emulator.tick(directions[direction], TickFlags.LIGHT);
+                    int newIndex = level.getChip().getPosition().index;
+                    if(index == newIndex) {
+                        continue;
+                    }
                     CharList newMoves = node.moves.clone();
                     newMoves.add(directions[direction]);
                     states.add(new PathNode(level.save(), newMoves, level.getTChipTime(), directions[direction]));
@@ -267,17 +273,30 @@ public class TSPSolver {
         }
     }
 
-    private boolean getToNode(int from, int to, PathNode node, boolean isBoost) {
-        if (nodes.contains(to % 1024)) {
-            to = nodes.indexOf(to % 1024);
-            if (currentDistances[from][to] > startTime - level.getTChipTime() + deltaTime) {
-                currentDistances[from][to] = startTime - level.getTChipTime() + deltaTime;
-                currentPaths[from][to] = node;
-                currentBoostNodes[from][to] = isBoost;
+    private boolean getToNode(int from, int index, PathNode node, boolean isBoost) {
+        if (nodes.contains(index % 1024)) {
+            ArrayList<Integer> indices = getNodeIndices(index % 1024);
+            for(int to : indices) {
+                int distance = startTime - level.getTChipTime() + deltaTime;
+                if (currentDistances[from][to] > distance) {
+                    currentDistances[from][to] = distance;
+                    currentPaths[from][to] = node;
+                    currentBoostNodes[from][to] = isBoost;
+                }
             }
             return true;
         }
         return false;
+    }
+
+    private ArrayList<Integer> getNodeIndices(int index) {
+        ArrayList<Integer> indices = new ArrayList<>();
+        for(int i = 0; i < nodes.size(); i++) {
+            if(nodes.get(i) == index) {
+                indices.add(i);
+            }
+        }
+        return indices;
     }
 
     private int getDirectionIndex(char d) {
@@ -288,7 +307,7 @@ public class TSPSolver {
         return 0;
     }
 
-    private byte[] normalizeState(ActingWallParameters actingWallParameters) {
+    private byte[] normalizeState() {
         int start = 0;
         for(int i = 0; i < 1024; i++) {
             Tile t = level.getLayerFG().get(i);
@@ -298,12 +317,12 @@ public class TSPSolver {
             if(!isTSPTile(t)) {
                 level.getLayerFG().set(i, Tile.FLOOR);
             }
-            if(isActingWall(t, actingWallParameters)) {
+            if(isActingWall(t)) {
                 level.getLayerFG().set(i, Tile.BOMB);
             }
             if(t == Tile.BLOCK || t.isTransparent()) {
                 Tile bgT = level.getLayerBG().get(i);
-                if(isActingWall(bgT, actingWallParameters)) {
+                if(isActingWall(bgT)) {
                     level.getLayerFG().set(i, Tile.WALL);
                 }
             }
@@ -315,7 +334,7 @@ public class TSPSolver {
         return level.save();
     }
 
-    private boolean isActingWall(Tile t, ActingWallParameters actingWallParameters) {
+    private boolean isActingWall(Tile t) {
         if(t == Tile.WATER && actingWallParameters.isWaterWall) {
             return true;
         }

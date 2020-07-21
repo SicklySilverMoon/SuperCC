@@ -362,4 +362,46 @@ class TSPSolverTest {
         assertArrayEquals(expectedDistances, distances);
         assertTrue(emulator.getLevel().isCompleted());
     }
+
+    @Test
+    void solveStartingOnChip() {
+        emulator.loadLevel(10);
+
+        ArrayList<TSPGUI.ListNode> inputNodes = tspgui.getAllChips();
+        ArrayList<TSPGUI.ListNode> exitNodes = tspgui.getAllExits();
+        ArrayList<TSPGUI.RestrictionNode> restrictionNodes = new ArrayList<>();
+
+        TSPSolver solver = new TSPSolver(emulator, tspgui, inputNodes, exitNodes, restrictionNodes,
+                simulatedAnnealingParameters, actingWallParameters, output);
+        try {
+            solver.solve();
+        } catch (Exception e) {
+            fail();
+        }
+        int[][] distances = solver.getDistances();
+
+        assertEquals(4, distances[0][1]);
+        assertTrue(emulator.getLevel().isCompleted());
+    }
+
+    @Test
+    void solveStartingOnExit() {
+        emulator.loadLevel(11);
+
+        ArrayList<TSPGUI.ListNode> inputNodes = tspgui.getAllChips();
+        ArrayList<TSPGUI.ListNode> exitNodes = tspgui.getAllExits();
+        ArrayList<TSPGUI.RestrictionNode> restrictionNodes = new ArrayList<>();
+
+        TSPSolver solver = new TSPSolver(emulator, tspgui, inputNodes, exitNodes, restrictionNodes,
+                simulatedAnnealingParameters, actingWallParameters, output);
+        try {
+            solver.solve();
+        } catch (Exception e) {
+            fail();
+        }
+        int[][] distances = solver.getDistances();
+
+        assertEquals(12, distances[1][2]);
+        assertTrue(emulator.getLevel().isCompleted());
+    }
 }
