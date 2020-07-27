@@ -249,6 +249,9 @@ public class MSCreature extends Creature {
                 }
             }
             if (canEnter(direction, exitTile)) break;
+            if((getCreatureType() == BUG || getCreatureType() == WALKER) && exitTile == FIRE) {
+                break;
+            }
         }
         while (i != portalIndex);
     }
