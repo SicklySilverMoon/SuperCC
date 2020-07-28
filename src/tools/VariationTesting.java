@@ -340,6 +340,8 @@ public class VariationTesting {
             double percentage = permutationIndex/Integer.MAX_VALUE * 100;
             progressBar.setString(String.format("%.3f", percentage) + "%");
             if(killFlag || !running) {
+                progressBar.setValue(0);
+                progressBar.setString("0.000%");
                 cancel();
             }
         }

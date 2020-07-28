@@ -16,6 +16,7 @@ public class Permutation {
     private int currentSize;
     private String lexicographic;
     public double permutationCount;
+    public double permutationValidCount;
 
     public static double LIMIT = 1e18;
 
@@ -40,6 +41,7 @@ public class Permutation {
         this.currentSize = this.limits.lower;
         this.lexicographic = lexicographic;
         this.permutationCount = calculatePermutationCount();
+        this.permutationValidCount = calculatePermutationValidCount();
 
         initialPermutation();
     }
@@ -90,6 +92,10 @@ public class Permutation {
         return set.getTotalPermutationCount();
     }
 
+    private double calculatePermutationValidCount() {
+        return set.getTotalValidPermutationCount();
+    }
+
     public void reset() {
         set.reset();
         finished = false;
@@ -129,6 +135,8 @@ public class Permutation {
             currentSubset[permutation[position]]--;
         }
 
+//        System.out.println(index + set.getCumulativePermutationCount() + "  " + set.setIndex + "  " + index + "  " +
+//                set.cumulativePermutationCounts.get(set.setIndex));
         return index + set.getCumulativePermutationCount();
     }
 

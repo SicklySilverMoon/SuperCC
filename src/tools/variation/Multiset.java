@@ -1,6 +1,7 @@
 package tools.variation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Multiset {
@@ -12,8 +13,9 @@ public class Multiset {
     public boolean finished = false;
     public ArrayList<String> moves;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
-    private ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
+    public ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
     private int setIndex = 0;
+    private double totalValidPermutations = 0;
 
     public static double LIMIT = 1e18;
 
@@ -51,10 +53,10 @@ public class Multiset {
      */
     public void nextSubset() {
         while(!finished) {
+            setIndex++;
             int i = getDistributionIndex();
             if (i == 0) {
                 endOfCurrentSize();
-                setIndex++;
                 return;
             }
 
@@ -62,7 +64,6 @@ public class Multiset {
             distribute(i, gatherDistribution(i));
 
             if(isSubsetValid()) {
-                setIndex++;
                 return;
             }
         }
@@ -75,12 +76,16 @@ public class Multiset {
     public void reset() {
         finished = false;
         currentSize = limits.lower;
-        initialSubset();
         setIndex = 0;
+        initialSubset();
     }
 
     public double getTotalPermutationCount() {
         return cumulativePermutationCounts.get(cumulativePermutationCounts.size() - 1);
+    }
+
+    public double getTotalValidPermutationCount() {
+        return totalValidPermutations;
     }
 
     public double getCumulativePermutationCount() {
@@ -160,12 +165,27 @@ public class Multiset {
     private void calculatePermutationCount() {
         double count = 0;
         cumulativePermutationCounts.add(count);
+        MovePool forcedBackup = movePoolForced;
+        movePoolForced = new MovePool();
+        reset();
         do {
-            count += uniquePermutations(currentSize, subset);
+            double permutations = uniquePermutations(currentSize, subset);
+            count += permutations;
+            if(shouldCountPermutations(forcedBackup)) {
+                totalValidPermutations += permutations;
+            }
             cumulativePermutationCounts.add(count);
             nextSubset();
         } while(!finished && count < LIMIT);
+        movePoolForced = forcedBackup;
         reset();
+    }
+
+    private boolean shouldCountPermutations(MovePool forcedBackup) {
+        movePoolForced = forcedBackup;
+        boolean ret = isSubsetValid();
+        movePoolForced = new MovePool();
+        return ret;
     }
 
     private double factorial(int n) {
