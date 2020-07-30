@@ -156,9 +156,7 @@ public class MSSaveState implements SaveState {
         }
         byte[] readBytes(int length){
             byte[] out = new byte[length];
-            for (int i = 0; i < length; i++){
-                out[i] = (byte) read();
-            }
+            read(out, 0, length);
             return out;
         }
         short[] readShorts(int length){

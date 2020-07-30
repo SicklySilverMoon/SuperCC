@@ -1,7 +1,9 @@
 package tools.variation;
 
+import emulator.SuperCC;
+import util.CharList;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Multiset {
@@ -12,12 +14,25 @@ public class Multiset {
     private int[] subset;
     public boolean finished = false;
     public ArrayList<String> moves;
+    public CharList[] movesList;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
     public ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
     private int setIndex = 0;
     private double totalValidPermutations = 0;
 
     public static double LIMIT = 1e18;
+
+    private static final HashMap<Character, Character> toMove;
+
+    static {
+        toMove = new HashMap<>();
+        toMove.put('u', SuperCC.UP);
+        toMove.put('r', SuperCC.RIGHT);
+        toMove.put('d', SuperCC.DOWN);
+        toMove.put('l', SuperCC.LEFT);
+        toMove.put('w', 'w');
+        toMove.put('h', SuperCC.WAIT);
+    }
 
     public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         MovePool movePoolTotal = getMovePoolTotal(movePools);
@@ -32,8 +47,17 @@ public class Multiset {
         this.moves = new ArrayList<>(movePoolTotal.moves.keySet());
         this.moves.sort((s1, s2) -> compareLexicographic(s1, s2, lexicographic));
 
+        this.movesList = new CharList[this.moves.size()];
+
         for(int i = 0; i < this.moves.size(); i++) {
             this.moveIndex.put(this.moves.get(i), i);
+
+            CharList moveList = new CharList();
+            String str = this.moves.get(i);
+            for(int j = 0; j < str.length(); j++) {
+                moveList.add(toMove.get(str.charAt(j)));
+            }
+            this.movesList[i] = moveList;
         }
 
         for(int i = 0; i < size; i++) {

@@ -1,10 +1,8 @@
 package tools.variation;
 
-import emulator.SuperCC;
 import util.CharList;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class Permutation {
     private MovePoolContainer movePools;
@@ -19,18 +17,6 @@ public class Permutation {
     public double permutationValidCount;
 
     public static double LIMIT = 1e18;
-
-    private static final HashMap<Character, Character> toMove;
-
-    static {
-        toMove = new HashMap<>();
-        toMove.put('u', SuperCC.UP);
-        toMove.put('r', SuperCC.RIGHT);
-        toMove.put('d', SuperCC.DOWN);
-        toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', 'w');
-        toMove.put('h', SuperCC.WAIT);
-    }
 
     public Permutation(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         this.movePools = movePools;
@@ -73,11 +59,7 @@ public class Permutation {
         CharList[] moves = new CharList[currentSize];
 
         for(int i = 0; i < currentSize; i++) {
-            moves[i] = new CharList();
-            String str = this.set.moves.get(permutation[i]);
-            for(int j = 0; j < str.length(); j++) {
-                moves[i].add(toMove.get(str.charAt(j)));
-            }
+            moves[i] = this.set.movesList[permutation[i]];
         }
 
         return moves;

@@ -21,6 +21,7 @@ public class VariationManager {
     public CharList[] moveLists;
     private ArrayList<Double> cumulativeTotalPermutations = new ArrayList<>();
     private double totalValidPermutationCount = 1;
+    private int lastIndex = -1;
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
                      Level level, Interpreter interpreter) {
@@ -77,18 +78,21 @@ public class VariationManager {
     }
 
     public void setVariables(int index) {
-        HashMap<String, Object> newVariables = new HashMap<>();
-        for(String var : variables.keySet()) {
-            Object newVal = variables.get(var);
-            if(newVal instanceof Move) {
-                newVal = new Move(((Move) newVal).value);
+        if(index != lastIndex) {
+            HashMap<String, Object> newVariables = new HashMap<>();
+            for (String var : variables.keySet()) {
+                Object newVal = variables.get(var);
+                if (newVal instanceof Move) {
+                    newVal = new Move(((Move) newVal).value);
+                }
+                newVariables.put(var, newVal);
             }
-            newVariables.put(var, newVal);
+            variableStates.set(index, newVariables);
+            byte[] newSaveState = level.save();
+            saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
+            moveLists[index] = interpreter.moveList.clone();
+            lastIndex = index;
         }
-        variableStates.set(index, newVariables);
-        byte[] newSaveState = level.save();
-        saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
-        moveLists[index] = interpreter.moveList.clone();
     }
 
     public void terminate(int index) {

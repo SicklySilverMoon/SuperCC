@@ -67,7 +67,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             variationCount++;
             try {
                 level.load(manager.saveStates[atSequence]);
-                moveList = manager.moveLists[atSequence];
+                moveList = manager.moveLists[atSequence].clone();
                 for (int i = fromStatement; i < statements.size(); i++) {
                     Stmt stmt = statements.get(i);
                     stmt.execute(this);
@@ -206,9 +206,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         stmt.lifecycle.start.execute(this);
         for(atMove = 0; atMove < permutation.length;) {
             stmt.lifecycle.beforeMove.execute(this);
-            for(char move : permutation[atMove]) {
+            for(int i = 0; i < permutation[atMove].size(); i++) {
                 stmt.lifecycle.beforeStep.execute(this);
-                doMove(move);
+                doMove(permutation[atMove].get(i));
                 stmt.lifecycle.afterStep.execute(this);
             }
             atMove++;

@@ -3,7 +3,6 @@ package game.MS;
 import game.*;
 import game.button.*;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -127,6 +126,9 @@ public class MSCreature extends Creature {
 
     // The entered parameter is for checking if a block has just slid into a trap since in this case it shouldn't generate slide delay
     public void setSliding(boolean wasSliding, boolean isSliding, boolean entered) {
+        if(!(wasSliding || isSliding)) {
+            return;
+        }
         MSLevel level = (MSLevel) Creature.level;
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
@@ -703,60 +705,55 @@ public class MSCreature extends Creature {
     }
     private boolean tryMove(Direction direction, boolean slidingMove, List<Button> pressedButtons){
         if (direction == null) return false;
+        if (!canLeave(direction, level.getLayerBG().get(position))) return false;
         Direction oldDirection = this.direction;
         boolean wasSliding = sliding;
-        boolean isMonster = creatureType.isMonster();
         setDirection(direction);
-        Position newPosition;
-        if ((direction == LEFT && position.getX() == 0) ||
-            (direction == RIGHT && position.getX() == 31) ||
-            (direction == UP && position.getY() == 0) ||
-            (direction == DOWN && position.getY() == 31)) newPosition = new Position(-1);
-        else newPosition = position.move(direction);
+        Position newPosition = position.move(direction);
+        if (!newPosition.isValid()) newPosition.setIndex(-1);
 
-        boolean isBlock = creatureType.isBlock();
+        Tile newTileFG = level.getLayerFG().get(newPosition);
+        Tile newTileBG = level.getLayerBG().get(newPosition);
         boolean isChip = creatureType.isChip();
+        boolean isBlock = creatureType.isBlock();
+        boolean isMonster = creatureType.isMonster();
         boolean pickupCheck = false;
         boolean blockMachineCheck = true;
-        if (level.getLayerBG().get(newPosition) == CLONE_MACHINE && (level.getLayerFG().get(newPosition) == Tile.BLOCK || level.getLayerFG().get(newPosition) == Tile.ICE_BLOCK)) blockMachineCheck = true;
-        else if (level.getLayerBG().get(newPosition) == CLONE_MACHINE && !isBlock) blockMachineCheck = false;
+        if (newTileBG == CLONE_MACHINE && !isBlock) blockMachineCheck = false;
 
-        if (!canLeave(direction, level.getLayerBG().get(position))) return false;
-
-        Tile newTile = level.getLayerFG().get(newPosition);
-        if ((creatureType.isMonster()) && newTile.isChip()) newTile = level.getLayerBG().get(newPosition);
-        if (newTile.isPickup()) {
+        if ((creatureType.isMonster()) && newTileFG.isChip()) newTileFG = newTileBG;
+        if (newTileFG.isPickup()) {
             if (isChip) {
-                if (canEnter(direction, level.getLayerBG().get(newPosition)) || level.getLayerBG().get(newPosition) == Tile.BLOCK) pickupCheck = true;
+                if (canEnter(direction, newTileBG) || newTileBG == Tile.BLOCK) pickupCheck = true;
             }
-            else if (newTile.isKey()) pickupCheck = true;
+            else if (newTileFG.isKey()) pickupCheck = true;
         }
 
-        if ((!newTile.isTransparent() && (isBlock || blockMachineCheck))
-                || canEnter(direction, level.getLayerBG().get(newPosition)) //Look at this if statement, this is all just to get transparency to work
+        if (canEnter(direction, newTileBG) ||
+                (!newTileFG.isTransparent() && (isBlock || blockMachineCheck)) //Look at this if statement, this is all just to get transparency to work
                 || (pickupCheck && blockMachineCheck)
-                || (isBlock && (newTile.isBoot() || (newTile.isChip() || newTile.isSwimmingChip())))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
+                || (isBlock && (newTileFG.isBoot() || newTileFG.isChip() || newTileFG.isSwimmingChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
-            if (level.getLayerBG().get(newPosition) == CLONE_MACHINE && creatureType.isDirtBlock()) newTile = level.getLayerBG().get(newPosition); //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
+            if (newTileBG == CLONE_MACHINE && creatureType.isDirtBlock()) newTileFG = newTileBG; //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
-            if (tryEnter(direction, newPosition, newTile, pressedButtons)) {
-                if (newTile != TELEPORT) level.popTile(position);
-                else if (!creatureType.isChip()) level.popTile(position); //You probably noticed that this works for every creature other than Chip, we handle this very specific case (Chip and teleport) over in the teleport method so we cancel it out here, and yes it does in fact cause some issues if we don't, possibly even crashes if you revert both this and the teleport method handle
+            if (tryEnter(direction, newPosition, newTileFG, pressedButtons)) {
+                if (newTileFG != TELEPORT) level.popTile(position);
+                else if (!isChip) level.popTile(position); //You probably noticed that this works for every creature other than Chip, we handle this very specific case (Chip and teleport) over in the teleport method so we cancel it out here, and yes it does in fact cause some issues if we don't, possibly even crashes if you revert both this and the teleport method handle
                 position = newPosition;
 
                 //!!DIRTY HACK SECTION BEGINS!!//
-                if (creatureType.isChip() && level.getLayerBG().get(newPosition) == EXIT && level.getLayerFG().get(newPosition) == FLOOR && level.getChip().getPosition() == newPosition) {
-                    tryEnter(direction, newPosition, level.getLayerBG().get(newPosition), pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
+                if (isChip && newTileBG == EXIT && level.getLayerFG().get(newPosition) == FLOOR && level.getChip().getPosition() == newPosition) {
+                    tryEnter(direction, newPosition, newTileBG, pressedButtons); //Quick little hack to make having Chip reveal an Exit on the lower layer take effect
                     level.getLayerFG().set(newPosition, EXITED_CHIP); //Fixed cosmetics, else you have an EXITED_CHIP/EXIT tile that looks ugly (no gameplay effect however)
                     level.getLayerBG().set(newPosition, FLOOR);
                 }
 
-                if (creatureType.isBlock() && slidingMove && level.getLayerFG().get(newPosition) == TRAP)
+                if (isBlock && slidingMove && level.getLayerFG().get(newPosition) == TRAP)
                     sliding = true; //A block that slides into a trap should be properly added or maintained in the sliplist, however tryenter doesn't register traps as sliding so i have to manually add a check here
                 //!!DIRTY HACK SECTION ENDS!!//
 
-                if (sliding && !creatureType.isMonster())
-                    this.direction = applySlidingTile(direction, level.getLayerFG().get(position), level.getRNG());
+                if (sliding && !isMonster)
+                    setDirection(applySlidingTile(direction, level.getLayerFG().get(position), level.getRNG()));
 
                 if (!isDead()) level.insertTile(getPosition(), toTile());
                 else if (isMonster) {
@@ -764,7 +761,6 @@ public class MSCreature extends Creature {
                 }
 
                 setSliding(wasSliding, sliding, true);
-
                 return true;
             }
         }
@@ -772,8 +768,8 @@ public class MSCreature extends Creature {
         setSliding(wasSliding, sliding);
 
         if (wasSliding && !creatureType.isMonster()) {
-            if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) this.direction = oldDirection;
-            else this.direction = applySlidingTile(direction, level.getLayerBG().get(position), level.getRNG());
+            if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) setDirection(oldDirection);
+            else setDirection(applySlidingTile(direction, level.getLayerBG().get(position), level.getRNG()));
         }
 
         return false;
@@ -788,8 +784,9 @@ public class MSCreature extends Creature {
             LinkedList<Button> pressedButtons = new LinkedList<>();
 
             if (tryMove(newDirection, slidingMove, pressedButtons)){
-                Iterator<Button> reverseIter = pressedButtons.descendingIterator();
-                while (reverseIter.hasNext()) reverseIter.next().press(level);
+                for(int i = pressedButtons.size() - 1; i >= 0; i--) {
+                    pressedButtons.get(i).press(level);
+                }
                 if (level.getLayerFG().get(oldCreature.position) == BUTTON_BROWN){
                     BrownButton b = ((BrownButton) level.getButton(oldCreature.position, BrownButton.class));
                     if (b != null && level.getLayerBG().get(b.getTargetPosition()) != TRAP && !b.getTargetPosition().equals(position)) {
