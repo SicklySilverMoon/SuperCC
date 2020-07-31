@@ -2,7 +2,7 @@ package game;
 
 import game.MS.MSCreature;
 
-public interface SaveState {
+public interface Savestate {
     int NO_CLICK = 1025;
     int RLE_MULTIPLE = 0x7F;
     int RLE_END = 0x7E;

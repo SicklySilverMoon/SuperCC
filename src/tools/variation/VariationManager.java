@@ -88,8 +88,8 @@ public class VariationManager {
                 newVariables.put(var, newVal);
             }
             variableStates.set(index, newVariables);
-            byte[] newSaveState = level.save();
-            saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
+            byte[] newSavestate = level.save();
+            saveStates[index] = Arrays.copyOf(newSavestate, newSavestate.length);
             moveLists[index] = interpreter.moveList.clone();
             lastIndex = index;
         }

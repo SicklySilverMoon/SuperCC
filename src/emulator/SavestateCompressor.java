@@ -5,7 +5,7 @@ import util.TreeNode;
 
 import java.util.Stack;
 
-import static game.SaveState.*;
+import static game.Savestate.*;
 
 public class SavestateCompressor implements Runnable{
 

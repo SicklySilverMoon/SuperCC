@@ -185,7 +185,7 @@ public class SuperCC {
         }
         if (flags.repaint) window.repaint(false);
 
-        if (savestates.isUndesirableSaveState()) { //As far as I'm aware the way the actual method is setup its only possible to encounter this during gameplay, which is what we want
+        if (savestates.isUndesirableSavestate()) { //As far as I'm aware the way the actual method is setup its only possible to encounter this during gameplay, which is what we want
             throwMessage("Undesirable State Reached"); //Just a little pop up window that tells the user that they reached a prior marked undesirable state
         }
 

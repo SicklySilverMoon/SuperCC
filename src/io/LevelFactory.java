@@ -110,9 +110,9 @@ public class LevelFactory {
         }
         return new MSCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
     }
-    private static int getTimer(int timeLimit){
+    private static int getTimer(int timeLimit, int startingDecimalTimesTen){
         if (timeLimit == 0) return -2;
-        return (timeLimit*10+9);
+        return (timeLimit*100 + startingDecimalTimesTen);
     }
     private static int getSliplistCapacity(Layer layerFG, Layer layerBG){
         int counter = 0;
@@ -217,7 +217,7 @@ public class LevelFactory {
                 getMSMonsterList(monsterPositions, layerFG, layerBG),
                 new SlipList(),
                 findMSPlayer(layerFG),
-                getTimer(timeLimit),
+                getTimer(timeLimit, 90),
                 chips,
                 new RNG(rngSeed),
                 rngSeed,
@@ -242,7 +242,7 @@ public class LevelFactory {
                 layerFG,
                 creatures,
                 creatures.get(0),
-                getTimer(timeLimit),
+                getTimer(timeLimit, 95),
                 chips,
                 new RNG(rngSeed),
                 rngSeed,

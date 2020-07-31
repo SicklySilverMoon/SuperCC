@@ -5,7 +5,7 @@ import game.button.*;
 
 import java.util.BitSet;
 
-public interface Level extends SaveState{
+public interface Level extends Savestate {
     byte UP = 'u';
     byte LEFT = 'l';
     byte DOWN = 'd';

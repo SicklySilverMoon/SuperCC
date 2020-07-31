@@ -7,7 +7,7 @@ import game.button.*;
 
 import java.util.BitSet;
 
-public class LynxLevel extends LynxSaveState implements Level {
+public class LynxLevel extends LynxSavestate implements Level {
 
     private static final int HALF_WAIT = 0, KEY = 1;
     private final int LEVELSET_LENGTH;
@@ -266,7 +266,8 @@ public class LynxLevel extends LynxSaveState implements Level {
 
     @Override
     public boolean tick(char c, Direction[] directions) {
-        setLevelWon(false);//Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
+        tickNumber++;
+        setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
 
         monsterList.tick(); //Most of a tick is done within here
         boolean tickMulti = moveChip(directions);
@@ -276,11 +277,15 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     private boolean moveChip(Direction[] directions) {
-        if (chip.getTimeTraveled() != 0) return chip.tick();
+        if (chip.getTimeTraveled() != 0) {
+            chip.tick();
+            return false;
+        }
         if (directions.length == 0) return false;
         //todo: sliding bullshit lol
         chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
-        return chip.tick();
+        chip.tick();
+        return false;
     }
 
     @Override
@@ -300,7 +305,7 @@ public class LynxLevel extends LynxSaveState implements Level {
                    Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction initialSlide){
 
         super(layerFG, monsterList, chip,
-                time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+                chips, new short[4], new byte[4], rng, NO_CLICK, traps);
 
         this.levelNumber = levelNumber;
         this.startTime = time;

@@ -8,7 +8,7 @@ import java.util.BitSet;
 
 import static game.Tile.*;
 
-public class MSLevel extends MSSaveState implements Level {
+public class MSLevel extends MSSavestate implements Level {
 
     private static final int HALF_WAIT = 0, KEY = 1, CLICK_EARLY = 2, CLICK_LATE = 3;
 
@@ -266,7 +266,7 @@ public class MSLevel extends MSSaveState implements Level {
                    MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
         
         super(layerBG, layerFG, monsterList, slipList, chip,
-              time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+              chips, new short[4], new byte[4], rng, NO_CLICK, traps);
         
         this.levelNumber = levelNumber;
         this.startTime = time;

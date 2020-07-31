@@ -4,9 +4,8 @@ import game.*;
 
 import java.io.IOException;
 import java.util.BitSet;
-import java.util.List;
 
-public class MSSaveState implements SaveState {
+public class MSSavestate implements Savestate {
 
     public Layer layerBG;
     public Layer layerFG;
@@ -36,7 +35,7 @@ public class MSSaveState implements SaveState {
             2 +                             // chip
             1024 +                          // layerBG
             1024 +                          // layerFG
-            2 +                             // tick number
+            4 +                             // tick number
             2 +                             // chips left
             4 * 2 +                         // keys
             4 * 1 +                         // boots
@@ -56,7 +55,7 @@ public class MSSaveState implements SaveState {
         writer.writeShort((short) chip.bits());
         writer.write(layerBG.getBytes());
         writer.write(layerFG.getBytes());
-        writer.writeShort(tickNumber);
+        writer.writeInt(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
         writer.write(boots);
@@ -65,9 +64,9 @@ public class MSSaveState implements SaveState {
         writer.writeShort(traps.length);
         writer.write(traps);
         writer.writeShort(monsterList.size());
-        writer.writeMonsterArray(monsterList.getCreatures());
+        writer.writeShortMonsterArray(monsterList.getCreatures());
         writer.writeShort(slipList.size());
-        writer.writeMonsterList(slipList);
+        writer.writeShortMonsterList(slipList);
         writer.writeShort(idleMoves);
         writer.writeBool(voluntaryMoveAllowed);
 
@@ -86,7 +85,7 @@ public class MSSaveState implements SaveState {
             chip = new MSCreature(reader.readShort());
             layerBG.load(reader.readLayer(version));
             layerFG.load(reader.readLayer(version));
-            tickNumber = (short) reader.readShort();
+            tickNumber = reader.readInt();
             chipsLeft = (short) reader.readShort();
             keys = reader.readShorts(4);
             boots = reader.readBytes(4);
@@ -98,20 +97,6 @@ public class MSSaveState implements SaveState {
             idleMoves = (short) reader.readShort();
             voluntaryMoveAllowed = reader.readBool();
         }
-        else if (version == UNCOMPRESSED_V1 || version == COMPRESSED_V1) {
-            chip = new MSCreature(reader.readShort());
-            layerBG.load(reader.readLayer(version));
-            layerFG.load(reader.readLayer(version));
-            tickNumber = (short) reader.readShort();
-            chipsLeft = (short) reader.readShort();
-            keys = reader.readShorts(4);
-            boots = reader.readBytes(4);
-            rng.setCurrentValue(reader.readInt());
-            mouseGoal = reader.readShort();
-            traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-            monsterList.setCreatures(reader.readMSMonsterArray(reader.readShort()));
-            slipList.setSliplist(reader.readMSMonsterArray(reader.readShort()));
-        }
         try {
             reader.close();
         } catch (IOException e) {
@@ -119,8 +104,8 @@ public class MSSaveState implements SaveState {
         }
     }
     
-    protected MSSaveState(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, MSCreature chip,
-                          int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
+    protected MSSavestate(Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList, MSCreature chip,
+                          int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
         this.layerBG = layerBG;
         this.layerFG = layerFG;
         this.monsterList = monsterList;

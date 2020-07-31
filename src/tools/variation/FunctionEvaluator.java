@@ -104,8 +104,8 @@ public class FunctionEvaluator {
             case "gettimeleft":
                 checkArgCount(function, 0);
                 int time = emulator.getLevel().getTimer();
-                if(time < 0) time += 10001;
-                return (double)time / 10;
+                if(time < 0) time = emulator.getLevel().getTChipTime();
+                return (double)time / 100;
         }
         return null;
     }

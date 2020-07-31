@@ -2,7 +2,7 @@ package emulator;
 
 import game.Level;
 import game.Position;
-import game.SaveState;
+import game.Savestate;
 import graphics.Gui;
 import graphics.SmallGamePanel;
 import util.CharList;
@@ -250,7 +250,7 @@ public class SavestateManager implements Serializable {
         return currentNode.getData();
     }
 
-    boolean isUndesirableSaveState() {
+    boolean isUndesirableSavestate() {
         for (TreeNode<byte[]> node : undesirableSavestates) {
             byte[] savedState = node.getData();
             if (Arrays.equals(savedState, currentNode.getData())) return true;
@@ -297,7 +297,7 @@ public class SavestateManager implements Serializable {
     
     public LinkedList<Position> getChipHistory(){
         LinkedList<Position> chipHistory = new LinkedList<>();
-        for (TreeNode<byte[]> node : currentNode.getHistory()) chipHistory.add(SaveState.getChip(node.getData()).getPosition());
+        for (TreeNode<byte[]> node : currentNode.getHistory()) chipHistory.add(Savestate.getChip(node.getData()).getPosition());
         return chipHistory;
     }
 

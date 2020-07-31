@@ -30,11 +30,17 @@ public class SavestateWriter {
             writeShort(s);
         }
     }
-    public void writeMonsterArray(Creature[] monsters){
+    public void writeShortMonsterArray(Creature[] monsters){
         for (Creature monster : monsters) writeShort(monster.bits());
     }
-    public void writeMonsterList(List<Creature> monsters){
+    public void writeIntMonsterArray(Creature[] monsters){
+        for (Creature monster : monsters) writeInt(monster.bits());
+    }
+    public void writeShortMonsterList(List<Creature> monsters){
         for (Creature monster : monsters) writeShort(monster.bits());
+    }
+    public void writeIntMonsterList(List<Creature> monsters){
+        for (Creature monster : monsters) writeInt(monster.bits());
     }
     public void writeBool(boolean n) {
         if (n) write(1);
