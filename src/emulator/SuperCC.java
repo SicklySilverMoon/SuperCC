@@ -173,10 +173,12 @@ public class SuperCC {
 
     public boolean tick(char c, Direction[] directions, TickFlags flags){
         if (level == null) return false;
-        boolean tickTwice = level.tick(c, directions);
-        if (flags.doubleTick && tickTwice) {
-            c = capital(c); //todo: see the todo in Solution about capitalization and switching to another system
-            level.tick(c, DIRECTIONS[4]);
+        boolean tickMulti = level.tick(c, directions);
+        if (flags.multiTick && tickMulti) {
+            for (int i=0; i < level.ticksPerMove() - 1; i++) {
+                c = capital(c); //todo: see the todo in Solution about capitalization and switching to another system
+                level.tick(c, DIRECTIONS[4]);
+            }
         }
         if (flags.save) {
             savestates.addRewindState(level, c);
@@ -187,7 +189,7 @@ public class SuperCC {
             throwMessage("Undesirable State Reached"); //Just a little pop up window that tells the user that they reached a prior marked undesirable state
         }
 
-        return tickTwice;
+        return tickMulti;
     }
     
     public static boolean isClick(char c){

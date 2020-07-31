@@ -7,15 +7,18 @@ import static game.Direction.*;
 import static game.Direction.TURN_AROUND;
 import static game.Tile.*;
 
+/**
+ * Lynx creatures are encoded as follows:
+ *
+ * |    0    |  0 0 0 0  |    0 0 0    |    0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
+ * | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
+ */
 public class LynxCreature extends Creature {
 
     private int timeTraveled;
     private int animationTimer; //Exists primarily for death effect timings, but adds future ability to implement actual animations
 
-    @Override
-    public boolean isSliding() {
-        return sliding;
-    }
+    private final int defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
 
     @Override
     public Tile toTile() { //Used exclusively for drawing creatures, please do not use for anything else
@@ -35,11 +38,6 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public int bits() {
-        return direction.getBits() | creatureType.getBits() | position.getIndex();
-    }
-
-    @Override
     public String toString() {
         if (creatureType == DEAD) return "Dead monster at position " + position;
         return creatureType+" facing "+direction+" at position "+position;
@@ -53,12 +51,32 @@ public class LynxCreature extends Creature {
 
     @Override
     public boolean tick() {
-        timeTraveled = (timeTraveled + 2) & 0b111; //Mod 8
-        //Needs to be changed to include blobs only moving by 1 and sliding moving by an extra 2
+        if (animationTimer != 0) {
+            animationTimer--;
+            return false;
+        }
 
-        if (timeTraveled != 0) return true;
+        if (timeTraveled == 0) {
+            if (direction == null) return false;
 
+            Position newPosition = position.move(direction);
+            if (!canEnter(direction, level.getLayerFG().get(newPosition))
+                || monsterList.getCreaturesAtPosition(newPosition) != 0
+                || !position.move(direction).isValid()) {
+                    if (sliding) direction = direction.turn(TURN_AROUND);
+                    return false;
+            }
+            position = newPosition;
+            sliding = level.getLayerFG().get(newPosition).isSliding(); //todo: oh god trap sliding
+        }
         Tile newTile = level.getLayerFG().get(position);
+
+        timeTraveled += defaultMoveSpeed;
+        if (newTile.isFF() || newTile.isIce()) timeTraveled += defaultMoveSpeed; //Sliding on ice or FFs doubles move speed
+        timeTraveled &= 0b111; //Mod 8
+
+        if (timeTraveled != 0) return false;
+
         switch (newTile) {
             case WATER:
                 if (creatureType != GLIDER) kill(); //todo: splash
@@ -87,15 +105,17 @@ public class LynxCreature extends Creature {
                 break;
             case BOMB:
                 kill(); //TODO: splash but hot
+                level.getLayerFG().set(position, FLOOR);
                 break;
         }
 
-        return false;
+        return creatureType != DEAD;
     }
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
+        if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD});
+        if (directions != null) return directions;
 
         switch (creatureType) {
             case BUG:
@@ -291,6 +311,12 @@ public class LynxCreature extends Creature {
         }
     }
 
+    @Override
+    public int bits() {
+        return (sliding ? 1 : 0) << 22 | (animationTimer << 19) | (timeTraveled << 16)
+                | direction.getBits() | creatureType.getBits() | position.getIndex();
+    }
+
     public LynxCreature(Position position, Tile tile) {
         this.position = position;
 
@@ -320,9 +346,14 @@ public class LynxCreature extends Creature {
     }
 
     public LynxCreature(int bitMonster) {
-        direction = Direction.fromOrdinal(bitMonster >>> 14);
+//        System.out.println(Integer.toBinaryString(bitMonster));
+        sliding = ((bitMonster >>> 22) & 0b1) == 1;
+        animationTimer = (bitMonster >>> 19) & 0b111;
+        timeTraveled = (bitMonster >>> 16) & 0b111;
+        direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b11);
         creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);
         if (creatureType == CHIP_SLIDING) sliding = true; //TODO: CHIP_SLIDING probably doesn't need to exist for lynx, nor do the 2 types of tanks
         position = new Position(bitMonster & 0b00_0000_1111111111);
+//        System.out.println(creatureType);
     }
 }

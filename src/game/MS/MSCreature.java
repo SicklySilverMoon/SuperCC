@@ -24,7 +24,7 @@ public class MSCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng){
-        if (nextMoveDirectionCheat != null) {
+        if (nextMoveDirectionCheat != null) {//todo: swap this stuff out for the setDirection and directions later
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
             if (creatureType == WALKER || creatureType == BLOB) rng.random4();

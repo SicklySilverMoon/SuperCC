@@ -1,6 +1,6 @@
 package game;
 
-public enum Ruleset {
+public enum Ruleset { //For the love of god do not use this outside of solution/JSONs
     CURRENT,
     MS,
     LYNX;

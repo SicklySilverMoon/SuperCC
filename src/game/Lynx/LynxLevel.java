@@ -126,6 +126,11 @@ public class LynxLevel extends LynxSaveState implements Level {
     }
 
     @Override
+    public int ticksPerMove() {
+        return 4;
+    }
+
+    @Override
     public Layer getLayerBG() {
         throw new UnsupportedOperationException("Background Layer does not exist under Lynx");
     }
@@ -263,30 +268,36 @@ public class LynxLevel extends LynxSaveState implements Level {
     public boolean tick(char c, Direction[] directions) {
         setLevelWon(false);//Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
 
-        monsterList.tick();
+        monsterList.tick(); //Most of a tick is done within here
+        boolean tickMulti = moveChip(directions);
+        monsterList.tick(); //teleport pass through
 
-        return false;
+        return tickMulti;
+    }
+
+    private boolean moveChip(Direction[] directions) {
+        if (chip.getTimeTraveled() != 0) return chip.tick();
+        if (directions.length == 0) return false;
+        //todo: sliding bullshit lol
+        chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
+        return chip.tick();
     }
 
     @Override
     public void insertTile(Position position, Tile tile) {
-
+        layerFG.set(position, tile);
     }
 
     @Override
     public void popTile(Position position) {
-
-    }
-
-    private void moveChip(Direction[] directions) {
-
+        layerFG.set(position, Tile.FLOOR);
     }
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
                    Layer layerFG, CreatureList monsterList,
-                   LynxCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction initialSlide){
+                   Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction initialSlide){
 
         super(layerFG, monsterList, chip,
                 time, chips, new short[4], new byte[4], rng, NO_CLICK, traps);

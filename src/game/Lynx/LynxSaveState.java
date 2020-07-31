@@ -11,7 +11,7 @@ public class LynxSaveState implements SaveState {
     private static final byte UNCOMPRESSED_V2 = 6;
     private static final byte UNCOMPRESSED_V1 = 4;
     public Layer layerFG;
-    public LynxCreature chip;
+    public Creature chip;
     public int tickNumber;
     public int chipsLeft;
     public short[] keys;
@@ -28,30 +28,27 @@ public class LynxSaveState implements SaveState {
 
         int length =
                 1 +                             // version
-                        2 +                             // chip
-                        1024 +                          // layerBG
-                        1024 +                          // layerFG
-                        2 +                             // tick number
-                        2 +                             // chips left
-                        4 * 2 +                         // keys
-                        4 * 1 +                         // boots
-                        4 +                             // rng
-                        2 +                             // traps length
-                        traps.length +                  // traps
-                        2 +                             // monsterlist size
-                        monsterList.size() * 2;         // monsterlist
+                1024 +                          // layerFG
+                2 +                             // tick number
+                2 +                             // chips left
+                4 * 2 +                         // keys
+                4 * 1 +                         // boots
+                4 +                             // rng
+                2 +                             // traps length
+                traps.length +                  // traps
+                2 +                             // monsterlist size
+                monsterList.size() * 4;         // monsterlist
 
         SavestateWriter writer = new SavestateWriter(length);
-        writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
-        writer.writeShort((short) chip.bits());
-        writer.write(layerFG.getBytes());
+        writer.writeByte(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
+        writer.writeByteArray(layerFG.getBytes());
         writer.writeShort(tickNumber);
         writer.writeShort(chipsLeft);
         writer.writeShorts(keys);
-        writer.write(boots);
+        writer.writeByteArray(boots);
         writer.writeInt(rng.getCurrentValue());
         writer.writeShort(traps.length);
-        writer.write(traps);
+        writer.writeByteArray(traps);
         writer.writeShort(monsterList.size());
         writer.writeMonsterArray(monsterList.getCreatures());
 
@@ -63,7 +60,6 @@ public class LynxSaveState implements SaveState {
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {
-            chip = new LynxCreature(reader.readShort());
             layerFG.load(reader.readLayer(version));
             tickNumber = (short) reader.readShort();
             chipsLeft = (short) reader.readShort();
@@ -72,10 +68,11 @@ public class LynxSaveState implements SaveState {
             rng.setCurrentValue(reader.readInt());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
+            chip = monsterList.get(0);
         }
     }
 
-    protected LynxSaveState(Layer layerFG, CreatureList monsterList, LynxCreature chip,
+    protected LynxSaveState(Layer layerFG, CreatureList monsterList, Creature chip,
                           int timer, int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
         this.layerFG = layerFG;
         this.monsterList = monsterList;
@@ -141,7 +138,7 @@ public class LynxSaveState implements SaveState {
         Creature[] readMonsterArray(int length){
             Creature[] monsters = new Creature[length];
             for (int i = 0; i < length; i++){
-                monsters[i] = new LynxCreature(readShort());
+                monsters[i] = new LynxCreature(readInt());
             }
             return monsters;
         }
@@ -160,23 +157,23 @@ public class LynxSaveState implements SaveState {
         private final byte[] bytes;
         private int index;
 
-        void write(int n) {
+        void writeByte(int n) {
             bytes[index] = (byte) n;
             index++;
         }
-        void write(byte[] b) {
+        void writeByteArray(byte[] b) {
             System.arraycopy(b, 0, bytes, index, b.length);
             index += b.length;
         }
         void writeShort(int n){
-            write(n >>> 8);
-            write(n);
+            writeByte(n >>> 8);
+            writeByte(n);
         }
         void writeInt(int n){
-            write(n >>> 24);
-            write(n >>> 16);
-            write(n >>> 8);
-            write(n);
+            writeByte(n >>> 24);
+            writeByte(n >>> 16);
+            writeByte(n >>> 8);
+            writeByte(n);
         }
         void writeShorts(short[] a){
             for (short s : a){
@@ -184,14 +181,14 @@ public class LynxSaveState implements SaveState {
             }
         }
         void writeMonsterArray(Creature[] monsters){
-            for (Creature monster : monsters) writeShort(monster.bits());
+            for (Creature monster : monsters) writeInt(monster.bits());
         }
         void writeMonsterList(List<Creature> monsters){
-            for (Creature monster : monsters) writeShort(monster.bits());
+            for (Creature monster : monsters) writeInt(monster.bits());
         }
         void writeBool(boolean n) {
-            if (n) write(1);
-            else write(0);
+            if (n) writeByte(1);
+            else writeByte(0);
         }
 
         byte[] toByteArray() {

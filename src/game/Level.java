@@ -52,6 +52,8 @@ public interface Level extends SaveState{
 
     boolean hasCyclicRFF();
 
+    int ticksPerMove();
+
     Layer getLayerBG();
 
     Layer getLayerFG();

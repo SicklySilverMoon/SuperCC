@@ -2,10 +2,24 @@ package game.Lynx;
 
 import game.*;
 
-import static game.CreatureID.DEAD;
+import static game.CreatureID.*;
 
 public class LynxCreatureList extends CreatureList {
     private int[] creatureLayer; //a faux 'layer', whenever a creature moves into a position increment the resulting position index in this array. decrement it when they leave
+    private Creature[] animationLayer; //Another faux layer that holds references to DEAD creatures that currently have animations playing, a position's index matches to an index in this array
+
+    private boolean secondCall; //false when first called in a tick and set to true then, used to determine which "part" of the monster list tick should be done
+
+    @Override
+    public void setCreatures(Creature[] creatures) {
+        list = creatures;
+        creatureLayer = new int[1024];
+
+        for (int i=1; i < creatures.length; i++) { //start at 1 to skip over Chip who shouldn't be added
+            Creature c = creatures[i];
+            creatureLayer[c.getPosition().index]++;
+        }
+    }
 
     @Override
     public void initialise() {
@@ -19,34 +33,52 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void tick() {
-        for (int i = list.length - 1; i >= 0; i--) {
-            //todo: the god damn trap sliding thing
-            Creature creature = list[i];
-            if (creature.getTimeTraveled() != 0 || creature.getCreatureType() == DEAD) continue;
+        Creature chip = level.getChip();
+        if (!secondCall) {
+            for (int i = list.length - 1; i >= 1; i--) {
+                //todo: lol death animations are only solid for Chip but other monsters cut them short, meaning we gotta create some kind of solution to faciltate interactions, maybe a another array that holds references to animations on whatever tiles
+                Creature creature = list[i];
+                if (creature.getTimeTraveled() != 0 || creature.getCreatureType() == DEAD) continue;
 
-            for (Direction dir : creature.getDirectionPriority(level.getChip(), level.getRNG())) {
-                Tile newTile = level.getLayerFG().get(creature.getPosition().move(dir));
-                if (!creature.canEnter(dir, newTile) || creaturesAtPosition(creature.getPosition()) != 0) continue;
+                for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
+                    Position newPosition = creature.getPosition().move(dir);
+                    Tile newTile = level.getLayerFG().get(newPosition);
 
-                creature.setDirection(dir);
-                break;
+                    if (!creature.canEnter(dir, newTile) || getCreaturesAtPosition(newPosition) != 0) continue;
+                    if (!newPosition.isValid()) continue;
+
+                    creature.setDirection(dir);
+                    break;
+                }
             }
-        }
 
-        for (int i = list.length - 1; i >= 0; i--) {
-            //Actual movement should be done here
-            Creature creature = list[i];
-            if (creature.getCreatureType() == DEAD) continue;
-            creature.tick();
+            for (int i = list.length - 1; i >= 1; i--) {
+                //Actual movement should be done here
+                Creature creature = list[i];
+                if (creature.getCreatureType() == DEAD || creature.getCreatureType() == BLOCK) continue;
+
+                Position oldPosition = creature.getPosition();
+                creature.tick();
+                if (!oldPosition.equals(creature.getPosition()) && !creature.getCreatureType().isChip()) {
+                    --creatureLayer[oldPosition.index];
+                    ++creatureLayer[creature.getPosition().index];
+                }
+            }
+            secondCall = true;
+        }
+        else {
+            for (int i = list.length - 1; i >= 0; i--) {
+                Creature creature = list[i];
+                if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT) {
+                    //todo
+                }
+            }
+            secondCall = false;
         }
     }
 
-    /** Returns the number of creatures currently occupying the specified position
-     *
-     * @param position The position to check (must be a valid position between 0 and 31 on x and y).
-     * @return Number of creatures located within the given position.
-     */
-    private int creaturesAtPosition(Position position) {
+    @Override
+    public int getCreaturesAtPosition(Position position) {
         return creatureLayer[position.index];
     }
 
@@ -59,7 +91,8 @@ public class LynxCreatureList extends CreatureList {
         super(creatures);
         creatureLayer = new int[1024];
 
-        for (Creature c : creatures) {
+        for (int i=1; i < creatures.length; i++) { //start at 1 to skip over Chip who shouldn't be added
+            Creature c = creatures[i];
             creatureLayer[c.getPosition().index]++;
         }
     }

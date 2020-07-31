@@ -159,8 +159,18 @@ public class SmallGamePanel extends GamePanel {
             }
         }
         for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
-            int x = creature.getPosition().x * tileWidth;
-            int y = creature.getPosition().y * tileHeight;
+            int x = tileWidth;
+            int y = tileHeight;
+
+            if (creature.getTimeTraveled() != 0) {
+                Position pos = creature.getPosition().move(creature.getDirection().turn(Direction.TURN_AROUND));
+                x *= pos.x;
+                y *= pos.y;
+            }
+            else {
+                x *= creature.getPosition().x;
+                y *= creature.getPosition().y;
+            }
 
             int vPixelsBetweenTiles = tileHeight / 8;//Lynx has values between 0 and 7 for this, and i don't want to extend level for something so trivial, so I just hardcode it here for now
             int hPixelsBetweenTiles = tileWidth / 8;
@@ -192,6 +202,8 @@ public class SmallGamePanel extends GamePanel {
                 case CHIP_SWIMMING:
                     creatureImage = creatureImages[0][creature.getDirection().ordinal()];
                     break;
+                case DEAD:
+                    creatureImage = new BufferedImage(1, 1, 2); //todo: change to actual death images
             }
             graphicsCreatures.drawImage(creatureImage, x, y, tileWidth, tileHeight, null);
         }

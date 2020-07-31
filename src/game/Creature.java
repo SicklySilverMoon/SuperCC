@@ -10,6 +10,7 @@ public abstract class Creature {
     protected Position position;
     protected CreatureID creatureType;
     protected Direction direction;
+    protected Direction[] directions;
     protected boolean sliding;
 
     protected static Level level;
@@ -21,6 +22,11 @@ public abstract class Creature {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
+    }
+
+    public void setDirectionPriority(Direction[] directions) {
+        //For the love of god this should only be used by Cheats or for setting Chip's directions
+        this.directions = directions;
     }
 
     public CreatureID getCreatureType() {
@@ -77,7 +83,7 @@ public abstract class Creature {
      * Currently used only by Lynx as MS Creatures are always downcasted and
      * have their specialized tick method used.
      *
-     * @return A boolean representing if the creature's advancement succeeded or not.
+     * @return A boolean representing if the creature advanced into a new tile or not.
      */
     public abstract boolean tick();
 
@@ -90,7 +96,9 @@ public abstract class Creature {
     /**
      * @return A boolean representing if the creature is sliding.
      */
-    public abstract boolean isSliding();
+    public boolean isSliding() {
+        return sliding;
+    }
 
     public void setSliding(boolean sliding) {
         this.sliding = sliding;

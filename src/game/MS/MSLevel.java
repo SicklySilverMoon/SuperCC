@@ -117,6 +117,11 @@ public class MSLevel extends MSSaveState implements Level {
     }
 
     @Override
+    public int ticksPerMove() {
+        return 2;
+    }
+
+    @Override
     public Layer getLayerBG() {
         return layerBG;
     }

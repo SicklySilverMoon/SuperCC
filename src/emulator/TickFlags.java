@@ -9,12 +9,12 @@ public class TickFlags {
     
     public final boolean repaint;
     public final boolean save;
-    public final boolean doubleTick;
+    public final boolean multiTick;
     
-    public TickFlags(boolean repaint, boolean save, boolean doubleTick) {
+    public TickFlags(boolean repaint, boolean save, boolean multiTick) {
         this.repaint = repaint;
         this.save = save;
-        this.doubleTick = doubleTick;
+        this.multiTick = multiTick;
     }
     
 }
