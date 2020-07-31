@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 import static emulator.SuperCC.WAIT;
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SuperCCTest {
@@ -60,7 +60,7 @@ class SuperCCTest {
             return emulator.twsReader.readSolution(emulator.getLevel());
         } else {
             byte[] fileBytes = Files.readAllBytes((new File(solutionName + level + ".json")).toPath());
-            return Solution.fromJSON(new String(fileBytes, ISO_8859_1));
+            return Solution.fromJSON(new String(fileBytes, UTF_8));
         }
     }
 

@@ -1,10 +1,8 @@
 package tools.variation;
 
-import emulator.SuperCC;
 import util.CharList;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class Permutation {
     private MovePoolContainer movePools;
@@ -16,20 +14,9 @@ public class Permutation {
     private int currentSize;
     private String lexicographic;
     public double permutationCount;
+    public double permutationValidCount;
 
     public static double LIMIT = 1e18;
-
-    private static final HashMap<Character, Character> toMove;
-
-    static {
-        toMove = new HashMap<>();
-        toMove.put('u', SuperCC.UP);
-        toMove.put('r', SuperCC.RIGHT);
-        toMove.put('d', SuperCC.DOWN);
-        toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', 'w');
-        toMove.put('h', SuperCC.WAIT);
-    }
 
     public Permutation(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         this.movePools = movePools;
@@ -40,6 +27,7 @@ public class Permutation {
         this.currentSize = this.limits.lower;
         this.lexicographic = lexicographic;
         this.permutationCount = calculatePermutationCount();
+        this.permutationValidCount = calculatePermutationValidCount();
 
         initialPermutation();
     }
@@ -71,11 +59,7 @@ public class Permutation {
         CharList[] moves = new CharList[currentSize];
 
         for(int i = 0; i < currentSize; i++) {
-            moves[i] = new CharList();
-            String str = this.set.moves.get(permutation[i]);
-            for(int j = 0; j < str.length(); j++) {
-                moves[i].add(toMove.get(str.charAt(j)));
-            }
+            moves[i] = this.set.movesList[permutation[i]];
         }
 
         return moves;
@@ -88,6 +72,10 @@ public class Permutation {
     // Returns double due to potentially large value
     private double calculatePermutationCount() {
         return set.getTotalPermutationCount();
+    }
+
+    private double calculatePermutationValidCount() {
+        return set.getTotalValidPermutationCount();
     }
 
     public void reset() {
@@ -129,6 +117,8 @@ public class Permutation {
             currentSubset[permutation[position]]--;
         }
 
+//        System.out.println(index + set.getCumulativePermutationCount() + "  " + set.setIndex + "  " + index + "  " +
+//                set.cumulativePermutationCounts.get(set.setIndex));
         return index + set.getCumulativePermutationCount();
     }
 

@@ -129,7 +129,7 @@ class PermutationTest {
         movePools.forced.add(new Move("3du"));
         Permutation permutation = new Permutation(movePools, new BoundLimit(5, 6), "urdlwh");
 
-        assertEquals(90, permutation.permutationCount);
+        assertEquals(90, permutation.permutationValidCount);
     }
 
     @Test

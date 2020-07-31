@@ -20,6 +20,8 @@ public class VariationManager {
     public byte[][] saveStates;
     public CharList[] moveLists;
     private ArrayList<Double> cumulativeTotalPermutations = new ArrayList<>();
+    private double totalValidPermutationCount = 1;
+    private int lastIndex = -1;
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
                      Level level, Interpreter interpreter) {
@@ -76,18 +78,21 @@ public class VariationManager {
     }
 
     public void setVariables(int index) {
-        HashMap<String, Object> newVariables = new HashMap<>();
-        for(String var : variables.keySet()) {
-            Object newVal = variables.get(var);
-            if(newVal instanceof Move) {
-                newVal = new Move(((Move) newVal).value);
+        if(index != lastIndex) {
+            HashMap<String, Object> newVariables = new HashMap<>();
+            for (String var : variables.keySet()) {
+                Object newVal = variables.get(var);
+                if (newVal instanceof Move) {
+                    newVal = new Move(((Move) newVal).value);
+                }
+                newVariables.put(var, newVal);
             }
-            newVariables.put(var, newVal);
+            variableStates.set(index, newVariables);
+            byte[] newSaveState = level.save();
+            saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
+            moveLists[index] = interpreter.moveList.clone();
+            lastIndex = index;
         }
-        variableStates.set(index, newVariables);
-        byte[] newSaveState = level.save();
-        saveStates[index] = Arrays.copyOf(newSaveState, newSaveState.length);
-        moveLists[index] = interpreter.moveList.clone();
     }
 
     public void terminate(int index) {
@@ -154,6 +159,7 @@ public class VariationManager {
         for(int i = sequences.size() - 1; i >= 0; i--) {
             total *= sequences.get(i).permutation.permutationCount;
             cumulativeTotalPermutations.add(total);
+            totalValidPermutationCount *= sequences.get(i).permutation.permutationValidCount;
         }
         Collections.reverse(cumulativeTotalPermutations);
     }
@@ -168,6 +174,10 @@ public class VariationManager {
 
     public double getTotalPermutationCount() {
         return cumulativeTotalPermutations.get(0);
+    }
+
+    public double getTotalValidPermutationCount() {
+        return totalValidPermutationCount;
     }
 
     public boolean validate() {

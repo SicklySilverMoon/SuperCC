@@ -1,5 +1,8 @@
 package tools.variation;
 
+import emulator.SuperCC;
+import util.CharList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,11 +14,25 @@ public class Multiset {
     private int[] subset;
     public boolean finished = false;
     public ArrayList<String> moves;
+    public CharList[] movesList;
     private HashMap<String, Integer> moveIndex = new HashMap<>();
-    private ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
+    public ArrayList<Double> cumulativePermutationCounts = new ArrayList<>();
     private int setIndex = 0;
+    private double totalValidPermutations = 0;
 
     public static double LIMIT = 1e18;
+
+    private static final HashMap<Character, Character> toMove;
+
+    static {
+        toMove = new HashMap<>();
+        toMove.put('u', SuperCC.UP);
+        toMove.put('r', SuperCC.RIGHT);
+        toMove.put('d', SuperCC.DOWN);
+        toMove.put('l', SuperCC.LEFT);
+        toMove.put('w', 'w');
+        toMove.put('h', SuperCC.WAIT);
+    }
 
     public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         MovePool movePoolTotal = getMovePoolTotal(movePools);
@@ -30,8 +47,17 @@ public class Multiset {
         this.moves = new ArrayList<>(movePoolTotal.moves.keySet());
         this.moves.sort((s1, s2) -> compareLexicographic(s1, s2, lexicographic));
 
+        this.movesList = new CharList[this.moves.size()];
+
         for(int i = 0; i < this.moves.size(); i++) {
             this.moveIndex.put(this.moves.get(i), i);
+
+            CharList moveList = new CharList();
+            String str = this.moves.get(i);
+            for(int j = 0; j < str.length(); j++) {
+                moveList.add(toMove.get(str.charAt(j)));
+            }
+            this.movesList[i] = moveList;
         }
 
         for(int i = 0; i < size; i++) {
@@ -51,10 +77,10 @@ public class Multiset {
      */
     public void nextSubset() {
         while(!finished) {
+            setIndex++;
             int i = getDistributionIndex();
             if (i == 0) {
                 endOfCurrentSize();
-                setIndex++;
                 return;
             }
 
@@ -62,7 +88,6 @@ public class Multiset {
             distribute(i, gatherDistribution(i));
 
             if(isSubsetValid()) {
-                setIndex++;
                 return;
             }
         }
@@ -75,12 +100,16 @@ public class Multiset {
     public void reset() {
         finished = false;
         currentSize = limits.lower;
-        initialSubset();
         setIndex = 0;
+        initialSubset();
     }
 
     public double getTotalPermutationCount() {
         return cumulativePermutationCounts.get(cumulativePermutationCounts.size() - 1);
+    }
+
+    public double getTotalValidPermutationCount() {
+        return totalValidPermutations;
     }
 
     public double getCumulativePermutationCount() {
@@ -160,12 +189,27 @@ public class Multiset {
     private void calculatePermutationCount() {
         double count = 0;
         cumulativePermutationCounts.add(count);
+        MovePool forcedBackup = movePoolForced;
+        movePoolForced = new MovePool();
+        reset();
         do {
-            count += uniquePermutations(currentSize, subset);
+            double permutations = uniquePermutations(currentSize, subset);
+            count += permutations;
+            if(shouldCountPermutations(forcedBackup)) {
+                totalValidPermutations += permutations;
+            }
             cumulativePermutationCounts.add(count);
             nextSubset();
         } while(!finished && count < LIMIT);
+        movePoolForced = forcedBackup;
         reset();
+    }
+
+    private boolean shouldCountPermutations(MovePool forcedBackup) {
+        movePoolForced = forcedBackup;
+        boolean ret = isSubsetValid();
+        movePoolForced = new MovePool();
+        return ret;
     }
 
     private double factorial(int n) {

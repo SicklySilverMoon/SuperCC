@@ -39,6 +39,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     private int fromStatement = 0;
     public long variationCount = 0;
     public double totalPermutationCount;
+    public double totalValidPermutationCount;
 
     public Interpreter(SuperCC emulator, VariationTesting vt, JTextPane console, String code) {
         this.parser = new Parser(console);
@@ -52,6 +53,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         this.evaluator = new FunctionEvaluator(emulator, this, this.manager);
         this.vt = vt;
         this.totalPermutationCount = manager.getTotalPermutationCount();
+        this.totalValidPermutationCount = manager.getTotalValidPermutationCount();
     }
 
     public void interpret() {
@@ -65,7 +67,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             variationCount++;
             try {
                 level.load(manager.saveStates[atSequence]);
-                moveList = manager.moveLists[atSequence];
+                moveList = manager.moveLists[atSequence].clone();
                 for (int i = fromStatement; i < statements.size(); i++) {
                     Stmt stmt = statements.get(i);
                     stmt.execute(this);
@@ -204,9 +206,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         stmt.lifecycle.start.execute(this);
         for(atMove = 0; atMove < permutation.length;) {
             stmt.lifecycle.beforeMove.execute(this);
-            for(char move : permutation[atMove]) {
+            for(int i = 0; i < permutation[atMove].size(); i++) {
                 stmt.lifecycle.beforeStep.execute(this);
-                doMove(move);
+                doMove(permutation[atMove].get(i));
                 stmt.lifecycle.afterStep.execute(this);
             }
             atMove++;
@@ -473,8 +475,8 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     }
 
     public void displayPermutationCount() {
-        String type = (totalPermutationCount > Permutation.LIMIT) ? "more than " : "up to ";
-        String str = "Upper bound: " + type + String.format("%,.0f", totalPermutationCount) + " variations\n";
+        String type = (totalValidPermutationCount > Permutation.LIMIT) ? "more than " : "up to ";
+        String str = "Upper bound: " + type + String.format("%,.0f", totalValidPermutationCount) + " variations\n";
         print(str, Color.white);
     }
 
