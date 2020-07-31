@@ -71,7 +71,7 @@ public class LynxSaveState implements SaveState {
             boots = reader.readBytes(4);
             rng.setCurrentValue(reader.readInt());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-            monsterList.setCreatures(reader.readMonsterArray(reader.readShort()));
+            monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()));
         }
     }
 
@@ -87,120 +87,5 @@ public class LynxSaveState implements SaveState {
         this.rng = rng;
         this.mouseGoal = mouseGoal;
         this.traps = traps;
-    }
-
-    private class SavestateReader extends ByteArrayInputStream { //TODO: This entire thing can be moved to (hopefully) the general savestate interface and worked with from there
-
-        int readUnsignedByte(){
-            return read() & 0xFF;
-        }
-        int readShort(){
-            int n = readUnsignedByte() << 8;
-            return n | readUnsignedByte();
-        }
-        int readInt(){
-            int n = readUnsignedByte() << 24;
-            n |= readUnsignedByte() << 16;
-            n |= readUnsignedByte() << 8;
-            return n | readUnsignedByte();
-        }
-        byte[] readBytes(int length){
-            byte[] out = new byte[length];
-            for (int i = 0; i < length; i++){
-                out[i] = (byte) read();
-            }
-            return out;
-        }
-        short[] readShorts(int length){
-            short[] out = new short[length];
-            for (int i = 0; i < length; i++){
-                out[i] = (short) readShort();
-            }
-            return out;
-        }
-        byte[] readLayerRLE(){
-            byte[] layerBytes = new byte[32*32];
-            int tileIndex = 0;
-            byte b;
-            while ((b = (byte) read()) != RLE_END){
-                if (b == RLE_MULTIPLE){
-                    int rleLength = readUnsignedByte() + 1;
-                    byte t = (byte) read();
-                    for (int i = 0; i < rleLength; i++){
-                        layerBytes[tileIndex++] = t;
-                    }
-                }
-                else layerBytes[tileIndex++] = b;
-            }
-            return layerBytes;
-        }
-        byte[] readLayer(int version){
-            if (version == COMPRESSED_V1 || version == COMPRESSED_V2) return readLayerRLE();
-            else return readBytes(32*32);
-        }
-        Creature[] readMonsterArray(int length){
-            Creature[] monsters = new Creature[length];
-            for (int i = 0; i < length; i++){
-                monsters[i] = new LynxCreature(readShort());
-            }
-            return monsters;
-        }
-        boolean readBool() {
-            return read() == 1;
-        }
-
-        SavestateReader(byte[] b){
-            super(b);
-        }
-
-    }
-
-    private class SavestateWriter {
-
-        private final byte[] bytes;
-        private int index;
-
-        void write(int n) {
-            bytes[index] = (byte) n;
-            index++;
-        }
-        void write(byte[] b) {
-            System.arraycopy(b, 0, bytes, index, b.length);
-            index += b.length;
-        }
-        void writeShort(int n){
-            write(n >>> 8);
-            write(n);
-        }
-        void writeInt(int n){
-            write(n >>> 24);
-            write(n >>> 16);
-            write(n >>> 8);
-            write(n);
-        }
-        void writeShorts(short[] a){
-            for (short s : a){
-                writeShort(s);
-            }
-        }
-        void writeMonsterArray(Creature[] monsters){
-            for (Creature monster : monsters) writeShort(monster.bits());
-        }
-        void writeMonsterList(List<Creature> monsters){
-            for (Creature monster : monsters) writeShort(monster.bits());
-        }
-        void writeBool(boolean n) {
-            if (n) write(1);
-            else write(0);
-        }
-
-        byte[] toByteArray() {
-            return bytes;
-        }
-
-        SavestateWriter(int size) {
-            bytes = new byte[size];
-        }
-
     }
 }

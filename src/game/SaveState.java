@@ -6,6 +6,8 @@ public interface SaveState {
     int NO_CLICK = 1025;
     int RLE_MULTIPLE = 0x7F;
     int RLE_END = 0x7E;
+    byte UNCOMPRESSED_V2 = 6;
+    byte UNCOMPRESSED_V1 = 4;
     byte COMPRESSED_V2 = 7;
     byte COMPRESSED_V1 = 5;
 
