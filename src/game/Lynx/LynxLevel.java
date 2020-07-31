@@ -143,13 +143,13 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public int getTimer(){
         if (tickNumber == 0) return startTime;
-        else return startTime - tickNumber;
+        else return startTime - tickNumber*5;
     }
 
     @Override
     public int getTChipTime() {
-        if (tickNumber == 0) return 9999;
-        else return 9999 - tickNumber;
+        if (tickNumber == 0) return 99995;
+        else return 99995 - tickNumber*5;
     }
 
     @Override

@@ -137,7 +137,7 @@ public class MSLevel extends MSSavestate implements Level {
     @Override
     public int getTimer(){
         if (tickNumber == 0) return startTime;
-        else return startTime - tickNumber + 1;                     // The first tick does not change the timer
+        else return startTime - tickNumber*10 + 10;                     // The first tick does not change the timer
     }
     /**
      *
@@ -146,8 +146,8 @@ public class MSLevel extends MSSavestate implements Level {
      */
     @Override
     public int getTChipTime() {
-        if (tickNumber == 0) return 9999;
-        else return 9999 - tickNumber + 1;                     // The first tick does not change the timer
+        if (tickNumber == 0) return 99990;
+        else return 99990 - tickNumber*10 + 10;                     // The first tick does not change the timer
     }
     void setTimer(int n) {
         startTime = n + tickNumber - 1;

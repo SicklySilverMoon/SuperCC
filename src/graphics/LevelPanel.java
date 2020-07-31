@@ -9,6 +9,9 @@ public class LevelPanel extends TextPanel {
     private static boolean twsNotation;
 
     private static String timerToString(Level level){
+        int timePerSecond = level.ticksPerMove()*5;
+        int twsMax = timePerSecond == 10 ? 90 : 95;
+
         int time = level.getTimer();
         if (time < 0) {
             time = level.getTChipTime();
@@ -17,14 +20,14 @@ public class LevelPanel extends TextPanel {
                     Math.abs(time % 100));
             else return String.format("[%d (-.%d)]",
                     time / 100,
-                    9 - Math.abs(time % 100));
+                    twsMax - Math.abs(time % 100));
         }
         if (!twsNotation) return String.format("%d.%d",
                 time / 100,
                 Math.abs(time % 100));
         else return String.format("%d (-.%d)",
                 time / 100,
-                9 - Math.abs(time % 100));
+                twsMax - Math.abs(time % 100));
     }
 
     void changeNotation(boolean change) {
