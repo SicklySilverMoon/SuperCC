@@ -121,7 +121,17 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public boolean supportsSliplist() {
+        return false;
+    }
+
+    @Override
     public boolean hasCyclicRFF() {
+        return true;
+    }
+
+    @Override
+    public boolean chipInMonsterList() {
         return true;
     }
 
@@ -179,7 +189,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public SlipList getSlipList() {
-        return new SlipList(); //TODO: look into getting rid of this altogether
+        throw new UnsupportedOperationException("Sliplist does not exist under Lynx");
     }
 
     @Override

@@ -50,7 +50,11 @@ public interface Level extends Savestate {
 
     boolean supportsClick();
 
+    boolean supportsSliplist();
+
     boolean hasCyclicRFF();
+
+    boolean chipInMonsterList();
 
     int ticksPerMove();
 

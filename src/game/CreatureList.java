@@ -42,6 +42,13 @@ public abstract class CreatureList implements Iterable<Creature> {
         return list;
     }
 
+    public int getIndexOfCreature(Creature creature) {
+        for (int i=0; i < list.length; i++) {
+            if (creature == list[i]) return i;
+        }
+        return -1;
+    }
+
     public List<Creature> getNewClones() {
         return newClones;
     }

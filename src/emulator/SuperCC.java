@@ -341,11 +341,15 @@ public class SuperCC {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //see if all of this can't be refactored out of existence by pressing the buttons in MenuBar if their setting is changed
         window.getGamePanel().initialise(this, tilesetImage, tileSheet, tileSizes[0], tileSizes[1]);
         window.getInventoryPanel().initialise(this);
         window.setSize(200+width*gamePanel.getWindowSizeX(), 200+height*gamePanel.getWindowSizeY());
         window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));
         window.getGamePanel().setSize(width*gamePanel.getWindowSizeX(), height*gamePanel.getWindowSizeY());
+
+        window.getLevelPanel().changeNotation(paths.getTWSNotation());
+
         window.pack();
         window.repaint(true);
     }

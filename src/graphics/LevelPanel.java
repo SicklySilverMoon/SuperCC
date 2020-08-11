@@ -30,8 +30,9 @@ public class LevelPanel extends TextPanel {
                 twsMax - Math.abs(time % 100));
     }
 
-    void changeNotation(boolean change) {
+    public void changeNotation(boolean change) {
         twsNotation = change;
+        emulator.getPaths().setTWSNotation(change);
     }
 
     @Override

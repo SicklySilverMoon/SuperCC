@@ -9,7 +9,7 @@ public class HelpWindow {
     private JTextPane mainText;
 
     public HelpWindow(SuperCC emulator) {
-        JFrame frame = new JFrame("Help");
+        JFrame frame = new JFrame("Help/About");
         frame.setContentPane(mainPanel);
         frame.pack();
         frame.setLocationRelativeTo(emulator.getMainWindow());

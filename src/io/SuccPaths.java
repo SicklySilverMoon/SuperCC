@@ -32,7 +32,8 @@ public class SuccPaths {
             writer.println("[Graphics]");
             writer.printf("%s = %s\n", "TilesheetNum", settingsMap.get("Graphics:TilesheetNum"));
             writer.printf("%s = %s\n", "TileWidth", settingsMap.get("Graphics:TileWidth"));
-            writer.printf("%s = %s", "TileHeight", settingsMap.get("Graphics:TileHeight"));
+            writer.printf("%s = %s\n", "TileHeight", settingsMap.get("Graphics:TileHeight"));
+            writer.printf("%s = %s", "TWSNotate", settingsMap.get("Graphics:TWSNotate"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -47,11 +48,11 @@ public class SuccPaths {
             return "";
         }
     }
-    public String getTwsPath() {
+    public String getTWSPath() {
         String tws = settingsMap.get("Paths:TWS");
         if (tws != null) return tws;
         else {
-            setTwsPath("");
+            setTWSPath("");
             return "";
         }
     }
@@ -64,22 +65,23 @@ public class SuccPaths {
         }
     }
     public int[] getControls() {
-        try {
-            int up = Integer.parseInt(settingsMap.get("Controls:Up"));
-            int left = Integer.parseInt(settingsMap.get("Controls:Left"));
-            int down = Integer.parseInt(settingsMap.get("Controls:Down"));
-            int right = Integer.parseInt(settingsMap.get("Controls:Right"));
-            int halfWait = Integer.parseInt(settingsMap.get("Controls:HalfWait"));
-            int fullWait = Integer.parseInt(settingsMap.get("Controls:FullWait"));
-            int rewind = Integer.parseInt(settingsMap.get("Controls:Rewind"));
-            int play = Integer.parseInt(settingsMap.get("Controls:Play"));
-            return new int[]{up, left, down, right, halfWait, fullWait, rewind, play};
+        String[] mapKeys = new String[] {"Controls:Up", "Controls:Left", "Controls:Down", "Controls:Right",
+                "Controls:HalfWait", "Controls:FullWait", "Controls:Rewind", "Controls:Play"};
+        int[] controls = new int[mapKeys.length];
+        int[] defaultControls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};
+        boolean error = false;
+
+        for (int i=0; i < mapKeys.length; i++) {
+            try {
+                controls[i] = Integer.parseInt(settingsMap.get(mapKeys[i]));
+            }
+            catch (NumberFormatException e) {
+                controls[i] = defaultControls[i];
+                error = true;
+            }
         }
-        catch (NumberFormatException e) {
-            int[] controls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};
-            setControls(controls);
-            return controls;
-        }
+        if (error) setControls(controls);
+        return controls;
     }
     public int getTilesetNum() {
         try {
@@ -101,6 +103,13 @@ public class SuccPaths {
             return tileSizes;
         }
     }
+    public boolean getTWSNotation() {
+        if (settingsMap.get("Graphics:TWSNotate") != null) return Boolean.parseBoolean(settingsMap.get("Graphics:TWSNotate"));
+        else {
+            setTWSNotation(false);
+            return false;
+        }
+    }
     public String getJSONPath(String levelsetName, int levelNumber, String levelName, String ruleset) {
         String json = getSuccPath();
         new File(Paths.get(json, levelsetName).toString()).mkdirs();
@@ -114,7 +123,7 @@ public class SuccPaths {
         settingsMap.put("Paths:Levelset", levelsetPath);
         updateSettingsFile();
     }
-    public void setTwsPath(String twsPath) {
+    public void setTWSPath(String twsPath) {
         settingsMap.put("Paths:TWS", twsPath);
         updateSettingsFile();
     }
@@ -140,6 +149,10 @@ public class SuccPaths {
     public void setTileSizes(int[] tileSizes) {
         settingsMap.put("Graphics:TileWidth", String.valueOf(tileSizes[0]));
         settingsMap.put("Graphics:TileHeight", String.valueOf(tileSizes[1]));
+        updateSettingsFile();
+    }
+    public void setTWSNotation(boolean twsNotation) {
+        settingsMap.put("Graphics:TWSNotate", String.valueOf(twsNotation));
         updateSettingsFile();
     }
 

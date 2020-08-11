@@ -371,17 +371,17 @@ class MenuBar extends JMenuBar{
                 }
 
                 savestates.load(-1, level);
-                Path tws = saveNewFile(TWSWriter.write(level, solution, twsMouseMoves), emulator.getPaths().getTwsPath(), "tws");
-                emulator.getPaths().setTwsPath(tws.getParent().toString());
+                Path tws = saveNewFile(TWSWriter.write(level, solution, twsMouseMoves), emulator.getPaths().getTWSPath(), "tws");
+                emulator.getPaths().setTWSPath(tws.getParent().toString());
             });
             add(newTWS);
             addIcon(newTWS, "/resources/icons/new.gif");
 
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
-                File file = openFile(emulator.getPaths().getTwsPath(), "tws");
+                File file = openFile(emulator.getPaths().getTWSPath(), "tws");
                 if (file != null) {
-                    emulator.getPaths().setTwsPath(file.getParent());
+                    emulator.getPaths().setTWSPath(file.getParent());
                     emulator.setTWSFile(file);
                 }
             });
@@ -553,12 +553,17 @@ class MenuBar extends JMenuBar{
                     b -> window.getLevelPanel().changeNotation(b)
             );
 
+            List<Boolean> selected = Arrays.asList(
+                    emulator.getPaths().getTWSNotation()
+            );
+
             for (int i = 0; i < setterHUDNames.length; i++){
                 JToggleButton b = new JToggleButton(setterHUDNames[i]);
                 Consumer<Boolean> setter = HUDSetters.get(i);
+                b.setSelected(selected.get(i));
                 b.addActionListener(e -> {
                     setter.accept(((AbstractButton) e.getSource()).isSelected());
-                    window.repaint(true);
+                    window.repaint(false);
                 });
                 add(b);
             }
@@ -613,6 +618,10 @@ class MenuBar extends JMenuBar{
             JMenuItem time = new JMenuItem("Change timer");
             time.addActionListener(e -> new ChangeTimer(emulator));
             add(time);
+
+            JMenuItem monsterList = new JMenuItem("Change Monster List Positions");
+            monsterList.addActionListener(e -> new MonsterlistRearrangeGUI(emulator));
+            add(monsterList);
             
             add(new JSeparator());
     
@@ -632,7 +641,7 @@ class MenuBar extends JMenuBar{
             addIcon(tank, "/resources/icons/blue_button.gif");
             add(tank);
             
-            
+
         }
     }
 
@@ -718,6 +727,8 @@ class MenuBar extends JMenuBar{
     }
 
     MenuBar(Gui window, SuperCC emulator){
+        this.window = window;
+        this.emulator = emulator;
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
         add(new LevelMenu());
@@ -727,8 +738,6 @@ class MenuBar extends JMenuBar{
         add(new ToolMenu());
         add(new CheatMenu());
         add(new HelpMenu());
-        this.window = window;
-        this.emulator = emulator;
     }
 
 }

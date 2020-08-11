@@ -112,7 +112,17 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     @Override
+    public boolean supportsSliplist() {
+        return true;
+    }
+
+    @Override
     public boolean hasCyclicRFF() {
+        return false;
+    }
+
+    @Override
+    public boolean chipInMonsterList() {
         return false;
     }
 
