@@ -72,7 +72,7 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
         level.getMonsterList().initialise();
         creature.kill();
         level.getSlipList().remove(creature);
-        level.getMonsterList().numDeadMonsters++;
+        ((MSCreatureList) (level.getMonsterList())).numDeadMonsters++;
         level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }

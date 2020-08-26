@@ -8,11 +8,11 @@ public class ByteLayer implements Layer {
     private final byte[] layer;
     
     public Tile get(int i){
-        if (i >= 0 && i < 32*32) return Tile.fromOrdinal(layer[i]);
-        return Tile.WALL;
+        return Tile.fromOrdinal(layer[i]);
     }
     
     public Tile get(Position p){
+        if (!p.isValid()) return Tile.WALL;
         return get(p.getIndex());
     }
     
@@ -41,6 +41,10 @@ public class ByteLayer implements Layer {
     }
     
     public ByteLayer(byte[] layer){
+        for (int i=0; i < layer.length; i++) {
+            byte b = layer[i];
+            if (b < Tile.FLOOR.ordinal() || b > Tile.CHIP_RIGHT.ordinal()) layer[i] = (byte) Tile.WALL.ordinal();
+        }
         this.layer = layer;
     }
     

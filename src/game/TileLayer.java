@@ -6,13 +6,13 @@ import java.util.function.Consumer;
 public class TileLayer implements Layer {
     
     private final Tile[] tiles;
-    
-    public Tile get(int i) {
-        if (i >= 0 && i < 32*32) return tiles[i];
-        else return Tile.WALL;
+
+    public Tile get(int i){
+        return tiles[i];
     }
-    
-    public Tile get(Position p) {
+
+    public Tile get(Position p){
+        if (!p.isValid()) return Tile.WALL;
         return get(p.getIndex());
     }
     

@@ -114,7 +114,7 @@ public class TWSReader{
         public int ineffiencies = 0;
         
         public int counter;
-        public void readFormat1(int b, CharArrayWriter writer) throws IOException{
+        public void readFormat1(int b, Writer writer) throws IOException{
             int length = b & 0b11;
             counter += length;
             int time;
@@ -130,7 +130,7 @@ public class TWSReader{
             for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
-        public void readFormat2(int b, CharArrayWriter writer) throws IOException{
+        public void readFormat2(int b, Writer writer) throws IOException{
             counter += 4;
             byte direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
@@ -148,7 +148,7 @@ public class TWSReader{
             writer.write(waits);
             writer.write(DIRECTIONS[(b >>> 6) & 0b11]);
         }
-        public void readFormat4(int b, CharArrayWriter writer) throws IOException{
+        public void readFormat4(int b, Writer writer) throws IOException{
             int length = ((b >>> 2) & 0b11) + 2;
             counter += length;
             int b2 = readByte();

@@ -7,6 +7,7 @@ import static game.CreatureID.*;
 import static game.Tile.*;
 
 public class MSCreatureList extends game.CreatureList {
+    int numDeadMonsters;
 
     @Override
     public void initialise() {

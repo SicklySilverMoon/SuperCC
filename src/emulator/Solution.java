@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 import util.CharList;
 
 import java.io.CharArrayWriter;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -121,7 +122,7 @@ public class Solution{
 
     private static char[] quarterToHalfMoves(char[] quarterMoves) {
         CharArrayWriter writer = new CharArrayWriter();
-        //System.out.println(Arrays.toString(quarterMoves));
+//        System.out.println(Arrays.toString(quarterMoves));
 
         Set<Character> cardinals = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
         cardinals.add(UP);
@@ -166,7 +167,7 @@ public class Solution{
                 }
             }
         }
-        //System.out.println(Arrays.toString(writer.toByteArray()));
+//        System.out.println(Arrays.toString(writer.toCharArray()));
         return writer.toCharArray();
     }
     

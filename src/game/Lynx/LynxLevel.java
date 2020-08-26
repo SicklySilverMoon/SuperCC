@@ -4,6 +4,7 @@ import game.*;
 import game.MS.Cheats;
 import game.MS.SlipList;
 import game.button.*;
+import javafx.geometry.Pos;
 
 import java.util.BitSet;
 
@@ -278,23 +279,10 @@ public class LynxLevel extends LynxSavestate implements Level {
     public boolean tick(char c, Direction[] directions) {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
+        chip.setDirectionPriority(directions);
 
         monsterList.tick(); //Most of a tick is done within here
-        boolean tickMulti = moveChip(directions);
-        monsterList.tick(); //teleport pass through
-
-        return tickMulti;
-    }
-
-    private boolean moveChip(Direction[] directions) {
-        if (chip.getTimeTraveled() != 0) {
-            chip.tick();
-            return false;
-        }
-        if (directions.length == 0) return false;
-        //todo: sliding bullshit lol
-        chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
-        chip.tick();
+        monsterList.finalise();
         return false;
     }
 

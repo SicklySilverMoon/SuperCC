@@ -127,6 +127,9 @@ public enum Tile {
         return this.ordinal() == ICE.ordinal() ||
                 (ICE_SLIDE_SOUTHEAST.ordinal() <= this.ordinal() && this.ordinal() <= ICE_SLIDE_NORTHEAST.ordinal());
     }
+    public boolean isIceCorner() {
+        return (ICE_SLIDE_SOUTHEAST.ordinal() <= this.ordinal() && this.ordinal() <= ICE_SLIDE_NORTHEAST.ordinal());
+    }
     public boolean isFF(){
         return this == FF_UP || this == FF_LEFT || this == FF_DOWN || this == FF_RIGHT || this == FF_RANDOM;
     }

@@ -1,6 +1,7 @@
 package game.Lynx;
 
 import game.*;
+import javafx.geometry.Pos;
 
 import static game.CreatureID.*;
 import static game.Direction.*;
@@ -38,32 +39,39 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public String toString() {
-        if (creatureType == DEAD) return "Dead monster at position " + position;
-        return creatureType+" facing "+direction+" at position "+position;
-    }
-
-
-    @Override
     public int getTimeTraveled() {
         return timeTraveled & 0b111; //timeTraveled should always be between 0 and 7 anyways but just to be safe
     }
 
     @Override
-    public boolean tick() {
+    public boolean tick(Direction direction) {
         if (animationTimer != 0) {
             animationTimer--;
             return false;
         }
 
         if (timeTraveled == 0) {
-            if (direction == null) return false;
+            if ((creatureType == CreatureID.BLOCK || creatureType == CHIP_SWIMMING) && direction == null && !sliding)
+                return false;
+            /* yeah so these 2 creatures don't move on their own, represented by passing null,
+            however they do need to move if sliding (blocks also have tick manually called when pushed)
+            so this little messy if takes care of that odd situation */
+            if (direction == null) direction = this.direction;
 
             Position newPosition = position.move(direction);
-            if (!canEnter(direction, level.getLayerFG().get(newPosition))
-                || monsterList.getCreaturesAtPosition(newPosition) != 0
-                || !position.move(direction).isValid()) {
-                    if (sliding) direction = direction.turn(TURN_AROUND);
+            boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
+                    && canLeave(direction, level.getLayerFG().get(position), position);
+            boolean blockedByCreature = false;
+            if (newPosition.isValid()) blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0
+                                                            && creatureType != CreatureID.CHIP;
+
+            if (!canMove || blockedByCreature || !newPosition.isValid()) {
+                    Tile currentTile = level.getLayerFG().get(position);
+                    if (sliding && currentTile.isIce()) {
+                        direction = direction.turn(TURN_AROUND);
+                        if (currentTile.isIceCorner()) direction = applySlidingTile(direction, currentTile, null);
+                        this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
+                    }
                     return false;
             }
             position = newPosition;
@@ -75,7 +83,7 @@ public class LynxCreature extends Creature {
         if (newTile.isFF() || newTile.isIce()) timeTraveled += defaultMoveSpeed; //Sliding on ice or FFs doubles move speed
         timeTraveled &= 0b111; //Mod 8
 
-        if (timeTraveled != 0) return false;
+        if (timeTraveled != 0) return true;
 
         switch (newTile) {
             case WATER:
@@ -91,7 +99,7 @@ public class LynxCreature extends Creature {
             case ICE_SLIDE_NORTHWEST:
             case ICE_SLIDE_NORTHEAST:
             case FF_RANDOM:
-                direction = applySlidingTile(direction, newTile, null);
+                this.direction = applySlidingTile(this.direction, newTile, null);
                 sliding = true;
                 break;
             case BUTTON_GREEN:
@@ -109,7 +117,7 @@ public class LynxCreature extends Creature {
                 break;
         }
 
-        return creatureType != DEAD;
+        return true;
     }
 
     @Override
@@ -299,8 +307,9 @@ public class LynxCreature extends Creature {
         }
     }
 
-    private boolean canLeave(Tile lower) {
-        switch (lower){
+    @Override
+    public boolean canLeave(Direction direction, Tile tile, Position position) {
+        switch (tile){
             case THIN_WALL_UP: return direction != UP;
             case THIN_WALL_RIGHT: return direction != RIGHT;
             case THIN_WALL_DOWN: return direction != DOWN;

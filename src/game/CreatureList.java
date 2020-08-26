@@ -11,7 +11,6 @@ import java.util.function.Consumer;
  */
 public abstract class CreatureList implements Iterable<Creature> {
     public Direction direction;
-    public int numDeadMonsters;
 
     protected Level level;
     protected Creature[] list;
@@ -20,7 +19,6 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public CreatureList(Creature[] monsters) {
         list = monsters;
-        numDeadMonsters = 0;
     }
 
     public Creature creatureAt(Position position){

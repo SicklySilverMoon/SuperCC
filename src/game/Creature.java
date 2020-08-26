@@ -1,5 +1,7 @@
 package game;
 
+import static game.CreatureID.DEAD;
+
 /**
  * Creatures are (at minimum, subclasses can extend this as needed) encoded as follows:
  *
@@ -63,6 +65,12 @@ public abstract class Creature {
 
     public abstract Tile toTile();
 
+    @Override
+    public String toString() {
+        if (creatureType == DEAD) return "Dead monster at position " + position;
+        return creatureType+" facing "+direction+" at position "+position;
+    }
+
     /** Returns a number representing how long the creature has been traveling between tiles.
      * Of note is that this is only useful for lynx and will always be 0 in MS.
      *
@@ -79,13 +87,24 @@ public abstract class Creature {
      */
     public abstract boolean canEnter(Direction direction, Tile tile);
 
+    /** Returns a boolean representing if the creature can leave the given tile, in the given direction,
+     * at the given position.
+     *
+     * @param direction The direction the creature is moving.
+     * @param tile The tile the creature is attempting to exit.
+     * @param position The position of the creature and tile.
+     * @return A boolean representing if the creature can leave the given tile and position.
+     */
+    public abstract boolean canLeave(Direction direction, Tile tile, Position position);
+
     /** Advances the creature one tick (uses the creature's internal state).
      * Currently used only by Lynx as MS Creatures are always downcasted and
      * have their specialized tick method used.
      *
-     * @return A boolean representing if the creature advanced into a new tile or not.
+     * @param direction the direction to move the creature in
+     * @return A boolean representing if the creature successfully advanced or not.
      */
-    public abstract boolean tick();
+    public abstract boolean tick(Direction direction);
 
     /** Returns an int representing a creature.
      *
