@@ -108,7 +108,7 @@ public class LevelFactory {
             Tile tile = layerFG.get(i);
             if (Tile.CHIP_UP.ordinal() <= tile.ordinal()) return new MSCreature(new Position(i), tile);
         }
-        return new MSCreature(new Position(0), Tile.CHIP_DOWN); //TODO: Bound to MS currently
+        return new MSCreature(new Position(0), Tile.CHIP_DOWN);
     }
     private static int getTimer(int timeLimit, int startingDecimalTimesTen){
         if (timeLimit == 0) return -2;

@@ -5,7 +5,7 @@ from subprocess import call
 # print('Argument List:', str(sys.argv))
 
 sts = call('java -jar "SuperCC.jar" '
-           + sys.argv[2] + ' ' + sys.argv[3], shell=True)
+           + sys.argv[2] + ' --level ' + sys.argv[3], shell=True)
            # CCEdit passes the arguments in the format "-pr datFile levelNumber"
            # of which we only need the file and level number which subtracting the useless first argument python
            # passes and "-pr" is arguments 2 and 3
