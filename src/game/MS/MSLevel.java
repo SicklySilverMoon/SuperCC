@@ -6,6 +6,11 @@ import game.button.*;
 
 import java.util.BitSet;
 
+import static emulator.SuperCC.WAIT;
+import static emulator.SuperCC.UP;
+import static emulator.SuperCC.DOWN;
+import static emulator.SuperCC.LEFT;
+import static emulator.SuperCC.RIGHT;
 import static game.Tile.*;
 
 public class MSLevel extends MSSavestate implements Level {

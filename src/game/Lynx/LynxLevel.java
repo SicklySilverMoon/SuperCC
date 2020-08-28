@@ -240,7 +240,8 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
-            if (b.getTargetPosition().equals(position) && b.isOpen(this)) return true;
+            if (b.getTargetPosition().equals(position) && b.isOpen(this))
+                return true;
         }
         return false;
     }
@@ -280,10 +281,11 @@ public class LynxLevel extends LynxSavestate implements Level {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         chip.setDirectionPriority(directions);
+        Position chipPos = chip.getPosition();
 
         monsterList.tick(); //Most of a tick is done within here
         monsterList.finalise();
-        return false;
+        return (!chipPos.equals(chip.getPosition()) && !chip.isSliding());
     }
 
     @Override

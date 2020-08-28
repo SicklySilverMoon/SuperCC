@@ -89,6 +89,8 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public int getCreaturesAtPosition(Position position) {
+        if (!position.isValid())
+            return -1;
         return creatureLayer[position.index];
     }
 

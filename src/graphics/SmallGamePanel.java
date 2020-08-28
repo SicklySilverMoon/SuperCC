@@ -203,7 +203,7 @@ public class SmallGamePanel extends GamePanel {
                     creatureImage = creatureImages[0][creature.getDirection().ordinal()];
                     break;
                 case DEAD:
-                    creatureImage = new BufferedImage(1, 1, 2); //todo: change to actual death images
+                    creatureImage = creatureImages[12][creature.getDirection().ordinal()];
             }
             graphicsCreatures.drawImage(creatureImage, x, y, tileWidth, tileHeight, null);
         }
@@ -309,7 +309,7 @@ public class SmallGamePanel extends GamePanel {
 
     @Override
     protected void initialiseCreatureGraphics(BufferedImage allTiles) {
-        creatureImages = new Image[12][4]; //11 creatures (plus blocks), each has 4 direction images
+        creatureImages = new Image[13][4]; //11 creatures (plus blocks and death effect), each has 4 direction images
         for (int i = 0; i < 10; i++) {
             int offset = 60 + i*4; //60 is Swimming Chip N's tile
             int x = offset / 16;
@@ -329,6 +329,17 @@ public class SmallGamePanel extends GamePanel {
             x = offset / 16;
             y = (offset + (k % 2)) % 16;
             creatureImages[11][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+
+            int vOff = 0;
+            if (k > 0) { //splash image is at 51 and explode is at 54 followed by chip death explosion
+                offset = 54;
+                vOff = k-1;
+            }
+            else
+                offset = 51;
+            x = offset / 16;
+            y = (offset + vOff) % 16;
+            creatureImages[12][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
         }
     }
     

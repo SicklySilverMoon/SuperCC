@@ -353,7 +353,7 @@ public class MSCreature extends Creature {
         }
     }
     private boolean tryEnter(Direction direction, Position newPosition, Tile tile, List<Button> pressedButtons){
-        MSLevel level = (MSLevel) Creature.level; //A bunch of things in here require MSLevel, TODO: Refactor that later
+        MSLevel level = (MSLevel) Creature.level;
         sliding = false;
         switch (tile) {
             case FLOOR: return true;

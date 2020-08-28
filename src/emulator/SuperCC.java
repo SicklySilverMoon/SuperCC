@@ -1,5 +1,6 @@
 package emulator;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import game.*;
 import graphics.Gui;
 import graphics.SmallGamePanel;
@@ -15,6 +16,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SuperCC {
 
@@ -192,10 +198,6 @@ public class SuperCC {
         return tickMulti;
     }
     
-    public static boolean isClick(char c){
-        return c <= MAX_CLICK && c >= MIN_CLICK;
-    }
-    
     public boolean tick(char c, TickFlags flags){
         if (level == null) return false;
         Direction[] directions;
@@ -216,17 +218,18 @@ public class SuperCC {
         }
         return false;
     }
-    
+
+    public static boolean isClick(char c){
+        return c <= MAX_CLICK && c >= MIN_CLICK;
+    }
+
     public void showAction(String s){
         getMainWindow().getLastActionPanel().update(s);
         getMainWindow().getLastActionPanel().repaint();
     }
 
-    private void testTWS(String levelset, String tws) {
-
-        openLevelset(new File(levelset));
-        setTWSFile(new File(tws));
-        System.out.println(new File(levelset).getName());
+    void testTWS() {
+        System.out.println(dat.getLevelsetName());
 
         for (int j = 1; j <= level.getLevelsetLength(); j++) {
             loadLevel(j);
@@ -288,41 +291,15 @@ public class SuperCC {
     public static void initialise(String[] args){
             SuperCC emulator = new SuperCC();
 
-            emulator.parseArgument(args); //Parses any command line arguments given
+        try {
+            ArgumentParser.parseArguments(emulator, args); //Parses any command line arguments given
+        } catch (InvalidArgumentException e) {
+            emulator.throwError(e.toString() + "\nSee stderr for flag use");
+        }
 
-            emulator.initialiseTilesheet();
+        emulator.initialiseTilesheet();
 
 //            emulator.runUnitTests();
-    }
-
-    private void parseArgument(String[] args) { //All the command line argument parsing
-        if (args.length != 0) {
-            if (args[0].equals("-h")) {
-                System.out.println("SuperCC.jar [Levelset File]/[-h] [Level Number]/[TWS File] [Level Number]/[--testTWS]\n" +
-                        "[Level Number] is optional, but [--testTWS] always has to be the 3rd argument if used.\n" +
-                        "If [-h] is used as the 1st argument all other arguments will be ignored.");
-                System.exit(0);
-            }
-            else this.openLevelset(new File(args[0])); //The first command argument should be the level set if it isn't the help argument
-            if (args.length > 1) {
-                try {
-                    int startLevel = Integer.parseInt(args[1]);
-                    this.loadLevel(startLevel);  //The second command argument (if it exists and is a number) should be the level number
-                }
-                catch (NumberFormatException e) { //If the second argument isn't a number than its a TWS file
-                    this.setTWSFile(new File(args[1]));
-                }
-            }
-            if (args.length > 2) {
-                try {
-                    int startLevel = Integer.parseInt(args[2]);
-                    this.loadLevel(startLevel);  //The third command argument (if it exists and is a number and comes after the TWS) should be the level number
-                }
-                catch (NumberFormatException e) { //If the second argument isn't a number than its a string with command options
-                    if (args[2].equals("--testTWS")) this.testTWS(args[0], args[1]);
-                }
-            }
-        }
     }
 
     private void initialiseTilesheet() {

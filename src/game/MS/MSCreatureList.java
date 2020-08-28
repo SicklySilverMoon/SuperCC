@@ -186,8 +186,11 @@ public class MSCreatureList extends game.CreatureList {
 
     @Override
     public int getCreaturesAtPosition(Position position) {
-        if (level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip()) return 1;
-        else return 0;
+        if (!position.isValid())
+            return -1;
+        if (level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip())
+            return 1;
+        return 0;
     }
 
     public MSCreatureList(MSCreature[] monsters){

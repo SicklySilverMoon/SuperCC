@@ -58,7 +58,7 @@ public abstract class CreatureList implements Iterable<Creature> {
     /** Returns the number of creatures currently occupying the specified position
      *
      * @param position The position to check (must be a valid position between 0 and 31 on x and y).
-     * @return Number of creatures located within the given position.
+     * @return Number of creatures located within the given position, -1 if the position is off map.
      */
     public abstract int getCreaturesAtPosition(Position position);
 

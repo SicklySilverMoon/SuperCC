@@ -1,6 +1,7 @@
 package game.Lynx;
 
 import game.*;
+import game.button.BrownButton;
 import javafx.geometry.Pos;
 
 import static game.CreatureID.*;
@@ -61,9 +62,8 @@ public class LynxCreature extends Creature {
             Position newPosition = position.move(direction);
             boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
                     && canLeave(direction, level.getLayerFG().get(position), position);
-            boolean blockedByCreature = false;
-            if (newPosition.isValid()) blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0
-                                                            && creatureType != CreatureID.CHIP;
+            boolean blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0
+                                                            && creatureType != CreatureID.CHIP; //todo: sometimes if its a block it should stop chip
 
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
                     Tile currentTile = level.getLayerFG().get(position);
@@ -74,6 +74,7 @@ public class LynxCreature extends Creature {
                     }
                     return false;
             }
+            finishLeaving(position);
             position = newPosition;
             sliding = level.getLayerFG().get(newPosition).isSliding(); //todo: oh god trap sliding
         }
@@ -87,7 +88,10 @@ public class LynxCreature extends Creature {
 
         switch (newTile) {
             case WATER:
-                if (creatureType != GLIDER) kill(); //todo: splash
+                if (creatureType == CreatureID.BLOCK)
+                    level.getLayerFG().set(position, DIRT);
+                if (creatureType != GLIDER)
+                    kill();
                 break;
             case ICE:
             case FF_DOWN:
@@ -108,11 +112,8 @@ public class LynxCreature extends Creature {
             case BUTTON_BLUE:
                 level.getButton(position).press(level);
                 break;
-            case TELEPORT:
-                //todo: oh christ
-                break;
             case BOMB:
-                kill(); //TODO: splash but hot
+                kill();
                 level.getLayerFG().set(position, FLOOR);
                 break;
         }
@@ -189,6 +190,19 @@ public class LynxCreature extends Creature {
     public void kill() {
         creatureType = DEAD;
         animationTimer = 12; //todo: minus depending on current tick + step
+        timeTraveled = 0;
+        switch (level.getLayerFG().get(position)) {
+            case WATER: //direction is used for determining which graphic to draw
+            case DIRT:
+                direction = UP;
+                break;
+            case FIRE:
+            case BOMB:
+                direction = LEFT;
+                break;
+            default:
+                direction = DOWN;
+        }
     }
 
     @Override
@@ -324,6 +338,17 @@ public class LynxCreature extends Creature {
     public int bits() {
         return (sliding ? 1 : 0) << 22 | (animationTimer << 19) | (timeTraveled << 16)
                 | direction.getBits() | creatureType.getBits() | position.getIndex();
+    }
+
+    private void finishLeaving(Position position) {
+        Tile tile = level.getLayerFG().get(position);
+        if (tile == BUTTON_BROWN) {
+            for (BrownButton b : level.getBrownButtons()) {
+                //todo: refactor this later to have a releaseBrownButton(Position buttonPos) in Level or something so as to avoid having this loop in multiple places
+                if (b.getButtonPosition().equals(position))
+                    b.release(level);
+            }
+        }
     }
 
     public LynxCreature(Position position, Tile tile) {

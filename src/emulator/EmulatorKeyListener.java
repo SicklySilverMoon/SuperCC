@@ -66,11 +66,11 @@ public class EmulatorKeyListener extends KeyAdapter {
                     for (int i = 0; i < size; i++) {
                         char c = emulator.getSavestates().getCheckpoint(keyCode-48).get(i);
                         switch (c){
-                            case 85: c = SuperCC.UP; break;
-                            case 76: c = SuperCC.LEFT; break;
-                            case 68: c = SuperCC.DOWN; break;
-                            case 82: c = SuperCC.RIGHT; break;
-                            case 45: c = SuperCC.WAIT; break;
+                            case 'U': c = SuperCC.UP; break;
+                            case 'L': c = SuperCC.LEFT; break;
+                            case 'D': c = SuperCC.DOWN; break;
+                            case 'R': c = SuperCC.RIGHT; break;
+                            case '-': c = SuperCC.WAIT; break;
                         }
                         emulator.tick(c, TickFlags.GAME_PLAY);
                     }
