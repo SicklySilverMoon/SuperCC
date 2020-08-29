@@ -15,6 +15,7 @@ public class LynxSavestate implements Savestate {
     public short[] keys;
     public byte[] boots;
     public RNG rng;
+    public Direction rffDirection;
     public CreatureList monsterList;
 
     protected int mouseGoal;
@@ -32,6 +33,7 @@ public class LynxSavestate implements Savestate {
                 4 * 2 +                         // keys
                 4 * 1 +                         // boots
                 4 +                             // rng
+                1 +                             // RFF
                 2 +                             // traps length
                 traps.length +                  // traps
                 2 +                             // monsterlist size
@@ -45,6 +47,7 @@ public class LynxSavestate implements Savestate {
         writer.writeShorts(keys);
         writer.write(boots);
         writer.writeInt(rng.getCurrentValue());
+        writer.write(rffDirection.ordinal());
         writer.writeShort(traps.length);
         writer.write(traps);
         writer.writeShort(monsterList.size());
@@ -64,6 +67,7 @@ public class LynxSavestate implements Savestate {
             keys = reader.readShorts(4);
             boots = reader.readBytes(4);
             rng.setCurrentValue(reader.readInt());
+            rffDirection = Direction.fromOrdinal(reader.read());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()));
             chip = monsterList.get(0);

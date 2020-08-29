@@ -4,7 +4,6 @@ import game.*;
 import game.MS.Cheats;
 import game.MS.SlipList;
 import game.button.*;
-import javafx.geometry.Pos;
 
 import java.util.BitSet;
 
@@ -22,7 +21,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private BlueButton[] blueButtons;
     private int rngSeed;
     private Step step;
-    private Direction initialSlide;
+    private final Direction INITIAL_SLIDE;
     private final Ruleset RULESET = Ruleset.LYNX;
     private boolean levelWon;
 
@@ -169,6 +168,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public void setChipsLeft(int chipsLeft) {
+        this.chipsLeft = chipsLeft;
+    }
+
+    @Override
     public Creature getChip() {
         return chip;
     }
@@ -176,6 +180,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public short[] getKeys() {
         return keys;
+    }
+
+    @Override
+    public void setKeys(short[] keys) {
+        this.keys = keys;
     }
 
     @Override
@@ -257,8 +266,15 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public Direction getInitialSlide() {
-        return initialSlide;
+    public Direction getInitialRFFDirection() {
+        return INITIAL_SLIDE;
+    }
+
+    @Override
+    public Direction getAndCycleRFFDirection() {
+        Direction priorDirection = rffDirection;
+        rffDirection = rffDirection.turn(Direction.RIGHT);
+        return priorDirection;
     }
 
     @Override
@@ -302,7 +318,7 @@ public class LynxLevel extends LynxSavestate implements Level {
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
                    Layer layerFG, CreatureList monsterList,
-                   Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction initialSlide){
+                   Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction INITIAL_SLIDE){
 
         super(layerFG, monsterList, chip,
                 chips, new short[4], new byte[4], rng, NO_CLICK, traps);
@@ -319,9 +335,10 @@ public class LynxLevel extends LynxSavestate implements Level {
         this.brownButtons = brownButtons;
         this.blueButtons = blueButtons;
         this.rngSeed = rngSeed;
+        this.rffDirection = INITIAL_SLIDE;
         this.step = step;
         this.LEVELSET_LENGTH = levelsetLength;
-        this.initialSlide = initialSlide;
+        this.INITIAL_SLIDE = INITIAL_SLIDE;
 
         Creature.setLevel(this);
         Creature.setMonsterList(monsterList);

@@ -181,7 +181,12 @@ public class MSCreature extends Creature {
 
     @Override
     public int getTimeTraveled() {
-        return 0; //See javadocs for this in Level
+        return 0; //See javadocs for this in Creature
+    }
+
+    @Override
+    public int getAnimationTimer() {
+        return 0; //See javadocs for this in Creature
     }
 
     private void teleport(Direction direction, Position position, List<Button> pressedButtons) {

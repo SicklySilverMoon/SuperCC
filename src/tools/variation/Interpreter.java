@@ -226,7 +226,7 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         for(char move : moveList) {
             emulator.tick(move, TickFlags.PRELOADING);
         }
-        solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialSlide()));
+        solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection()));
 
         throw new ReturnException();
     }

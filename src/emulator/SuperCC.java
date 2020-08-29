@@ -15,19 +15,17 @@ import tools.VariationTesting;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
 
 public class SuperCC {
 
-    public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
-    private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT};
+    public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', UP_LEFT = '┌', DOWN_LEFT = '└',
+            DOWN_RIGHT = '┘', UP_RIGHT = '┐',  MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
+    private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
-        {Direction.DOWN}, {Direction.RIGHT}, {}};
+        {Direction.DOWN}, {Direction.RIGHT}, {}, {Direction.UP, Direction.LEFT}, {Direction.DOWN, Direction.LEFT},
+            {Direction.DOWN, Direction.RIGHT}, {Direction.UP, Direction.RIGHT}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private SavestateManager savestates;

@@ -171,7 +171,8 @@ public class MSLevel extends MSSavestate implements Level {
     public int getChipsLeft(){
         return chipsLeft;
     }
-    void setChipsLeft(int chipsLeft){
+    @Override
+    public void setChipsLeft(int chipsLeft){
         this.chipsLeft = chipsLeft;
     }
     @Override
@@ -197,7 +198,8 @@ public class MSLevel extends MSSavestate implements Level {
      * blue, red, green and yellow keys in that order.
      * </p>
      */
-    void setKeys(short[] keys){
+    @Override
+    public void setKeys(short[] keys){
         this.keys = keys;
     }
     /**
@@ -255,8 +257,12 @@ public class MSLevel extends MSSavestate implements Level {
         return RULESET;
     }
     @Override
-    public Direction getInitialSlide() {
+    public Direction getInitialRFFDirection() {
         return Direction.UP; //unused in MS, return the "default" value
+    }
+    @Override
+    public Direction getAndCycleRFFDirection() {
+        return null;
     }
     /**
      * @param position the last clicked position.

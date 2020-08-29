@@ -79,6 +79,13 @@ public abstract class Creature {
      */
     public abstract int getTimeTraveled();
 
+    /** Returns a number representing how many ticks are left in an effect animation.
+     *  Of note is that this is only useful for DEAD Lynx monsters as they are the only things that play
+     *  animations.
+     * @return An int between 0 and 12 (inclusive)
+     */
+    public abstract int getAnimationTimer();
+
     /** Returns a boolean representing if the creature can enter the given tile in the given direction.
      *
      * @param direction The direction the creature is moving.

@@ -72,6 +72,8 @@ public interface Level extends Savestate {
 
     int getChipsLeft();
 
+    void setChipsLeft(int chipsLeft);
+
     Creature getChip();
 
     /**
@@ -83,6 +85,15 @@ public interface Level extends Savestate {
      * @return chip's keys
      */
     short[] getKeys();
+
+    /**
+     * Set chip's keys
+     * <p>
+     * Chip's keys are short array with 4 entries containing the number of
+     * blue, red, green and yellow keys in that order.
+     * </p>
+     */
+    void setKeys(short[] keys);
 
     /**
      * Returns chip's boots
@@ -116,7 +127,9 @@ public interface Level extends Savestate {
 
     Ruleset getRuleset();
 
-    Direction getInitialSlide();
+    Direction getInitialRFFDirection();
+
+    Direction getAndCycleRFFDirection();
 
     /**
      * @param position the last clicked position.

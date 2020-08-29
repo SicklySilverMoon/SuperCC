@@ -159,6 +159,9 @@ public class SmallGamePanel extends GamePanel {
             }
         }
         for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
+            if (creature.getCreatureType() == CreatureID.DEAD && creature.getAnimationTimer() == 0)
+                continue;
+
             int x = tileWidth;
             int y = tileHeight;
 

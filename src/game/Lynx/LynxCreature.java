@@ -45,11 +45,18 @@ public class LynxCreature extends Creature {
     }
 
     @Override
+    public int getAnimationTimer() {
+        return animationTimer % 13; //it should always be between 0 and 12 but safety
+    }
+
+    @Override
     public boolean tick(Direction direction) {
         if (animationTimer != 0) {
             animationTimer--;
             return false;
         }
+
+        if (creatureType == DEAD) return false;
 
         if (timeTraveled == 0) {
             if ((creatureType == CreatureID.BLOCK || creatureType == CHIP_SWIMMING) && direction == null && !sliding)
@@ -112,12 +119,65 @@ public class LynxCreature extends Creature {
             case BUTTON_BLUE:
                 level.getButton(position).press(level);
                 break;
+            case FIRE:
             case BOMB:
                 kill();
                 level.getLayerFG().set(position, FLOOR);
                 break;
+            case POP_UP_WALL:
+                level.getLayerFG().set(position, WALL);
+                break;
+            case BLUEWALL_FAKE:
+            case SOCKET:
+            case DIRT:
+                level.getLayerFG().set(position, FLOOR);
+                break;
+            case CHIP:
+                if (creatureType == CreatureID.CHIP) {
+                    level.setChipsLeft(level.getChipsLeft() - 1);
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case KEY_BLUE:
+                if (creatureType == CreatureID.CHIP)
+                    level.getKeys()[0]++;
+                level.getLayerFG().set(position, FLOOR);
+                break;
+            case KEY_RED:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getKeys()[1]++;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case KEY_GREEN:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getKeys()[2]++;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case KEY_YELLOW:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getKeys()[3]++;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case DOOR_BLUE:
+                level.getKeys()[0]--;
+                level.getLayerFG().set(position, FLOOR);
+                break;
+            case DOOR_RED:
+                level.getKeys()[1]--;
+                level.getLayerFG().set(position, FLOOR);
+                break;
+            case DOOR_GREEN:
+                level.getKeys()[2]--;
+                level.getLayerFG().set(position, FLOOR);
+                break;
+            case DOOR_YELLOW:
+                level.getKeys()[3]--;
+                level.getLayerFG().set(position, FLOOR);
+                break;
         }
-
         return true;
     }
 
@@ -163,7 +223,7 @@ public class LynxCreature extends Creature {
             case FF_LEFT:
                 return LEFT;
             case FF_RANDOM:
-                //todo
+                return level.getAndCycleRFFDirection();
             case ICE_SLIDE_SOUTHEAST:
                 if (direction == UP) return RIGHT;
                 else if (direction == LEFT) return DOWN;
@@ -188,21 +248,25 @@ public class LynxCreature extends Creature {
 
     @Override
     public void kill() {
-        creatureType = DEAD;
-        animationTimer = 12; //todo: minus depending on current tick + step
-        timeTraveled = 0;
-        switch (level.getLayerFG().get(position)) {
-            case WATER: //direction is used for determining which graphic to draw
-            case DIRT:
-                direction = UP;
-                break;
-            case FIRE:
-            case BOMB:
-                direction = LEFT;
-                break;
-            default:
-                direction = DOWN;
+        if (creatureType != DEAD) {
+            creatureType = DEAD;
+            animationTimer = 12; //todo: minus depending on current tick + step
+            timeTraveled = 0;
+            switch (level.getLayerFG().get(position)) {
+                case WATER: //direction is used for determining which graphic to draw
+                case DIRT:
+                    direction = UP;
+                    break;
+                case FIRE:
+                case BOMB:
+                    direction = LEFT;
+                    break;
+                default:
+                    direction = DOWN;
+            }
         }
+        else
+            animationTimer = 0;
     }
 
     @Override
@@ -376,18 +440,22 @@ public class LynxCreature extends Creature {
                     break;
             }
         }
-        if (creatureType == TANK_STATIONARY) creatureType = TANK_MOVING;
+        if (creatureType == TANK_STATIONARY)
+            creatureType = TANK_MOVING;
     }
 
     public LynxCreature(int bitMonster) {
-//        System.out.println(Integer.toBinaryString(bitMonster));
         sliding = ((bitMonster >>> 22) & 0b1) == 1;
         animationTimer = (bitMonster >>> 19) & 0b111;
         timeTraveled = (bitMonster >>> 16) & 0b111;
         direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b11);
         creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);
-        if (creatureType == CHIP_SLIDING) sliding = true; //TODO: CHIP_SLIDING probably doesn't need to exist for lynx, nor do the 2 types of tanks
+        if (creatureType == CHIP_SLIDING) {
+            sliding = true;
+            creatureType = CreatureID.CHIP;
+        }
+        if (creatureType == TANK_STATIONARY)
+            creatureType = TANK_MOVING;
         position = new Position(bitMonster & 0b00_0000_1111111111);
-//        System.out.println(creatureType);
     }
 }
