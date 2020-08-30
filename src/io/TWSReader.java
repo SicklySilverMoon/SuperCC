@@ -9,7 +9,7 @@ import game.Step;
 import java.io.*;
 import java.util.HashMap;
 
-import static emulator.SuperCC.CHIP_RELATIVE_CLICK;
+import static emulator.SuperCC.*;
 
 public class TWSReader{
 
@@ -107,7 +107,7 @@ public class TWSReader{
     }
 
     private class twsInputStream extends FileInputStream{
-        private final char[] DIRECTIONS = new char[] {'u', 'l', 'd', 'r'};
+        private final char[] DIRECTIONS = new char[] {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT, UP_RIGHT, DOWN_RIGHT};
         
         public int solutionLengthOffset = 0;
 

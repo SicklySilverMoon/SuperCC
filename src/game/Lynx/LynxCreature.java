@@ -52,6 +52,8 @@ public class LynxCreature extends Creature {
     public boolean tick(Direction direction) {
         if (animationTimer != 0) {
             animationTimer--;
+            if (creatureType == CreatureID.CHIP && level.getLayerFG().get(position.index) == EXIT)
+                level.setLevelWon(true);
             return false;
         }
 
@@ -119,6 +121,8 @@ public class LynxCreature extends Creature {
                 level.getButton(position).press(level);
                 break;
             case FIRE:
+                if (creatureType != FIREBALL) kill();
+                break;
             case BOMB:
                 kill();
                 level.getLayerFG().set(position, FLOOR);
@@ -169,12 +173,17 @@ public class LynxCreature extends Creature {
                 level.getLayerFG().set(position, FLOOR);
                 break;
             case DOOR_GREEN:
-                level.getKeys()[2]--;
                 level.getLayerFG().set(position, FLOOR);
                 break;
             case DOOR_YELLOW:
                 level.getKeys()[3]--;
                 level.getLayerFG().set(position, FLOOR);
+                break;
+            case EXIT:
+                if (creatureType == CreatureID.CHIP) {
+                    animationTimer = 4;
+                    level.getLayerFG().set(position.index, EXITED_CHIP);
+                }
                 break;
         }
         return true;

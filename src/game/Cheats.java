@@ -1,12 +1,9 @@
 package game;
 
-import game.*;
-import game.MS.MSCreature;
 import game.MS.MSCreatureList;
-import game.MS.MSLevel;
 import game.button.*;
 
-public class Cheats { //TODO: Make independent from MS, use abstract class
+public class Cheats {
     
     private final Level level;
     
@@ -58,24 +55,29 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
     // Monster related cheats
     
     public void setDirection(Creature creature, Direction direction) {
-        level.popTile(creature.getPosition());
+        if (level.supportsLayerBG())
+            level.popTile(creature.getPosition());
         if (creature.getCreatureType() == CreatureID.BLOB) creature.setNextMoveDirectionCheat(direction);
         creature.setDirection(direction);
-        level.insertTile(creature.getPosition(), creature.toTile());
+        if (level.supportsLayerBG())
+            level.insertTile(creature.getPosition(), creature.toTile());
     }
     public void setPosition(Creature creature, Position position) {
-        level.popTile(creature.getPosition());
+        if (level.supportsLayerBG())
+            level.popTile(creature.getPosition());
         creature.getPosition().setIndex(position.getIndex());
-        level.insertTile(creature.getPosition(), creature.toTile());
+        if (level.supportsLayerBG())
+            level.insertTile(creature.getPosition(), creature.toTile());
     }
     public void kill(Creature creature) {
         level.getMonsterList().initialise();
         creature.kill();
-        if(level.supportsSliplist()) {
+        if (level.supportsSliplist()) {
             level.getSlipList().remove(creature);
             ((MSCreatureList)(level.getMonsterList())).incrementDeadMonsters();
         }
-        level.popTile(creature.getPosition());
+        if (level.supportsLayerBG())
+            level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
     public void animateMonster(Position position) {
@@ -84,12 +86,15 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
     }
     public void reviveChip() {
         level.getChip().setCreatureType(CreatureID.CHIP);
-        level.getLayerFG().set(level.getChip().getPosition(), Tile.CHIP_DOWN);
+        if (level.supportsLayerBG())
+            level.getLayerFG().set(level.getChip().getPosition(), Tile.CHIP_DOWN);
     }
     public void moveChip(Position position) {
-        level.popTile(level.getChip().getPosition());
+        if (level.supportsLayerBG())
+            level.popTile(level.getChip().getPosition());
         level.getChip().getPosition().setIndex(position.getIndex());
-        level.insertTile(position, level.getChip().toTile());
+        if (level.supportsLayerBG())
+            level.insertTile(position, level.getChip().toTile());
     }
     
     // Layer related cheats

@@ -300,10 +300,10 @@ public class TSPSolver {
     }
 
     private int getDirectionIndex(char d) {
-        if(d == 'u') return 0;
-        if(d == 'r') return 1;
-        if(d == 'd') return 2;
-        if(d == 'l') return 3;
+        if(d == SuperCC.UP) return 0;
+        if(d == SuperCC.RIGHT) return 1;
+        if(d == SuperCC.DOWN) return 2;
+        if(d == SuperCC.LEFT) return 3;
         return 0;
     }
 
@@ -395,11 +395,11 @@ public class TSPSolver {
 
     private char dirToChar(Direction dir) {
         switch(dir) {
-            case UP: return 'u';
-            case RIGHT: return 'r';
-            case DOWN: return 'd';
-            case LEFT: return 'l';
-            default: return '-';
+            case UP: return SuperCC.UP;
+            case RIGHT: return SuperCC.RIGHT;
+            case DOWN: return SuperCC.DOWN;
+            case LEFT: return SuperCC.LEFT;
+            default: return SuperCC.WAIT;
         }
     }
 
@@ -416,10 +416,10 @@ public class TSPSolver {
     }
 
     private boolean directionEquals(Direction dir, char d) {
-        if(dir == Direction.UP && d == 'u') return true;
-        if(dir == Direction.RIGHT && d == 'r') return true;
-        if(dir == Direction.DOWN && d == 'd') return true;
-        if(dir == Direction.LEFT && d == 'l') return true;
+        if(dir == Direction.UP && d == SuperCC.UP) return true;
+        if(dir == Direction.RIGHT && d == SuperCC.RIGHT) return true;
+        if(dir == Direction.DOWN && d == SuperCC.DOWN) return true;
+        if(dir == Direction.LEFT && d == SuperCC.LEFT) return true;
         return false;
     }
 
@@ -433,15 +433,15 @@ public class TSPSolver {
             case BLUEWALL_REAL:
             case CLONE_MACHINE:
                 return false;
-            case THIN_WALL_DOWN: return d != 'u';
-            case THIN_WALL_DOWN_RIGHT: return (d == 'd' || d == 'r');
-            case THIN_WALL_LEFT: return d != 'r';
-            case THIN_WALL_RIGHT: return d != 'l';
-            case THIN_WALL_UP: return d != 'd';
-            case ICE_SLIDE_NORTHEAST: return (d == 'd' || d == 'l');
-            case ICE_SLIDE_SOUTHEAST: return (d == 'u' || d == 'l');
-            case ICE_SLIDE_NORTHWEST: return (d == 'd' || d == 'r');
-            case ICE_SLIDE_SOUTHWEST: return (d == 'u' || d == 'r');
+            case THIN_WALL_DOWN: return d != SuperCC.UP;
+            case THIN_WALL_DOWN_RIGHT: return (d == SuperCC.DOWN || d == SuperCC.RIGHT);
+            case THIN_WALL_LEFT: return d != SuperCC.RIGHT;
+            case THIN_WALL_RIGHT: return d != SuperCC.LEFT;
+            case THIN_WALL_UP: return d != SuperCC.DOWN;
+            case ICE_SLIDE_NORTHEAST: return (d == SuperCC.DOWN || d == SuperCC.LEFT);
+            case ICE_SLIDE_SOUTHEAST: return (d == SuperCC.UP || d == SuperCC.LEFT);
+            case ICE_SLIDE_NORTHWEST: return (d == SuperCC.DOWN || d == SuperCC.RIGHT);
+            case ICE_SLIDE_SOUTHWEST: return (d == SuperCC.UP || d == SuperCC.RIGHT);
             default: return true;
         }
     }

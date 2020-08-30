@@ -189,14 +189,14 @@ public class FunctionEvaluator {
 
     private Move getOppositeMove(Move move) {
         switch(move.move.charAt(0)) {
-            case 'u':
-                return new Move("d");
-            case 'r':
-                return new Move("l");
-            case 'l':
-                return new Move("r");
-            case 'd':
-                return new Move("u");
+            case SuperCC.UP:
+                return new Move(String.valueOf(SuperCC.DOWN));
+            case SuperCC.RIGHT:
+                return new Move(String.valueOf(SuperCC.LEFT));
+            case SuperCC.LEFT:
+                return new Move(String.valueOf(SuperCC.RIGHT));
+            case SuperCC.DOWN:
+                return new Move(String.valueOf(SuperCC.UP));
         }
         return move;
     }

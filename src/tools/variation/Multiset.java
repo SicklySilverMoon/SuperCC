@@ -22,18 +22,6 @@ public class Multiset {
 
     public static double LIMIT = 1e18;
 
-    private static final HashMap<Character, Character> toMove;
-
-    static {
-        toMove = new HashMap<>();
-        toMove.put('u', SuperCC.UP);
-        toMove.put('r', SuperCC.RIGHT);
-        toMove.put('d', SuperCC.DOWN);
-        toMove.put('l', SuperCC.LEFT);
-        toMove.put('w', 'w');
-        toMove.put('h', SuperCC.WAIT);
-    }
-
     public Multiset(MovePoolContainer movePools, BoundLimit limits, String lexicographic) {
         MovePool movePoolTotal = getMovePoolTotal(movePools);
         this.movePoolForced = movePools.forced;
@@ -55,7 +43,7 @@ public class Multiset {
             CharList moveList = new CharList();
             String str = this.moves.get(i);
             for(int j = 0; j < str.length(); j++) {
-                moveList.add(toMove.get(str.charAt(j)));
+                moveList.add((str.charAt(j) == 'h') ? SuperCC.WAIT : str.charAt(j));
             }
             this.movesList[i] = moveList;
         }

@@ -19,8 +19,8 @@ import java.io.IOException;
 
 public class SuperCC {
 
-    public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', UP_LEFT = '┌', DOWN_LEFT = '└',
-            DOWN_RIGHT = '┘', UP_RIGHT = '┐',  MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
+    public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', UP_LEFT = '↖', DOWN_LEFT = '↙',
+            DOWN_RIGHT = '↘', UP_RIGHT = '↗',  MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
     private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
         {Direction.DOWN}, {Direction.RIGHT}, {}, {Direction.UP, Direction.LEFT}, {Direction.DOWN, Direction.LEFT},
@@ -63,22 +63,30 @@ public class SuperCC {
         window.repaint(fromScratch);
     }
     
-    public static boolean isDoubleMove(byte b) {
-        return b == 'U' || b == 'L' || b == 'D' || b == 'R' || b == '_';
-    }
-    
     public static char capital(char c){
-        if (c == '-') return '_';
-        return Character.toUpperCase(c);
+        switch (c) {
+            case WAIT: return '_';
+            case UP_LEFT: return '⇖';
+            case DOWN_LEFT: return '⇙';
+            case DOWN_RIGHT: return '⇘';
+            case UP_RIGHT: return '⇗';
+            default: return Character.toUpperCase(c);
+        }
     }
     
     public static char[] lowerCase(char c) {
-        if (c == 'U') return new char[] {'u', '-'};
-        else if (c == 'L') return new char[] {'l', '-'};
-        else if (c == 'D') return new char[] {'d', '-'};
-        else if (c == 'R') return new char[] {'r', '-'};
-        else if (c == '_') return new char[] {'-', '-'};
-        else return new char[] {c};
+        switch (c) {
+            case 'U': return new char[] {UP, WAIT};
+            case 'L': return new char[] {LEFT, WAIT};
+            case 'D': return new char[] {DOWN, WAIT};
+            case 'R': return new char[] {RIGHT, WAIT};
+            case '_': return new char[] {WAIT, WAIT};
+            case '⇖': return new char[] {UP_LEFT, WAIT};
+            case '⇙': return new char[] {DOWN_LEFT, WAIT};
+            case '⇘': return new char[] {DOWN_RIGHT, WAIT};
+            case '⇗': return new char[] {UP_RIGHT, WAIT};
+            default: return new char[] {c};
+        }
     }
     
     public int lastLevelNumber() {

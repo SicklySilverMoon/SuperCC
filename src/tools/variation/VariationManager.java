@@ -197,13 +197,13 @@ public class VariationManager {
     private char lowercase(char b) {
         switch(b) {
             case 'U':
-                return 'u';
+                return SuperCC.UP;
             case 'R':
-                return 'r';
+                return SuperCC.RIGHT;
             case 'D':
-                return 'd';
+                return SuperCC.DOWN;
             case 'L':
-                return 'l';
+                return SuperCC.LEFT;
             default:
                 return b;
         }

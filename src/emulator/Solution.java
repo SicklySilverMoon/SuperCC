@@ -7,6 +7,7 @@ import util.CharList;
 
 import java.io.CharArrayWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -87,7 +88,7 @@ public class Solution{
                     int x = halfMoves[++move] - 9;
                     int y = halfMoves[++move] - 9;
                     if (x == 0 && y == 0){                      // idk about this but it fixes thief street
-                        c = '-';
+                        c = WAIT;
                     }
                     else {
                         Position chipPosition = level.getChip().getPosition();
@@ -97,7 +98,7 @@ public class Solution{
                     }
                 }
                 boolean tickedTwice = emulator.tick(c, tickFlags);
-                if (tickedTwice && (!isClick(c) && c != '-')) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
+                if (tickedTwice && (!isClick(c) && c != WAIT)) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
                 if (level.getChip().isDead()) {
                     break;
                 }
@@ -111,7 +112,7 @@ public class Solution{
     private static char[] succToHalfMoves(char[] succMoves){
         CharArrayWriter writer = new CharArrayWriter();
         for (char c : succMoves){
-            if (c != '-') for (char l : SuperCC.lowerCase(c)) writer.write(l);
+            if (c != WAIT) for (char l : SuperCC.lowerCase(c)) writer.write(l);
             else writer.write(c);
         }
         return writer.toCharArray();
@@ -124,11 +125,8 @@ public class Solution{
         CharArrayWriter writer = new CharArrayWriter();
 //        System.out.println(Arrays.toString(quarterMoves));
 
-        Set<Character> cardinals = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
-        cardinals.add(UP);
-        cardinals.add(DOWN);
-        cardinals.add(LEFT);
-        cardinals.add(RIGHT);
+        Set<Character> directions = new HashSet<>(); //Makes it so that i don't have to write out 8 equality checks
+        Collections.addAll(directions, UP, DOWN, LEFT, RIGHT, UP_LEFT, DOWN_LEFT, UP_RIGHT, DOWN_RIGHT);
 
         for (int i = 0; i < quarterMoves.length; i += 2) {
             char a = quarterMoves[i];
@@ -139,16 +137,16 @@ public class Solution{
             if (j < quarterMoves.length) c = quarterMoves[j];
 
             if (a == '~' && c == '~') { //It should only write a half wait if BOTH values read are quarter waits
-                writer.write('-');
+                writer.write(WAIT);
             }
             else { //Input priority things
-                if (cardinals.contains(a)) {
+                if (directions.contains(a)) {
                     writer.write(a);
                     continue;
                 }
-                if (cardinals.contains(c) || c == CHIP_RELATIVE_CLICK) {
+                if (directions.contains(c) || c == CHIP_RELATIVE_CLICK) {
                     writer.write(c);
-                    if (cardinals.contains(c)) { //Keyboard input check
+                    if (directions.contains(c)) { //Keyboard input check
                         continue;
                     }
                     else if (c == CHIP_RELATIVE_CLICK) {

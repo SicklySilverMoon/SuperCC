@@ -20,7 +20,7 @@ public class TWSWriter{
             boolean firstMove = true;
             int i = 0;
             for (char c : solution.halfMoves) {
-                if (c == '-') timeBetween += 2;
+                if (c == SuperCC.WAIT) timeBetween += 2;
                 else {
                     int relativeClickX;
                     int relativeClickY;
@@ -55,10 +55,10 @@ public class TWSWriter{
             byte twsMoveByte;
             boolean useFormat4 = false;
             switch (c) {
-                case 'u': twsMoveByte = UP; break;
-                case 'l': twsMoveByte = LEFT; break;
-                case 'd': twsMoveByte = DOWN; break;
-                case 'r': twsMoveByte = RIGHT; break;
+                case SuperCC.UP: twsMoveByte = UP; break;
+                case SuperCC.LEFT: twsMoveByte = LEFT; break;
+                case SuperCC.DOWN: twsMoveByte = DOWN; break;
+                case SuperCC.RIGHT: twsMoveByte = RIGHT; break;
                 default:
                     twsMoveByte = 0; //turns out if you don't have this it won't compile due to twsMoveByte "may not have been initialized" despite that it'll never get used if this code block activates!
                     useFormat4 = true;
@@ -106,7 +106,7 @@ public class TWSWriter{
         }
         public int solutionLength(Solution s) {
             int length = LEVEL_HEADER_SIZE;
-            for (char c : s.halfMoves) if (c != '-') length += 4;
+            for (char c : s.halfMoves) if (c != SuperCC.WAIT) length += 4;
             return length;
         }
         void writeFormat2(byte twsMoveByte, int time) throws IOException {

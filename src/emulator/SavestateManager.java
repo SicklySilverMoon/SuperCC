@@ -153,7 +153,7 @@ public class SavestateManager implements Serializable {
                 boolean tickTwice = emulator.tick(c, replayNoSave);
                 Thread.sleep(playbackWaitTime);
                 if (tickTwice) {
-                    emulator.tick('-', replayNoSave);
+                    emulator.tick(SuperCC.WAIT, replayNoSave);
                     Thread.sleep(playbackWaitTime);
                 }
                 replay();
@@ -186,7 +186,7 @@ public class SavestateManager implements Serializable {
             window.getGamePanel().paintComponent(img.getGraphics());
             images.add(img);
             if (tickTwice && numHalfTicks-- > 0) {
-                emulator.tick('-', TickFlags.REPLAY);
+                emulator.tick(SuperCC.WAIT, TickFlags.REPLAY);
                 img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
                 window.getGamePanel().paintComponent(img.getGraphics());
                 images.add(img);
