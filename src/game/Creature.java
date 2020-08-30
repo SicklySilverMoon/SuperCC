@@ -14,6 +14,7 @@ public abstract class Creature {
     protected Direction direction;
     protected Direction[] directions;
     protected boolean sliding;
+    protected Direction nextMoveDirectionCheat = null;
 
     protected static Level level;
     protected static CreatureList monsterList;
@@ -29,6 +30,14 @@ public abstract class Creature {
     public void setDirectionPriority(Direction[] directions) {
         //For the love of god this should only be used by Cheats or for setting Chip's directions
         this.directions = directions;
+    }
+
+    public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {
+        this.nextMoveDirectionCheat = nextMoveDirectionCheat;
+    }
+
+    public Direction getNextMoveDirectionCheat() {
+        return nextMoveDirectionCheat;
     }
 
     public CreatureID getCreatureType() {

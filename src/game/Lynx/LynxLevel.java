@@ -1,7 +1,7 @@
 package game.Lynx;
 
 import game.*;
-import game.MS.Cheats;
+import game.Cheats;
 import game.MS.SlipList;
 import game.button.*;
 
@@ -24,6 +24,8 @@ public class LynxLevel extends LynxSavestate implements Level {
     private final Direction INITIAL_SLIDE;
     private final Ruleset RULESET = Ruleset.LYNX;
     private boolean levelWon;
+
+    private final Cheats cheats;
 
     @Override
     public int getLevelNumber() {
@@ -155,6 +157,10 @@ public class LynxLevel extends LynxSavestate implements Level {
         if (tickNumber == 0) return startTime;
         else return startTime - tickNumber*5;
     }
+    @Override
+    public void setTimer(int n) {
+        startTime = n + tickNumber - 1;
+    }
 
     @Override
     public int getTChipTime() {
@@ -193,6 +199,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public void setBoots(byte[] boots){
+        this.boots = boots;
+    }
+
+    @Override
     public CreatureList getMonsterList() {
         return monsterList;
     }
@@ -214,7 +225,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public Cheats getCheats() {
-        return null;
+        return cheats;
     }
 
     @Override
@@ -337,6 +348,7 @@ public class LynxLevel extends LynxSavestate implements Level {
         this.rngSeed = rngSeed;
         this.rffDirection = INITIAL_SLIDE;
         this.step = step;
+        this.cheats = new Cheats(this);
         this.LEVELSET_LENGTH = levelsetLength;
         this.INITIAL_SLIDE = INITIAL_SLIDE;
 

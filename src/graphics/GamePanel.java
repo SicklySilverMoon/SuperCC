@@ -177,10 +177,16 @@ public abstract class GamePanel extends JPanel
         GamePopupMenu(GameGraphicPosition position) {
             add(new JLabel("Cheats", SwingConstants.CENTER));
             Cheats cheats = emulator.getLevel().getCheats();
-            
+
             Tile tileFG = emulator.getLevel().getLayerFG().get(position);
-            Tile tileBG = emulator.getLevel().getLayerBG().get(position);
-            for (Tile tile : new Tile[] {tileFG, tileBG}) {
+            Tile[] tiles;
+            if(emulator.getLevel().supportsLayerBG()) {
+                Tile tileBG = emulator.getLevel().getLayerBG().get(position);
+                tiles = new Tile[] {tileFG, tileBG};
+            } else {
+                tiles = new Tile[] {tileFG};
+            }
+            for (Tile tile : tiles) {
                 
                 if (tile.isButton()) {
                     JMenuItem press = new JMenuItem("Press button");
@@ -218,7 +224,7 @@ public abstract class GamePanel extends JPanel
                 for (Direction d : Direction.values()) {
                     JMenuItem menuItem = new JMenuItem(d.toString());
                     menuItem.addActionListener((e) -> {
-                        cheats.setDirection((MSCreature) c, d); //TODO: FIX THE FACT THAT IT HAS TO BE A CAST!
+                        cheats.setDirection(c, d);
                         updateGraphics(false);
                         emulator.getMainWindow().repaint();
                     });
@@ -254,7 +260,9 @@ public abstract class GamePanel extends JPanel
             if (c == null) {
                 JMenuItem pop = new JMenuItem("Remove Tile: " + tileFG.toString());
                 pop.addActionListener((e) -> {
-                    emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position)); //In practice this only affects sliding blocks
+                    if(emulator.getLevel().supportsSliplist()) {
+                        emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position)); //In practice this only affects sliding blocks
+                    }
                     cheats.popTile(position);
                     updateGraphics(false);
                     emulator.getMainWindow().repaint();

@@ -2,7 +2,6 @@ package game.Lynx;
 
 import game.*;
 import game.button.BrownButton;
-import javafx.geometry.Pos;
 
 import static game.CreatureID.*;
 import static game.Direction.*;

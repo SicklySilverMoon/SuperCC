@@ -7,7 +7,7 @@ import static game.CreatureID.*;
 import static game.Tile.*;
 
 public class MSCreatureList extends game.CreatureList {
-    int numDeadMonsters;
+    private int numDeadMonsters;
 
     @Override
     public void initialise() {
@@ -83,6 +83,10 @@ public class MSCreatureList extends game.CreatureList {
             direction = directionPriorities[0];
             level.getLayerFG().set(monster.getPosition(), monster.toTile());
         }
+    }
+
+    public void incrementDeadMonsters() {
+        numDeadMonsters++;
     }
 
     @Override

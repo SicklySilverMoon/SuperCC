@@ -63,6 +63,8 @@ public interface Level extends Savestate {
      */
     int getTimer();
 
+    void setTimer(int n);
+
     /**
      *
      * @return The current value of the timer if we are using TChip timing
@@ -104,6 +106,8 @@ public interface Level extends Savestate {
      * @return chip's boots
      */
     byte[] getBoots();
+
+    void setBoots(byte[] boots);
 
     CreatureList getMonsterList();
 

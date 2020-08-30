@@ -69,7 +69,7 @@ public class TSPSolver {
         setupDistances();
         this.paths = new PathNode[nodes.size()][nodes.size()];
         this.pathsBoost = new PathNode[nodes.size()][nodes.size()];
-        this.startTime = level.getTChipTime();
+        this.startTime = level.getTChipTime() / 10;
         this.restrictionNodes = restrictionNodes;
         setupRestrictionNodes();
         this.simulatedAnnealingParameters = simulatedAnnealingParameters;
@@ -277,7 +277,7 @@ public class TSPSolver {
         if (nodes.contains(index % 1024)) {
             ArrayList<Integer> indices = getNodeIndices(index % 1024);
             for(int to : indices) {
-                int distance = startTime - level.getTChipTime() + deltaTime;
+                int distance = startTime - level.getTChipTime() / 10 + deltaTime;
                 if (currentDistances[from][to] > distance) {
                     currentDistances[from][to] = distance;
                     currentPaths[from][to] = node;

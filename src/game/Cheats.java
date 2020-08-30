@@ -1,11 +1,14 @@
-package game.MS;
+package game;
 
 import game.*;
+import game.MS.MSCreature;
+import game.MS.MSCreatureList;
+import game.MS.MSLevel;
 import game.button.*;
 
 public class Cheats { //TODO: Make independent from MS, use abstract class
     
-    private final MSLevel level;
+    private final Level level;
     
     // Button related cheats
     
@@ -54,25 +57,24 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
     
     // Monster related cheats
     
-    public void setDirection(MSCreature creature, Direction direction) {
+    public void setDirection(Creature creature, Direction direction) {
         level.popTile(creature.getPosition());
         if (creature.getCreatureType() == CreatureID.BLOB) creature.setNextMoveDirectionCheat(direction);
         creature.setDirection(direction);
         level.insertTile(creature.getPosition(), creature.toTile());
     }
-    public void setPosition(MSCreature creature, Position position) {
+    public void setPosition(Creature creature, Position position) {
         level.popTile(creature.getPosition());
         creature.getPosition().setIndex(position.getIndex());
         level.insertTile(creature.getPosition(), creature.toTile());
     }
-    public void setSliding(MSCreature creature, boolean sliding) {
-        creature.setSliding(creature.isSliding(), sliding);
-    }
     public void kill(Creature creature) {
         level.getMonsterList().initialise();
         creature.kill();
-        level.getSlipList().remove(creature);
-        ((MSCreatureList) (level.getMonsterList())).numDeadMonsters++;
+        if(level.supportsSliplist()) {
+            level.getSlipList().remove(creature);
+            ((MSCreatureList)(level.getMonsterList())).incrementDeadMonsters();
+        }
         level.popTile(creature.getPosition());
         level.getMonsterList().finalise();
     }
@@ -143,10 +145,10 @@ public class Cheats { //TODO: Make independent from MS, use abstract class
         level.setBoots(boots);
     }
     public void setRng(int rng) {
-        level.rng.setCurrentValue(rng);
+        level.getRNG().setCurrentValue(rng);
     }
     
-    public Cheats(MSLevel level) {
+    public Cheats(Level level) {
         this.level = level;
     }
     

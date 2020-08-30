@@ -14,8 +14,6 @@ import static game.Tile.*;
 
 public class MSCreature extends Creature {
 
-    private Direction nextMoveDirectionCheat = null;
-
     // Direction-related methods
     protected void setPosition(Position position){ //So you can make a creature teleport 32 tiles at once to data reset properly
         this.position = position;
@@ -103,14 +101,6 @@ public class MSCreature extends Creature {
         else if (tile == TELEPORT) return new Direction[] {direction};
         else if (tile == FF_RANDOM && !changeOnRFF) return new Direction[] {direction};
         else return new Direction[] {applySlidingTile(getDirection(), tile, rng)};
-    }
-
-    public Direction getNextMoveDirectionCheat() {
-        return nextMoveDirectionCheat;
-    }
-    
-    public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {
-        this.nextMoveDirectionCheat = nextMoveDirectionCheat;
     }
 
     // Sliding-related functions
@@ -762,7 +752,7 @@ public class MSCreature extends Creature {
 
                 if (!isDead()) level.insertTile(getPosition(), toTile());
                 else if (isMonster) {
-                    ((MSCreatureList) level.getMonsterList()).numDeadMonsters++;
+                    ((MSCreatureList) level.getMonsterList()).incrementDeadMonsters();
                 }
 
                 setSliding(wasSliding, sliding, true);

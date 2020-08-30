@@ -154,6 +154,10 @@ public class MSLevel extends MSSavestate implements Level {
         if (tickNumber == 0) return startTime;
         else return startTime - tickNumber*10 + 10;                     // The first tick does not change the timer
     }
+    @Override
+    public void setTimer(int n) {
+        startTime = n + tickNumber - 1;
+    }
     /**
      *
      * @return The current value of the timer if we are using TChip timing
@@ -163,9 +167,6 @@ public class MSLevel extends MSSavestate implements Level {
     public int getTChipTime() {
         if (tickNumber == 0) return 99990;
         else return 99990 - tickNumber*10 + 10;                     // The first tick does not change the timer
-    }
-    void setTimer(int n) {
-        startTime = n + tickNumber - 1;
     }
     @Override
     public int getChipsLeft(){
@@ -221,7 +222,8 @@ public class MSLevel extends MSSavestate implements Level {
      * flippers, fire boots, skates and suction boots in that order.
      * </p>
      */
-    void setBoots(byte[] boots){
+    @Override
+    public void setBoots(byte[] boots){
         this.boots = boots;
     }
     @Override
