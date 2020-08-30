@@ -1,6 +1,5 @@
 package emulator;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import game.*;
 import graphics.Gui;
 import graphics.SmallGamePanel;
@@ -291,7 +290,7 @@ public class SuperCC {
 
         try {
             ArgumentParser.parseArguments(emulator, args); //Parses any command line arguments given
-        } catch (InvalidArgumentException e) {
+        } catch (IllegalArgumentException e) {
             emulator.throwError(e.toString() + "\nSee stderr for flag use");
         }
 

@@ -1,6 +1,5 @@
 package emulator;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import game.Direction;
 import game.Ruleset;
 import game.Step;
@@ -16,7 +15,7 @@ final class ArgumentParser {
             levelLong = "--level", levelShort =  "-l", stepLong = "--step", stepShort = "-s", rffLong = "-rff",
             rffShort = "-f", rngLong = "--rng", rngShort = "-r", rulesLong = "--rules", rulesShort = "-m";
 
-    static void parseArguments(SuperCC emulator, String[] args) throws InvalidArgumentException {
+    static void parseArguments(SuperCC emulator, String[] args) throws IllegalArgumentException {
         if (args.length != 0) {
             Set<String> arguments = new HashSet<>(Arrays.asList(helpLong, helpShort, helpQuestion, twsLong, levelLong,
                     levelShort, stepLong, stepShort, rngLong, rngShort, rulesLong, rulesShort));
@@ -118,15 +117,15 @@ final class ArgumentParser {
         }
     }
 
-    private static void enumError(Class<? extends Enum> c, String flag, String arg) throws InvalidArgumentException {
+    private static void enumError(Class<? extends Enum> c, String flag, String arg) throws IllegalArgumentException {
         System.err.println("The " + flag + " flag MUST be followed by one of the following: " +
                 Arrays.toString(c.getEnumConstants()));
-        throw new InvalidArgumentException(new String[]{arg});
+        throw new IllegalArgumentException(arg);
     }
 
-    private static void numberError(String flag, String arg) throws InvalidArgumentException {
+    private static void numberError(String flag, String arg) throws IllegalArgumentException {
         System.err.println("The " + flag + " flag MUST be followed by an integer number");
-        throw new InvalidArgumentException(new String[]{arg});
+        throw new IllegalArgumentException(arg);
     }
 
     private static void help() {
