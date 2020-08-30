@@ -159,7 +159,7 @@ class MenuBar extends JMenuBar{
             changeInitialSlide.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) {
                     Level level = emulator.getLevel();
-                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
+                    emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), true,
                             level.getRuleset(), level.getInitialRFFDirection().turn(Direction.TURN_RIGHT));
                 }
             });

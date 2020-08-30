@@ -190,7 +190,7 @@ public class SuccPaths {
                     if (pivot > 0)
                     {
                         String name = line.substring(0, pivot - 1).trim(),
-                                value = line.substring(pivot + 1).trim();
+                        value = line.substring(pivot + 1).trim();
                         if (!name.isEmpty())
                             settingsMap.put(section + ':' + name, value);
                         /*`[View]

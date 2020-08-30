@@ -50,7 +50,7 @@ public class TWSReader{
         CharArrayWriter writer = new CharArrayWriter();
         while (writer.size() + reader.solutionLengthOffset <= solutionLength){
             int b = reader.readByte();
-//            try {
+            try {
                 switch (b & 0b11) {
                     case 0:
                         reader.readFormat3(b, writer);
@@ -64,11 +64,11 @@ public class TWSReader{
                         else reader.readFormat4(b, writer);
                         break;
                 }
-//            }
-//            catch (Exception e){                    // Some solution files are too long - seems to be caused by long slides at the end of a level
-//                //System.out.println("TWS file too long on level: "+level.getLevelNumber()+" "+Arrays.toString(level.getTitle()));
-//                break;
-//            }
+            }
+            catch (Exception e){                    // Some solution files are too long - seems to be caused by long slides at the end of a level
+                //System.out.println("TWS file too long on level: "+level.getLevelNumber()+" "+Arrays.toString(level.getTitle()));
+                break;
+            }
         }
         Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
@@ -107,7 +107,7 @@ public class TWSReader{
     }
 
     private class twsInputStream extends FileInputStream{
-        private final byte[] DIRECTIONS = new byte[] {'u', 'l', 'd', 'r'};
+        private final char[] DIRECTIONS = new char[] {'u', 'l', 'd', 'r'};
         
         public int solutionLengthOffset = 0;
 
@@ -118,7 +118,7 @@ public class TWSReader{
             int length = b & 0b11;
             counter += length;
             int time;
-            byte direction;
+            char direction;
             if (length == 1){
                 direction = DIRECTIONS[(b & 0b11100) >>> 2];
                 time = (b & 0b11100000) >>> 5;
@@ -132,7 +132,7 @@ public class TWSReader{
         }
         public void readFormat2(int b, Writer writer) throws IOException{
             counter += 4;
-            byte direction = DIRECTIONS[(b & 0b1100) >>> 2];
+            char direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
             if (time < 2047) ineffiencies += 1;
             for (int i = 0; i < time; i++) writer.write('~');
@@ -157,7 +157,7 @@ public class TWSReader{
             for (int i = 0; i < length - 2; i++) time = time | readByte() << (2 + 8*i);
             for (int i = 0; i < time; i++) writer.write('~');
             if (d < 4){
-                byte direction = DIRECTIONS[d];
+                char direction = DIRECTIONS[d];
                 writer.write(direction);
             }
             else{
@@ -175,9 +175,9 @@ public class TWSReader{
             super(file);
         }
         int readByte() throws IOException{
-            byte b = (byte) read();
-            System.out.printf("%02X, ", b);
-            return b;
+//            byte b = (byte) read();
+//            System.out.printf("%02X, ", b);
+            return read();
         }
         int readShort() throws IOException{
             return read() + 256*read();
