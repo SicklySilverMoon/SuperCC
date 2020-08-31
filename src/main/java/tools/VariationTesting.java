@@ -326,7 +326,7 @@ public class VariationTesting {
             runButton.setText("Run");
 
             if(hasGui && interpreter.solutions.size() > 0) {
-                VariationResult result = new VariationResult(emulator, interpreter.variationCount, interpreter.solutions);
+                VariationResult result = new VariationResult(emulator, interpreter.variationCount, interpreter.solutions, interpreter.bestSolutionIndex);
             }
         }
     }

@@ -97,13 +97,14 @@ class InterpreterTest {
     @Test
     void interpretNonBooleanConditionals() {
         emulator.loadLevel(1);
-        String code = "[u](){} if(null) print 1; if(0) print 2; if(1) print 3; if(2ud) print 4; if(DIRT) print 5; if(v1) print 6;";
+        String code = "[u](){} if(1) print 1; if(null) print 2; if(0) print 3; if(2ud) print 4; \n" +
+                "if(v1) print 5; if(DIRT) print 6; if(0.0002) print 7; if(0.0) print 8; if(2.5*2/5-1) print 9; if(-1) print 10;";
 
         Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("2\r\n3\r\n4\r\n5"));
+        assertTrue(consoleText.contains("1\r\n4\r\n6\r\n7\r\n10"));
     }
 
     @Test

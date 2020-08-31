@@ -19,7 +19,7 @@ public class VariationResult {
     private JLabel labelSolutions;
     private JButton buttonFastest;
 
-    VariationResult(SuperCC emulator, long count, ArrayList<Solution> solutions) {
+    VariationResult(SuperCC emulator, long count, ArrayList<Solution> solutions, int bestSolutionIndex) {
         labelVariations.setText("Variations tested: " + String.format("%,d", count));
         labelSolutions.setText("Solutions found: " + String.format("%,d", solutions.size()));
         solutionsPanel.setLayout(new GridBagLayout());
@@ -62,19 +62,7 @@ public class VariationResult {
         }
 
         buttonFastest.addActionListener(e -> {
-            int fastestTime = -1;
-            Solution fastestSolution = null;
-            for(Solution solution: solutions) {
-                solution.load(emulator, TickFlags.LIGHT);
-                int time = emulator.getLevel().getTimer();
-                if(time > fastestTime) {
-                    fastestTime = time;
-                    fastestSolution = solution;
-                }
-            }
-            if(fastestSolution != null) {
-                fastestSolution.load(emulator);
-            }
+            solutions.get(bestSolutionIndex).load(emulator);
         });
 
         JFrame frame = new JFrame("Variation Results");

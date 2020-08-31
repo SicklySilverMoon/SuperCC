@@ -34,6 +34,8 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     public CharList moveList;
     private int amount = 1;
     public ArrayList<Solution> solutions = new ArrayList<>();
+    public int bestSolutionIndex = 0;
+    private int bestSolutionTime = 0;
     private boolean hadError = false;
     private VariationTesting vt;
     private int fromStatement = 0;
@@ -235,6 +237,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
             emulator.tick(move, TickFlags.PRELOADING);
         }
         solutions.add(new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection()));
+        if(emulator.getLevel().getTChipTime() > bestSolutionTime) {
+            bestSolutionTime = emulator.getLevel().getTChipTime();
+            bestSolutionIndex = solutions.size() - 1;
+        }
 
         throw new ReturnException();
     }
@@ -440,6 +446,9 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         }
         if(value instanceof Boolean) {
             return (boolean)value;
+        }
+        if(value instanceof Double) {
+            return (double)value != 0;
         }
         return true;
     }
