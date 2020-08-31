@@ -13,38 +13,50 @@ import java.util.HashMap;
 public class VariationManager {
     private ArrayList<Stmt.Sequence> sequences = new ArrayList<>();
     private HashMap<String, Object> variables;
-    private ArrayList<HashMap<String, Object>> variableStates;
+    private HashMap<String, Object>[][] variableStates;
     private Level level;
     private Interpreter interpreter;
     public int[] sequenceIndex;
-    public byte[][] saveStates;
-    public CharList[] moveLists;
+    public byte[][][] savestates;
+    public CharList[][] moveLists;
     private ArrayList<Double> cumulativeTotalPermutations = new ArrayList<>();
     private double totalValidPermutationCount = 1;
-    private int lastIndex = -1;
+    public int startingMove = 0;
+    private int lastIndex = 0;
+    private int lastStartingMove = 0;
 
     VariationManager(SuperCC emulator, ArrayList<Stmt> statements, HashMap<String, Object> variables,
                      Level level, Interpreter interpreter) {
         setSequences(statements);
-        this.variables = variables;
-        this.variableStates = new ArrayList<>(sequences.size());
-        this.level = level;
         this.interpreter = interpreter;
+        for(Stmt.Sequence seq : sequences) {
+            if(seq.permutation.limits.upper == 0) {
+                return;
+            }
+        }
+        this.variables = variables;
+        this.level = level;
         calculatePermutationCount();
         if(sequences.size() == 0) {
             return;
         }
         this.sequenceIndex = new int[sequences.size()];
-        this.saveStates = new byte[sequences.size()][];
-        this.moveLists = new CharList[sequences.size()];
+
+        this.variableStates = new HashMap[sequences.size()][];
+        this.savestates = new byte[sequences.size()][][];
+        this.moveLists = new CharList[sequences.size()][];
 
         for(int i = 0; i < sequences.size(); i++) {
-            variableStates.add(new HashMap<>());
+            int limit = sequences.get(i).permutation.getUpperLimit();
+            this.savestates[i] = new byte[limit][];
+            this.variableStates[i] = new HashMap[limit];
+            this.moveLists[i] = new CharList[limit];
         }
 
         byte[] initialState = level.save();
-        this.saveStates[0] = Arrays.copyOf(initialState, initialState.length);
-        this.moveLists[0] = new CharList();
+
+        this.savestates[0][0] = Arrays.copyOf(initialState, initialState.length);
+        this.moveLists[0][0] = new CharList();
 
         char[] moves = emulator.getSavestates().getMoves();
         int index = emulator.getSavestates().getPlaybackIndex();
@@ -53,7 +65,7 @@ public class VariationManager {
         }
         for(int i = 0; i < index; i++) {
             char move = lowercase(moves[i]);
-            moveLists[0].add(move);
+            moveLists[0][0].add(move);
         }
         setSequenceIndex(statements);
     }
@@ -70,15 +82,21 @@ public class VariationManager {
                 seq.permutation.reset();
             }
             else  {
-                loadVariables(i);
+                startingMove = seq.permutation.startingMove;
+                if(lastIndex < i) {
+                    i = lastIndex;
+                }
+                else if(i == lastIndex && startingMove > lastStartingMove) {
+                    startingMove = lastStartingMove;
+                }
+                loadVariables(i, getStartingMove());
                 return i;
             }
         }
         return -1;
     }
 
-    public void setVariables(int index) {
-        if(index != lastIndex) {
+    public void setVariables(int index, int move) {
             HashMap<String, Object> newVariables = new HashMap<>();
             for (String var : variables.keySet()) {
                 Object newVal = variables.get(var);
@@ -87,12 +105,12 @@ public class VariationManager {
                 }
                 newVariables.put(var, newVal);
             }
-            variableStates.set(index, newVariables);
+            variableStates[index][move] = newVariables;
             byte[] newSavestate = level.save();
-            saveStates[index] = Arrays.copyOf(newSavestate, newSavestate.length);
-            moveLists[index] = interpreter.moveList.clone();
+            savestates[index][move] = Arrays.copyOf(newSavestate, newSavestate.length);
+            moveLists[index][move] = interpreter.moveList.clone();
             lastIndex = index;
-        }
+            lastStartingMove = move;
     }
 
     public void terminate(int index) {
@@ -112,6 +130,17 @@ public class VariationManager {
     public void terminateZero(int index) {
         sequences.get(index).permutation.reset();
         endSequences(index + 1);
+    }
+
+    public int getStartingMove() {
+        return (startingMove < 0) ? 0 : startingMove;
+    }
+
+    public int getStartingMove(int atSequence) {
+        if(atSequence > lastIndex) {
+            return 0;
+        }
+        return (startingMove < 0) ? 0 : startingMove;
     }
 
     private void endSequences(int from) {
@@ -138,12 +167,12 @@ public class VariationManager {
         }
     }
 
-    private void loadVariables(int index) {
-        HashMap<String, Object> newVars = variableStates.get(index);
-        for(String var : newVars.keySet()) {
+    private void loadVariables(int index, int move) {
+        HashMap<String, Object> newVars = variableStates[index][move];
+        for (String var : newVars.keySet()) {
             Object val = newVars.get(var);
-            if(val instanceof Move) {
-                val = new Move(((Move)val).value);
+            if (val instanceof Move) {
+                val = new Move(((Move) val).value);
             }
             variables.put(var, val);
         }
@@ -173,6 +202,9 @@ public class VariationManager {
     }
 
     public double getTotalPermutationCount() {
+        if(cumulativeTotalPermutations.size() == 0) {
+            return 0;
+        }
         return cumulativeTotalPermutations.get(0);
     }
 

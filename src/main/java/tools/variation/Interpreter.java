@@ -66,8 +66,8 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         while(!vt.killFlag && !isFinished()) {
             variationCount++;
             try {
-                level.load(manager.saveStates[atSequence]);
-                moveList = manager.moveLists[atSequence].clone();
+                level.load(manager.savestates[atSequence][manager.getStartingMove()]);
+                moveList = manager.moveLists[atSequence][manager.getStartingMove()].clone();
                 for (int i = fromStatement; i < statements.size(); i++) {
                     Stmt stmt = statements.get(i);
                     stmt.execute(this);
@@ -134,8 +134,10 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
         if(manager.getSequenceCount() > 0) {
-            for (char move : manager.moveLists[0]) {
-                emulator.tick(move, TickFlags.PRELOADING);
+            if(manager.moveLists != null) {
+                for (char move : manager.moveLists[0][0]) {
+                    emulator.tick(move, TickFlags.PRELOADING);
+                }
             }
         }
         if(vt.hasGui) {
@@ -201,10 +203,16 @@ public class Interpreter implements Expr.Evaluator, Stmt.Executor {
     @Override
     public void executeSequence(Stmt.Sequence stmt) {
         inSequence = true;
-        manager.setVariables(atSequence);
         CharList[] permutation = manager.getPermutation(atSequence);
-        stmt.lifecycle.start.execute(this);
-        for(atMove = 0; atMove < permutation.length;) {
+        int start = manager.getStartingMove(atSequence);
+        if(start == 0) {
+            manager.setVariables(atSequence, 0);
+            stmt.lifecycle.start.execute(this);
+        }
+        for(atMove = start; atMove < permutation.length;) {
+            if(atMove > 0 && atMove < permutation.length - 1) {
+                manager.setVariables(atSequence, atMove);
+            }
             stmt.lifecycle.beforeMove.execute(this);
             for(int i = 0; i < permutation[atMove].size(); i++) {
                 stmt.lifecycle.beforeStep.execute(this);

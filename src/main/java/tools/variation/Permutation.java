@@ -15,6 +15,7 @@ public class Permutation {
     private String lexicographic;
     public double permutationCount;
     public double permutationValidCount;
+    public int startingMove;
 
     public static double LIMIT = 1e18;
 
@@ -42,6 +43,7 @@ public class Permutation {
      */
     public void nextPermutation() {
         int i = getFirstDescendingIndex();
+        startingMove = i;
         if(i == -1) {
             endOfCurrentSubset();
             return;
@@ -69,6 +71,10 @@ public class Permutation {
         return permutation;
     }
 
+    public int getUpperLimit() {
+        return limits.upper;
+    }
+
     // Returns double due to potentially large value
     private double calculatePermutationCount() {
         return set.getTotalPermutationCount();
@@ -83,6 +89,7 @@ public class Permutation {
         finished = false;
         currentSize = limits.lower;
         initialPermutation();
+        startingMove = 0;
     }
 
     public void terminate(int index) {

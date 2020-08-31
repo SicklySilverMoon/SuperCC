@@ -491,4 +491,64 @@ class InterpreterTest {
         assertEquals(2, interpreter.solutions.size());
         assertTrue(consoleText.contains("3 variations"));
     }
+
+    @Test
+    void multipleSequenceFullMexample() {
+        emulator.loadLevel(6);
+        String code = "all;\n" +
+                "[3ud][ud, 3w](4){}\n" +
+                "for(;getPlayerX() != 12;) move(r);\n" +
+                "move(4u, 3r, d);\n" +
+                "[2l, 2r](1,4){}\n" +
+                "move(u);\n" +
+                "for(;getPlayerX() != 17;) move(r);\n" +
+                "move(d, 2r, 3d, r);\n" +
+                "[2ww](0,2){}\n" +
+                "[3r](1,3){}\n" +
+                "[urd](0,1){}\n" +
+                "move(4u);\n" +
+                "if(getPlayerX() > 23) move(l);\n" +
+                "for(;getPlayerX() != 23;) move(r);\n" +
+                "move(udrru);\n" +
+                "[w](0,1){}\n" +
+                "move(ddrlddrr);";
+
+        Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
+        interpreter.interpret();
+        String consoleText = console.getText();
+
+        assertEquals(37, interpreter.solutions.size());
+        assertTrue(consoleText.contains("3,240 variations"));
+        assertTrue(consoleText.contains("241 variations"));
+    }
+
+    @Test
+    void findingSolutionPrematurelyShouldntCrash() {
+        emulator.loadLevel(3);
+        String code = "all; move(rdrr); [u,r,d,l](){}";
+
+        Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
+        interpreter.interpret();
+    }
+
+    @Test
+    void sequencesAfterFindingSolutionShouldntCrash() {
+        emulator.loadLevel(3);
+        String code = "all; move(rdrr); [u,r,d,l](){} [u,r](){}";
+
+        Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
+        interpreter.interpret();
+    }
+
+    @Test
+    void terminatingAtSequenceBorderShouldntCrash() {
+        emulator.loadLevel(3);
+        String code = "all;\n" +
+                "[u,r,d,l](3){}\n" +
+                "[u,r,d,l](3){}\n" +
+                "[u,r,d,l](3){}";
+
+        Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
+        interpreter.interpret();
+    }
 }
