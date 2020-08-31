@@ -24,13 +24,17 @@ public class ControlGUI {
     private JButton rewindButton;
     private JButton forwardButton;
     private JPanel toolPanel;
-    
+    private JButton upLeftButton;
+    private JButton downLeftButton;
+    private JButton downRightButton;
+    private JButton upRightButton;
+
     private SuperCC emulator;
     
     public ControlGUI(SuperCC emulator) {
         this.emulator = emulator;
         JButton[] buttons = new JButton[] {upButton, leftButton, downButton, rightButton, halfWaitButton,
-            fullWaitButton, rewindButton, forwardButton};
+            fullWaitButton, rewindButton, forwardButton, upLeftButton, downLeftButton, downRightButton, upRightButton};
         
         for (JButton button : buttons) {
             KeyRemapButton krb = (KeyRemapButton) button;
@@ -69,6 +73,10 @@ public class ControlGUI {
         fullWaitButton = new KeyRemapButton(EmulatorKeyListener.Key.FULL_WAIT);
         rewindButton = new KeyRemapButton(EmulatorKeyListener.Key.REWIND);
         forwardButton = new KeyRemapButton(EmulatorKeyListener.Key.FORWARD);
+        upLeftButton = new KeyRemapButton(EmulatorKeyListener.Key.UP_LEFT);
+        downLeftButton = new KeyRemapButton(EmulatorKeyListener.Key.DOWN_LEFT);
+        downRightButton = new KeyRemapButton(EmulatorKeyListener.Key.DOWN_RIGHT);
+        upRightButton = new KeyRemapButton(EmulatorKeyListener.Key.UP_RIGHT);
     }
     
     private class KeyRemapButton extends JButton {

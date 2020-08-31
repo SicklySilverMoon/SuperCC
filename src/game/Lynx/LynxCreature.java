@@ -17,7 +17,7 @@ import static game.Tile.*;
 public class LynxCreature extends Creature {
 
     private int timeTraveled;
-    private int animationTimer; //Exists primarily for death effect timings, but adds future ability to implement actual animations
+    private int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
 
     private final int defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
 
@@ -52,8 +52,12 @@ public class LynxCreature extends Creature {
     public boolean tick(Direction direction) {
         if (animationTimer != 0) {
             animationTimer--;
-            if (creatureType == CreatureID.CHIP && level.getLayerFG().get(position.index) == EXIT)
+            if (creatureType == CreatureID.CHIP && level.getLayerFG().get(position.index) == EXIT) {
                 level.setLevelWon(true);
+                level.getLayerFG().set(position, EXITED_CHIP);
+                kill(); //kill and get rid of the animation as well
+                kill();
+            }
             return false;
         }
 
@@ -70,14 +74,18 @@ public class LynxCreature extends Creature {
             Position newPosition = position.move(direction);
             boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
                     && canLeave(direction, level.getLayerFG().get(position), position);
-            boolean blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0
-                                                            && creatureType != CreatureID.CHIP; //todo: sometimes if its a block it should stop chip
+            boolean blockedByCreature = false;
+            if (creatureType != CreatureID.CHIP)
+                blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0;
+            else if (monsterList.getCreaturesAtPosition(newPosition) != 0 && monsterList.creatureAt(newPosition).getCreatureType() == CreatureID.BLOCK)
+                blockedByCreature = true;
 
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
                     Tile currentTile = level.getLayerFG().get(position);
-                    if (sliding && currentTile.isIce()) {
+                    if (sliding && (currentTile.isIce() || currentTile == FF_RANDOM)) {
                         direction = direction.turn(TURN_AROUND);
-                        if (currentTile.isIceCorner()) direction = applySlidingTile(direction, currentTile, null);
+                        if (currentTile.isIceCorner() || currentTile == FF_RANDOM)
+                            direction = applySlidingTile(direction, currentTile, null);
                         this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
                     }
                     return false;
@@ -98,7 +106,7 @@ public class LynxCreature extends Creature {
             case WATER:
                 if (creatureType == CreatureID.BLOCK)
                     level.getLayerFG().set(position, DIRT);
-                if (creatureType != GLIDER)
+                if (creatureType != GLIDER && !(creatureType == CreatureID.CHIP && level.getBoots()[0] != 0))
                     kill();
                 break;
             case ICE:
@@ -121,7 +129,8 @@ public class LynxCreature extends Creature {
                 level.getButton(position).press(level);
                 break;
             case FIRE:
-                if (creatureType != FIREBALL) kill();
+                if (creatureType != FIREBALL && !(creatureType == CreatureID.CHIP && level.getBoots()[1] != 0))
+                    kill();
                 break;
             case BOMB:
                 kill();
@@ -179,11 +188,33 @@ public class LynxCreature extends Creature {
                 level.getKeys()[3]--;
                 level.getLayerFG().set(position, FLOOR);
                 break;
-            case EXIT:
+            case BOOTS_WATER:
                 if (creatureType == CreatureID.CHIP) {
-                    animationTimer = 4;
-                    level.getLayerFG().set(position.index, EXITED_CHIP);
+                    level.getBoots()[0] = 1;
+                    level.getLayerFG().set(position, FLOOR);
                 }
+                break;
+            case BOOTS_FIRE:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getBoots()[1] = 1;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case BOOTS_ICE:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getBoots()[2] = 1;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case BOOTS_SLIDE:
+                if (creatureType == CreatureID.CHIP) {
+                    level.getBoots()[3] = 1;
+                    level.getLayerFG().set(position, FLOOR);
+                }
+                break;
+            case EXIT:
+                if (creatureType == CreatureID.CHIP)
+                    animationTimer = 4;
                 break;
         }
         return true;

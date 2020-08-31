@@ -130,12 +130,24 @@ public class LynxCreatureList extends CreatureList {
 
         Creature chip = level.getChip();
         Direction[] directions = chip.getDirectionPriority(chip, null);
-        if (chip.getTimeTraveled() != 0) {
+        if (chip.getTimeTraveled() != 0 || chip.getAnimationTimer() != 0) {
             chip.tick(null);
             return;
         }
         if (directions.length == 0) return;
         //todo: sliding bullshit lol
+
+        if (directions.length > 1) {
+            assert directions.length == 2;
+            for (int i = 0; i < directions.length; i++) {
+                Direction dir = directions[i];
+                if (chip.getDirection() == dir) {
+                    int j = (i == 0 ? 1 : 0);
+                    directions[i] = directions[j];
+                    directions[j] = dir;
+                }
+            }
+        }
 
         Position newPosition = chip.getPosition().move(directions[0]);
         Creature anim = animationLayer[newPosition.index];
@@ -157,29 +169,25 @@ public class LynxCreatureList extends CreatureList {
 
         //block slap
         if (directions.length > 1) {
-            Position slapPosition = chip.getPosition().move(directions[1]);
-            Creature toSlap = creatureAt(slapPosition);
-            if (toSlap != null && toSlap.getCreatureType() == CreatureID.BLOCK && toSlap.getTimeTraveled() == 0) {
-                CreatureID oldCreatureType = toSlap.getCreatureType();
-                Position oldPosition = toSlap.getPosition();
-                toSlap.setDirection(directions[1]);
-                toSlap.tick(directions[1]);
-                updateLayer(toSlap, oldPosition, oldCreatureType);
-            }
+            pushBlock(chip.getPosition().move(directions[1]), directions[1]);
         }
 
         //blocks ahead of chip
-        Creature creatureAhead = creatureAt(chip.getPosition().move(directions[0]));
-        if (creatureAhead != null && creatureAhead.getCreatureType() == CreatureID.BLOCK
-                && creatureAhead.getTimeTraveled() == 0) {
-            CreatureID oldCreatureType = creatureAhead.getCreatureType();
-            Position oldPosition = creatureAhead.getPosition();
-            creatureAhead.setDirection(directions[0]);
-            creatureAhead.tick(directions[0]);
-            updateLayer(creatureAhead, oldPosition, oldCreatureType);
-        }
+        pushBlock(chip.getPosition().move(directions[0]), directions[0]);
+
         chip.tick(directions[0]);
         chipDeathCheck();
+    }
+
+    private void pushBlock(Position position, Direction direction) {
+        Creature block = creatureAt(position);
+        if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
+            CreatureID oldCreatureType = block.getCreatureType();
+            Position oldPosition = block.getPosition();
+            block.setDirection(direction);
+            block.tick(direction);
+            updateLayer(block, oldPosition, oldCreatureType);
+        }
     }
 
     /**

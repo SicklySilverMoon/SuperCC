@@ -15,17 +15,21 @@ public class EmulatorKeyListener extends KeyAdapter {
         RIGHT(SuperCC.RIGHT),
         HALF_WAIT(SuperCC.WAIT),
         FULL_WAIT(SuperCC.WAIT),
+        UP_LEFT(SuperCC.UP_LEFT),
+        DOWN_LEFT(SuperCC.DOWN_LEFT),
+        DOWN_RIGHT(SuperCC.DOWN_RIGHT),
+        UP_RIGHT(SuperCC.UP_RIGHT),
         REWIND,
         FORWARD;
-        private char directionByte;
+        private char directionChar;
         private int keyCode;
 
         public int getKeyCode() {
             return keyCode;
         }
         
-        Key(char directionByte) {
-            this.directionByte = directionByte;
+        Key(char directionChar) {
+            this.directionChar = directionChar;
         }
         Key() {}
     }
@@ -43,12 +47,12 @@ public class EmulatorKeyListener extends KeyAdapter {
         Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
         if (k == null) {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
-                if (e.isControlDown() && 48 <= keyCode && keyCode <= 57) { //Values for 0 through 9
-                    boolean recording = emulator.getSavestates().checkpointRecorder(keyCode-48);
+                if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
+                    boolean recording = emulator.getSavestates().checkpointRecorder(keyCode-KeyEvent.VK_0);
                     if (recording) emulator.showAction("Started Checkpoint Record");
                     else emulator.showAction("Finished Checkpoint Record");
                 }
-                if (e.getKeyCode() == 47) { //Hardcoded value for the '/' key, should switch this to a proper keybind
+                if (e.getKeyCode() == KeyEvent.VK_SLASH) { //Hardcoded value for the '/' key, should switch this to a proper keybind
                     emulator.getSavestates().addUndesirableSavestate();
                     emulator.showAction("Undesirable State saved");
                 }
@@ -60,11 +64,11 @@ public class EmulatorKeyListener extends KeyAdapter {
                 }
             }
             else {
-                if (e.isControlDown() && 48 <= keyCode && keyCode <= 57) { //Values for 0 through 9
+                if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
                     //Time to code in loading the checkpoint moves
-                    int size = emulator.getSavestates().getCheckpoint(keyCode-48).size();
+                    int size = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).size();
                     for (int i = 0; i < size; i++) {
-                        char c = emulator.getSavestates().getCheckpoint(keyCode-48).get(i);
+                        char c = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).get(i);
                         switch (c){
                             case 'U': c = SuperCC.UP; break;
                             case 'L': c = SuperCC.LEFT; break;
@@ -88,15 +92,19 @@ public class EmulatorKeyListener extends KeyAdapter {
                 case LEFT:
                 case DOWN:
                 case RIGHT:
+                case UP_LEFT:
+                case DOWN_LEFT:
+                case DOWN_RIGHT:
+                case UP_RIGHT:
                 case HALF_WAIT:
                     if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
-                        emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
+                        emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
                     break;
                 case FULL_WAIT:
                     if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
-                        emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
+                        emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
                     if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
-                        emulator.tick(k.directionByte, TickFlags.GAME_PLAY);
+                        emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
                     break;
                 case REWIND:
                     emulator.getSavestates().rewind();

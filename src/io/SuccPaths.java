@@ -1,5 +1,6 @@
 package io;
 
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -26,6 +27,10 @@ public class SuccPaths {
             writer.printf("%s = %s\n", "Right", settingsMap.get("Controls:Right"));
             writer.printf("%s = %s\n", "HalfWait", settingsMap.get("Controls:HalfWait"));
             writer.printf("%s = %s\n", "FullWait", settingsMap.get("Controls:FullWait"));
+            writer.printf("%s = %s\n", "UpLeft", settingsMap.get("Controls:UpLeft"));
+            writer.printf("%s = %s\n", "DownLeft", settingsMap.get("Controls:DownLeft"));
+            writer.printf("%s = %s\n", "DownRight", settingsMap.get("Controls:DownRight"));
+            writer.printf("%s = %s\n", "UpRight", settingsMap.get("Controls:UpRight"));
             writer.printf("%s = %s\n", "Rewind", settingsMap.get("Controls:Rewind"));
             writer.printf("%s = %s\n\n", "Play", settingsMap.get("Controls:Play"));
 
@@ -66,9 +71,12 @@ public class SuccPaths {
     }
     public int[] getControls() {
         String[] mapKeys = new String[] {"Controls:Up", "Controls:Left", "Controls:Down", "Controls:Right",
-                "Controls:HalfWait", "Controls:FullWait", "Controls:Rewind", "Controls:Play"};
+                "Controls:HalfWait", "Controls:FullWait", "Controls:UpLeft", "Controls:DownLeft", "Controls:DownRight",
+                "Controls:UpRight", "Controls:Rewind", "Controls:Play"};
         int[] controls = new int[mapKeys.length];
-        int[] defaultControls = new int[] {38, 37, 40, 39, 32, 27, 8, 10};
+        int[] defaultControls = new int[] {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
+                KeyEvent.VK_SPACE, KeyEvent.VK_ESCAPE, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I,
+                KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER};
         boolean error = false;
 
         for (int i=0; i < mapKeys.length; i++) {
@@ -138,8 +146,12 @@ public class SuccPaths {
         settingsMap.put("Controls:Right", String.valueOf(controls[3]));
         settingsMap.put("Controls:HalfWait", String.valueOf(controls[4]));
         settingsMap.put("Controls:FullWait", String.valueOf(controls[5]));
-        settingsMap.put("Controls:Rewind", String.valueOf(controls[6]));
-        settingsMap.put("Controls:Play", String.valueOf(controls[7]));
+        settingsMap.put("Controls:UpLeft", String.valueOf(controls[6]));
+        settingsMap.put("Controls:DownLeft", String.valueOf(controls[7]));
+        settingsMap.put("Controls:DownRight", String.valueOf(controls[8]));
+        settingsMap.put("Controls:UpRight", String.valueOf(controls[9]));
+        settingsMap.put("Controls:Rewind", String.valueOf(controls[10]));
+        settingsMap.put("Controls:Play", String.valueOf(controls[11]));
         updateSettingsFile();
     }
     public void setTilesetNum(int tilesetNum) {
