@@ -50,18 +50,22 @@ public class LynxCreatureList extends CreatureList {
         Creature chip = level.getChip();
         for (int i = list.length - 1; i >= 0; i--) {
             Creature creature = list[i];
-            if (creature.getTimeTraveled() != 0 || creature.getCreatureType() == DEAD || creature.getCreatureType().isChip())
+            if (creature.getTimeTraveled() != 0 || creature.isDead() ||  creature.getCreatureType().isChip()
+                    || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
                 continue;
 
             for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
-                if (dir == null) continue;
+                if (dir == null)
+                    continue;
                 Position newPosition = creature.getPosition().move(dir);
                 Tile currentTile = level.getLayerFG().get(creature.getPosition());
                 Tile newTile = level.getLayerFG().get(newPosition);
                 boolean canMove = (creature.canEnter(dir, newTile) && creature.canLeave(dir, currentTile, creature.getPosition()));
 
-                if (!canMove || getCreaturesAtPosition(newPosition) != 0) continue;
-                if (!newPosition.isValid()) continue;
+                if (!canMove || getCreaturesAtPosition(newPosition) != 0)
+                    continue;
+                if (!newPosition.isValid())
+                    continue;
                 if (animationLayer[newPosition.index] != null) {
                     Creature anim = animationLayer[newPosition.index];
                     anim.kill(); //killing an animation stops the animation
@@ -77,7 +81,8 @@ public class LynxCreatureList extends CreatureList {
             //Actual movement should be done here
             Creature creature = list[i];
             Direction direction = null;
-            if (creature.getCreatureType().isChip()) continue;
+            if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
+                continue;
             if (creature.getCreatureType() != BLOCK && creature.getCreatureType() != CHIP_SWIMMING)
                 direction = creature.getDirection();
 
@@ -106,7 +111,45 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void addClone(Position position) {
+        if (level.getLayerFG().get(position) != Tile.CLONE_MACHINE)
+            return;
 
+        Creature template = null;
+        Tile newTile = null;
+        Position newPosition = null;
+        Direction direction = null;
+
+        for (Creature c: list) {
+            if (c.getPosition().equals(position)) {
+                template = c;
+                direction = template.getDirection();
+                newPosition = template.getPosition().move(direction);
+                newTile = level.getLayerFG().get(template.getPosition().move(direction));
+            }
+        }
+        if (template == null || newTile == null || newPosition == null)
+            return;
+
+        Creature clone;
+        if (!template.canEnter(direction, newTile) || getCreaturesAtPosition(newPosition) != 0)
+            return;
+
+        clone = template.clone();
+        boolean replacedDead = false;
+        for (int i=0; i < list.length; i++) {
+            Creature c = list[i];
+            if (c.isDead() && c.getAnimationTimer() == 0) {
+                list[i] = clone;
+                replacedDead = true;
+                break;
+            }
+        }
+        if (!replacedDead) {
+            newClones.add(clone);
+        }
+
+        clone.tick(direction);
+        updateLayer(clone, template.getPosition(), clone.getCreatureType());
     }
 
     private void updateLayer(Creature creature, Position oldPosition, CreatureID oldCreatureType) {
@@ -115,7 +158,7 @@ public class LynxCreatureList extends CreatureList {
             ++creatureLayer[creature.getPosition().index];
             return;
         }
-        if (creature.getCreatureType() == DEAD) {
+        if (creature.isDead()) {
             if (creature.getCreatureType() != oldCreatureType)
                 --creatureLayer[oldPosition.index];
             if (creature.getAnimationTimer() != 0)

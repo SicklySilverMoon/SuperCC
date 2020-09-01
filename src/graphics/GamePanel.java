@@ -83,7 +83,7 @@ public abstract class GamePanel extends JPanel
         }
     }
     protected abstract void drawLevel(Level level, boolean fromScratch);
-    protected abstract void drawMonsterListNumbers(CreatureList monsterList, BufferedImage overlay);
+    protected abstract void drawMonsterListNumbers(Level level, CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipListNumbers(SlipList monsterList, BufferedImage overlay);
     protected abstract void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay);
     public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
@@ -93,7 +93,7 @@ public abstract class GamePanel extends JPanel
         Level level = emulator.getLevel();
         drawLevel(level, fromScratch);
         overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        if (showMonsterListNumbers) drawMonsterListNumbers(level.getMonsterList(), overlayImage);
+        if (showMonsterListNumbers) drawMonsterListNumbers(level, level.getMonsterList(), overlayImage);
         if (showSlipListNumbers && level.supportsSliplist()) drawSlipListNumbers(level.getSlipList(), overlayImage);
         if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlayImage);
         if (showTrapConnections) drawButtonConnections(level.getBrownButtons(), overlayImage);

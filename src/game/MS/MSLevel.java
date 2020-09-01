@@ -422,6 +422,10 @@ public class MSLevel extends MSSavestate implements Level {
 //        }
         /*else*/ return chip.isDead();
     }
+
+    public boolean shouldDrawCreatureNumber(Creature creature) {
+        return true; //method is only useful for lynx really
+    }
     
     /**
      * Advances a tick (10th of a second).
@@ -517,7 +521,7 @@ public class MSLevel extends MSSavestate implements Level {
             layerBG.set(position, FLOOR);
         }
         if (position.x == 22) { //Autopsy report reset
-            if (chip.getCreatureType() == CreatureID.DEAD) {
+            if (chip.isDead()) {
                 chip.setCreatureType(CreatureID.CHIP); //If he's CHIP he's not DEAD
                 layerBG.set(position, FIRE); //In almost all situations where this is activated chip is killed by a block (due to the nature of blocks cloning instantly its usually only what can be used) which will place fire, so here i skip that and just place fire
             }

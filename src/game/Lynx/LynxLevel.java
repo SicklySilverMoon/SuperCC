@@ -325,6 +325,12 @@ public class LynxLevel extends LynxSavestate implements Level {
         layerFG.set(position, Tile.FLOOR);
     }
 
+    @Override
+    public boolean shouldDrawCreatureNumber(Creature creature) {
+        return !(creature.isDead() && creature.getAnimationTimer() == 0)
+                && layerFG.get(creature.getPosition()) != Tile.CLONE_MACHINE;
+    }
+
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
                    BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,

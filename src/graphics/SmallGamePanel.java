@@ -159,7 +159,7 @@ public class SmallGamePanel extends GamePanel {
             }
         }
         for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
-            if (creature.getCreatureType() == CreatureID.DEAD && creature.getAnimationTimer() == 0)
+            if (creature.isDead() && creature.getAnimationTimer() == 0)
                 continue;
 
             int x = tileWidth;
@@ -216,13 +216,14 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    protected void drawMonsterListNumbers(CreatureList monsterList, BufferedImage overlay){
+    protected void drawMonsterListNumbers(Level level, CreatureList monsterList, BufferedImage overlay){
         int i = 0;
         for (Creature c : monsterList){
-            if (onScreen(c.getPosition())) {
+            ++i;
+            if (onScreen(c.getPosition()) && level.shouldDrawCreatureNumber(c)) {
                 int x = (c.getPosition().getX() - screenTopLeft.getX()) * tileWidth;
                 int y = (c.getPosition().getY() - screenTopLeft.getY()) * tileHeight;
-                drawNumber(++i, blackDigits, x, y, overlay.getRaster());
+                drawNumber(i, blackDigits, x, y, overlay.getRaster());
             }
         }
     }

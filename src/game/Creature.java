@@ -147,4 +147,6 @@ public abstract class Creature {
         monsterList = newList;
     }
 
+    public abstract Creature clone();
+
 }

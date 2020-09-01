@@ -7,7 +7,7 @@ import game.Position;
 import static game.CreatureID.TANK_MOVING;
 import static game.Direction.TURN_AROUND;
 
-public class BlueButton extends Button { //TODO: This is pretty MS-centric, please fix that
+public class BlueButton extends Button {
     
     @Override
     public void press(Level level) {
@@ -15,7 +15,8 @@ public class BlueButton extends Button { //TODO: This is pretty MS-centric, plea
             if (m.getCreatureType().isTank() && !m.isSliding()){
                 m.setCreatureType(TANK_MOVING);
                 m.turn(TURN_AROUND);
-                level.getLayerFG().set(m.getPosition(), m.toTile());
+                if (level.supportsLayerBG())
+                    level.getLayerFG().set(m.getPosition(), m.toTile());
             }
         }
         for (Creature m : level.getMonsterList().getNewClones()) { //Ensures Frankenstein glitch works in all situations, prior to this it wouldn't flip tanks that had been cloned earlier that tick due to them not being on the monster list and instead being on the newClones list, this now flips those on the newClones list as well

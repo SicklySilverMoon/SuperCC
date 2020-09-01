@@ -454,6 +454,11 @@ public class LynxCreature extends Creature {
         }
     }
 
+    @Override
+    public Creature clone() {
+        return new LynxCreature(bits());
+    }
+
     public LynxCreature(Position position, Tile tile) {
         this.position = position;
 

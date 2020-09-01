@@ -16,6 +16,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class SuperCC {
 
@@ -294,7 +296,14 @@ public class SuperCC {
     }
 
     public static void initialise(String[] args){
-            SuperCC emulator = new SuperCC();
+        SuperCC emulator = new SuperCC();
+
+//        Calendar rightNow = Calendar.getInstance();
+//        Calendar endDate = new GregorianCalendar(2020, Calendar.SEPTEMBER, 13);
+//        if (rightNow.after(endDate)) {
+//            System.err.println("Today's date is after the specified end period of: " + endDate.getTime());
+//            System.exit(0);
+//        }
 
         try {
             ArgumentParser.parseArguments(emulator, args); //Parses any command line arguments given
@@ -303,8 +312,6 @@ public class SuperCC {
         }
 
         emulator.initialiseTilesheet();
-
-//            emulator.runUnitTests();
     }
 
     private void initialiseTilesheet() {
