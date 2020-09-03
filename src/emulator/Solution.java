@@ -18,10 +18,10 @@ public class Solution{
     public static final String STEP = "Step", SEED = "Seed", MOVES = "Moves", ENCODE = "Encode", RULE = "Rule", SLIDE = "Initial Slide";
     
     public static final int QUARTER_MOVES = 0,
-                            HALF_MOVES = 1,
+                            BASIC_MOVES = 1,
                             SUCC_MOVES = 2;
 
-    public char[] halfMoves;
+    public char[] basicMoves;
     public int rngSeed;
     public Step step;
     public Ruleset ruleset;
@@ -37,7 +37,7 @@ public class Solution{
         json.put(SLIDE, initialSlide.toString());
         json.put(RULE, ruleset.toString());
         json.put(ENCODE, encoding);
-        json.put(MOVES, new String(halfMoves));
+        json.put(MOVES, new String(basicMoves));
         return json;
     }
 
@@ -47,12 +47,12 @@ public class Solution{
             JSONObject json = (JSONObject) parser.parse(s);
             Step step = Step.valueOf((String) json.get(STEP));
             int rngSeed = Integer.parseInt((String) json.get(SEED));
-            char[] halfMoves = ((String) json.get(MOVES)).toCharArray();
+            char[] basicMoves = ((String) json.get(MOVES)).toCharArray();
             String ruleString = (String) json.get(RULE);
             String slideString = (String) json.get(SLIDE);
             Ruleset ruleset = Ruleset.valueOf(ruleString == null ? "MS" : ruleString);
             Direction slidingDirection = Direction.valueOf(slideString == null ? "UP" : slideString);
-            return new Solution(halfMoves, rngSeed, step, HALF_MOVES, ruleset, slidingDirection);
+            return new Solution(basicMoves, rngSeed, step, BASIC_MOVES, ruleset, slidingDirection);
         }
         catch (Exception e){
             throw new IllegalArgumentException("Invalid solution file:\n" + s);
@@ -65,28 +65,29 @@ public class Solution{
     
     public void load(SuperCC emulator, TickFlags tickFlags){
         if (emulator.getLevel().getRuleset() != ruleset)
-            if (!emulator.throwQuestion("Solution has a different ruleset than currently selected, change rulesets?")) return;
+            if (!emulator.throwQuestion("Solution has a different ruleset than currently selected, change rulesets?"))
+                return;
 
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false, ruleset, initialSlide);
-        tickHalfMoves(emulator, tickFlags);
+        tickBasicMoves(emulator, tickFlags);
         if(emulator.hasGui) {
             emulator.getMainWindow().repaint(true);
         }
     }
     
     public void loadMoves(SuperCC emulator, TickFlags tickFlags, boolean repaint){
-        tickHalfMoves(emulator, tickFlags);
+        tickBasicMoves(emulator, tickFlags);
         if (repaint) emulator.getMainWindow().repaint(true);
     }
 
-    private void tickHalfMoves(SuperCC emulator, TickFlags tickFlags) {
+    private void tickBasicMoves(SuperCC emulator, TickFlags tickFlags) {
         Level level = emulator.getLevel();
         try{
-            for (int move = 0; move < halfMoves.length; move++){
-                char c = halfMoves[move];
+            for (int move = 0; move < basicMoves.length; move++){
+                char c = basicMoves[move];
                 if (c == CHIP_RELATIVE_CLICK){
-                    int x = halfMoves[++move] - 9;
-                    int y = halfMoves[++move] - 9;
+                    int x = basicMoves[++move] - 9;
+                    int y = basicMoves[++move] - 9;
                     if (x == 0 && y == 0){                      // idk about this but it fixes thief street
                         c = WAIT;
                     }
@@ -97,8 +98,10 @@ public class Solution{
                         c = clickPosition.clickChar(chipPosition);
                     }
                 }
-                boolean tickedTwice = emulator.tick(c, tickFlags);
-                if (tickedTwice && (!isClick(c) && c != WAIT)) move++; //todo: switch to a system where its not constantly passed between byte and char, so that clicks and waits can be properly capitalized so as to avoid this shit
+                boolean tickedMulti = emulator.tick(c, tickFlags);
+                if (tickedMulti)
+                    move += level.ticksPerMove() - 1;
+
                 if (level.getChip().isDead()) {
                     break;
                 }
@@ -109,19 +112,35 @@ public class Solution{
         }
     }
     
-    private static char[] succToHalfMoves(char[] succMoves){
+    private static char[] succToBasicMoves(char[] succMoves, Ruleset ruleset){
         CharArrayWriter writer = new CharArrayWriter();
         for (char c : succMoves){
-            if (c != WAIT) for (char l : SuperCC.lowerCase(c)) writer.write(l);
+            if (SuperCC.isUppercase(c)) {
+                writer.write(SuperCC.lowerCase(c));
+                for (int i=0; i < ruleset.ticksPerMove - 1; i++)
+                    writer.write(WAIT);
+            }
             else writer.write(c);
         }
         return writer.toCharArray();
     }
-    private static char[] succToHalfMoves(CharList succMoves){
-        return succToHalfMoves(succMoves.toArray());
+    private static char[] succToBasicMoves(CharList succMoves, Ruleset ruleset){
+        return succToBasicMoves(succMoves.toArray(), ruleset);
     }
 
-    private static char[] quarterToHalfMoves(char[] quarterMoves) {
+    private static char[] quarterToBasicMoves(char[] quarterMoves, Ruleset ruleset) {
+        switch (ruleset.ticksPerMove) {
+            case 2:
+                return quarterMovesToHalfMoves(quarterMoves);
+            case 4:
+                return quarterMovesToQuarterBasicMoves(quarterMoves);
+            default:
+                System.err.println("ENCOUNTERED BAD TICKS PER MOVE VALUES OF: " + ruleset.ticksPerMove);
+                return new char[]{};
+        }
+    }
+
+    private static char[] quarterMovesToHalfMoves(char[] quarterMoves) {
         CharArrayWriter writer = new CharArrayWriter();
 //        System.out.println(Arrays.toString(quarterMoves));
 
@@ -168,16 +187,31 @@ public class Solution{
 //        System.out.println(Arrays.toString(writer.toCharArray()));
         return writer.toCharArray();
     }
-    
+
+    private static char[] quarterMovesToQuarterBasicMoves(char[] quarterMoves) {
+        CharArrayWriter writer = new CharArrayWriter();
+        for (int i=0; i < quarterMoves.length; i++) {
+            char c = quarterMoves[i];
+            if (c != CHIP_RELATIVE_CLICK)
+                writer.write(c == '~' ? '-' : c);
+            else {
+                writer.write(c);
+                writer.write(++i);
+                writer.write(++i);
+            }
+        }
+        return writer.toCharArray();
+    }
+
     @Override
     public String toString(){
         return toJSON().toJSONString();
     }
     
     public Solution(char[] moves, int rngSeed, Step step, int format, Ruleset ruleset, Direction initialSlide){
-        if (format == QUARTER_MOVES) this.halfMoves = quarterToHalfMoves(moves);
-        else if (format == SUCC_MOVES) this.halfMoves = succToHalfMoves(moves);
-        else if (format == HALF_MOVES) this.halfMoves = moves;
+        if (format == QUARTER_MOVES) this.basicMoves = quarterToBasicMoves(moves, ruleset);
+        else if (format == SUCC_MOVES) this.basicMoves = succToBasicMoves(moves, ruleset);
+        else if (format == BASIC_MOVES) this.basicMoves = moves;
         this.rngSeed = rngSeed;
         this.step = step;
         this.ruleset = ruleset;
@@ -185,12 +219,12 @@ public class Solution{
     }
     
     public Solution(CharList moves, int rngSeed, Step step, Ruleset ruleset, Direction initialSlide){
-        this.halfMoves = succToHalfMoves(moves);
+        this.basicMoves = succToBasicMoves(moves, ruleset);
         this.rngSeed = rngSeed;
         this.step = step;
         this.ruleset = ruleset;
         this.initialSlide = initialSlide;
-        //for (int move = 0; move < halfMoves.length; move++) System.out.println(halfMoves[move]);
+        //for (int move = 0; move < basicMoves.length; move++) System.out.println(basicMoves[move]);
     }
 
 }

@@ -139,7 +139,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public int ticksPerMove() {
-        return 4;
+        return RULESET.ticksPerMove;
     }
 
     @Override

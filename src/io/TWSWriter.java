@@ -19,7 +19,7 @@ public class TWSWriter{
             int timeBetween = 0;
             boolean firstMove = true;
             int i = 0;
-            for (char c : solution.halfMoves) {
+            for (char c : solution.basicMoves) {
                 if (c == SuperCC.WAIT) timeBetween += 2;
                 else {
                     int relativeClickX;
@@ -85,7 +85,7 @@ public class TWSWriter{
             write(0);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.halfMoves.length - 2);
+            writeInt(2 * solution.basicMoves.length - 2);
             /* minus 2 because the time value is always 2 extra for unknown reasons
             (likely tick counting differences between TW and SuCC).
             there's actually an issue here in that if Chip slides into the exit in MS Mode
@@ -106,7 +106,7 @@ public class TWSWriter{
         }
         public int solutionLength(Solution s) {
             int length = LEVEL_HEADER_SIZE;
-            for (char c : s.halfMoves) if (c != SuperCC.WAIT) length += 4;
+            for (char c : s.basicMoves) if (c != SuperCC.WAIT) length += 4;
             return length;
         }
         void writeFormat2(byte twsMoveByte, int time) throws IOException {

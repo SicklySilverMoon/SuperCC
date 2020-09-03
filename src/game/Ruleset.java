@@ -1,9 +1,16 @@
 package game;
 
-public enum Ruleset { //For the love of god do not use this outside of solution/JSONs
-    CURRENT,
-    MS,
-    LYNX;
+public enum Ruleset { //For the love of god do not use this outside of solution/JSONs,
+    // and only use level.getTicksPerMove unless its in Solution
+    CURRENT(0),
+    MS(2),
+    LYNX(4);
+
+    public final int ticksPerMove;
+
+    Ruleset(int ticksPerMove) {
+        this.ticksPerMove = ticksPerMove;
+    }
 
     public Ruleset swap() {
         if (this == MS) return LYNX;

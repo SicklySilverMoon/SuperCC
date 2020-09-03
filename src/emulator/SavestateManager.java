@@ -149,12 +149,14 @@ public class SavestateManager implements Serializable {
         try {
             while (emulator.getLevel().getLevelNumber() == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
                 emulator.getLevel().load(currentNode.getData());
-                char c = SuperCC.lowerCase(moves.get(playbackIndex))[0];
-                boolean tickTwice = emulator.tick(c, replayNoSave);
+                char c = SuperCC.lowerCase(moves.get(playbackIndex));
+                boolean tickMulti = emulator.tick(c, replayNoSave);
                 Thread.sleep(playbackWaitTime);
-                if (tickTwice) {
-                    emulator.tick(SuperCC.WAIT, replayNoSave);
-                    Thread.sleep(playbackWaitTime);
+                if (tickMulti) {
+                    for (int i=0; i < emulator.getLevel().ticksPerMove() - 1; i++) {
+                        emulator.tick(SuperCC.WAIT, replayNoSave);
+                        Thread.sleep(playbackWaitTime);
+                    }
                 }
                 replay();
             }
@@ -169,7 +171,7 @@ public class SavestateManager implements Serializable {
         emulator.repaint(false);
     }
     
-    public List<BufferedImage> play(SuperCC emulator, int numHalfTicks) {
+    public List<BufferedImage> play(SuperCC emulator, int numTicks) {
         ArrayList<BufferedImage> images = new ArrayList<>();
         Gui window = emulator.getMainWindow();
         int tileWidth = window.getGamePanel().getTileWidth();
@@ -179,17 +181,19 @@ public class SavestateManager implements Serializable {
         BufferedImage img = new BufferedImage(windowSizeX * tileWidth, windowSizeY * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         window.getGamePanel().paintComponent(img.getGraphics());
         images.add(img);
-        while (numHalfTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
-            char c = SuperCC.lowerCase(moves.get(playbackIndex))[0];
-            boolean tickTwice = emulator.tick(c, TickFlags.REPLAY);
+        while (numTicks-- > 0 && playbackIndex + 1 < playbackNodes.size()) {
+            char c = SuperCC.lowerCase(moves.get(playbackIndex));
+            boolean tickMulti = emulator.tick(c, TickFlags.REPLAY);
             img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
             window.getGamePanel().paintComponent(img.getGraphics());
             images.add(img);
-            if (tickTwice && numHalfTicks-- > 0) {
-                emulator.tick(SuperCC.WAIT, TickFlags.REPLAY);
-                img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
-                window.getGamePanel().paintComponent(img.getGraphics());
-                images.add(img);
+            if (tickMulti && numTicks-- > 0) {
+                for (int i=0; i < emulator.getLevel().ticksPerMove() - 1; i++) {
+                    emulator.tick(SuperCC.WAIT, TickFlags.REPLAY);
+                    img = new BufferedImage(32 * 20, 32 * 20, BufferedImage.TYPE_4BYTE_ABGR);
+                    window.getGamePanel().paintComponent(img.getGraphics());
+                    images.add(img);
+                }
             }
             replay();
         }

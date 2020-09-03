@@ -13,7 +13,7 @@ public class MSCreatureList extends game.CreatureList {
     public void initialise() {
         newClones.clear();
         numDeadMonsters = 0;
-        blobStep = (level.getStep().isEven()) != (level.getTickNumber() % 4 == 2);
+        teethStep = (level.getStep().isEven()) != (level.getTickNumber() % 4 == 2);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class MSCreatureList extends game.CreatureList {
                 numDeadMonsters++;
                 continue;
             }
-            if (!blobStep && (monster.getCreatureType() == TEETH || monster.getCreatureType() == BLOB)){
+            if (!teethStep && (monster.getCreatureType() == TEETH || monster.getCreatureType() == BLOB)){
                 continue;
             }
 

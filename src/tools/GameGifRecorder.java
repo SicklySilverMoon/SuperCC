@@ -33,13 +33,12 @@ public class GameGifRecorder {
                 @Override
                 protected Void doInBackground() throws Exception {
                 try {
-                    Gui window = emulator.getMainWindow();
                     SavestateManager savestates = emulator.getSavestates();
-                    int numHalfTicks = (int) (((Number) spinner.getValue()).doubleValue() * 10);
+                    int numTicks = (int) (((Number) spinner.getValue()).doubleValue() * (emulator.getLevel().ticksPerMove() * 5));
 
                     savestates.addSavestate(GIF_RECORDING_STATE);
                     emulator.showAction("Recording gif, please wait");
-                    List<BufferedImage> images = savestates.play(emulator, numHalfTicks);
+                    List<BufferedImage> images = savestates.play(emulator, numTicks);
                     int i = 1;
                     File outFile = new File("out.gif");
                     while (outFile.exists()) outFile = new File("out" + (i++) + ".gif");
@@ -51,7 +50,7 @@ public class GameGifRecorder {
 
                     progressBar.setMinimum(0);
                     progressBar.setMaximum(images.size());
-                    for (i = 0; i < numHalfTicks && i < images.size(); i += imageSkip) {
+                    for (i = 0; i < numTicks && i < images.size(); i += imageSkip) {
                         writer.writeToSequence(images.get(i));
                         progressBar.setValue(i);
                         progressBar.repaint();

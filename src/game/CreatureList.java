@@ -15,7 +15,7 @@ public abstract class CreatureList implements Iterable<Creature> {
     protected Level level;
     protected Creature[] list;
     protected List<Creature> newClones;
-    protected boolean blobStep;
+    protected boolean teethStep;
 
     public CreatureList(Creature[] monsters) {
         list = monsters;

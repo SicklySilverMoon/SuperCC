@@ -133,7 +133,7 @@ public class MSLevel extends MSSavestate implements Level {
 
     @Override
     public int ticksPerMove() {
-        return 2;
+        return RULESET.ticksPerMove;
     }
 
     @Override

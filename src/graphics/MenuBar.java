@@ -272,10 +272,9 @@ class MenuBar extends JMenuBar{
                     emulator.getMainWindow().repaint(false);
                 }
                 catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
-                    try {
+                    try {   //todo: fix this shit to not be garbage
                         for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
-                            char[] lowerCaseArray = SuperCC.lowerCase(ch);
-                            char c = lowerCaseArray[0];
+                            char c = SuperCC.lowerCase(ch);
                             emulator.tick(c, TickFlags.GAME_PLAY);
                             if (level.getChip().isDead()) break;
                         }

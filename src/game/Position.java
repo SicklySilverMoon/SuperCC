@@ -86,7 +86,7 @@ public class Position {
     }
     
     public static Position clickPosition(Position screenPosition, char clickChar){
-        int n = -(clickChar - SuperCC.MAX_CLICK);
+        int n = -(clickChar - SuperCC.MAX_CLICK_LOWERCASE);
         return new Position(screenPosition.getX() + n % 9, screenPosition.getY() + n / 9);
     }
     
@@ -94,7 +94,7 @@ public class Position {
         Position screen = screenPosition(chipPosition);
         if (y - screen.getY() < 9 && y - screen.getY() >= 0 &&
             x - screen.getX() < 9 && x - screen.getX() >= 0){
-            return (char) (SuperCC.MAX_CLICK - (9 * (y - screen.getY()) + (x - screen.getX())));
+            return (char) (SuperCC.MAX_CLICK_LOWERCASE - (9 * (y - screen.getY()) + (x - screen.getX())));
         }
         return UNCLICKABLE;
     }

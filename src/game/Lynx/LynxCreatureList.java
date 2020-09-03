@@ -26,6 +26,16 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void initialise() {
+        /*  EVEN+0 1234____9ABC____     todo: Make EVEN and ODD step work, this is a table of what ticks teeth can move for each step
+            EVEN+1 123____89AB____0     "Taking tick 0 as before anything has moved, and tick 1 as the first quarter step"
+            EVEN+2 12____789A____F0
+            EVEN+3 1____6789____EF0
+            ODD+0  ____5678____DEF0
+            ODD+1  ___4567____CDEF_
+            ODD+2  __3456____BCDE__
+            ODD+3  _2345____ABCD___  */
+//        teethStep = ((level.getTickNumber() + level.getStep().ordinal()) & 4) == 0;
+
         newClones.clear();
     }
 

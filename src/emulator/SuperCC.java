@@ -16,13 +16,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 public class SuperCC {
 
     public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', UP_LEFT = '↖', DOWN_LEFT = '↙',
-            DOWN_RIGHT = '↘', UP_RIGHT = '↗',  MIN_CLICK = '¯', MAX_CLICK = 'ÿ';
+            DOWN_RIGHT = '↘', UP_RIGHT = '↗',  MIN_CLICK_LOWERCASE = '¯', MAX_CLICK_LOWERCASE = 'ÿ',
+    MIN_CLICK_UPPERCASE = 'Ā', MAX_CLICK_UPPERCASE = 'Ő';
     private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
         {Direction.DOWN}, {Direction.RIGHT}, {}, {Direction.UP, Direction.LEFT}, {Direction.DOWN, Direction.LEFT},
@@ -66,6 +65,8 @@ public class SuperCC {
     }
     
     public static char capital(char c){
+        if (isClick(c))
+            return (char) (c + (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the uppercase click range
         switch (c) {
             case WAIT: return '_';
             case UP_LEFT: return '⇖';
@@ -76,18 +77,20 @@ public class SuperCC {
         }
     }
     
-    public static char[] lowerCase(char c) {
+    public static char lowerCase(char c) {
+        if (isClick(c))
+            return (char) (c - (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the lowercase click range
         switch (c) {
-            case 'U': return new char[] {UP, WAIT};
-            case 'L': return new char[] {LEFT, WAIT};
-            case 'D': return new char[] {DOWN, WAIT};
-            case 'R': return new char[] {RIGHT, WAIT};
-            case '_': return new char[] {WAIT, WAIT};
-            case '⇖': return new char[] {UP_LEFT, WAIT};
-            case '⇙': return new char[] {DOWN_LEFT, WAIT};
-            case '⇘': return new char[] {DOWN_RIGHT, WAIT};
-            case '⇗': return new char[] {UP_RIGHT, WAIT};
-            default: return new char[] {c};
+            case 'U': return UP;
+            case 'L': return LEFT;
+            case 'D': return DOWN;
+            case 'R': return RIGHT;
+            case '_': return WAIT;
+            case '⇖': return UP_LEFT;
+            case '⇙': return DOWN_LEFT;
+            case '⇘': return DOWN_RIGHT;
+            case '⇗': return UP_RIGHT;
+            default: return c;
         }
     }
     
@@ -166,7 +169,7 @@ public class SuperCC {
             else {
                 level = dat.parseLevel(levelNumber, rngSeed, step, rules, initialSlide);
                 savestates = new SavestateManager(this, level);
-                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.HALF_MOVES, level.getRuleset(), Direction.UP);
+                solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.BASIC_MOVES, level.getRuleset(), Direction.UP);
                 if(hasGui) {
                     window.repaint(true);
                     window.setTitle("SuperCC - " + new String(level.getTitle()));
@@ -189,7 +192,7 @@ public class SuperCC {
         boolean tickMulti = level.tick(c, directions);
         if (flags.multiTick && tickMulti) {
             for (int i=0; i < level.ticksPerMove() - 1; i++) {
-                c = capital(c); //todo: see the todo in Solution about capitalization and switching to another system
+                c = capital(c);
                 level.tick(c, DIRECTIONS[4]);
             }
         }
@@ -227,7 +230,17 @@ public class SuperCC {
     }
 
     public static boolean isClick(char c){
-        return c <= MAX_CLICK && c >= MIN_CLICK;
+        return c <= MAX_CLICK_UPPERCASE && c >= MIN_CLICK_LOWERCASE;
+    }
+
+    public static boolean isUppercase(char c) {
+        return c == 'U' || c == 'L' || c == 'D' || c == 'R' || c == '_' || c == '⇖' || c == '⇙' || c == '⇘' || c == '⇗'
+                || (c <= MAX_CLICK_UPPERCASE && c >= MIN_CLICK_UPPERCASE);
+    }
+
+    public static boolean isLowercase(char c) {
+        return c == UP || c == LEFT || c == DOWN || c == RIGHT || c == UP_LEFT || c == DOWN_LEFT || c == WAIT
+                || c == DOWN_RIGHT || c == UP_RIGHT || (c <= MAX_CLICK_LOWERCASE && c >= MIN_CLICK_LOWERCASE);
     }
 
     public void showAction(String s){
@@ -297,13 +310,6 @@ public class SuperCC {
 
     public static void initialise(String[] args){
         SuperCC emulator = new SuperCC();
-
-//        Calendar rightNow = Calendar.getInstance();
-//        Calendar endDate = new GregorianCalendar(2020, Calendar.SEPTEMBER, 13);
-//        if (rightNow.after(endDate)) {
-//            System.err.println("Today's date is after the specified end period of: " + endDate.getTime());
-//            System.exit(0);
-//        }
 
         try {
             ArgumentParser.parseArguments(emulator, args); //Parses any command line arguments given

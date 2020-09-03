@@ -63,7 +63,7 @@ public class EmulatorKeyListener extends KeyAdapter {
                     }
                 }
             }
-            else {
+            else {//todo: fix this up to be more... just fix the damn thing and make it not hot garbage
                 if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
                     //Time to code in loading the checkpoint moves
                     int size = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).size();
@@ -101,10 +101,10 @@ public class EmulatorKeyListener extends KeyAdapter {
                         emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
                     break;
                 case FULL_WAIT:
-                    if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
-                        emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
-                    if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
-                        emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
+                    for (int i=0; i < emulator.getLevel().ticksPerMove(); i++) {
+                        if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning())
+                            emulator.tick(k.directionChar, TickFlags.GAME_PLAY);
+                    }
                     break;
                 case REWIND:
                     emulator.getSavestates().rewind();
