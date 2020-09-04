@@ -323,7 +323,7 @@ public class MSCreature extends Creature {
             case BOMBED_CHIP:
             case UNUSED_36:
             case UNUSED_37: return false;
-            case ICE_BLOCK: return creatureType.isIceBlock();
+            case ICE_BLOCK: return creatureType == CreatureID.ICE_BLOCK;
             case EXITED_CHIP:
             case EXIT_EXTRA_1:
             case EXIT_EXTRA_2: return false;
@@ -368,7 +368,7 @@ public class MSCreature extends Creature {
                     }
                 }
                 else if (creatureType.isBlock()) {
-                    if (creatureType.isIceBlock()) level.getLayerFG().set(newPosition, ICE);
+                    if (creatureType == CreatureID.ICE_BLOCK) level.getLayerFG().set(newPosition, ICE);
                     else level.getLayerFG().set(newPosition, DIRT);
                     kill();
                 }
@@ -434,7 +434,7 @@ public class MSCreature extends Creature {
                 }
                 return false;
             case DIRT:
-                if (creatureType.isChip() || creatureType.isIceBlock()) {
+                if (creatureType.isChip() || creatureType == CreatureID.ICE_BLOCK) {
                     level.getLayerFG().set(newPosition, FLOOR);
                     return true;
                 }
@@ -590,7 +590,7 @@ public class MSCreature extends Creature {
             case UNUSED_37: return false;
             case ICE_BLOCK:
                 if (level.getLayerBG().get(newPosition).isCloneBlock()) return false; //You know how if you have a clone machine under a monster you can't enter it? Well it's the same with ice blocks and the clone blocks under them
-                if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType.isIceBlock()){
+                if (creatureType.isChip() || creatureType.isTank() || creatureType == TEETH || creatureType == CreatureID.ICE_BLOCK){
                     for (Creature monster : level.slipList) {
                         MSCreature m = (MSCreature) monster;
                         if (m.position.equals(newPosition)) {
@@ -729,7 +729,7 @@ public class MSCreature extends Creature {
                 || (pickupCheck && blockMachineCheck)
                 || (isBlock && (newTileFG.isBoot() || newTileFG.isChip() || newTileFG.isSwimmingChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
 
-            if (newTileBG == CLONE_MACHINE && creatureType.isDirtBlock()) newTileFG = newTileBG; //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
+            if (newTileBG == CLONE_MACHINE && creatureType == BLOCK) newTileFG = newTileBG; //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
 
             if (tryEnter(direction, newPosition, newTileFG, pressedButtons)) {
                 if (newTileFG != TELEPORT) level.popTile(position);

@@ -2,6 +2,7 @@ package game.Lynx;
 
 import game.*;
 import game.button.BrownButton;
+import game.button.Button;
 
 import static game.CreatureID.*;
 import static game.Direction.*;
@@ -126,7 +127,9 @@ public class LynxCreature extends Creature {
             case BUTTON_RED:
             case BUTTON_BROWN:
             case BUTTON_BLUE:
-                level.getButton(position).press(level);
+                Button button = level.getButton(position);
+                if (button != null)
+                    button.press(level);
                 break;
             case FIRE:
                 if (creatureType != FIREBALL && !(creatureType == CreatureID.CHIP && level.getBoots()[1] != 0))
@@ -289,7 +292,7 @@ public class LynxCreature extends Creature {
     public void kill() {
         if (creatureType != DEAD) {
             creatureType = DEAD;
-            animationTimer = 12; //todo: minus depending on current tick + step
+            animationTimer = ((level.getTickNumber() + level.getStep().ordinal()) & 1) == 0 ? 11 : 10; //basically copied out of TW's source
             timeTraveled = 0;
             switch (level.getLayerFG().get(position)) {
                 case WATER: //direction is used for determining which graphic to draw
@@ -384,7 +387,7 @@ public class LynxCreature extends Creature {
             case HIDDENWALL_TEMP:
                 return false;
             case GRAVEL:
-                return isChip;
+                return isChip || creatureType == CreatureID.BLOCK;
             case POP_UP_WALL:
             case HINT:
                 return isChip;

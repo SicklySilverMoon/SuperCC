@@ -47,7 +47,7 @@ public class MSCreatureList extends game.CreatureList {
         Position clonerPosition = monster.getPosition().clone();
         Tile tile = monster.toTile();
         if (monster.getCreatureType().isBlock()) tile = Tile.fromOrdinal(BLOCK_UP.ordinal() + monster.getDirection().ordinal());
-        if (!monster.getCreatureType().isAffectedByCB() && !monster.getCreatureType().isIceBlock()) direction = monster.getDirection();
+        if (!monster.getCreatureType().isAffectedByCB() && monster.getCreatureType() != CreatureID.ICE_BLOCK) direction = monster.getDirection();
         if (direction == null) return;
         if (monster.getCreatureType() == BLOB){
             Position p = monster.getPosition().clone();
@@ -58,7 +58,7 @@ public class MSCreatureList extends game.CreatureList {
         else if (monster.canEnter(direction, level.getLayerFG().get(monster.getPosition().move(direction)))){
             if (monster.tick(new Direction[] {direction}, false)) level.insertTile(clonerPosition, tile);
 
-            if (monster.getCreatureType().isDirtBlock() && level.getLayerBG().get(clonerPosition) != CLONE_MACHINE) {
+            if (monster.getCreatureType() == CreatureID.BLOCK && level.getLayerBG().get(clonerPosition) != CLONE_MACHINE) {
                 level.popTile(clonerPosition);
             }
         }
@@ -157,7 +157,7 @@ public class MSCreatureList extends game.CreatureList {
                 if (clone.getCreatureType().isBlock()) tickClonedMonster(clone);
                 else newClones.add(clone);
 
-                if (clone.getCreatureType().isIceBlock()) level.getLayerFG().set(position, Tile.ICE_BLOCK);
+                if (clone.getCreatureType() == CreatureID.ICE_BLOCK) level.getLayerFG().set(position, Tile.ICE_BLOCK);
             }
         }
     }

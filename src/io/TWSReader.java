@@ -33,8 +33,9 @@ public class TWSReader{
         twsInputStream reader = new twsInputStream(twsFile);
         reader.skip(solutionOffset);
 
-        int offset = reader.readInt();
-        if (offset == 6) throw new IOException("No solution recorded"); //If the offset is equal to 6 it means that the only thing the TWS file stores for that level is its level number, and its password
+        int solutionLength = reader.readInt();
+        reader.bytesRead = 0; //cancel out the length being read
+        if (solutionLength == 6) throw new IOException("No solution recorded"); //If the offset is equal to 6 it means that the only thing the TWS file stores for that level is its level number, and its password
         reader.readShort();                     // Level number
         reader.readInt();                       // Password
         reader.readByte();                      // Other Flags (always 0)
@@ -44,11 +45,11 @@ public class TWSReader{
         Direction initialSlide = Direction.fromTWS(stepSlideValue);
 
         int rngSeed = reader.readInt();
-        int solutionLength = reader.readInt();
+        int solutionTime = reader.readInt();
 
         reader.counter = 0;
         CharArrayWriter writer = new CharArrayWriter();
-        while (writer.size() + reader.solutionLengthOffset <= solutionLength){
+        while (reader.bytesRead < solutionLength){
             int b = reader.readByte();
             try {
                 switch (b & 0b11) {
@@ -66,12 +67,17 @@ public class TWSReader{
                 }
             }
             catch (Exception e){                    // Some solution files are too long - seems to be caused by long slides at the end of a level
+                e.printStackTrace();
                 //System.out.println("TWS file too long on level: "+level.getLevelNumber()+" "+Arrays.toString(level.getTitle()));
                 break;
             }
         }
+
+        for (int i = writer.size() + reader.solutionLengthOffset; i <= solutionTime; i++)
+            writer.write('~');
+
         Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
-        s.efficiency = 1 - (double) reader.ineffiencies / solutionLength;
+        s.efficiency = 1 - (double) reader.ineffiencies / solutionTime;
         return s;
     }
 
@@ -112,7 +118,8 @@ public class TWSReader{
         public int solutionLengthOffset = 0;
 
         public int ineffiencies = 0;
-        
+
+        public int bytesRead = 0;
         public int counter;
         public void readFormat1(int b, Writer writer) throws IOException{
             int length = b & 0b11;
@@ -175,22 +182,25 @@ public class TWSReader{
             super(file);
         }
         int readByte() throws IOException{
-//            byte b = (byte) read();
-//            System.out.printf("%02X, ", b);
+            bytesRead++;
             return read();
         }
         int readShort() throws IOException{
-            return read() + 256*read();
+            bytesRead += 2;
+            return read() + (read() << 8);
         }
         int readInt() throws IOException{
-            return read() + 256 * read() + 65536 * read() + 16777216 * read();
+            bytesRead += 4;
+            return read() + (read() << 8) + (read() << 16) + (read() << 24);
         }
         byte[] readAscii(int length) throws IOException{
+            bytesRead += length;
             byte[] asciiBytes = new byte[length];
             read(asciiBytes);
             return asciiBytes;
         }
         byte[] readEncodedAscii(int length) throws IOException{
+            bytesRead += length;
             byte[] asciiBytes = new byte[length];
             read(asciiBytes);
             for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99b);

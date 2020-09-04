@@ -37,9 +37,6 @@ class SuperCCTest {
                 Solution s = getSolution(solutionName, i);
                 s.load(emulator);
                 level = emulator.getLevel();
-                for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
-                    level.tick(WAIT, new Direction[] {});
-                }
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
                     System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
                 } else {
@@ -112,6 +109,61 @@ class SuperCCTest {
     void solveCCLP4() {
         emulator.openLevelset(new File("testData/sets/CCLP4.DAT"));
         boolean[] solved = solveLevelset("testData/tws/public_CCLP4.dac.tws");
+
+        boolean[] expectedSolved = new boolean[149];
+        Arrays.fill(expectedSolved, Boolean.TRUE);
+
+        assertArrayEquals(expectedSolved, solved);
+    }
+
+    @Test
+    void solveCHIPSLynx() {
+        emulator.openLevelset(new File("testData/sets/CHIPS-lynx.DAT"));
+        boolean[] solved = solveLevelset("testData/tws/public_CHIPS-lynx.dac.tws");
+
+        boolean[] expectedSolved = new boolean[149];
+        Arrays.fill(expectedSolved, Boolean.TRUE);
+
+        assertArrayEquals(expectedSolved, solved);
+    }
+
+    @Test
+    void solveCCLP1Lynx() {
+        emulator.openLevelset(new File("testData/sets/CCLP1-Lynx.dat"));
+        boolean[] solved = solveLevelset("testData/tws/public_CCLP1-lynx.dac.tws");
+
+        boolean[] expectedSolved = new boolean[149];
+        Arrays.fill(expectedSolved, Boolean.TRUE);
+
+        assertArrayEquals(expectedSolved, solved);
+    }
+
+    @Test
+    void solveCCLXP2() {
+        emulator.openLevelset(new File("testData/sets/CCLXP2.dat"));
+        boolean[] solved = solveLevelset("testData/tws/public_CCLXP2.dac.tws");
+
+        boolean[] expectedSolved = new boolean[149];
+        Arrays.fill(expectedSolved, Boolean.TRUE);
+
+        assertArrayEquals(expectedSolved, solved);
+    }
+
+    @Test
+    void solveCCLP3Lynx() {
+        emulator.openLevelset(new File("testData/sets/CCLP3-Lynx.DAT"));
+        boolean[] solved = solveLevelset("testData/tws/public_CCLP3-lynx.dac.tws");
+
+        boolean[] expectedSolved = new boolean[149];
+        Arrays.fill(expectedSolved, Boolean.TRUE);
+
+        assertArrayEquals(expectedSolved, solved);
+    }
+
+    @Test
+    void solveCCLP4Lynx() {
+        emulator.openLevelset(new File("testData/sets/CCLP4-Lynx.DAT"));
+        boolean[] solved = solveLevelset("testData/tws/public_CCLP4-lynx.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);

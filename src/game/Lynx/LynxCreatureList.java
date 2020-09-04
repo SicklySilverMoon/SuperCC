@@ -76,8 +76,8 @@ public class LynxCreatureList extends CreatureList {
                     continue;
                 if (!newPosition.isValid())
                     continue;
-                if (animationLayer[newPosition.index] != null) {
-                    Creature anim = animationLayer[newPosition.index];
+                Creature anim = getAnimationAtPosition(newPosition);
+                if (anim != null) {
                     anim.kill(); //killing an animation stops the animation
                     updateLayer(anim, anim.getPosition(), anim.getCreatureType());
                 }
@@ -117,6 +117,12 @@ public class LynxCreatureList extends CreatureList {
         if (!position.isValid())
             return -1;
         return creatureLayer[position.index];
+    }
+
+    private Creature getAnimationAtPosition(Position position) {
+        if (!position.isValid())
+            return null;
+        return animationLayer[position.index];
     }
 
     @Override
@@ -203,7 +209,7 @@ public class LynxCreatureList extends CreatureList {
         }
 
         Position newPosition = chip.getPosition().move(directions[0]);
-        Creature anim = animationLayer[newPosition.index];
+        Creature anim = getAnimationAtPosition(newPosition);
         if (!chip.canEnter(directions[0], level.getLayerFG().get(newPosition))
                 || (anim != null && anim.getAnimationTimer() != 0)) {
             //todo: rewrite based on the fact that the diag inputs are always a specific direction pattern, which needs to be adjusted based on Chip's current direction

@@ -152,7 +152,9 @@ public class Solution{
             char c = 0;
             int j = i+1;
 
-            if (a == CHIP_RELATIVE_CLICK && j+2 < quarterMoves.length) j += 2; //Since mouse moves take 3 bytes this just makes sure that c is always the intended move/wait and not part of the mouse bytes
+            if (a == CHIP_RELATIVE_CLICK && j+2 < quarterMoves.length) j += 2;
+            //Since mouse moves take 3 bytes this just makes sure that c is always the intended move/wait
+            //and not part of the mouse bytes
             if (j < quarterMoves.length) c = quarterMoves[j];
 
             if (a == '~' && c == '~') { //It should only write a half wait if BOTH values read are quarter waits
@@ -172,18 +174,23 @@ public class Solution{
                         i = j;
                         writer.write(quarterMoves[++j]);
                         writer.write(quarterMoves[++j]);
-                        ++i; //Puts the reader right into the first direction so that the i += 2 at the start jumps to the next pair of quarter moves
+                        ++i; //Puts the reader right into the first direction so that the i += 2 at the start jumps to
+                            //the next pair of quarter moves
                         continue;
                     }
                 }
                 if (a == CHIP_RELATIVE_CLICK) {
                     writer.write(a);
                     writer.write(quarterMoves[++i]);
-                    writer.write(quarterMoves[++i]); //Puts the reader right into the second direction so that the i += 2 at the start jumps to the next pair of quarter moves
+                    writer.write(quarterMoves[++i]);
                     continue;
                 }
             }
         }
+        writer.write(WAIT);
+        //Sometimes solutions end on slides into the exit which TW somehow handles magically even when no waits
+        //occur at solution end, so sticking an extra wait onto the end here should be enough to fix that
+
 //        System.out.println(Arrays.toString(writer.toCharArray()));
         return writer.toCharArray();
     }
