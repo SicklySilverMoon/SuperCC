@@ -242,15 +242,19 @@ public class LynxCreature extends Creature {
             case TEETH:
                 return position.seek(chip.getPosition());
             case WALKER:
-                break; //TODO
+                int turns = level.getRNG().pseudoRandom4();
+                Direction walkerDirection = direction;
+                while(turns-- != 0)
+                    walkerDirection = walkerDirection.turn(TURN_RIGHT);
+                return new Direction[] {walkerDirection};
             case BLOB:
-                break;
+                Direction[] blobDirs = new Direction[] {UP, RIGHT, DOWN, LEFT};
+                return new Direction[] { blobDirs[level.getRNG().random4()] };
             case PARAMECIUM:
                 return direction.turn(new Direction[] {TURN_RIGHT, TURN_FORWARD, TURN_LEFT, TURN_AROUND});
             default:
                 return new Direction[] {};
         }
-        return new Direction[] {};
     }
 
     @Override

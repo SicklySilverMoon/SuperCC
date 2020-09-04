@@ -4,7 +4,7 @@ public class RNG{
     
     public static final int LAST_SEED = 0x7FFFFFFF;
 
-    private int currentValue;
+    private int currentValue, prngValue1, prngValue2;
     private int nextValue(){
         return currentValue = (currentValue * 1103515245 + 12345) & 0x7FFFFFFF;
     }
@@ -14,10 +14,22 @@ public class RNG{
     public int getCurrentValue() {
         return currentValue;
     }
+    public void setPRNG1(int value) {
+        prngValue1 = value;
+    }
+    public int getPRNG1() {
+        return prngValue1;
+    }
+    public void setPRNG2(int value) {
+        prngValue2 = value;
+    }
+    public int getPRNG2() {
+        return prngValue2;
+    }
 
     /**
      * Choose a random number from 0 to 3 inclusive. This is used by random
-     * force floors. This advances the RNG once.
+     * force floors and Lynx blobs. This advances the RNG once.
      * @return An int from 0-3 .
      */
     public int random4(){
@@ -62,8 +74,22 @@ public class RNG{
         n = (currentValue >>> 28) & 3;                                              // 0, 1, 2 or 3
         swap = a[n]; a[n] = a[3]; a[3] = swap;
     }
-    
-    public RNG(int startingSeed) {
+
+    /**
+     * Choose a pseudo random number (normally a pre-chosen cycle that's known to be constant)
+     * from 0 to 3 inclusive. This is used by Lynx walkers.
+     * @return An int from 0-3 .
+     */
+    public int pseudoRandom4() {
+        int n = (prngValue1 >> 2) - prngValue1;
+        if ((prngValue1 & 0x02) == 0)
+            --n;
+        prngValue1 = (prngValue1 >> 1) | (prngValue2 & 0x80);
+        prngValue2 = (prngValue2 << 1) | (n & 0x01);
+        return ((prngValue1 ^ prngValue2) & 0xFF) & 0x03;
+    }
+
+    public RNG(int startingSeed, int prngValue1, int prngValue2) {
         currentValue = startingSeed;
     }
 

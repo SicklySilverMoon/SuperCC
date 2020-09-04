@@ -32,7 +32,7 @@ public class LynxSavestate implements Savestate {
                 2 +                             // chips left
                 4 * 2 +                         // keys
                 4 * 1 +                         // boots
-                4 +                             // rng
+                4 * 3 +                         // rng
                 1 +                             // RFF
                 2 +                             // traps length
                 traps.length +                  // traps
@@ -47,6 +47,8 @@ public class LynxSavestate implements Savestate {
         writer.writeShorts(keys);
         writer.write(boots);
         writer.writeInt(rng.getCurrentValue());
+        writer.writeInt(rng.getPRNG1());
+        writer.writeInt(rng.getPRNG2());
         writer.write(rffDirection.ordinal());
         writer.writeShort(traps.length);
         writer.write(traps);
@@ -67,6 +69,8 @@ public class LynxSavestate implements Savestate {
             keys = reader.readShorts(4);
             boots = reader.readBytes(4);
             rng.setCurrentValue(reader.readInt());
+            rng.setPRNG1(reader.readInt());
+            rng.setPRNG2(reader.readInt());
             rffDirection = Direction.fromOrdinal(reader.read());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()));

@@ -219,7 +219,7 @@ public class LevelFactory {
                 findMSPlayer(layerFG),
                 getTimer(timeLimit, 90),
                 chips,
-                new RNG(rngSeed),
+                new RNG(rngSeed, 0, 0),
                 rngSeed,
                 step,
                 lastLevel
@@ -244,7 +244,7 @@ public class LevelFactory {
                 creatures.get(0),
                 getTimer(timeLimit, 95),
                 chips,
-                new RNG(rngSeed),
+                new RNG(rngSeed, 0, 0),
                 rngSeed,
                 step,
                 lastLevel,
