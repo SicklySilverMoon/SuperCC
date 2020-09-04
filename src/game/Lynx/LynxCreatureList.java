@@ -26,15 +26,16 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void initialise() {
-        /*  EVEN+0 1234____9ABC____     todo: Make EVEN and ODD step work, this is a table of what ticks teeth can move for each step
-            EVEN+1 123____89AB____0     "Taking tick 0 as before anything has moved, and tick 1 as the first quarter step"
+        /*  EVEN+0 1234____9ABC____
+            EVEN+1 123____89AB____0
             EVEN+2 12____789A____F0
             EVEN+3 1____6789____EF0
             ODD+0  ____5678____DEF0
             ODD+1  ___4567____CDEF_
             ODD+2  __3456____BCDE__
             ODD+3  _2345____ABCD___  */
-//        teethStep = ((level.getTickNumber() + level.getStep().ordinal()) & 4) == 0;
+        teethStep = ((level.getTickNumber()-1 + level.getStep().ordinal()) & 4) == 0;
+        System.out.printf("%d + %d = %d : %b\n", level.getTickNumber(), level.getStep().ordinal(), level.getTickNumber() + level.getStep().ordinal(), teethStep);
 
         newClones.clear();
     }
@@ -91,7 +92,8 @@ public class LynxCreatureList extends CreatureList {
             //Actual movement should be done here
             Creature creature = list[i];
             Direction direction = null;
-            if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
+            if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE
+                || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
                 continue;
             if (creature.getCreatureType() != BLOCK && creature.getCreatureType() != CHIP_SWIMMING)
                 direction = creature.getDirection();

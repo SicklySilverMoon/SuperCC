@@ -310,6 +310,7 @@ public class LynxLevel extends LynxSavestate implements Level {
         chip.setDirectionPriority(directions);
         Position chipPos = chip.getPosition();
 
+        monsterList.initialise();
         monsterList.tick(); //Most of a tick is done within here
         monsterList.finalise();
         return (!chipPos.equals(chip.getPosition()) && !chip.isSliding());
