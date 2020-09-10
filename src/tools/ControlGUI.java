@@ -33,8 +33,8 @@ public class ControlGUI {
     
     public ControlGUI(SuperCC emulator) {
         this.emulator = emulator;
-        JButton[] buttons = new JButton[] {upButton, leftButton, downButton, rightButton, rewindButton, forwardButton,
-                upLeftButton, downLeftButton, downRightButton, upRightButton, halfWaitButton, fullWaitButton};
+        JButton[] buttons = new JButton[] {upButton, leftButton, downButton, rightButton, upLeftButton, downLeftButton,
+                downRightButton, upRightButton, halfWaitButton, fullWaitButton, rewindButton, forwardButton};
         
         for (JButton button : buttons) {
             KeyRemapButton krb = (KeyRemapButton) button;
@@ -69,14 +69,14 @@ public class ControlGUI {
         leftButton = new KeyRemapButton(EmulatorKeyListener.Key.LEFT);
         downButton = new KeyRemapButton(EmulatorKeyListener.Key.DOWN);
         rightButton = new KeyRemapButton(EmulatorKeyListener.Key.RIGHT);
-        halfWaitButton = new KeyRemapButton(EmulatorKeyListener.Key.HALF_WAIT);
-        fullWaitButton = new KeyRemapButton(EmulatorKeyListener.Key.FULL_WAIT);
-        rewindButton = new KeyRemapButton(EmulatorKeyListener.Key.REWIND);
-        forwardButton = new KeyRemapButton(EmulatorKeyListener.Key.FORWARD);
         upLeftButton = new KeyRemapButton(EmulatorKeyListener.Key.UP_LEFT);
         downLeftButton = new KeyRemapButton(EmulatorKeyListener.Key.DOWN_LEFT);
         downRightButton = new KeyRemapButton(EmulatorKeyListener.Key.DOWN_RIGHT);
         upRightButton = new KeyRemapButton(EmulatorKeyListener.Key.UP_RIGHT);
+        halfWaitButton = new KeyRemapButton(EmulatorKeyListener.Key.HALF_WAIT);
+        fullWaitButton = new KeyRemapButton(EmulatorKeyListener.Key.FULL_WAIT);
+        rewindButton = new KeyRemapButton(EmulatorKeyListener.Key.REWIND);
+        forwardButton = new KeyRemapButton(EmulatorKeyListener.Key.FORWARD);
     }
     
     private class KeyRemapButton extends JButton {

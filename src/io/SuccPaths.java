@@ -71,11 +71,11 @@ public class SuccPaths {
     }
     public int[] getControls() {
         String[] mapKeys = new String[] {"Controls:Up", "Controls:Left", "Controls:Down", "Controls:Right",
-                "Controls:HalfWait", "Controls:FullWait", "Controls:UpLeft", "Controls:DownLeft", "Controls:DownRight",
-                "Controls:UpRight", "Controls:Rewind", "Controls:Play"};
+                "Controls:UpLeft", "Controls:DownLeft", "Controls:DownRight", "Controls:UpRight",
+                "Controls:HalfWait", "Controls:FullWait", "Controls:Rewind", "Controls:Play"};
         int[] controls = new int[mapKeys.length];
         int[] defaultControls = new int[] {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
-                KeyEvent.VK_SPACE, KeyEvent.VK_ESCAPE, KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I,
+                KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I, KeyEvent.VK_SPACE, KeyEvent.VK_ESCAPE,
                 KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER};
         boolean error = false;
 
@@ -145,12 +145,12 @@ public class SuccPaths {
         settingsMap.put("Controls:Left", String.valueOf(controls[1]));
         settingsMap.put("Controls:Down", String.valueOf(controls[2]));
         settingsMap.put("Controls:Right", String.valueOf(controls[3]));
-        settingsMap.put("Controls:HalfWait", String.valueOf(controls[4]));
-        settingsMap.put("Controls:FullWait", String.valueOf(controls[5]));
-        settingsMap.put("Controls:UpLeft", String.valueOf(controls[6]));
-        settingsMap.put("Controls:DownLeft", String.valueOf(controls[7]));
-        settingsMap.put("Controls:DownRight", String.valueOf(controls[8]));
-        settingsMap.put("Controls:UpRight", String.valueOf(controls[9]));
+        settingsMap.put("Controls:UpLeft", String.valueOf(controls[4]));
+        settingsMap.put("Controls:DownLeft", String.valueOf(controls[5]));
+        settingsMap.put("Controls:DownRight", String.valueOf(controls[6]));
+        settingsMap.put("Controls:UpRight", String.valueOf(controls[7]));
+        settingsMap.put("Controls:HalfWait", String.valueOf(controls[8]));
+        settingsMap.put("Controls:FullWait", String.valueOf(controls[9]));
         settingsMap.put("Controls:Rewind", String.valueOf(controls[10]));
         settingsMap.put("Controls:Play", String.valueOf(controls[11]));
         updateSettingsFile();

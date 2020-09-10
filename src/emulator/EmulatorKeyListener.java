@@ -13,12 +13,12 @@ public class EmulatorKeyListener extends KeyAdapter {
         LEFT(SuperCC.LEFT),
         DOWN(SuperCC.DOWN),
         RIGHT(SuperCC.RIGHT),
-        HALF_WAIT(SuperCC.WAIT),
-        FULL_WAIT(SuperCC.WAIT),
         UP_LEFT(SuperCC.UP_LEFT),
         DOWN_LEFT(SuperCC.DOWN_LEFT),
         DOWN_RIGHT(SuperCC.DOWN_RIGHT),
         UP_RIGHT(SuperCC.UP_RIGHT),
+        HALF_WAIT(SuperCC.WAIT),
+        FULL_WAIT(SuperCC.WAIT),
         REWIND,
         FORWARD;
         private char directionChar;
