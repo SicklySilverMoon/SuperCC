@@ -35,7 +35,7 @@ public class LynxCreatureList extends CreatureList {
             ODD+2  __3456____BCDE__
             ODD+3  _2345____ABCD___  */
         teethStep = ((level.getTickNumber()-1 + level.getStep().ordinal()) & 4) == 0;
-        System.out.printf("%d + %d = %d : %b\n", level.getTickNumber(), level.getStep().ordinal(), level.getTickNumber() + level.getStep().ordinal(), teethStep);
+//        System.out.printf("%d + %d = %d : %b\n", level.getTickNumber(), level.getStep().ordinal(), level.getTickNumber() + level.getStep().ordinal(), teethStep);
 
         newClones.clear();
     }

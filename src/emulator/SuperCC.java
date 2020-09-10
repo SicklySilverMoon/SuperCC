@@ -65,7 +65,7 @@ public class SuperCC {
     }
     
     public static char capital(char c){
-        if (isClick(c))
+        if (isClick(c) && isLowercase(c))
             return (char) (c + (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the uppercase click range
         switch (c) {
             case WAIT: return '_';
@@ -78,7 +78,7 @@ public class SuperCC {
     }
     
     public static char lowerCase(char c) {
-        if (isClick(c))
+        if (isClick(c) && isUppercase(c))
             return (char) (c - (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the lowercase click range
         switch (c) {
             case 'U': return UP;

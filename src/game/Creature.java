@@ -46,7 +46,7 @@ public abstract class Creature {
 
     public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
 
-    protected abstract Direction applySlidingTile(Direction direction, Tile tile, RNG rng);
+    protected abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;

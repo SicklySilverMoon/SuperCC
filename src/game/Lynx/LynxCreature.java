@@ -86,20 +86,35 @@ public class LynxCreature extends Creature {
                     if (sliding && (currentTile.isIce() || currentTile == FF_RANDOM)) {
                         direction = direction.turn(TURN_AROUND);
                         if (currentTile.isIceCorner() || currentTile == FF_RANDOM)
-                            direction = applySlidingTile(direction, currentTile, null);
+                            direction = getSlideDirection(direction, currentTile, null);
                         this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
                     }
                     return false;
             }
             finishLeaving(position);
             position = newPosition;
-            sliding = level.getLayerFG().get(newPosition).isSliding(); //todo: oh god trap sliding
+            Tile newTile = level.getLayerFG().get(newPosition);
+            if (newTile.isSliding()) {
+                if (newTile.isIce() && (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0))
+                    sliding = true;
+                if (newTile.isFF() && (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0))
+                    sliding = true;
+                if (newTile == TELEPORT)
+                    sliding = true;
+                //todo: oh god traps kinda count as sliding
+            }
+            else
+                sliding = false;
         }
         Tile newTile = level.getLayerFG().get(position);
+        Tile oldTile = getOldTile();
 
         timeTraveled += defaultMoveSpeed;
-        if (newTile.isFF() || newTile.isIce()) timeTraveled += defaultMoveSpeed; //Sliding on ice or FFs doubles move speed
-        timeTraveled &= 0b111; //Mod 8
+        if (newTile.isFF() || newTile.isIce())
+            timeTraveled += defaultMoveSpeed; //Sliding on ice or FFs doubles move speed
+        timeTraveled += (newTile == TRAP ? 1 : 0) + (oldTile == TRAP ? 1 : 0);
+        if (timeTraveled > 7)
+            timeTraveled = 0;
 
         if (timeTraveled != 0) return true;
 
@@ -111,28 +126,35 @@ public class LynxCreature extends Creature {
                     kill();
                 break;
             case ICE:
-            case FF_DOWN:
-            case FF_UP:
-            case FF_RIGHT:
-            case FF_LEFT:
             case ICE_SLIDE_SOUTHEAST:
             case ICE_SLIDE_SOUTHWEST:
             case ICE_SLIDE_NORTHWEST:
             case ICE_SLIDE_NORTHEAST:
+                if (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0) {
+                    this.direction = getSlideDirection(this.direction, newTile, null);
+                }
+                break;
+            case FF_DOWN:
+            case FF_UP:
+            case FF_RIGHT:
+            case FF_LEFT:
             case FF_RANDOM:
-                this.direction = applySlidingTile(this.direction, newTile, null);
-                sliding = true;
+                if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0) {
+                    this.direction = getSlideDirection(this.direction, newTile, null);
+                }
                 break;
             case BUTTON_GREEN:
             case BUTTON_RED:
             case BUTTON_BROWN:
             case BUTTON_BLUE:
                 Button button = level.getButton(position);
-                if (button != null)
+                if (button != null) {
                     button.press(level);
+                    //todo: https://wiki.bitbusters.club/Release_desynchronization, see page bottom
+                }
                 break;
             case FIRE:
-                if (creatureType != FIREBALL && !(creatureType == CreatureID.CHIP && level.getBoots()[1] != 0))
+                if (creatureType == CreatureID.CHIP && level.getBoots()[1] == 0)
                     kill();
                 break;
             case BOMB:
@@ -258,7 +280,7 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    protected Direction applySlidingTile(Direction direction, Tile tile, RNG rng){
+    protected Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -329,7 +351,7 @@ public class LynxCreature extends Creature {
             case WATER:
                 return true;
             case FIRE:
-                return creatureType == FIREBALL || isChip;
+                return creatureType == FIREBALL || isChip || creatureType == CreatureID.BLOCK;
             case INVISIBLE_WALL:
                 return false;
             case THIN_WALL_UP:
@@ -448,6 +470,11 @@ public class LynxCreature extends Creature {
     public int bits() {
         return (sliding ? 1 : 0) << 22 | (animationTimer << 19) | (timeTraveled << 16)
                 | direction.getBits() | creatureType.getBits() | position.getIndex();
+    }
+
+    private Tile getOldTile() {
+        Position oldPosition = position.move(direction.turn(TURN_AROUND));
+        return level.getLayerFG().get(oldPosition);
     }
 
     private void finishLeaving(Position position) {

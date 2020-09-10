@@ -140,7 +140,7 @@ public class TWSReader{
         public void readFormat2(int b, Writer writer) throws IOException{
             counter += 4;
             char direction = DIRECTIONS[(b & 0b1100) >>> 2];
-            int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | readByte() << 19;
+            int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | (readByte() & 0xf) << 19;
             if (time < 2047) ineffiencies += 1;
             for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
@@ -161,7 +161,7 @@ public class TWSReader{
             int b2 = readByte();
             int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
             int time = (b2 & 0b11000000) >> 6;
-            for (int i = 0; i < length - 2; i++) time = time | readByte() << (2 + 8*i);
+            for (int i = 0; i < length - 2; i++) time |= ((readByte() & (i == 2 ? 0x1f : 0xff)) << (2 + 8*i));
             for (int i = 0; i < time; i++) writer.write('~');
             if (d < 4){
                 char direction = DIRECTIONS[d];

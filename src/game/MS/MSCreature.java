@@ -53,7 +53,7 @@ public class MSCreature extends Creature {
     }
 
     @Override
-    protected Direction applySlidingTile(Direction direction, Tile tile, RNG rng){
+    protected Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -94,13 +94,13 @@ public class MSCreature extends Creature {
         }
         if (tile.isIce() || (creatureType.isChip() && tile == TELEPORT)){
             Direction[] directions = direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
-            directions[0] = applySlidingTile(directions[0], tile, rng);
-            directions[1] = applySlidingTile(directions[1], tile, rng);
+            directions[0] = getSlideDirection(directions[0], tile, rng);
+            directions[1] = getSlideDirection(directions[1], tile, rng);
             return directions;
         }
         else if (tile == TELEPORT) return new Direction[] {direction};
         else if (tile == FF_RANDOM && !changeOnRFF) return new Direction[] {direction};
-        else return new Direction[] {applySlidingTile(getDirection(), tile, rng)};
+        else return new Direction[] {getSlideDirection(getDirection(), tile, rng)};
     }
 
     // Sliding-related functions
@@ -137,7 +137,7 @@ public class MSCreature extends Creature {
             else {
                 level.getSlipList().add(this);
                 if (!creatureType.isBlock()) {
-                    direction = applySlidingTile(direction, level.getLayerBG().get(position), level.rng); //When a creature first enters a sliding tile its direction is updated to face whatever direction its going to move next after that tile takes effect
+                    direction = getSlideDirection(direction, level.getLayerBG().get(position), level.rng); //When a creature first enters a sliding tile its direction is updated to face whatever direction its going to move next after that tile takes effect
                     monsterList.direction = this.getDirection();
                 }
             }
@@ -748,7 +748,7 @@ public class MSCreature extends Creature {
                 //!!DIRTY HACK SECTION ENDS!!//
 
                 if (sliding && !isMonster)
-                    setDirection(applySlidingTile(direction, level.getLayerFG().get(position), level.getRNG()));
+                    setDirection(getSlideDirection(direction, level.getLayerFG().get(position), level.getRNG()));
 
                 if (!isDead()) level.insertTile(getPosition(), toTile());
                 else if (isMonster) {
@@ -764,7 +764,7 @@ public class MSCreature extends Creature {
 
         if (wasSliding && !creatureType.isMonster()) {
             if (level.getLayerBG().get(this.position) == FF_RANDOM && !slidingMove) setDirection(oldDirection);
-            else setDirection(applySlidingTile(direction, level.getLayerBG().get(position), level.getRNG()));
+            else setDirection(getSlideDirection(direction, level.getLayerBG().get(position), level.getRNG()));
         }
 
         return false;

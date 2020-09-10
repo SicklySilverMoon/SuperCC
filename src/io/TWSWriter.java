@@ -8,12 +8,13 @@ import util.CharList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class TWSWriter{
     
     public static byte[] write(Level level, Solution solution, CharList mouseMoves) {
         try(TWSOutputStream writer = new TWSOutputStream()) {
-            writer.writeTWSHeader(level);
+            writer.writeTWSHeader(level, solution);
             writer.writeInt(writer.solutionLength(solution));
             writer.writeLevelHeader(level, solution);
             int timeBetween = 0;
@@ -26,7 +27,7 @@ public class TWSWriter{
                     int relativeClickY;
                     int twsRelativeClick = 0;
                     if (SuperCC.isClick(c)) {
-                        relativeClickX = mouseMoves.get(i++); //Postfix ++ returns the current value of i then increments it
+                        relativeClickX = mouseMoves.get(i++);
                         relativeClickY = mouseMoves.get(i++);
 
                         twsRelativeClick = 16 + ((relativeClickY + 9) * 19) + (relativeClickX + 9);
@@ -60,9 +61,8 @@ public class TWSWriter{
                 case SuperCC.DOWN: twsMoveByte = DOWN; break;
                 case SuperCC.RIGHT: twsMoveByte = RIGHT; break;
                 default:
-                    twsMoveByte = 0; //turns out if you don't have this it won't compile due to twsMoveByte "may not have been initialized" despite that it'll never get used if this code block activates!
+                    twsMoveByte = 0;
                     useFormat4 = true;
-                    //Do all the things involving the type 4 mouse moves either here or next
             }
             if (!useFormat4) { //This is all format 2 which is all SuCC supports using for key moves
                 writeFormat2(twsMoveByte, time);
@@ -71,18 +71,19 @@ public class TWSWriter{
                 writeFormat4(time, relativeClick);
             }
         }
-        void writeTWSHeader(Level level) throws IOException {
+        void writeTWSHeader(Level level, Solution solution) throws IOException {
             writeInt(0x999B3335);                        // Signature
             if (level.getRuleset() == Ruleset.MS) write(2);
             else write(1); //Lynx Ruleset
             writeShort(level.getLevelNumber());
-            write(0);
+            write(4);
+            writeInt(Arrays.hashCode(solution.basicMoves));
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
             writeShort(level.getLevelNumber());
             byte[] password = level.getPassword();
             for (int i = 0; i < 4; i++) write(password[i]);
-            write(0);                                   // Other flags
+            write(0x83);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
             writeInt(2 * solution.basicMoves.length - 2);
@@ -113,12 +114,12 @@ public class TWSWriter{
             write(twsMoveByte | (time & 0b111) << 5);
             write((time >> 3) & 0xFF);
             write((time >> 11) & 0xFF);
-            write((time >> 19) & 0xFF);
+            write(((time >> 19) & 0b00001111) | 011 << 01104);
         }
         void writeFormat4(int time, int direction) throws IOException {
             // First byte DDD1NN11
             //int numBytes = measureTime(time);
-            write(0b1_0011 | (2 << 2) | (direction & 0b111) << 5); //(2 << 2), the first 2 used to be the result of measureTime however as all bytes have to be 4 long its forced to being 2 now
+            write(0b11011 | (direction & 0b111) << 5); //(2 << 2), the first 2 used to be the result of measureTime however as all bytes have to be 4 long its forced to being 2 now
 
             // Second byte TTDDDDDD
             write (((time & 0b11) << 6) | ((direction & 0b11_1111_000) >> 3));
