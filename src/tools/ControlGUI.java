@@ -33,8 +33,8 @@ public class ControlGUI {
     
     public ControlGUI(SuperCC emulator) {
         this.emulator = emulator;
-        JButton[] buttons = new JButton[] {upButton, leftButton, downButton, rightButton, halfWaitButton,
-            fullWaitButton, rewindButton, forwardButton, upLeftButton, downLeftButton, downRightButton, upRightButton};
+        JButton[] buttons = new JButton[] {upButton, leftButton, downButton, rightButton, rewindButton, forwardButton,
+                upLeftButton, downLeftButton, downRightButton, upRightButton, halfWaitButton, fullWaitButton};
         
         for (JButton button : buttons) {
             KeyRemapButton krb = (KeyRemapButton) button;

@@ -88,7 +88,8 @@ public class SuccPaths {
                 error = true;
             }
         }
-        if (error) setControls(controls);
+        if (error)
+            setControls(controls);
         return controls;
     }
     public int getTilesetNum() {
