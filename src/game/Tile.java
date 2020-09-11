@@ -120,7 +120,9 @@ public enum Tile {
     
     private static final Tile[] allTiles = Tile.values();
     public static Tile fromOrdinal(int ordinal){
-        return allTiles[ordinal];
+        if (ordinal >= 0 && ordinal < allTiles.length)
+            return allTiles[ordinal];
+        return WALL;
     }
 
     public boolean isIce(){

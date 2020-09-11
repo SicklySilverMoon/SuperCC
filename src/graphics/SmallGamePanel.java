@@ -53,8 +53,8 @@ public class SmallGamePanel extends GamePanel {
     }
     
     private boolean onScreen(Position p) {
-        return screenTopLeft.getX() <= p.getX() && p.getX() <= screenBottomRight.getX()
-            && screenTopLeft.getY() <= p.getY() && p.getY() <= screenBottomRight.getY();
+        return screenTopLeft.getX() <= p.getX() && p.getX() < screenBottomRight.getX()
+            && screenTopLeft.getY() <= p.getY() && p.getY() < screenBottomRight.getY();
     }
     
     @Override

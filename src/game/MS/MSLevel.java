@@ -321,11 +321,15 @@ public class MSLevel extends MSSavestate implements Level {
 
     @Override
     public void popTile(Position position){
+        if (!position.isValid())
+            return;
         layerFG.set(position, layerBG.get(position));
         layerBG.set(position, FLOOR);
     }
     @Override
     public void insertTile(Position position, Tile tile){
+        if (!position.isValid())
+            return;
         Tile fgTile = layerFG.get(position);
         if (!(fgTile.equals(FLOOR) && !tile.isMonster())) layerBG.set(position, layerFG.get(position));
         layerFG.set(position, tile);
@@ -416,11 +420,7 @@ public class MSLevel extends MSSavestate implements Level {
             layerFG.set(chip.getPosition(), EXITED_CHIP);
             chip.kill();
         }
-//        if (!ResetStep && (getLayerBG().get(AutopsyPosition).isCreature())) { //Gotta love data resetting
-//            ResetStep = true;
-//            return false;
-//        }
-        /*else*/ return chip.isDead();
+        return chip.isDead();
     }
 
     public boolean shouldDrawCreatureNumber(Creature creature) {
@@ -498,141 +498,134 @@ public class MSLevel extends MSSavestate implements Level {
         return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
     }
 
-    void ResetData(Position position){ //Actual reset code for data reset
-        Position ChipPosition = getChip().getPosition(); //Gets Chip's Current position
-        if (position.x == 8) { //X reset
-            Position ChipXReset = new Position(0, ChipPosition.y); //prepares to set Chip's X position to 0
-            getChip().setPosition(ChipXReset); //sets Chip's X position to 0
-            layerBG.set(position, (Tile.fromOrdinal(ChipPosition.x))); //Doesn't need to be checked as co-cords are always within valid tile ranges
-        }
-        if (position.x == 10) { //Y reset
-            Position ChipYReset = new Position(ChipPosition.x, 0); //prepares to set Chip's Y position to 0
-            getChip().setPosition(ChipYReset); //sets Chip's Y position to 0
-            layerBG.set(position, (Tile.fromOrdinal(ChipPosition.y))); //Doesn't need to be checked as co-cords are always within valid tile ranges
-        }
-        if (position.x == 12) { //Sliding state reset
-            if (chip.isSliding()) { //Is chip sliding?
-                chip.setSliding(chip.isSliding(), false); //Stop Chip from sliding
-                layerBG.set(position, WALL); //Place a wall (1 for data)
-            }
-            else {layerBG.set(position, FLOOR);} //if Chip isn't sliding place a floor (0 for data)
-        }
-        if (position.x == 14 || position.x == 18 || position.x == 20) { //Current keystroke's buffer, & x- and y-directions of the keystroke reset (SuCC doesn't measure this so i'm treating it as a constant 0)
-            layerBG.set(position, FLOOR);
-        }
-        if (position.x == 22) { //Autopsy report reset
-            if (chip.isDead()) {
-                chip.setCreatureType(CreatureID.CHIP); //If he's CHIP he's not DEAD
-                layerBG.set(position, FIRE); //In almost all situations where this is activated chip is killed by a block (due to the nature of blocks cloning instantly its usually only what can be used) which will place fire, so here i skip that and just place fire
-            }
-            else layerBG.set(position, FLOOR);
-        }
-        if (position.x == 24) { //Sliding Direction (X) reset
-            //if Chip is sliding horizontally immobilize him
-            layerBG.set(position, FLOOR); //defaulting to floor for resets not coded yet
-        }
-        if (position.x == 26) { //Sliding Direction (Y) reset
-            //if Chip is sliding vertically immobilize him
-            layerBG.set(position, FLOOR); //defaulting to floor for resets not coded yet
-        }
-        if (position.x == 28) { //amount of monsters in the monster list before the player starts playing the level reset
-            if (INITIAL_MONSTER_LIST_SIZE<112) {
-                layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_LIST_SIZE)));
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 30) { //coordinates (X) of the initial position of the first monster reset, grabs from final variables set up in the Level.java file
-            layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_POSITION.x))); //Doesn't need to be checked as co-cords are always within valid tile ranges
-        }
-        if (position.x == 31) { //coordinates (Y) of the initial position of the first monster reset
-            layerBG.set(position, (Tile.fromOrdinal(INITIAL_MONSTER_POSITION.y))); //Doesn't need to be checked as co-cords are always within valid tile ranges
-        }
-        if (position.x == 0) { //Level Number reset
-            int levelLowByte = getLevelNumber() & 0xFF;
-            if (levelLowByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(levelLowByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 1) { //Level Number reset
-            int levelHighByte = (getLevelNumber() >> 8) & 0xFF; //(number >> 8) & 0xFF, (number & 0xFF), this splits into a high and low order byte for the first couple tiles, (number & 0xFF) is low order
-            if (levelHighByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(levelHighByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 2) { //Levelset length reset
-            int levelsetLowByte = (LEVELSET_LENGTH-1) & 0xFF;
-            if (levelsetLowByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(levelsetLowByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 3) { //Levelset length reset
-            int levelsetHighByte = ((LEVELSET_LENGTH-1) >> 8) & 0xFF; //(number >> 8) & 0xFF, (number & 0xFF), this splits into a high and low order byte for the first couple tiles, (number & 0xFF) is low order
-            if (levelsetHighByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(levelsetHighByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 4) { //Level time reset
-            if (getStartTime() < 0) {
-                layerBG.set(position, FLOOR); //timeless levels are given as negative values, MSCC puts them as 0 which is a floor
+    void resetData(int xPosition) {
+        Position position = new Position(xPosition, 0);
+        byte lowByte, highByte;
+        boolean lowOrder = xPosition % 2 == 0;
+        int shiftBy = xPosition % 2 == 0 ? 0 : 8;
+        switch (xPosition) {
+            case 0:
+            case 1:
+                lowByte = (byte) levelNumber;
+                highByte = (byte) (levelNumber >>> 8);
+                if ((lowOrder ? lowByte : highByte) != 49)
+                    layerBG.set(position, Tile.fromOrdinal((byte) (levelNumber >>> shiftBy)));
                 return;
-            }
-            int timeMSCC = getStartTime() / 10;
-            int timeLowByte = timeMSCC & 0xFF;
-            if (timeLowByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(timeLowByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 5) { //Level time reset
-            if (getStartTime() < 0) {
-                layerBG.set(position, FLOOR); //timeless levels are given as negative values, MSCC puts them as 0 which is a floor
+            case 2:
+            case 3:
+                lowByte = (byte) LEVELSET_LENGTH;
+                highByte = (byte) (LEVELSET_LENGTH >>> 8);
+                if ((lowOrder ? lowByte : highByte) != 49)
+                    layerBG.set(position, Tile.fromOrdinal((byte) (LEVELSET_LENGTH >>> shiftBy)));
                 return;
-            }
-            int timeMSCC = getStartTime() / 10; //Named for the way MSCC stores time
-            int timeHighByte = (timeMSCC >> 8) & 0xFF;
-            if (timeHighByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(timeHighByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 6) { //Chips reset
-            int chipsLowByte = INITIAL_CHIPS_AMOUNT & 0xFF;
-            if (chipsLowByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(chipsLowByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 7) { //Chips reset
-            int chipsHighByte = (INITIAL_CHIPS_AMOUNT >> 8) & 0xFF; //(number >> 8) & 0xFF, (number & 0xFF), this splits into a high and low order byte for the first couple tiles, (number & 0xFF) is low order
-            if (chipsHighByte < 112) {
-                layerBG.set(position, Tile.fromOrdinal(chipsHighByte)); //Doesn't need to be checked as co-cords are always within valid tile ranges
-            }
-            else {
-                layerBG.set(position, WALL); //Everything beyond value 111 is not supported by SuCC and acts as a wall anyways
-            }
-        }
-        if (position.x == 9 || position.x == 11 || position.x == 13 || position.x == 15 || position.x == 16 || position.x == 17 ||position.x == 23 || position.x == 25 || position.x == 27 || position.x == 29) {
-            layerBG.set(position, FLOOR); //defaulting to floor for resets either not coded or that always have a 0 value
+            case 4:
+            case 5:
+                int msccTime = startTime / 100;
+                lowByte = (byte) msccTime;
+                highByte = (byte) (msccTime >>> 8);
+                if ((lowOrder ? lowByte : highByte) != 49)
+                    layerBG.set(position, Tile.fromOrdinal((byte) (msccTime >>> shiftBy)));
+                return;
+            case 6:
+            case 7:
+                lowByte = (byte) INITIAL_CHIPS_AMOUNT;
+                highByte = (byte) (INITIAL_CHIPS_AMOUNT >>> 8);
+                if ((lowOrder ? lowByte : highByte) != 49)
+                    layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_CHIPS_AMOUNT >>> shiftBy)));
+                return;
+            case 8:
+            case 9:
+                layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().x >>> shiftBy)));
+                chip.setPosition(new Position(0, chip.getPosition().y));
+                return;
+            case 10:
+            case 11:
+                layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().y >>> shiftBy)));
+                chip.setPosition(new Position(chip.getPosition().x, 0));
+                return;
+            case 12:
+            case 13:
+                int sliding = chip.isSliding() ? 1 : 0;
+                layerBG.set(position, Tile.fromOrdinal((byte) (sliding >>> shiftBy)));
+                chip.setSliding(false);
+                return;
+            case 14:
+            case 15: //buffered input, unsupported by SuCC
+            case 16:
+            case 17: //MSCC's level title visibility, unsupported by SuCC
+            case 18:
+            case 19: //keystroke directions, unsupported by SuCC
+            case 20:
+            case 21:
+                layerBG.set(position, FLOOR);
+                return;
+            case 22:
+            case 23:
+                int deathCause = 0;
+                Tile chipFG = layerFG.get(chip.getPosition());
+                Tile chipBG = layerBG.get(chip.getPosition());
+                if (chipFG.isChip() || chipFG.isSwimmingChip()) {
+                    if (chipFG.isChip() && chipBG == BOMB)
+                        deathCause = 3;
+                }
+                else if (chipFG == DROWNED_CHIP)
+                    deathCause = 1;
+                else if (chipFG == BURNED_CHIP)
+                    deathCause = 2;
+                else if (chipFG == BLOCK || chipFG == ICE_BLOCK)
+                    deathCause = 4;
+                else if (chipFG.isMonster())
+                    deathCause = 5;
+                layerBG.set(position, Tile.fromOrdinal((byte) (deathCause >>> shiftBy)));
+                chip.setCreatureType(CreatureID.CHIP);
+                return;
+            case 24:
+            case 25:
+                if (!chip.isSliding()) {
+                    layerBG.set(position, FLOOR);
+                    return;
+                }
+                short slipDirectionX = 0;
+                if (chip.getDirection() == Direction.RIGHT) {
+                    slipDirectionX = 1;
+                    chip.setSliding(false); //not accurate, must research more
+                }
+                else if (chip.getDirection() == Direction.LEFT) {
+                    slipDirectionX = -1;
+                    chip.setSliding(false);
+                }
+                layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionX >>> shiftBy)));
+                return;
+            case 26:
+            case 27:
+                if (!chip.isSliding()) {
+                    layerBG.set(position, FLOOR);
+                    return;
+                }
+                short slipDirectionY = 0;
+                if (chip.getDirection() == Direction.DOWN) {
+                    slipDirectionY = 1;
+                    chip.setSliding(false); //not accurate, must research more
+                }
+                else if (chip.getDirection() == Direction.UP) {
+                    slipDirectionY = -1;
+                    chip.setSliding(false);
+                }
+                layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionY >>> shiftBy)));
+                return;
+            case 28:
+            case 29:
+                lowByte = (byte) INITIAL_MONSTER_LIST_SIZE;
+                highByte = (byte) (INITIAL_MONSTER_LIST_SIZE >>> 8);
+                if ((lowOrder ? lowByte : highByte) != 49)
+                    layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_LIST_SIZE >>> shiftBy)));
+                return;
+            case 30:
+                layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.x)));
+                return;
+            case 31:
+                layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.y)));
+                return;
         }
     }
 }

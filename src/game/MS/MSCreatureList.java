@@ -1,7 +1,6 @@
 package game.MS;
 
 import game.*;
-import game.button.*;
 
 import static game.CreatureID.*;
 import static game.Tile.*;
@@ -99,56 +98,35 @@ public class MSCreatureList extends game.CreatureList {
             if (c.getPosition().equals(position)) return;
         }
 
-        //Data resetting right here
-        if (position.y == 32) { //If the clone button's Y target is row 32 take over from normal code
+        MSCreature clone;
+
+        //Data resetting
+        if (position.y == 32) {
             Position row0Position = new Position(position.x, 0);
-            if (level.getLayerBG().get(row0Position).isCreature()) { //if the background (buried) layer is a creature
-                MSCreature resetClone = new MSCreature(row0Position, level.getLayerBG().get(row0Position)); //Create a new variable for the creature
-                if (resetClone.getDirection()==Direction.UP) { //If the creature is facing up
-                    Position row31Position = new Position(position.x, 31); //Create a new variable for the creature's position
-                    Tile resetNewTile = level.getLayerFG().get(row31Position); //Makes it so that the next section checks X, 31 and not X, 0
-                    if (resetClone.canEnter(direction, resetNewTile)) { //If the creature can clone to X, 31
-                        Tile tile = resetClone.toTile(); //Needed to not cause tile erasure
-                        resetClone.setPosition(row31Position); //Sets the clone's position to be on row 31
-                        boolean SpecialTileInteraction = false;
-                        if (level.getChip().getPosition().equals(row31Position)|| resetNewTile.isChip() || resetNewTile.isSwimmingChip()) { //Swimming Chip is now checked along side normal Chip
-                            level.getChip().kill();
-                        }
-                        if (resetNewTile.isButton()) { //Buttons now push properly
-                            Button button = null; //The IDE screams at me if i don't do this
-                            if (resetNewTile == BUTTON_GREEN) button = level.getButton(row31Position, GreenButton.class); //This is... disturbing in its inefficiency
-                            if (resetNewTile == BUTTON_RED) button = level.getButton(row31Position, RedButton.class);
-                            if (resetNewTile == BUTTON_BROWN) button = level.getButton(row31Position, BrownButton.class);
-                            if (resetNewTile == BUTTON_BLUE) button = level.getButton(row31Position, BlueButton.class);
-                            if (button != null) {
-                                button.press(level); //If this thing gives you warnings about null pointers, ignore it, i handle all 4 button types
-                            }
-                        }
-                        if (resetNewTile == WATER || resetNewTile == BOMB || resetNewTile == FIRE) { //Special interactions
-                            if (resetClone.getCreatureType().isBlock() && resetNewTile == WATER) level.getLayerFG().set(row31Position, DIRT);
-                            if (resetNewTile == BOMB) level.getLayerFG().set(row31Position, FLOOR);
-                            SpecialTileInteraction = true; //Literally just so you don't add dead monsters to lists they shouldn't be in
-                        }
-                        else level.insertTile(row31Position, tile); //Clones them
-                        if (level.getLayerBG().get(row31Position).isSliding()) { //Bunch of stuff to make things slide correctly
-                            resetClone.setSliding(true);
-                            resetClone.tick(new Direction[]{Direction.DOWN}, false); //Some fancy stuff to actually make them slide
-                        } //Fun fact: not having else here causes a crash when a sliding creature steps off a sliding force floor and hits a resetclone button the same turn a normal clone button is hit, BUT only if that's the first normal button hit. However the game not adding resetclones that started on sliding tiles to the monster list is a bigger issue
-                        if (!SpecialTileInteraction && !(resetClone.getCreatureType().isBlock())) newClones.add(resetClone); //the above error is caused by accidentally adding blocks to the monsterlist, if you handle it so that doesn't happen there's no error
-                        ((MSLevel) level).ResetData(row0Position); //passes the position of the reset to a new method to handle data resets
-                    }
+            if (level.getLayerBG().get(row0Position).isCreature()) {
+                clone = new MSCreature(new Position(position.x, 32), level.getLayerBG().get(row0Position));
+                Tile newTile = level.getLayerFG().get(new Position(position.x, 31));
+                if (clone.getDirection() == Direction.UP && clone.canEnter(clone.getDirection(), newTile)) {
+                    System.out.println("fug");
+                    ((MSLevel) level).resetData(row0Position.x);
                 }
+                direction = clone.getDirection();
             }
+            else
+                return;
         }
 
         else {
-            Tile tile = level.getLayerFG().get(position);
-            Tile tilebg = level.getLayerBG().get(position);
-            if (!tile.isCreature() ^ (tile == Tile.ICE_BLOCK && tilebg.isCloneBlock())) return;
-            MSCreature clone = new MSCreature(position, tile);
-            if (tile == Tile.ICE_BLOCK) direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
-            else direction = clone.getDirection();
-
+                Tile tile = level.getLayerFG().get(position);
+                Tile tilebg = level.getLayerBG().get(position);
+                if (!tile.isCreature() ^ (tile == Tile.ICE_BLOCK && tilebg.isCloneBlock()))
+                    return;
+                clone = new MSCreature(position, tile);
+                if (tile == Tile.ICE_BLOCK)
+                    direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
+                else
+                    direction = clone.getDirection();
+            }
 
             Position newPosition = clone.getPosition().move(direction);
             Tile newTile = level.getLayerFG().get(newPosition);
@@ -158,7 +136,6 @@ public class MSCreatureList extends game.CreatureList {
                 else newClones.add(clone);
 
                 if (clone.getCreatureType() == CreatureID.ICE_BLOCK) level.getLayerFG().set(position, Tile.ICE_BLOCK);
-            }
         }
     }
 
