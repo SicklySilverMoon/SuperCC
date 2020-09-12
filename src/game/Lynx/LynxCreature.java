@@ -77,9 +77,12 @@ public class LynxCreature extends Creature {
                     && canLeave(direction, level.getLayerFG().get(position), position);
             boolean blockedByCreature = false;
             if (creatureType != CreatureID.CHIP)
-                blockedByCreature = monsterList.getCreaturesAtPosition(newPosition) != 0;
-            else if (monsterList.getCreaturesAtPosition(newPosition) != 0 && monsterList.creatureAt(newPosition).getCreatureType() == CreatureID.BLOCK)
-                blockedByCreature = true;
+                blockedByCreature = monsterList.numCreaturesAt(newPosition) != 0;
+            else if (monsterList.numCreaturesAt(newPosition) != 0
+                    && monsterList.creatureAt(newPosition).getCreatureType() == CreatureID.BLOCK
+                    || monsterList.animationAt(newPosition) != null) {
+                        blockedByCreature = true;
+            }
 
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
                     Tile currentTile = level.getLayerFG().get(position);
@@ -150,7 +153,9 @@ public class LynxCreature extends Creature {
                 Button button = level.getButton(position);
                 if (button != null) {
                     button.press(level);
-                    //todo: https://wiki.bitbusters.club/Release_desynchronization, see page bottom
+                    if (button instanceof BrownButton) {
+                        monsterList.springTrappedCreature(((BrownButton) button).getTargetPosition());
+                    }
                 }
                 break;
             case FIRE:
@@ -247,8 +252,10 @@ public class LynxCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD});
-        if (directions != null) return directions;
+        if (isSliding())
+            return direction.turn(new Direction[] {TURN_FORWARD});
+        if (directions != null)
+            return directions;
 
         switch (creatureType) {
             case BUG:

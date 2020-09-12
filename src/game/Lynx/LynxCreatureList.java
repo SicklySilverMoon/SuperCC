@@ -2,6 +2,8 @@ package game.Lynx;
 
 import game.*;
 
+import java.util.Arrays;
+
 import static game.CreatureID.*;
 
 public class LynxCreatureList extends CreatureList {
@@ -61,9 +63,13 @@ public class LynxCreatureList extends CreatureList {
         Creature chip = level.getChip();
         for (int i = list.length - 1; i >= 0; i--) {
             Creature creature = list[i];
-            if (creature.getTimeTraveled() != 0 || creature.isDead() ||  creature.getCreatureType().isChip()
-                    || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
+            if (creature.getTimeTraveled() != 0 || creature.isDead() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
                 continue;
+
+            if (creature.getCreatureType() == CHIP) {
+                selectChipMove();
+                continue;
+            }
 
             for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
                 if (dir == null)
@@ -73,11 +79,11 @@ public class LynxCreatureList extends CreatureList {
                 Tile newTile = level.getLayerFG().get(newPosition);
                 boolean canMove = (creature.canEnter(dir, newTile) && creature.canLeave(dir, currentTile, creature.getPosition()));
 
-                if (!canMove || getCreaturesAtPosition(newPosition) != 0)
+                if (!canMove || numCreaturesAt(newPosition) != 0)
                     continue;
                 if (!newPosition.isValid())
                     continue;
-                Creature anim = getAnimationAtPosition(newPosition);
+                Creature anim = animationAt(newPosition);
                 if (anim != null) {
                     anim.kill(); //killing an animation stops the animation
                     updateLayer(anim, anim.getPosition(), anim.getCreatureType());
@@ -115,13 +121,14 @@ public class LynxCreatureList extends CreatureList {
     }
 
     @Override
-    public int getCreaturesAtPosition(Position position) {
+    public int numCreaturesAt(Position position) {
         if (!position.isValid())
             return 0;
         return creatureLayer[position.index];
     }
 
-    private Creature getAnimationAtPosition(Position position) {
+    @Override
+    public Creature animationAt(Position position) {
         if (!position.isValid())
             return null;
         return animationLayer[position.index];
@@ -149,7 +156,7 @@ public class LynxCreatureList extends CreatureList {
             return;
 
         Creature clone;
-        if (!template.canEnter(direction, newTile) || getCreaturesAtPosition(newPosition) != 0)
+        if (!template.canEnter(direction, newTile) || numCreaturesAt(newPosition) != 0)
             return;
 
         clone = template.clone();
@@ -170,6 +177,18 @@ public class LynxCreatureList extends CreatureList {
         updateLayer(clone, template.getPosition(), clone.getCreatureType());
     }
 
+    @Override
+    public void springTrappedCreature(Position position) {
+        if (level.getLayerFG().get(position) != Tile.TRAP || numCreaturesAt(position) == 0
+        || !level.isTrapOpen(position))
+            return;
+
+        Creature trapped = creatureAt(position);
+        CreatureID trappedType = trapped.getCreatureType();
+        trapped.tick(trapped.getDirection());
+        updateLayer(trapped, position, trappedType);
+    }
+
     private void updateLayer(Creature creature, Position oldPosition, CreatureID oldCreatureType) {
         if (!oldPosition.equals(creature.getPosition()) && !creature.getCreatureType().isChip()) {
             --creatureLayer[oldPosition.index];
@@ -185,6 +204,46 @@ public class LynxCreatureList extends CreatureList {
         }
     }
 
+    private void selectChipMove() {
+        Creature chip = level.getChip();
+        Direction[] directions = chip.getDirectionPriority(chip, null);
+
+        if (directions.length == 0)
+            return;
+        if (directions.length > 1) {
+            assert directions.length == 2;
+            for (int j = 0; j < directions.length; j++) {
+                Direction dir = directions[j];
+                if (chip.getDirection() == dir && j > 0) {
+                    int k = 0;
+                    directions[j] = directions[k];
+                    directions[k] = dir;
+                    chip.setDirectionPriority(directions);
+                    break;
+                }
+            }
+        }
+
+        Position newPosition = chip.getPosition().move(directions[0]);
+        Tile currentTile = level.getLayerFG().get(chip.getPosition());
+        Tile newTile = level.getLayerFG().get(newPosition);
+        boolean canMove = (chip.canEnter(directions[0], newTile) && chip.canLeave(directions[0], currentTile, chip.getPosition()));
+
+        if (!canMove || animationAt(newPosition) != null) {
+            if (directions.length > 1) {
+                Direction first = directions[0];
+                directions[0] = directions[1];
+                directions[1] = first;
+                chip.setDirectionPriority(directions);
+            }
+            newPosition = chip.getPosition().move(directions[0]);
+        }
+        if (numCreaturesAt(newPosition) != 0 && creatureAt(newPosition).getCreatureType() != BLOCK) {
+            chip.kill();
+            creatureAt(newPosition).kill();
+        }
+    }
+
     private void moveChip() {
         if (chipDeathCheck())
             return;
@@ -195,36 +254,9 @@ public class LynxCreatureList extends CreatureList {
             chip.tick(null);
             return;
         }
-        if (directions.length == 0) return;
-        //todo: sliding bullshit lol
-
-        if (directions.length > 1) {
-            assert directions.length == 2;
-            for (int i = 0; i < directions.length; i++) {
-                Direction dir = directions[i];
-                if (chip.getDirection() == dir) {
-                    int j = (i == 0 ? 1 : 0);
-                    directions[i] = directions[j];
-                    directions[j] = dir;
-                }
-            }
-        }
-
-        Position newPosition = chip.getPosition().move(directions[0]);
-        Creature anim = getAnimationAtPosition(newPosition);
-        if (!chip.canEnter(directions[0], level.getLayerFG().get(newPosition))
-                || (anim != null && anim.getAnimationTimer() != 0)) {
-            //todo: rewrite based on the fact that the diag inputs are always a specific direction pattern, which needs to be adjusted based on Chip's current direction
-            if (directions.length > 1) {
-                Direction first = directions[0];
-                directions[0] = directions[1];
-                directions[1] = first;
-            }
-            else {
-                chip.setDirection(directions[0]);
-                return;
-            }
-        }
+        if (directions.length == 0)
+            return;
+        //todo: Force floor override bullshit lol
 
         chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
 
@@ -256,8 +288,9 @@ public class LynxCreatureList extends CreatureList {
      */
     private boolean chipDeathCheck() {
         Creature chip = level.getChip();
-        if (getCreaturesAtPosition(chip.getPosition()) != 0) {
+        if (numCreaturesAt(chip.getPosition()) != 0) {
             chip.kill();
+            creatureAt(chip.getPosition()).kill();
             return true;
         }
         return false;

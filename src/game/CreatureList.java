@@ -23,7 +23,11 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public Creature creatureAt(Position position){
         for (Creature c : list) {
-            if (c.getPosition().equals(position)) return c;
+            if (c.getCreatureType() == CreatureID.CHIP || c == level.getChip()) {
+                continue;
+            }
+            if (c.getPosition().equals(position))
+                return c;
         }
         return null;
     }
@@ -60,7 +64,14 @@ public abstract class CreatureList implements Iterable<Creature> {
      * @param position The position to check (must be a valid position between 0 and 31 on x and y).
      * @return Number of creatures located within the given position, 0 if the position is off map.
      */
-    public abstract int getCreaturesAtPosition(Position position);
+    public abstract int numCreaturesAt(Position position);
+
+    /** Returns the animation currently occurring at the given position (null if there is no animation).
+     *
+     * @param position The position to check.
+     * @return A animation at the given position (null if there is no such creature).
+     */
+    public abstract Creature animationAt(Position position);
 
     public abstract void initialise();
 
@@ -69,6 +80,8 @@ public abstract class CreatureList implements Iterable<Creature> {
     public abstract void tick();
 
     public abstract void addClone(Position position);
+
+    public abstract void springTrappedCreature(Position position);
 
     @Override
     public String toString(){

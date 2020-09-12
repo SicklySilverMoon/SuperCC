@@ -5,6 +5,7 @@ import game.Cheats;
 import game.MS.SlipList;
 import game.button.*;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 public class LynxLevel extends LynxSavestate implements Level {
@@ -307,7 +308,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     public boolean tick(char c, Direction[] directions) {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
-        chip.setDirectionPriority(directions);
+        chip.setDirectionPriority(directions.clone());
         Position chipPos = chip.getPosition();
 
         monsterList.initialise();

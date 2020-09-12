@@ -140,6 +140,15 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
+    public void springTrappedCreature(Position position) { //ideally shouldn't be used as this will mess up monster order stuff for ms
+        if (level.getLayerBG().get(position) != TRAP || creatureAt(position) == null
+        || !level.isTrapOpen(position))
+            return;
+
+        tickTrappedMonster((MSCreature) creatureAt(position));
+    }
+
+    @Override
     public void finalise(){
 
         if (numDeadMonsters == 0 && newClones.size() == 0) return;
@@ -166,12 +175,17 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
-    public int getCreaturesAtPosition(Position position) {
+    public int numCreaturesAt(Position position) {
         if (!position.isValid())
             return 0;
         if (level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip())
             return 1;
         return 0;
+    }
+
+    @Override
+    public Creature animationAt(Position position) {
+        return null; //only useful for Lynx-like rulesets
     }
 
     public MSCreatureList(MSCreature[] monsters){
