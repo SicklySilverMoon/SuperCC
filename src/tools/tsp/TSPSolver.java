@@ -80,7 +80,7 @@ public class TSPSolver {
         emulator.getSavestates().restart();
         level.load(emulator.getSavestates().getSavestate());
         this.monsterList = level.getMonsterList().getCreatures().clone();
-        level.getMonsterList().setCreatures(new Creature[0]);
+        level.getMonsterList().setCreatures(new Creature[0], level.getLayerFG(), level.getLayerBG());
         this.startState = level.save();
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT); // Full wait
         emulator.tick(SuperCC.WAIT, TickFlags.LIGHT);
@@ -208,7 +208,7 @@ public class TSPSolver {
     }
 
     private void solveWithSA() {
-        level.getMonsterList().setCreatures(monsterList);
+        level.getMonsterList().setCreatures(monsterList, level.getLayerFG(), level.getLayerBG());
         SimulatedAnnealing sa = new SimulatedAnnealing(gui, level.getStartTime(), simulatedAnnealingParameters, distances, distancesBoost,
                 boostNodes, boostNodesBoost, inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();

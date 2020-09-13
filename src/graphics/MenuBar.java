@@ -114,17 +114,20 @@ class MenuBar extends JMenuBar{
 
             add(new JSeparator());
 
-            JMenuItem toggleStep = new JMenuItem("Toggle odd/even step");
-            toggleStep.addActionListener(e -> {
+            JMenuItem changeStep = new JMenuItem("Change stepping value");
+            changeStep.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) {
                     Level oldLevel = emulator.getLevel();
                     Step newStep = Step.EVEN;
-                    if (oldLevel.getStep() == Step.EVEN) newStep = Step.ODD;
+                    if (oldLevel.ticksPerMove() == 2 && oldLevel.getStep() == Step.EVEN)
+                        newStep = Step.ODD;
+                    else if (oldLevel.ticksPerMove() != 2)
+                        newStep = oldLevel.getStep().next();
                     emulator.loadLevel(oldLevel.getLevelNumber(), oldLevel.getRngSeed(), newStep, true,
                             Ruleset.CURRENT, oldLevel.getInitialRFFDirection());
                 }
             });
-            add(toggleStep);
+            add(changeStep);
 
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
             rngSeed.addActionListener(e -> {

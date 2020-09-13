@@ -188,7 +188,7 @@ public class MSCreatureList extends game.CreatureList {
         return null; //only useful for Lynx-like rulesets
     }
 
-    public MSCreatureList(MSCreature[] monsters){
+    public MSCreatureList(MSCreature[] monsters, Layer layerFG, Layer layerBG){
         super(monsters);
     }
 

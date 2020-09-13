@@ -281,43 +281,6 @@ public class MSLevel extends MSSavestate implements Level {
     public boolean isCompleted() {
         return levelWon;
     }
-    
-    public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
-                   GreenButton[] greenButtons, RedButton[] redButtons,
-                   BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
-                   Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
-                   MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
-        
-        super(layerBG, layerFG, monsterList, slipList, chip,
-              chips, new short[4], new byte[4], rng, NO_CLICK, traps);
-        
-        this.levelNumber = levelNumber;
-        this.startTime = time;
-        this.title = title;
-        this.password = password;
-        this.hint = hint;
-        this.toggleDoors = toggleDoors;
-        this.teleports = teleports;
-        this.greenButtons = greenButtons;
-        this.redButtons = redButtons;
-        this.brownButtons = brownButtons;
-        this.blueButtons = blueButtons;
-        this.rngSeed = rngSeed;
-        this.step = step;
-        this.cheats = new Cheats(this);
-        this.LEVELSET_LENGTH = levelsetLength;
-
-        Creature.setLevel(this);
-        Creature.setMonsterList(monsterList);
-        this.slipList.setLevel(this);
-        this.monsterList.setLevel(this);
-
-        for (BrownButton b : getBrownButtons()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
-            if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK || getLayerFG().get(b.getTargetPosition()) == ICE_BLOCK) {
-                b.press(this);
-            }
-        }
-    }
 
     @Override
     public void popTile(Position position){
@@ -626,6 +589,43 @@ public class MSLevel extends MSSavestate implements Level {
             case 31:
                 layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.y)));
                 return;
+        }
+    }
+
+    public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
+                   GreenButton[] greenButtons, RedButton[] redButtons,
+                   BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
+                   Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
+                   MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
+
+        super(layerBG, layerFG, monsterList, slipList, chip,
+                chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+
+        this.levelNumber = levelNumber;
+        this.startTime = time;
+        this.title = title;
+        this.password = password;
+        this.hint = hint;
+        this.toggleDoors = toggleDoors;
+        this.teleports = teleports;
+        this.greenButtons = greenButtons;
+        this.redButtons = redButtons;
+        this.brownButtons = brownButtons;
+        this.blueButtons = blueButtons;
+        this.rngSeed = rngSeed;
+        this.step = step;
+        this.cheats = new Cheats(this);
+        this.LEVELSET_LENGTH = levelsetLength;
+
+        Creature.setLevel(this);
+        Creature.setMonsterList(monsterList);
+        this.slipList.setLevel(this);
+        this.monsterList.setLevel(this);
+
+        for (BrownButton b : getBrownButtons()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
+            if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK || getLayerFG().get(b.getTargetPosition()) == ICE_BLOCK) {
+                b.press(this);
+            }
         }
     }
 }

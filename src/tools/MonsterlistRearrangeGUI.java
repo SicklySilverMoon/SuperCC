@@ -64,7 +64,7 @@ public class MonsterlistRearrangeGUI {
 
         Creature[] list = new Creature[listModel.size()];
         listModel.copyInto(list);
-        level.getMonsterList().setCreatures(list);
+        level.getMonsterList().setCreatures(list, level.getLayerFG(), level.getLayerBG());
         emulator.getMainWindow().repaint(false);
     }
 }

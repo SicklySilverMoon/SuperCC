@@ -2,8 +2,6 @@ package game.Lynx;
 
 import game.*;
 
-import java.util.Arrays;
-
 import static game.CreatureID.*;
 
 public class LynxCreatureList extends CreatureList {
@@ -11,13 +9,13 @@ public class LynxCreatureList extends CreatureList {
     private Creature[] animationLayer; //Another faux layer that holds references to DEAD creatures that currently have animations playing, a position's index matches to an index in this array
 
     @Override
-    public void setCreatures(Creature[] creatures) {
+    public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
         list = creatures;
         creatureLayer = new int[1024];
         animationLayer = new Creature[1024];
 
         for (Creature c : creatures) {
-            if (c.getCreatureType() == CHIP)
+            if (c.getCreatureType() == CHIP || layerFG.get(c.getPosition()) == Tile.CLONE_MACHINE)
                 continue;
             if (c.getCreatureType() != DEAD)
                 creatureLayer[c.getPosition().index]++;
@@ -28,16 +26,7 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void initialise() {
-        /*  EVEN+0 1234____9ABC____
-            EVEN+1 123____89AB____0
-            EVEN+2 12____789A____F0
-            EVEN+3 1____6789____EF0
-            ODD+0  ____5678____DEF0
-            ODD+1  ___4567____CDEF_
-            ODD+2  __3456____BCDE__
-            ODD+3  _2345____ABCD___  */
         teethStep = ((level.getTickNumber()-1 + level.getStep().ordinal()) & 4) == 0;
-//        System.out.printf("%d + %d = %d : %b\n", level.getTickNumber(), level.getStep().ordinal(), level.getTickNumber() + level.getStep().ordinal(), teethStep);
 
         newClones.clear();
     }
@@ -191,7 +180,8 @@ public class LynxCreatureList extends CreatureList {
 
     private void updateLayer(Creature creature, Position oldPosition, CreatureID oldCreatureType) {
         if (!oldPosition.equals(creature.getPosition()) && !creature.getCreatureType().isChip()) {
-            --creatureLayer[oldPosition.index];
+            if (level.getLayerFG().get(oldPosition) != Tile.CLONE_MACHINE)
+                --creatureLayer[oldPosition.index];
             ++creatureLayer[creature.getPosition().index];
             return;
         }
@@ -239,6 +229,8 @@ public class LynxCreatureList extends CreatureList {
             newPosition = chip.getPosition().move(directions[0]);
         }
         if (numCreaturesAt(newPosition) != 0 && creatureAt(newPosition).getCreatureType() != BLOCK) {
+            System.out.println(numCreaturesAt(newPosition));
+            System.out.println("killed here");
             chip.kill();
             creatureAt(newPosition).kill();
         }
@@ -273,6 +265,8 @@ public class LynxCreatureList extends CreatureList {
     }
 
     private void pushBlock(Position position, Direction direction) {
+        if (level.getLayerFG().get(position) == Tile.CLONE_MACHINE)
+            return;
         Creature block = creatureAt(position);
         if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
             CreatureID oldCreatureType = block.getCreatureType();
@@ -296,8 +290,8 @@ public class LynxCreatureList extends CreatureList {
         return false;
     }
 
-    public LynxCreatureList(Creature[] creatures) {
+    public LynxCreatureList(Creature[] creatures, Layer layerFG, Layer layerBG) {
         super(creatures);
-        setCreatures(creatures);
+        setCreatures(creatures, layerFG, layerBG);
     }
 }

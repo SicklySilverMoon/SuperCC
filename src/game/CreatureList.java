@@ -55,7 +55,7 @@ public abstract class CreatureList implements Iterable<Creature> {
         return newClones;
     }
 
-    public void setCreatures(Creature[] creatures) {
+    public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
         list = creatures;
     }
 

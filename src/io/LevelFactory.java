@@ -61,7 +61,7 @@ public class LevelFactory {
         return portals;
     }
     private static MSCreatureList getMSMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
-        if (monsterPositions == null) return new MSCreatureList(new MSCreature[] {});
+        if (monsterPositions == null) return new MSCreatureList(new MSCreature[] {}, layerFG, layerBG);
         int l = 0;
         for (int i = 0; i < monsterPositions.length; i++){
             int x = monsterPositions[i][0];
@@ -81,7 +81,7 @@ public class LevelFactory {
                 monsterList[l++] = new MSCreature(position, layerFG.get(position));
             }
         }
-        return new MSCreatureList(monsterList);
+        return new MSCreatureList(monsterList, layerFG, layerBG);
     }
     private static LynxCreatureList getLynxMonsterList(Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
         List<LynxCreature> creatures = new ArrayList<>();
@@ -101,7 +101,7 @@ public class LevelFactory {
                 break;
             }
         }
-        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]));
+        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]), layerFG, layerBG);
     }
     private static MSCreature findMSPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){

@@ -73,7 +73,7 @@ public class LynxSavestate implements Savestate {
             rng.setPRNG2(reader.readInt());
             rffDirection = Direction.fromOrdinal(reader.read());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-            monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()));
+            monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG, null);
             chip = monsterList.get(0);
         }
     }

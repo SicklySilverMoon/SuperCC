@@ -16,7 +16,11 @@ public enum Step{
         n >>>= 3;
         return values()[n];
     }
-    
+
+    public Step next() {
+        return values()[(ordinal() + 1) % values().length];
+    }
+
     public byte toTWS() {
         int n = ordinal();
         return (byte) (n << 3);
@@ -24,5 +28,13 @@ public enum Step{
 
     public boolean isEven() {
         return (ordinal() < 4);
+    }
+
+    @Override
+    public String toString() {
+        if (this != EVEN && this != ODD) {
+            return (isEven() ? "EVEN" : "ODD") + " + " + ordinal() % 4;
+        }
+        else return name();
     }
 }

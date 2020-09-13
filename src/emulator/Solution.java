@@ -32,7 +32,7 @@ public class Solution{
     
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
-        json.put(STEP, step.toString());
+        json.put(STEP, step.name());
         json.put(SEED, Integer.toString(rngSeed));
         json.put(SLIDE, initialSlide.toString());
         json.put(RULE, ruleset.toString());

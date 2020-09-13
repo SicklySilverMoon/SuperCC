@@ -92,7 +92,7 @@ public class MSSavestate implements Savestate {
             rng.setCurrentValue(reader.readInt());
             mouseGoal = reader.readShort();
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
-            monsterList.setCreatures(reader.readMSMonsterArray(reader.readShort()));
+            monsterList.setCreatures(reader.readMSMonsterArray(reader.readShort()), layerFG, layerBG);
             slipList.setSliplist(reader.readMSMonsterArray(reader.readShort()));
             idleMoves = (short) reader.readShort();
             voluntaryMoveAllowed = reader.readBool();
