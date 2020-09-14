@@ -266,6 +266,13 @@ public class MSLevel extends MSSavestate implements Level {
     public Direction getAndCycleRFFDirection() {
         return null;
     }
+    @Override
+    public Direction getRFFDirection() {
+        return null;
+    }
+    @Override
+    public void cycleRFFDirection() {
+    }
     /**
      * @param position the last clicked position.
      */

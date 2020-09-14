@@ -135,6 +135,10 @@ public interface Level extends Savestate {
 
     Direction getAndCycleRFFDirection();
 
+    Direction getRFFDirection();
+
+    void cycleRFFDirection();
+
     /**
      * @param position the last clicked position.
      */

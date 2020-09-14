@@ -12,13 +12,14 @@ import static game.Tile.*;
 /**
  * Lynx creatures are encoded as follows:
  *
- * |    0    |  0 0 0 0  |    0 0 0    |    0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
- * | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
+ * |     0    |    0    |  0 0 0 0  |    0 0 0    |    0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
+ * | OVERRIDE | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
  */
 public class LynxCreature extends Creature {
 
     private int timeTraveled;
     private int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
+    private boolean canOverride = true; //Set to true because this way it gets set to false when first moving into an FF
 
     private final int defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
 
@@ -70,14 +71,17 @@ public class LynxCreature extends Creature {
             /* yeah so these 2 creatures don't move on their own, represented by passing null,
             however they do need to move if sliding (blocks also have tick manually called when pushed)
             so this little messy if takes care of that odd situation */
-            if (direction == null) direction = this.direction;
+            if (direction == null)
+                direction = this.direction;
 
             Position newPosition = position.move(direction);
             boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
                     && canLeave(direction, level.getLayerFG().get(position), position);
+
             boolean blockedByCreature = false;
             if (creatureType != CreatureID.CHIP)
                 blockedByCreature = monsterList.numCreaturesAt(newPosition) != 0;
+
             else if (monsterList.numCreaturesAt(newPosition) != 0
                     && monsterList.creatureAt(newPosition).getCreatureType() == CreatureID.BLOCK
                     || monsterList.animationAt(newPosition) != null) {
@@ -94,6 +98,23 @@ public class LynxCreature extends Creature {
                     }
                     return false;
             }
+
+            Tile oldTile = level.getLayerFG().get(position);
+            if (oldTile.isFF()) {
+                Direction slideDirection;
+                if (oldTile == FF_RANDOM)
+                    slideDirection = level.getRFFDirection();
+                else
+                    slideDirection = getSlideDirection(direction, oldTile, null);
+                if (direction == slideDirection.turn(TURN_AROUND)) {
+                    if (oldTile == FF_RANDOM)
+                        level.cycleRFFDirection();
+                    this.direction = slideDirection;
+                    canOverride = false;
+                    return false;
+                }
+            }
+
             finishLeaving(position);
             position = newPosition;
             Tile newTile = level.getLayerFG().get(newPosition);
@@ -142,9 +163,15 @@ public class LynxCreature extends Creature {
             case FF_RIGHT:
             case FF_LEFT:
             case FF_RANDOM:
-                if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0) {
+                if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0 || !canOverride) {
                     this.direction = getSlideDirection(this.direction, newTile, null);
                 }
+                if (canOverride) {
+                    canOverride = false;
+                    break;
+                }
+                if (creatureType == CreatureID.CHIP)
+                    canOverride = true;
                 break;
             case BUTTON_GREEN:
             case BUTTON_RED:
@@ -252,7 +279,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (isSliding())
+        if (sliding && !(canOverride && level.getLayerFG().get(position).isFF()))
             return direction.turn(new Direction[] {TURN_FORWARD});
         if (directions != null)
             return directions;
@@ -475,7 +502,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public int bits() {
-        return (sliding ? 1 : 0) << 22 | (animationTimer << 19) | (timeTraveled << 16)
+        return (((canOverride ? 1 : 0) << 23) | (sliding ? 1 : 0) << 22) | (animationTimer << 19) | (timeTraveled << 16)
                 | direction.getBits() | creatureType.getBits() | position.getIndex();
     }
 
@@ -530,6 +557,7 @@ public class LynxCreature extends Creature {
     }
 
     public LynxCreature(int bitMonster) {
+        canOverride = ((bitMonster >>> 23) & 0b1) == 1;
         sliding = ((bitMonster >>> 22) & 0b1) == 1;
         animationTimer = (bitMonster >>> 19) & 0b111;
         timeTraveled = (bitMonster >>> 16) & 0b111;

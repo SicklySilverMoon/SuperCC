@@ -229,8 +229,6 @@ public class LynxCreatureList extends CreatureList {
             newPosition = chip.getPosition().move(directions[0]);
         }
         if (numCreaturesAt(newPosition) != 0 && creatureAt(newPosition).getCreatureType() != BLOCK) {
-            System.out.println(numCreaturesAt(newPosition));
-            System.out.println("killed here");
             chip.kill();
             creatureAt(newPosition).kill();
         }

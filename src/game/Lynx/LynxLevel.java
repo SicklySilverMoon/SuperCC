@@ -290,6 +290,16 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public Direction getRFFDirection() {
+        return rffDirection;
+    }
+
+    @Override
+    public void cycleRFFDirection() {
+        getAndCycleRFFDirection();
+    }
+
+    @Override
     public void setClick(int position) {
         throw new UnsupportedOperationException("Mouse clicks do not exist under Lynx");
     }
