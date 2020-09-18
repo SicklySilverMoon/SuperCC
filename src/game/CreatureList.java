@@ -23,7 +23,7 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public Creature creatureAt(Position position){
         for (Creature c : list) {
-            if (c.getCreatureType() == CreatureID.CHIP || c == level.getChip()) {
+            if (c.getCreatureType() == CreatureID.CHIP || c == level.getChip() || c.getCreatureType() == CreatureID.DEAD) {
                 continue;
             }
             if (c.getPosition().equals(position))

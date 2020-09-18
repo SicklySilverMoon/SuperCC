@@ -21,7 +21,7 @@ public class LynxCreature extends Creature {
     private int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
     private boolean canOverride = true; //Set to true because this way it gets set to false when first moving into an FF
 
-    private final int defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
+    private final int defaultMoveSpeed;
 
     @Override
     public Tile toTile() { //Used exclusively for drawing creatures, please do not use for anything else
@@ -88,26 +88,27 @@ public class LynxCreature extends Creature {
                         blockedByCreature = true;
             }
 
+            Tile currentTile = level.getLayerFG().get(position);
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
-                    Tile currentTile = level.getLayerFG().get(position);
-                    if (sliding && (currentTile.isIce() || currentTile == FF_RANDOM)) {
-                        direction = direction.turn(TURN_AROUND);
-                        if (currentTile.isIceCorner() || currentTile == FF_RANDOM)
-                            direction = getSlideDirection(direction, currentTile, null);
+                    if (sliding) {
+                        if (currentTile.isIce())
+                            direction = direction.turn(TURN_AROUND);
+                        direction = getSlideDirection(direction, currentTile, null);
+                        if (currentTile.isFF() && this.direction != direction)
+                            canOverride = false;
                         this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
                     }
                     return false;
             }
 
-            Tile oldTile = level.getLayerFG().get(position);
-            if (oldTile.isFF()) {
+            if (currentTile.isFF()) {
                 Direction slideDirection;
-                if (oldTile == FF_RANDOM)
+                if (currentTile == FF_RANDOM)
                     slideDirection = level.getRFFDirection();
                 else
-                    slideDirection = getSlideDirection(direction, oldTile, null);
+                    slideDirection = getSlideDirection(direction, currentTile, null);
                 if (direction == slideDirection.turn(TURN_AROUND)) {
-                    if (oldTile == FF_RANDOM)
+                    if (currentTile == FF_RANDOM)
                         level.cycleRFFDirection();
                     this.direction = slideDirection;
                     canOverride = false;
@@ -279,7 +280,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (sliding && !(canOverride && level.getLayerFG().get(position).isFF()))
+        if (sliding && !((canOverride && directions != null && directions.length != 0) && level.getLayerFG().get(position).isFF()))
             return direction.turn(new Direction[] {TURN_FORWARD});
         if (directions != null)
             return directions;
@@ -554,6 +555,8 @@ public class LynxCreature extends Creature {
         }
         if (creatureType == TANK_STATIONARY)
             creatureType = TANK_MOVING;
+
+        defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
     }
 
     public LynxCreature(int bitMonster) {
@@ -570,5 +573,7 @@ public class LynxCreature extends Creature {
         if (creatureType == TANK_STATIONARY)
             creatureType = TANK_MOVING;
         position = new Position(bitMonster & 0b00_0000_1111111111);
+
+        defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
     }
 }
