@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SuperCC.iml" filepath="$PROJECT_DIR$/.idea/SuperCC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SuperCC.iml" filepath="$PROJECT_DIR$/SuperCC.iml" />
     </modules>
   </component>
 </project>
