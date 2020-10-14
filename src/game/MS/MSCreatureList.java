@@ -149,6 +149,15 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
+    public boolean tickCreature(Creature creature, Direction direction) {
+        for (Creature c : list) {
+            if (c == creature)
+                return creature.tick(direction);
+        }
+        return false;
+    }
+
+    @Override
     public void finalise(){
 
         if (numDeadMonsters == 0 && newClones.size() == 0) return;

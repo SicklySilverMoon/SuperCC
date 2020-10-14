@@ -8,6 +8,8 @@ import game.button.*;
 import java.util.Arrays;
 import java.util.BitSet;
 
+import static game.CreatureID.BLOCK;
+
 public class LynxLevel extends LynxSavestate implements Level {
 
     private static final int HALF_WAIT = 0, KEY = 1;
@@ -318,13 +320,117 @@ public class LynxLevel extends LynxSavestate implements Level {
     public boolean tick(char c, Direction[] directions) {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
-        chip.setDirectionPriority(directions.clone());
-        Position chipPos = chip.getPosition();
 
         monsterList.initialise();
-        monsterList.tick(); //Most of a tick is done within here
+        monsterList.tick(); //select monster moves
+        selectChipMove(directions);
+        monsterList.tick(); //move monsters
+        boolean result = moveChip(directions);
+        monsterList.tick(); //teleport monsters
         monsterList.finalise();
-        return (!chipPos.equals(chip.getPosition()) && !chip.isSliding());
+        return (result && !chip.isSliding());
+    }
+
+    private void selectChipMove(Direction[] directions) {
+        if (directions.length == 0)
+            return;
+        if (directions.length > 1) {
+            assert directions.length == 2;
+            for (int j = 0; j < directions.length; j++) {
+                Direction dir = directions[j];
+                if (chip.getDirection() == dir && j > 0) {
+                    int k = 0;
+                    directions[j] = directions[k];
+                    directions[k] = dir;
+                    break;
+                }
+            }
+        }
+
+        Position newPosition = chip.getPosition().move(directions[0]);
+        Tile currentTile = layerFG.get(chip.getPosition());
+        Tile newTile = layerFG.get(newPosition);
+        boolean canMove = (chip.canEnter(directions[0], newTile) && chip.canLeave(directions[0], currentTile, chip.getPosition()));
+
+        if (!canMove || monsterList.animationAt(newPosition) != null) {
+            if (directions.length > 1) {
+                Direction first = directions[0];
+                directions[0] = directions[1];
+                directions[1] = first;
+            }
+            newPosition = chip.getPosition().move(directions[0]);
+        }
+        if (monsterList.numCreaturesAt(newPosition) != 0 && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
+            chip.kill();
+            monsterList.creatureAt(newPosition).kill();
+        }
+    }
+
+    private boolean moveChip(Direction[] directions) {
+        if (chipDeathCheck())
+            return false;
+
+        if (chip.getTimeTraveled() != 0 || chip.getAnimationTimer() != 0) {
+            return chip.tick(null);
+        }
+        if (directions.length == 0 && !chip.isSliding())
+            return false;
+
+        if (directions.length != 0)
+            chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
+        System.out.println(Arrays.toString(directions));
+
+        Tile currentTile = layerFG.get(chip.getPosition());
+        if (currentTile.isFF()) { //todo: force floor overriding fun stuff
+            Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
+            if (chip.canOverride()) {
+                if (chip.getDirection() == slideDirection.turn(Direction.TURN_AROUND)) {
+                    chip.setCanOverride(false);
+                    return false;
+                }
+                if (chip.getDirection() == slideDirection) {
+                    directions = new Direction[]{slideDirection};
+                    chip.setDirection(slideDirection);
+                }
+                chip.setCanOverride(false);
+            }
+            else {
+                directions = new Direction[]{slideDirection};
+                chip.setDirection(slideDirection);
+            }
+        }
+
+        //block slap
+        if (directions.length > 1) {
+            pushBlock(chip.getPosition().move(directions[1]), directions[1]);
+        }
+
+        //blocks ahead of chip
+        pushBlock(chip.getPosition().move(directions[0]), directions[0]);
+
+        return chip.tick(directions[0]);
+    }
+
+    private void pushBlock(Position position, Direction direction) {
+        if (layerFG.get(position) == Tile.CLONE_MACHINE)
+            return;
+        Creature block = monsterList.creatureAt(position);
+        if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
+            block.setDirection(direction);
+            monsterList.tickCreature(block, direction);
+        }
+    }
+
+    /**
+     * @return true if Chip is killed as a result of this, false otherwise
+     */
+    private boolean chipDeathCheck() {
+        if (monsterList.numCreaturesAt(chip.getPosition()) != 0) {
+            chip.kill();
+            monsterList.creatureAt(chip.getPosition()).kill();
+            return true;
+        }
+        return false;
     }
 
     @Override

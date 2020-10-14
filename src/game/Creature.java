@@ -12,7 +12,6 @@ public abstract class Creature {
     protected Position position;
     protected CreatureID creatureType;
     protected Direction direction;
-    protected Direction[] directions;
     protected boolean sliding;
     protected Direction nextMoveDirectionCheat = null;
 
@@ -25,11 +24,6 @@ public abstract class Creature {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
-    }
-
-    public void setDirectionPriority(Direction[] directions) {
-        //For the love of god this should only be used by Cheats or for setting Chip's directions
-        this.directions = directions;
     }
 
     public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {
@@ -46,7 +40,7 @@ public abstract class Creature {
 
     public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
 
-    protected abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng);
+    public abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;
@@ -112,6 +106,14 @@ public abstract class Creature {
      * @return A boolean representing if the creature can leave the given tile and position.
      */
     public abstract boolean canLeave(Direction direction, Tile tile, Position position);
+
+    /** Returns a boolean representing if the creature can override on a force floor at the current moment.
+     *
+     * @return A boolean representing a creature's ability to override
+     */
+    public abstract boolean canOverride();
+
+    public abstract void setCanOverride(boolean canOverride);
 
     /** Advances the creature one tick (uses the creature's internal state).
      * Currently used only by Lynx as MS Creatures are always downcasted and

@@ -90,31 +90,30 @@ public class LynxCreature extends Creature {
 
             Tile currentTile = level.getLayerFG().get(position);
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
-                    if (sliding) {
-                        if (currentTile.isIce())
-                            direction = direction.turn(TURN_AROUND);
+                    if (sliding && currentTile.isIce()) {
+                        direction = direction.turn(TURN_AROUND);
                         direction = getSlideDirection(direction, currentTile, null);
-                        if (currentTile.isFF() && this.direction != direction)
-                            canOverride = false;
+//                        if (currentTile.isFF() && this.direction != direction)
+//                            canOverride = false;
                         this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
                     }
                     return false;
             }
 
-            if (currentTile.isFF()) {
-                Direction slideDirection;
-                if (currentTile == FF_RANDOM)
-                    slideDirection = level.getRFFDirection();
-                else
-                    slideDirection = getSlideDirection(direction, currentTile, null);
-                if (direction == slideDirection.turn(TURN_AROUND)) {
-                    if (currentTile == FF_RANDOM)
-                        level.cycleRFFDirection();
-                    this.direction = slideDirection;
-                    canOverride = false;
-                    return false;
-                }
-            }
+//            if (currentTile.isFF()) {
+//                Direction slideDirection;
+//                if (currentTile == FF_RANDOM)
+//                    slideDirection = level.getRFFDirection();
+//                else
+//                    slideDirection = getSlideDirection(direction, currentTile, null);
+//                if (direction == slideDirection.turn(TURN_AROUND)) {
+//                    if (currentTile == FF_RANDOM)
+//                        level.cycleRFFDirection();
+//                    this.direction = slideDirection;
+//                    canOverride = false;
+//                    return false;
+//                }
+//            }
 
             finishLeaving(position);
             position = newPosition;
@@ -164,14 +163,10 @@ public class LynxCreature extends Creature {
             case FF_RIGHT:
             case FF_LEFT:
             case FF_RANDOM:
-                if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0 || !canOverride) {
+                if (creatureType != CreatureID.CHIP) {
                     this.direction = getSlideDirection(this.direction, newTile, null);
                 }
-                if (canOverride) {
-                    canOverride = false;
-                    break;
-                }
-                if (creatureType == CreatureID.CHIP)
+                else
                     canOverride = true;
                 break;
             case BUTTON_GREEN:
@@ -280,10 +275,18 @@ public class LynxCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (sliding && !((canOverride && directions != null && directions.length != 0) && level.getLayerFG().get(position).isFF()))
-            return direction.turn(new Direction[] {TURN_FORWARD});
-        if (directions != null)
+        if (nextMoveDirectionCheat != null) {
+            Direction[] directions = new Direction[] {nextMoveDirectionCheat};
+            nextMoveDirectionCheat = null;
+            if (creatureType == BLOB)
+                rng.random4();
+            if (creatureType == WALKER)
+                rng.pseudoRandom4();
             return directions;
+        }
+
+        if (sliding)
+            return direction.turn(new Direction[] {TURN_FORWARD});
 
         switch (creatureType) {
             case BUG:
@@ -299,14 +302,14 @@ public class LynxCreature extends Creature {
             case TEETH:
                 return position.seek(chip.getPosition());
             case WALKER:
-                int turns = level.getRNG().pseudoRandom4();
+                int turns = rng.pseudoRandom4();
                 Direction walkerDirection = direction;
                 while(turns-- != 0)
                     walkerDirection = walkerDirection.turn(TURN_RIGHT);
                 return new Direction[] {walkerDirection};
             case BLOB:
                 Direction[] blobDirs = new Direction[] {UP, RIGHT, DOWN, LEFT};
-                return new Direction[] { blobDirs[level.getRNG().random4()] };
+                return new Direction[] { blobDirs[rng.random4()] };
             case PARAMECIUM:
                 return direction.turn(new Direction[] {TURN_RIGHT, TURN_FORWARD, TURN_LEFT, TURN_AROUND});
             default:
@@ -315,7 +318,7 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    protected Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
+    public Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -499,6 +502,16 @@ public class LynxCreature extends Creature {
             case TRAP: return level.isTrapOpen(position);
             default: return true;
         }
+    }
+
+    @Override
+    public boolean canOverride() {
+        return canOverride;
+    }
+
+    @Override
+    public void setCanOverride(boolean canOverride) {
+        this.canOverride = canOverride;
     }
 
     @Override

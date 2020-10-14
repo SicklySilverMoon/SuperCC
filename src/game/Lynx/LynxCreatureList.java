@@ -7,6 +7,7 @@ import static game.CreatureID.*;
 public class LynxCreatureList extends CreatureList {
     private int[] creatureLayer; //a faux 'layer', whenever a creature moves into a position increment the resulting position index in this array. decrement it when they leave
     private Creature[] animationLayer; //Another faux layer that holds references to DEAD creatures that currently have animations playing, a position's index matches to an index in this array
+    private int phase;
 
     @Override
     public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
@@ -50,62 +51,70 @@ public class LynxCreatureList extends CreatureList {
     @Override
     public void tick() {
         Creature chip = level.getChip();
-        for (int i = list.length - 1; i >= 0; i--) {
-            Creature creature = list[i];
-            if (creature.getTimeTraveled() != 0 || creature.isDead() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
-                continue;
-
-            if (creature.getCreatureType() == CHIP) {
-                selectChipMove();
-                continue;
-            }
-
-            for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
-                if (dir == null)
+        if (phase == 0) {
+            for (int i = list.length - 1; i >= 0; i--) {
+                Creature creature = list[i];
+                if (creature.getTimeTraveled() != 0 || creature.isDead() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE)
                     continue;
-                Position newPosition = creature.getPosition().move(dir);
-                Tile currentTile = level.getLayerFG().get(creature.getPosition());
-                Tile newTile = level.getLayerFG().get(newPosition);
-                boolean canMove = (creature.canEnter(dir, newTile) && creature.canLeave(dir, currentTile, creature.getPosition()));
 
-                if (!canMove || numCreaturesAt(newPosition) != 0)
+                if (creature.getCreatureType() == CHIP)
                     continue;
-                if (!newPosition.isValid())
-                    continue;
-                Creature anim = animationAt(newPosition);
-                if (anim != null) {
-                    anim.kill(); //killing an animation stops the animation
-                    updateLayer(anim, anim.getPosition(), anim.getCreatureType());
+
+                for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
+                    if (dir == null)
+                        continue;
+                    Position newPosition = creature.getPosition().move(dir);
+                    Tile currentTile = level.getLayerFG().get(creature.getPosition());
+                    Tile newTile = level.getLayerFG().get(newPosition);
+                    boolean canMove = (creature.canEnter(dir, newTile) && creature.canLeave(dir, currentTile, creature.getPosition()));
+
+                    if (!canMove || numCreaturesAt(newPosition) != 0)
+                        continue;
+                    if (!newPosition.isValid())
+                        continue;
+                    Creature anim = animationAt(newPosition);
+                    if (anim != null) {
+                        anim.kill(); //killing an animation stops the animation
+                        updateLayer(anim, anim.getPosition(), anim.getCreatureType());
+                    }
+
+                    creature.setDirection(dir);
+                    break;
                 }
-
-                creature.setDirection(dir);
-                break;
             }
+            phase = 1;
+            return;
         }
 
-        for (int i = list.length - 1; i >= 0; i--) {
-            //Actual movement should be done here
-            Creature creature = list[i];
-            Direction direction = null;
-            if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE
-                || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
-                continue;
-            if (creature.getCreatureType() != BLOCK && creature.getCreatureType() != CHIP_SWIMMING)
-                direction = creature.getDirection();
+        if (phase == 1) {
+            for (int i = list.length - 1; i >= 0; i--) {
+                //Actual movement should be done here
+                Creature creature = list[i];
+                Direction direction = null;
+                if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE
+                        || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
+                    continue;
+                if (creature.getCreatureType() != BLOCK && creature.getCreatureType() != CHIP_SWIMMING)
+                    direction = creature.getDirection();
 
-            CreatureID oldCreatureType = creature.getCreatureType();
-            Position oldPosition = creature.getPosition();
-            creature.tick(direction);
-            updateLayer(creature, oldPosition, oldCreatureType);
+                CreatureID oldCreatureType = creature.getCreatureType();
+                Position oldPosition = creature.getPosition();
+                creature.tick(direction);
+                updateLayer(creature, oldPosition, oldCreatureType);
+            }
+            phase = 2;
+            return;
         }
 
-        moveChip();
-
-        for (int i = list.length - 1; i >= 0; i--) {
-            Creature creature = list[i];
-            if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT) {
-                //todo
+        if (phase == 2) {
+            for (int i = list.length - 1; i >= 0; i--) {
+                Creature creature = list[i];
+                if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT) {
+                    //todo
+                }
             }
+            phase = 0;
+            return;
         }
     }
 
@@ -178,6 +187,20 @@ public class LynxCreatureList extends CreatureList {
         updateLayer(trapped, position, trappedType);
     }
 
+    @Override
+    public boolean tickCreature(Creature creature, Direction direction) {
+        for (Creature c : list) {
+            if (c == creature) {
+                CreatureID oldCreatureType = creature.getCreatureType();
+                Position oldPosition = creature.getPosition();
+                boolean result = creature.tick(direction);
+                updateLayer(creature, oldPosition, oldCreatureType);
+                return result;
+            }
+        }
+        return false;
+    }
+
     private void updateLayer(Creature creature, Position oldPosition, CreatureID oldCreatureType) {
         if (!oldPosition.equals(creature.getPosition()) && !creature.getCreatureType().isChip()) {
             if (level.getLayerFG().get(oldPosition) != Tile.CLONE_MACHINE)
@@ -192,100 +215,6 @@ public class LynxCreatureList extends CreatureList {
                 animationLayer[creature.getPosition().index] = creature;
             else animationLayer[creature.getPosition().index] = null;
         }
-    }
-
-    private void selectChipMove() {
-        Creature chip = level.getChip();
-        Direction[] directions = chip.getDirectionPriority(chip, null);
-
-        if (directions.length == 0)
-            return;
-        if (directions.length > 1) {
-            assert directions.length == 2;
-            for (int j = 0; j < directions.length; j++) {
-                Direction dir = directions[j];
-                if (chip.getDirection() == dir && j > 0) {
-                    int k = 0;
-                    directions[j] = directions[k];
-                    directions[k] = dir;
-                    chip.setDirectionPriority(directions);
-                    break;
-                }
-            }
-        }
-
-        Position newPosition = chip.getPosition().move(directions[0]);
-        Tile currentTile = level.getLayerFG().get(chip.getPosition());
-        Tile newTile = level.getLayerFG().get(newPosition);
-        boolean canMove = (chip.canEnter(directions[0], newTile) && chip.canLeave(directions[0], currentTile, chip.getPosition()));
-
-        if (!canMove || animationAt(newPosition) != null) {
-            if (directions.length > 1) {
-                Direction first = directions[0];
-                directions[0] = directions[1];
-                directions[1] = first;
-                chip.setDirectionPriority(directions);
-            }
-            newPosition = chip.getPosition().move(directions[0]);
-        }
-        if (numCreaturesAt(newPosition) != 0 && creatureAt(newPosition).getCreatureType() != BLOCK) {
-            chip.kill();
-            creatureAt(newPosition).kill();
-        }
-    }
-
-    private void moveChip() {
-        if (chipDeathCheck())
-            return;
-
-        Creature chip = level.getChip();
-        Direction[] directions = chip.getDirectionPriority(chip, null);
-        if (chip.getTimeTraveled() != 0 || chip.getAnimationTimer() != 0) {
-            chip.tick(null);
-            return;
-        }
-        if (directions.length == 0)
-            return;
-        //todo: Force floor override bullshit lol
-
-        chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
-
-        //block slap
-        if (directions.length > 1) {
-            pushBlock(chip.getPosition().move(directions[1]), directions[1]);
-        }
-
-        //blocks ahead of chip
-        pushBlock(chip.getPosition().move(directions[0]), directions[0]);
-
-        chip.tick(directions[0]);
-        chipDeathCheck();
-    }
-
-    private void pushBlock(Position position, Direction direction) {
-        if (level.getLayerFG().get(position) == Tile.CLONE_MACHINE)
-            return;
-        Creature block = creatureAt(position);
-        if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
-            CreatureID oldCreatureType = block.getCreatureType();
-            Position oldPosition = block.getPosition();
-            block.setDirection(direction);
-            block.tick(direction);
-            updateLayer(block, oldPosition, oldCreatureType);
-        }
-    }
-
-    /**
-     * @return true if Chip is killed as a result of this, false otherwise
-     */
-    private boolean chipDeathCheck() {
-        Creature chip = level.getChip();
-        if (numCreaturesAt(chip.getPosition()) != 0) {
-            chip.kill();
-            creatureAt(chip.getPosition()).kill();
-            return true;
-        }
-        return false;
     }
 
     public LynxCreatureList(Creature[] creatures, Layer layerFG, Layer layerBG) {

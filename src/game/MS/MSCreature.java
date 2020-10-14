@@ -21,13 +21,15 @@ public class MSCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng){
-        if (nextMoveDirectionCheat != null) {//todo: swap this stuff out for the setDirection and directions later
+        if (nextMoveDirectionCheat != null) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
-            if (creatureType == WALKER || creatureType == BLOB) rng.random4();
+            if (creatureType == WALKER || creatureType == BLOB)
+                rng.random4();
             return directions;
         }
-        if (isSliding()) return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
+        if (isSliding())
+            return direction.turn(new Direction[] {TURN_FORWARD, TURN_AROUND});
         switch (creatureType){
             case BUG: return direction.turn(new Direction[] {TURN_LEFT, TURN_FORWARD, TURN_RIGHT, TURN_AROUND});
             case FIREBALL: return direction.turn(new Direction[] {TURN_FORWARD, TURN_RIGHT, TURN_LEFT, TURN_AROUND});
@@ -53,7 +55,7 @@ public class MSCreature extends Creature {
     }
 
     @Override
-    protected Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
+    public Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -347,6 +349,18 @@ public class MSCreature extends Creature {
             case CHIP_DOWN: return !creatureType.isChip();
         }
     }
+
+    @Override
+    public boolean canOverride() {
+        return creatureType.isChip();
+    }
+
+    @Override
+    public void setCanOverride(boolean canOverride) {
+        if (!canOverride)
+            throw new UnsupportedOperationException("Overriding is always allowed in MS");
+    }
+
     private boolean tryEnter(Direction direction, Position newPosition, Tile tile, List<Button> pressedButtons){
         MSLevel level = (MSLevel) Creature.level;
         sliding = false;

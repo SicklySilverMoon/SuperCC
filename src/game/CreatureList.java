@@ -83,6 +83,8 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public abstract void springTrappedCreature(Position position);
 
+    public abstract boolean tickCreature(Creature creature, Direction direction);
+
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
