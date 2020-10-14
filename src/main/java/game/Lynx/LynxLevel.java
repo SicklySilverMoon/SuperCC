@@ -378,7 +378,6 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         if (directions.length != 0)
             chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
-        System.out.println(Arrays.toString(directions));
 
         Tile currentTile = layerFG.get(chip.getPosition());
         if (currentTile.isFF()) { //todo: force floor overriding fun stuff

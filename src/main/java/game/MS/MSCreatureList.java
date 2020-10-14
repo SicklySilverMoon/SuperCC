@@ -107,7 +107,6 @@ public class MSCreatureList extends game.CreatureList {
                 clone = new MSCreature(new Position(position.x, 32), level.getLayerBG().get(row0Position));
                 Tile newTile = level.getLayerFG().get(new Position(position.x, 31));
                 if (clone.getDirection() == Direction.UP && clone.canEnter(clone.getDirection(), newTile)) {
-                    System.out.println("fug");
                     ((MSLevel) level).resetData(row0Position.x);
                 }
                 direction = clone.getDirection();
