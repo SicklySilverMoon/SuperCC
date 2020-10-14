@@ -6,7 +6,6 @@ import org.json.simple.parser.JSONParser;
 import util.CharList;
 
 import java.io.CharArrayWriter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
@@ -29,7 +28,6 @@ public class Solution{
     public final String encoding = "UTF-8";
     
     public double efficiency = -1;
-    
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put(STEP, step.name());

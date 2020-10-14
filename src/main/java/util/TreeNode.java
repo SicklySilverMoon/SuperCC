@@ -55,7 +55,7 @@ public class TreeNode<T> implements Serializable {
             out.writeObject(node.data);
         }
     }
-    
+
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         int depth = in.readInt();
         TreeNode<T> node = new TreeNode<>((T) in.readObject(), null);

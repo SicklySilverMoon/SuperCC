@@ -1,6 +1,5 @@
 package emulator;
 
-import game.Direction;
 import game.Level;
 import game.Tile;
 import org.junit.jupiter.api.Test;
@@ -10,9 +9,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 
-import static emulator.SuperCC.WAIT;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class SuperCCTest {
     private SuperCC emulator = new SuperCC(false);
@@ -26,7 +24,7 @@ class SuperCCTest {
         boolean[] solved = new boolean[levels];
         Arrays.fill(solved, Boolean.FALSE);
 
-        if(solutionName.substring(solutionName.length() - 4).equals(".tws")) {
+        if (solutionName.substring(solutionName.length() - 4).equals(".tws")) {
             emulator.setTWSFile(new File(solutionName));
         }
 
@@ -38,13 +36,12 @@ class SuperCCTest {
                 s.load(emulator);
                 level = emulator.getLevel();
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
-                    System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
+                    System.out.println("failed level " + level.getLevelNumber() + " " + new String(level.getTitle()));
                 } else {
                     solved[i - 1] = true;
                 }
-            }
-            catch (Exception exc) {
-                System.out.println("Error loading "+level.getLevelNumber()+" "+new String(level.getTitle()));
+            } catch (Exception exc) {
+                System.out.println("Error loading " + level.getLevelNumber() + " " + new String(level.getTitle()));
                 exc.printStackTrace();
             }
         }
@@ -53,7 +50,7 @@ class SuperCCTest {
     }
 
     Solution getSolution(String solutionName, int level) throws IOException {
-        if(emulator.twsReader != null) {
+        if (emulator.twsReader != null) {
             return emulator.twsReader.readSolution(emulator.getLevel());
         } else {
             byte[] fileBytes = Files.readAllBytes((new File(solutionName + level + ".json")).toPath());
