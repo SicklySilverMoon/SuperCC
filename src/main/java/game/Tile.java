@@ -109,7 +109,7 @@ public enum Tile {
     /* 68 FLIPPERS             */    BOOTS_WATER("Flippers"),
     /* 69 FIRE BOOTS           */    BOOTS_FIRE("Fire Boots"),
     /* 6A ICE SKATES           */    BOOTS_ICE("Ice Skates"),
-    /* 6B SUCTION BOOTS        */    BOOTS_SLIDE("Suction Boots"),
+    /* 6B SUCTION BOOTS        */    BOOTS_FF("Suction Boots"),
     /* 6C CHIP N               */    CHIP_UP("Chip - Up"),
     /* 6D CHIP W               */    CHIP_LEFT("Chip - Left"),
     /* 6E CHIP S               */    CHIP_DOWN("Chip - Down"),
@@ -160,10 +160,10 @@ public enum Tile {
         return KEY_BLUE.ordinal() <= ordinal() && ordinal() <= KEY_YELLOW.ordinal();
     }
     public boolean isBoot() {
-        return BOOTS_WATER.ordinal() <= ordinal() && ordinal() <= BOOTS_SLIDE.ordinal();
+        return BOOTS_WATER.ordinal() <= ordinal() && ordinal() <= BOOTS_FF.ordinal();
     }
     public boolean isPickup() {
-        return KEY_BLUE.ordinal() <= ordinal() && ordinal() <= BOOTS_SLIDE.ordinal();
+        return KEY_BLUE.ordinal() <= ordinal() && ordinal() <= BOOTS_FF.ordinal();
     }
     public boolean isButton() {
         return this == BUTTON_BROWN || this == BUTTON_BLUE || this == BUTTON_RED || this == BUTTON_GREEN;

@@ -32,6 +32,7 @@ public class MSSavestate implements Savestate {
         
         int length =
             1 +                             // version
+            1 +                             // ruleset
             2 +                             // chip
             1024 +                          // layerBG
             1024 +                          // layerFG
@@ -52,6 +53,7 @@ public class MSSavestate implements Savestate {
         
         SavestateWriter writer = new SavestateWriter(length);
         writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
+        writer.write(Ruleset.MS.ordinal());
         writer.writeShort((short) chip.bits());
         writer.write(layerBG.getBytes());
         writer.write(layerFG.getBytes());
@@ -82,6 +84,8 @@ public class MSSavestate implements Savestate {
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {
+            if (reader.read() != Ruleset.MS.ordinal())
+                throw new UnsupportedOperationException("Can only load MS savestates!");
             chip = new MSCreature(reader.readShort());
             layerBG.load(reader.readLayer(version));
             layerFG.load(reader.readLayer(version));

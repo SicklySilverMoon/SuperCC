@@ -121,7 +121,7 @@ public interface Level extends Savestate {
 
     RNG getRNG();
 
-    Button getButton(Position position, Class buttonType);
+    Button getButton(Position position, Class<? extends Button> buttonType);
 
     Button getButton(Position position);
 

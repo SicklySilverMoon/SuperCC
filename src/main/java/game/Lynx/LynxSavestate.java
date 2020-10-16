@@ -18,8 +18,8 @@ public class LynxSavestate implements Savestate {
     public Direction rffDirection;
     public CreatureList monsterList;
 
-    protected int mouseGoal;
     protected BitSet traps;
+    protected boolean canOverride, lastMoveForced;
 
     @Override
     public byte[] save() {
@@ -27,20 +27,24 @@ public class LynxSavestate implements Savestate {
 
         int length =
                 1 +                             // version
+                1 +                             // ruleset
                 1024 +                          // layerFG
                 4 +                             // tick number
                 2 +                             // chips left
                 4 * 2 +                         // keys
                 4 * 1 +                         // boots
-                4 * 3 +                         // rng
+                3 * 4 +                         // rng
                 1 +                             // RFF
                 2 +                             // traps length
                 traps.length +                  // traps
                 2 +                             // monsterlist size
-                monsterList.size() * 4;         // monsterlist
+                monsterList.size() * 4 +        // monsterlist
+                1 +                             // canOverride
+                1;                              // lastMoveForced
 
         SavestateWriter writer = new SavestateWriter(length);
         writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
+        writer.write(Ruleset.LYNX.ordinal());
         writer.write(layerFG.getBytes());
         writer.writeInt(tickNumber);
         writer.writeShort(chipsLeft);
@@ -54,6 +58,8 @@ public class LynxSavestate implements Savestate {
         writer.write(traps);
         writer.writeShort(monsterList.size());
         writer.writeIntMonsterArray(monsterList.getCreatures());
+        writer.writeBool(canOverride);
+        writer.writeBool(lastMoveForced);
 
         return writer.toByteArray();
     }
@@ -63,6 +69,8 @@ public class LynxSavestate implements Savestate {
         SavestateReader reader = new SavestateReader(savestate);
         int version = reader.read();
         if (version == UNCOMPRESSED_V2 || version == COMPRESSED_V2) {
+            if (reader.read() != Ruleset.LYNX.ordinal())
+                throw new UnsupportedOperationException("Can only load lynx savestates!");
             layerFG.load(reader.readLayer(version));
             tickNumber = reader.readInt();
             chipsLeft = (short) reader.readShort();
@@ -74,12 +82,15 @@ public class LynxSavestate implements Savestate {
             rffDirection = Direction.fromOrdinal(reader.read());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG, null);
+            canOverride = reader.readBool();
+            lastMoveForced = reader.readBool();
+
             chip = monsterList.get(0);
         }
     }
 
     protected LynxSavestate(Layer layerFG, CreatureList monsterList, Creature chip,
-                            int chipsLeft, short[] keys, byte[] boots, RNG rng, int mouseGoal, BitSet traps){
+                            int chipsLeft, short[] keys, byte[] boots, RNG rng, BitSet traps){
         this.layerFG = layerFG;
         this.monsterList = monsterList;
         this.chip = chip;
@@ -88,7 +99,6 @@ public class LynxSavestate implements Savestate {
         this.keys = keys;
         this.boots = boots;
         this.rng = rng;
-        this.mouseGoal = mouseGoal;
         this.traps = traps;
     }
 }

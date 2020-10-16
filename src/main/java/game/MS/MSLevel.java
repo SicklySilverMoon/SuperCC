@@ -306,7 +306,7 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     @Override
-    public Button getButton(Position position, Class buttonType) {
+    public Button getButton(Position position, Class<? extends Button> buttonType) {
         Button[] buttons;
         if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
         else if (buttonType.equals(RedButton.class)) buttons = redButtons;

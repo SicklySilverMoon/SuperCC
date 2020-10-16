@@ -107,14 +107,6 @@ public abstract class Creature {
      */
     public abstract boolean canLeave(Direction direction, Tile tile, Position position);
 
-    /** Returns a boolean representing if the creature can override on a force floor at the current moment.
-     *
-     * @return A boolean representing a creature's ability to override
-     */
-    public abstract boolean canOverride();
-
-    public abstract void setCanOverride(boolean canOverride);
-
     /** Advances the creature one tick (uses the creature's internal state).
      * Currently used only by Lynx as MS Creatures are always downcasted and
      * have their specialized tick method used.

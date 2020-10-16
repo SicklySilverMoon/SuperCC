@@ -259,7 +259,7 @@ public class LynxCreature extends Creature {
                     level.getLayerFG().set(position, FLOOR);
                 }
                 break;
-            case BOOTS_SLIDE:
+            case BOOTS_FF:
                 if (creatureType == CreatureID.CHIP) {
                     level.getBoots()[3] = 1;
                     level.getLayerFG().set(position, FLOOR);
@@ -479,7 +479,7 @@ public class LynxCreature extends Creature {
             case BOOTS_WATER:
             case BOOTS_FIRE:
             case BOOTS_ICE:
-            case BOOTS_SLIDE:
+            case BOOTS_FF:
                 return isChip;
             case CHIP_UP: //Probably shouldn't exist as a tile
             case CHIP_LEFT:
@@ -502,16 +502,6 @@ public class LynxCreature extends Creature {
             case TRAP: return level.isTrapOpen(position);
             default: return true;
         }
-    }
-
-    @Override
-    public boolean canOverride() {
-        return canOverride;
-    }
-
-    @Override
-    public void setCanOverride(boolean canOverride) {
-        this.canOverride = canOverride;
     }
 
     @Override

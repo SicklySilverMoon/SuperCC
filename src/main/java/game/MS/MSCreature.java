@@ -342,23 +342,12 @@ public class MSCreature extends Creature {
             case BOOTS_WATER:
             case BOOTS_FIRE:
             case BOOTS_ICE:
-            case BOOTS_SLIDE: return !creatureType.isMonster();
+            case BOOTS_FF: return !creatureType.isMonster();
             case CHIP_UP:
             case CHIP_LEFT:
             case CHIP_RIGHT:
             case CHIP_DOWN: return !creatureType.isChip();
         }
-    }
-
-    @Override
-    public boolean canOverride() {
-        return creatureType.isChip();
-    }
-
-    @Override
-    public void setCanOverride(boolean canOverride) {
-        if (!canOverride)
-            throw new UnsupportedOperationException("Overriding is always allowed in MS");
     }
 
     private boolean tryEnter(Direction direction, Position newPosition, Tile tile, List<Button> pressedButtons){
@@ -695,7 +684,7 @@ public class MSCreature extends Creature {
                     level.boots[2] = 1;
                 }
                 return !creatureType.isMonster();
-            case BOOTS_SLIDE:
+            case BOOTS_FF:
                 if (creatureType.isChip()) {
                     level.getLayerFG().set(newPosition, FLOOR);
                     level.boots[3] = 1;

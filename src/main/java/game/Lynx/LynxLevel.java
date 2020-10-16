@@ -237,7 +237,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public Button getButton(Position position, Class buttonType) {
+    public Button getButton(Position position, Class<? extends Button> buttonType) {
         Button[] buttons;
         if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
         else if (buttonType.equals(RedButton.class)) buttons = redButtons;
@@ -376,24 +376,43 @@ public class LynxLevel extends LynxSavestate implements Level {
         if (directions.length == 0 && !chip.isSliding())
             return false;
 
-        if (directions.length != 0)
-            chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
+        Tile formerTile = layerFG.get(chip.getPosition().move(chip.getDirection().turn(Direction.TURN_AROUND)));
+        if (boots[3] == 0) {
+            if (formerTile.isFF() && lastMoveForced)
+                canOverride = true;
+            else if (!formerTile.isIce() || boots[2] != 0)
+                canOverride = false;
+        }
 
         Tile currentTile = layerFG.get(chip.getPosition());
-        if (currentTile.isFF()) { //todo: force floor overriding fun stuff
+        if (!chip.isSliding() || (currentTile.isFF() && directions.length != 0)) {
+            chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
+        }
+
+        if (currentTile.isFF() && boots[3] == 0) {
             Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
-            if (chip.canOverride()) {
+            if (canOverride && directions.length != 0) {
                 if (chip.getDirection() == slideDirection.turn(Direction.TURN_AROUND)) {
-                    chip.setCanOverride(false);
+                    lastMoveForced = false;
                     return false;
                 }
                 if (chip.getDirection() == slideDirection) {
                     directions = new Direction[]{slideDirection};
-                    chip.setDirection(slideDirection);
+                    lastMoveForced = true;
                 }
-                chip.setCanOverride(false);
+                else lastMoveForced = false;
             }
             else {
+                directions = new Direction[]{slideDirection};
+                chip.setDirection(slideDirection);
+                lastMoveForced = true;
+            }
+        }
+        else if (currentTile.isSliding() || currentTile == Tile.TRAP) {
+            if (!(currentTile.isIce() && boots[2] != 0)) {
+                if (!currentTile.isIce())
+                    lastMoveForced = false;
+                Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
                 directions = new Direction[]{slideDirection};
                 chip.setDirection(slideDirection);
             }
@@ -405,7 +424,8 @@ public class LynxLevel extends LynxSavestate implements Level {
         }
 
         //blocks ahead of chip
-        pushBlock(chip.getPosition().move(directions[0]), directions[0]);
+        if (directions.length > 0)
+            pushBlock(chip.getPosition().move(directions[0]), directions[0]);
 
         return chip.tick(directions[0]);
     }
@@ -455,7 +475,7 @@ public class LynxLevel extends LynxSavestate implements Level {
                    Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction INITIAL_SLIDE){
 
         super(layerFG, monsterList, chip,
-                chips, new short[4], new byte[4], rng, NO_CLICK, traps);
+                chips, new short[4], new byte[4], rng, traps);
 
         this.levelNumber = levelNumber;
         this.startTime = time;
