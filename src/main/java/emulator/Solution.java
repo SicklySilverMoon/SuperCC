@@ -107,7 +107,7 @@ public class Solution{
         }
         catch (Exception e){
             e.printStackTrace();
-            emulator.throwError("Something went wrong:\n"+e.getMessage());
+            emulator.throwError("Something went wrong:\n" + e);
         }
     }
     

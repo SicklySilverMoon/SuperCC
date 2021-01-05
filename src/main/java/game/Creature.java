@@ -58,6 +58,10 @@ public abstract class Creature {
         return position;
     }
 
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
     /** Turns the creature to face a specified direction.
      *
      * @param turn the direction the creature should turn.

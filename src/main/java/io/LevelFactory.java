@@ -46,19 +46,19 @@ public class LevelFactory {
         }
         return toggleDoors;
     }
-    private static Position[] getPortals(Layer layerFG, Layer layerBG){
+    private static Position[] getTeleports(Layer layerFG, Layer layerBG){
         int l = 0;
         for (int i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.TELEPORT || (layerFG.get(i).isMonster() && layerBG.get(i) == Tile.TELEPORT)) l++;
         }
-        Position[] portals = new Position[l];
+        Position[] teleports = new Position[l];
         l = 0;
         for (short i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.TELEPORT || (layerFG.get(i).isMonster() && layerBG.get(i) == Tile.TELEPORT)){
-                portals[l++] = new Position(i);
+                teleports[l++] = new Position(i);
             }
         }
-        return portals;
+        return teleports;
     }
     private static MSCreatureList getMSMonsterList(int[][] monsterPositions, Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
         if (monsterPositions == null) return new MSCreatureList(new MSCreature[] {}, layerFG, layerBG);
@@ -206,7 +206,7 @@ public class LevelFactory {
                 password,
                 hint,
                 getToggleDoors(layerFG, layerBG),
-                getPortals(layerFG, layerBG),
+                getTeleports(layerFG, layerBG),
                 getGreenButtons(layerFG, layerBG),
                 getRedButtons(cloneConnections),
                 getBrownButtons(trapConnections),
@@ -233,7 +233,7 @@ public class LevelFactory {
                 password,
                 hint,
                 getToggleDoors(layerFG, layerBG),
-                getPortals(layerFG, layerBG),
+                getTeleports(layerFG, layerBG),
                 getGreenButtons(layerFG, layerBG),
                 getRedButtons(cloneConnections),
                 getBrownButtons(trapConnections),

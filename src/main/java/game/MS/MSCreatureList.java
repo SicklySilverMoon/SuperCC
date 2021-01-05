@@ -183,12 +183,10 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
-    public int numCreaturesAt(Position position) {
+    public boolean claimed(Position position) {
         if (!position.isValid())
-            return 0;
-        if (level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip())
-            return 1;
-        return 0;
+            return false;
+        return level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip();
     }
 
     @Override

@@ -15,10 +15,6 @@ import static game.Tile.*;
 public class MSCreature extends Creature {
 
     // Direction-related methods
-    protected void setPosition(Position position){ //So you can make a creature teleport 32 tiles at once to data reset properly
-        this.position = position;
-    }
-
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng){
         if (nextMoveDirectionCheat != null) {
@@ -184,15 +180,15 @@ public class MSCreature extends Creature {
     private void teleport(Direction direction, Position position, List<Button> pressedButtons) {
         Position chipPosition = level.getChip().getPosition();
         if (creatureType.isChip()) level.popTile(chipPosition);
-        int portalIndex;
-        for (portalIndex = 0; true; portalIndex++){
-            if (portalIndex >= level.getTeleports().length) return;
-            if (level.getTeleports()[portalIndex].equals(position)){
+        int teleportIndex;
+        for (teleportIndex = 0; true; teleportIndex++){
+            if (teleportIndex >= level.getTeleports().length) return;
+            if (level.getTeleports()[teleportIndex].equals(position)){
                 break;
             }
         }
         int l = level.getTeleports().length;
-        int i = portalIndex;
+        int i = teleportIndex;
         do{
             i--;
             if (i < 0) i += l;
@@ -251,7 +247,7 @@ public class MSCreature extends Creature {
                 break;
             }
         }
-        while (i != portalIndex);
+        while (i != teleportIndex);
     }
 
     @Override
@@ -395,6 +391,7 @@ public class MSCreature extends Creature {
                     case ICE_BLOCK:
                         level.getLayerFG().set(newPosition, WATER);
                         kill();
+                        return true;
                     default:
                         kill();
                         return true;

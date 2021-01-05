@@ -5,7 +5,6 @@ import game.Cheats;
 import game.MS.SlipList;
 import game.button.*;
 
-import java.util.Arrays;
 import java.util.BitSet;
 
 import static game.CreatureID.BLOCK;
@@ -360,7 +359,7 @@ public class LynxLevel extends LynxSavestate implements Level {
             }
             newPosition = chip.getPosition().move(directions[0]);
         }
-        if (monsterList.numCreaturesAt(newPosition) != 0 && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
+        if (monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
             chip.kill();
             monsterList.creatureAt(newPosition).kill();
         }
@@ -409,7 +408,7 @@ public class LynxLevel extends LynxSavestate implements Level {
             }
         }
         else if (currentTile.isSliding() || currentTile == Tile.TRAP) {
-            if (!(currentTile.isIce() && boots[2] != 0)) {
+            if (!(currentTile.isIce() && boots[2] != 0) && !(currentTile.isFF() && boots[3] != 0)) {
                 if (!currentTile.isIce())
                     lastMoveForced = false;
                 Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
@@ -444,7 +443,7 @@ public class LynxLevel extends LynxSavestate implements Level {
      * @return true if Chip is killed as a result of this, false otherwise
      */
     private boolean chipDeathCheck() {
-        if (monsterList.numCreaturesAt(chip.getPosition()) != 0) {
+        if (monsterList.claimed(chip.getPosition())) {
             chip.kill();
             monsterList.creatureAt(chip.getPosition()).kill();
             return true;

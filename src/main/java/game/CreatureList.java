@@ -59,12 +59,12 @@ public abstract class CreatureList implements Iterable<Creature> {
         list = creatures;
     }
 
-    /** Returns the number of creatures currently occupying the specified position
+    /** Returns true if a position is claimed by a creature (usually meaning a creature occupies the tile)
      *
      * @param position The position to check (must be a valid position between 0 and 31 on x and y).
-     * @return Number of creatures located within the given position, 0 if the position is off map.
+     * @return If the position is claimed.
      */
-    public abstract int numCreaturesAt(Position position);
+    public abstract boolean claimed(Position position);
 
     /** Returns the animation currently occurring at the given position (null if there is no animation).
      *

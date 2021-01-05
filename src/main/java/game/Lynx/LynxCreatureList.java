@@ -5,21 +5,21 @@ import game.*;
 import static game.CreatureID.*;
 
 public class LynxCreatureList extends CreatureList {
-    private int[] creatureLayer; //a faux 'layer', whenever a creature moves into a position increment the resulting position index in this array. decrement it when they leave
+    private boolean[] creatureLayer;
     private Creature[] animationLayer; //Another faux layer that holds references to DEAD creatures that currently have animations playing, a position's index matches to an index in this array
     private int phase;
 
     @Override
     public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
         list = creatures;
-        creatureLayer = new int[1024];
+        creatureLayer = new boolean[1024];
         animationLayer = new Creature[1024];
 
         for (Creature c : creatures) {
             if (c.getCreatureType() == CHIP || layerFG.get(c.getPosition()) == Tile.CLONE_MACHINE)
                 continue;
             if (c.getCreatureType() != DEAD)
-                creatureLayer[c.getPosition().index]++;
+                creatureLayer[c.getPosition().index] = true;
             else if (c.getAnimationTimer() != 0)
                 animationLayer[c.getPosition().index] = c;
         }
@@ -60,7 +60,9 @@ public class LynxCreatureList extends CreatureList {
                 if (creature.getCreatureType() == CHIP)
                     continue;
 
-                for (Direction dir : creature.getDirectionPriority(chip, level.getRNG())) {
+                Direction[] moves = creature.getDirectionPriority(chip, level.getRNG());
+                for (int j=0; j < moves.length; j++) {
+                    Direction dir = moves[j];
                     if (dir == null)
                         continue;
                     Position newPosition = creature.getPosition().move(dir);
@@ -68,10 +70,13 @@ public class LynxCreatureList extends CreatureList {
                     Tile newTile = level.getLayerFG().get(newPosition);
                     boolean canMove = (creature.canEnter(dir, newTile) && creature.canLeave(dir, currentTile, creature.getPosition()));
 
-                    if (!canMove || numCreaturesAt(newPosition) != 0)
+                    if (!canMove || claimed(newPosition) || !newPosition.isValid()) {
+                        if (j == moves.length - 1) {
+                            creature.setDirection(dir);
+                            break;
+                        }
                         continue;
-                    if (!newPosition.isValid())
-                        continue;
+                    }
                     Creature anim = animationAt(newPosition);
                     if (anim != null) {
                         anim.kill(); //killing an animation stops the animation
@@ -110,7 +115,10 @@ public class LynxCreatureList extends CreatureList {
             for (int i = list.length - 1; i >= 0; i--) {
                 Creature creature = list[i];
                 if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT) {
-                    //todo
+                    if (creature.getTimeTraveled() != 0 || creature.getAnimationTimer() != 0)
+                        continue;
+                    if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT)
+                        teleportCreature(creature);
                 }
             }
             phase = 0;
@@ -119,9 +127,9 @@ public class LynxCreatureList extends CreatureList {
     }
 
     @Override
-    public int numCreaturesAt(Position position) {
+    public boolean claimed(Position position) {
         if (!position.isValid())
-            return 0;
+            return false;
         return creatureLayer[position.index];
     }
 
@@ -154,7 +162,7 @@ public class LynxCreatureList extends CreatureList {
             return;
 
         Creature clone;
-        if (!template.canEnter(direction, newTile) || numCreaturesAt(newPosition) != 0)
+        if (!template.canEnter(direction, newTile) || claimed(newPosition))
             return;
 
         clone = template.clone();
@@ -177,7 +185,7 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void springTrappedCreature(Position position) {
-        if (level.getLayerFG().get(position) != Tile.TRAP || numCreaturesAt(position) == 0
+        if (level.getLayerFG().get(position) != Tile.TRAP || !claimed(position)
         || !level.isTrapOpen(position))
             return;
 
@@ -204,17 +212,50 @@ public class LynxCreatureList extends CreatureList {
     private void updateLayer(Creature creature, Position oldPosition, CreatureID oldCreatureType) {
         if (!oldPosition.equals(creature.getPosition()) && !creature.getCreatureType().isChip()) {
             if (level.getLayerFG().get(oldPosition) != Tile.CLONE_MACHINE)
-                --creatureLayer[oldPosition.index];
-            ++creatureLayer[creature.getPosition().index];
+                creatureLayer[oldPosition.index] = false;
+            creatureLayer[creature.getPosition().index] = true;
             return;
         }
         if (creature.isDead()) {
             if (creature.getCreatureType() != oldCreatureType)
-                --creatureLayer[oldPosition.index];
+                creatureLayer[oldPosition.index] = false;
             if (creature.getAnimationTimer() != 0)
                 animationLayer[creature.getPosition().index] = creature;
             else animationLayer[creature.getPosition().index] = null;
         }
+    }
+
+    private void teleportCreature(Creature creature) {
+        Position originalPosition = creature.getPosition();
+        Position[] teleports = level.getTeleports();
+        int index = 0;
+        for (int i = 0; i < teleports.length; i++) {
+            Position teleportPosition = teleports[i];
+            if (teleportPosition.equals(originalPosition)) {
+                index = i;
+                break;
+            }
+        }
+
+        for (;;) {
+            --index;
+            if (index < 0)
+                index = teleports.length - 1;
+            Position teleportPosition = teleports[index];
+            if (creature.getCreatureType() != CHIP)
+                creatureLayer[creature.getPosition().index] = false;
+            creature.setPosition(teleportPosition);
+            if (!claimed(teleportPosition) && creature.canEnter(creature.getDirection(), level.getLayerFG().get(teleportPosition)))
+                break;
+            if (teleportPosition.equals(originalPosition)) {
+                if (creature.getCreatureType() != CHIP)
+                    creatureLayer[originalPosition.index] = true;
+                return;
+            }
+        }
+
+        if (creature.getCreatureType() != CHIP)
+            creatureLayer[creature.getPosition().index] = true;
     }
 
     public LynxCreatureList(Creature[] creatures, Layer layerFG, Layer layerBG) {
