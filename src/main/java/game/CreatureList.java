@@ -57,6 +57,8 @@ public abstract class CreatureList implements Iterable<Creature> {
 
     public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
         list = creatures;
+        for (Creature c : list)
+            c.setLevel(level);
     }
 
     /** Returns true if a position is claimed by a creature (usually meaning a creature occupies the tile)

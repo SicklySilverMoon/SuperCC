@@ -105,6 +105,7 @@ public class MSCreatureList extends game.CreatureList {
             Position row0Position = new Position(position.x, 0);
             if (level.getLayerBG().get(row0Position).isCreature()) {
                 clone = new MSCreature(new Position(position.x, 32), level.getLayerBG().get(row0Position));
+                clone.setLevel(level);
                 Tile newTile = level.getLayerFG().get(new Position(position.x, 31));
                 if (clone.getDirection() == Direction.UP && clone.canEnter(clone.getDirection(), newTile)) {
                     ((MSLevel) level).resetData(row0Position.x);
@@ -121,6 +122,7 @@ public class MSCreatureList extends game.CreatureList {
                 if (!tile.isCreature() ^ (tile == Tile.ICE_BLOCK && tilebg.isCloneBlock()))
                     return;
                 clone = new MSCreature(position, tile);
+                clone.setLevel(level);
                 if (tile == Tile.ICE_BLOCK)
                     direction = Direction.fromOrdinal((tilebg.ordinal() + 2) % 4);
                 else

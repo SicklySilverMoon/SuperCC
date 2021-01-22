@@ -346,20 +346,34 @@ public class LynxLevel extends LynxSavestate implements Level {
             }
         }
 
-        Position newPosition = chip.getPosition().move(directions[0]);
         Tile currentTile = layerFG.get(chip.getPosition());
+        if (boots[3] == 0) {
+            if (currentTile.isFF() && lastMoveForced)
+                canOverride = true;
+            else if (!currentTile.isIce() || boots[2] != 0)
+                canOverride = false;
+        }
+
+        Position newPosition = chip.getPosition().move(directions[0]);
         Tile newTile = layerFG.get(newPosition);
         boolean canMove = (chip.canEnter(directions[0], newTile) && chip.canLeave(directions[0], currentTile, chip.getPosition()));
+        if (currentTile.isFF()) {
+            Direction slideDir = chip.getSlideDirection(directions[0], currentTile, null, false);
+            if (slideDir.equals(directions[0].turn(Direction.TURN_AROUND))) {
+                canMove = false;
+            }
+        }
 
         if (!canMove || monsterList.animationAt(newPosition) != null) {
             if (directions.length > 1) {
                 Direction first = directions[0];
                 directions[0] = directions[1];
                 directions[1] = first;
+                canMove = true; //todo: this certainly isn't correct, need to split checking if a move is legal into its own method so that this is sane
             }
             newPosition = chip.getPosition().move(directions[0]);
         }
-        if (monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
+        if (canMove && monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
             chip.kill();
             monsterList.creatureAt(newPosition).kill();
         }
@@ -375,21 +389,13 @@ public class LynxLevel extends LynxSavestate implements Level {
         if (directions.length == 0 && !chip.isSliding())
             return false;
 
-        Tile formerTile = layerFG.get(chip.getPosition().move(chip.getDirection().turn(Direction.TURN_AROUND)));
-        if (boots[3] == 0) {
-            if (formerTile.isFF() && lastMoveForced)
-                canOverride = true;
-            else if (!formerTile.isIce() || boots[2] != 0)
-                canOverride = false;
-        }
-
         Tile currentTile = layerFG.get(chip.getPosition());
         if (!chip.isSliding() || (currentTile.isFF() && directions.length != 0)) {
             chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
         }
 
         if (currentTile.isFF() && boots[3] == 0) {
-            Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
+            Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null, true);
             if (canOverride && directions.length != 0) {
                 if (chip.getDirection() == slideDirection.turn(Direction.TURN_AROUND)) {
                     lastMoveForced = false;
@@ -411,7 +417,7 @@ public class LynxLevel extends LynxSavestate implements Level {
             if (!(currentTile.isIce() && boots[2] != 0) && !(currentTile.isFF() && boots[3] != 0)) {
                 if (!currentTile.isIce())
                     lastMoveForced = false;
-                Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null);
+                Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null, true);
                 directions = new Direction[]{slideDirection};
                 chip.setDirection(slideDirection);
             }
@@ -494,8 +500,8 @@ public class LynxLevel extends LynxSavestate implements Level {
         this.LEVELSET_LENGTH = levelsetLength;
         this.INITIAL_SLIDE = INITIAL_SLIDE;
 
-        Creature.setLevel(this);
-        Creature.setMonsterList(monsterList);
+        for (Creature c : monsterList)
+            c.setLevel(this);
         this.monsterList.setLevel(this);
     }
 }

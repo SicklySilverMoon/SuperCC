@@ -9,14 +9,12 @@ import static game.CreatureID.DEAD;
  *    DIRECTION | MONSTER |    ROW    |    COL
  */
 public abstract class Creature {
+    protected Level level;
     protected Position position;
     protected CreatureID creatureType;
     protected Direction direction;
     protected boolean sliding;
     protected Direction nextMoveDirectionCheat = null;
-
-    protected static Level level;
-    protected static CreatureList monsterList;
 
     public Direction getDirection() {
         return direction;
@@ -40,7 +38,7 @@ public abstract class Creature {
 
     public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
 
-    public abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng);
+    public abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng, boolean advanceRFF);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;
@@ -137,12 +135,8 @@ public abstract class Creature {
         this.sliding = sliding;
     }
 
-    public static void setLevel(Level newLevel) {
-        level = newLevel;
-    }
-
-    public static void setMonsterList(CreatureList newList) {
-        monsterList = newList;
+    public void setLevel(Level level) {
+        this.level = level;
     }
 
     public abstract Creature clone();

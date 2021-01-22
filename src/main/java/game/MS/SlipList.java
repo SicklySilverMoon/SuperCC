@@ -31,6 +31,9 @@ public class SlipList extends ArrayList<Creature> { //This should only ever be u
             if (c == null) c = slider;
             add(c);                // Blocks are not in the monster list, so they are added separately
         }
+
+        for (Creature c : this)
+            c.setLevel(level);
     }
 
     @Override

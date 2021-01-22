@@ -23,6 +23,9 @@ public class LynxCreatureList extends CreatureList {
             else if (c.getAnimationTimer() != 0)
                 animationLayer[c.getPosition().index] = c;
         }
+
+        for (Creature c : list)
+            c.setLevel(level);
     }
 
     @Override

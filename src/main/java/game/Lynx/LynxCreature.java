@@ -77,6 +77,8 @@ public class LynxCreature extends Creature {
             boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
                     && canLeave(direction, level.getLayerFG().get(position), position);
 
+            CreatureList monsterList = level.getMonsterList();
+
             boolean blockedByCreature = false;
             if (creatureType != CreatureID.CHIP)
                 blockedByCreature = monsterList.claimed(newPosition);
@@ -89,8 +91,11 @@ public class LynxCreature extends Creature {
 
             Tile currentTile = level.getLayerFG().get(position);
             if (!canMove || blockedByCreature || !newPosition.isValid()) {
-                    if (sliding && currentTile.isIce()) {
-                        direction = getSlideDirection(direction.turn(TURN_AROUND), currentTile, null);
+                    if (sliding) {
+                        if (currentTile.isIce())
+                            direction = getSlideDirection(direction.turn(TURN_AROUND), currentTile, null, true);
+                        else if (creatureType != CreatureID.CHIP) //todo: check if this is gonna cause other issues
+                            direction = getSlideDirection(direction, currentTile, null, true);
                         this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
                     }
                     return false;
@@ -136,7 +141,7 @@ public class LynxCreature extends Creature {
             case ICE_SLIDE_NORTHWEST:
             case ICE_SLIDE_NORTHEAST:
                 if (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0) {
-                    this.direction = getSlideDirection(this.direction, newTile, null);
+                    this.direction = getSlideDirection(this.direction, newTile, null, true);
                 }
                 break;
             case FF_DOWN:
@@ -145,7 +150,7 @@ public class LynxCreature extends Creature {
             case FF_LEFT:
             case FF_RANDOM:
                 if (creatureType != CreatureID.CHIP) {
-                    this.direction = getSlideDirection(this.direction, newTile, null);
+                    this.direction = getSlideDirection(this.direction, newTile, null, true);
                 }
                 break;
             case BUTTON_GREEN:
@@ -156,7 +161,7 @@ public class LynxCreature extends Creature {
                 if (button != null) {
                     button.press(level);
                     if (button instanceof BrownButton) {
-                        monsterList.springTrappedCreature(((BrownButton) button).getTargetPosition());
+                        level.getMonsterList().springTrappedCreature(((BrownButton) button).getTargetPosition());
                     }
                 }
                 break;
@@ -301,7 +306,7 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public Direction getSlideDirection(Direction direction, Tile tile, RNG rng){
+    public Direction getSlideDirection(Direction direction, Tile tile, RNG rng, boolean advanceRFF){
         switch (tile){
             case FF_DOWN:
                 return DOWN;
@@ -312,7 +317,10 @@ public class LynxCreature extends Creature {
             case FF_LEFT:
                 return LEFT;
             case FF_RANDOM:
-                return level.getAndCycleRFFDirection();
+                if (advanceRFF)
+                    return level.getAndCycleRFFDirection();
+                else
+                    return level.getRFFDirection();
             case ICE_SLIDE_SOUTHEAST:
                 if (direction == UP) return RIGHT;
                 else if (direction == LEFT) return DOWN;
@@ -511,7 +519,9 @@ public class LynxCreature extends Creature {
 
     @Override
     public Creature clone() {
-        return new LynxCreature(bits());
+        LynxCreature c = new LynxCreature(bits());
+        c.setLevel(level);
+        return c;
     }
 
     public LynxCreature(Position position, Tile tile) {

@@ -264,14 +264,18 @@ public class MSLevel extends MSSavestate implements Level {
     }
     @Override
     public Direction getAndCycleRFFDirection() {
-        return null;
+        return Direction.fromOrdinal(rng.random4());
     }
     @Override
     public Direction getRFFDirection() {
-        return null;
+        int rngValue = rng.getCurrentValue();
+        Direction slideDir = Direction.fromOrdinal(rng.random4());
+        rng.setCurrentValue(rngValue);
+        return slideDir;
     }
     @Override
     public void cycleRFFDirection() {
+        rng.random4();
     }
     /**
      * @param position the last clicked position.
@@ -624,8 +628,10 @@ public class MSLevel extends MSSavestate implements Level {
         this.cheats = new Cheats(this);
         this.LEVELSET_LENGTH = levelsetLength;
 
-        Creature.setLevel(this);
-        Creature.setMonsterList(monsterList);
+        for (Creature c : monsterList)
+            c.setLevel(this);
+        chip.setLevel(this);
+
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
 

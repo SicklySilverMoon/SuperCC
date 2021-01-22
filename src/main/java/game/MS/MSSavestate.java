@@ -49,7 +49,7 @@ public class MSSavestate implements Savestate {
             2 +                             // sliplist size
             slipList.size() * 2 +           // sliplist
             2 +                             // idle moves
-            4;                              // previous move type
+            1;                              // previous move type
         
         SavestateWriter writer = new SavestateWriter(length);
         writer.write(UNCOMPRESSED_V2); //Every time this is updated also update compress() in SavestateManager.java
@@ -87,6 +87,7 @@ public class MSSavestate implements Savestate {
             if (reader.read() != Ruleset.MS.ordinal())
                 throw new UnsupportedOperationException("Can only load MS savestates!");
             chip = new MSCreature(reader.readShort());
+            chip.setLevel((Level) this);
             layerBG.load(reader.readLayer(version));
             layerFG.load(reader.readLayer(version));
             tickNumber = reader.readInt();
