@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeedSearch {
 
-    private SuperCC emulator;
-    private Solution solution;
     private JPanel panel1;
     private JButton startStopButton;
     private JLabel resultsLabel;
@@ -34,34 +32,45 @@ public class SeedSearch {
     private static final int UPDATE_GUI_RATE = UPDATE_VALUE_RATE * 2;
 
     private final byte[] startingState;
-    private int seed;
     private static boolean killFlag = false;
     private static boolean running = false;
     private static AtomicInteger numAlive = new AtomicInteger(0);
     private DecimalFormat df;
 
+    private int[] threadCurrentSeed;
     private AtomicInteger globalAttempts = new AtomicInteger(0);
     private AtomicInteger globalSuccesses = new AtomicInteger(0);
     private AtomicInteger globalLastSuccess = new AtomicInteger(-1);
+    private boolean ranAlready = false;
     private boolean untilPosition = false;
     private Position endPosition = new Position(0, 0);
 
     public SeedSearch(SuperCC emulator, Solution solution) {
+        int numCores = Runtime.getRuntime().availableProcessors();
+        long numSeeds = Integer.MAX_VALUE;
+        long seedPoolSize = (numSeeds + 1) / numCores; //avoids overflow before reducing back in range
 
-        emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false,
+        emulator.loadLevel(emulator.getLevel().getLevelNumber(), 0, solution.step, false,
                 Ruleset.CURRENT, solution.initialSlide);
         startingState = emulator.getLevel().save();
     
         resultsLabel.setText("Successes: 0/0 (0%)");
         df = new DecimalFormat("##.####");
-    
+
         startStopButton.addActionListener((e) -> {
             if (running) {
                 startStopButton.setText("Resume");
                 killFlag = true;
             }
             else {
-                if (seed == 0) seed = Integer.parseInt(startField.getText());
+                if (!ranAlready) {
+                    threadCurrentSeed = new int[numCores];
+                    ranAlready = true;
+                    int start = Integer.parseInt(startField.getText());
+                    for (int i=0; i < numCores; i++) {
+                        threadCurrentSeed[i] = (int) (start + seedPoolSize * i);
+                    }
+                }
                 if (untilPosition) {
                     String positionString = positionField.getText().replaceAll("\\s+",""); //Remove whitespace
                     String[] positionStrings = positionString.split(",");
@@ -77,7 +86,19 @@ public class SeedSearch {
                 startLabel.setVisible(false);
                 startField.setVisible(false);
                 startStopButton.setText("Pause");
-                new SeedSearchThread().start();
+
+                for (int i = 0; i < numCores; i++) {
+                    int end;
+                    if (i == numCores - 1)
+                        end = (int) (threadCurrentSeed[i] + seedPoolSize * (i + 1) - 1);
+                    else
+                        end = Integer.MAX_VALUE;
+
+                    SuperCC threadEmulator = new SuperCC(false);
+                    threadEmulator.openLevelset(new File(emulator.getLevelsetPath()));
+                    threadEmulator.loadLevel(emulator.getLevel().getLevelNumber());
+                    new SeedSearchThread(i, end, threadEmulator, new Solution(solution)).start();
+                }
             }
         });
         untilPositionRadioButton.addActionListener(e -> {
@@ -119,8 +140,8 @@ public class SeedSearch {
         int globalAttemptsNA = globalAttempts.get();
         resultsLabel.setText("Successes: "+ globalSuccessesNA +"/"+globalAttemptsNA+" ("+df.format(100.0 * globalSuccessesNA / globalAttemptsNA)+"%)");
         resultsLabel.repaint();
-        currentSeedLabel.setText("Current Seed: "+seed);
-        if (lastSuccess >= 0) exampleSeedLabel.setText("Example seed: " + lastSuccess);
+//        currentSeedLabel.setText("Current Seed: "+ seed);
+        if (lastSuccessNA >= 0) exampleSeedLabel.setText("Example seed: " + lastSuccessNA);
         exampleSeedLabel.repaint();
     }
 
@@ -135,28 +156,45 @@ public class SeedSearch {
             return emulator.getLevel().getChip().getPosition().equals(endPosition) && !emulator.getLevel().getChip().isDead();
     }
 
-    private class SeedSearchThread extends Thread {
-        public void run(){
-            while (!killFlag && currentSeed <= endSeed) {
-                if (verifySeed(currentSeed, solution, emulator)) {
-                    successes++;
-                    lastSuccess = seed;
-                }
-                attempts++;
-                seed++;
-                if (seed % UPDATE_RATE == 0) updateText();
-            }
-            updateValues(attempts, successes, lastSuccess);
-            if (numAlive.decrementAndGet() == 0) { //last one to die should do some cleanup
-                updateText();
-                killFlag = false;
-                running = false;
-            }
-        }
-    }
-
     public static boolean isRunning() {
         return running;
     }
 
+    private class SeedSearchThread extends Thread {
+        int threadNum, endSeed, currentSeed, attempts, successes, lastSuccess;
+        SuperCC emulator;
+        Solution solution;
+        public void run(){
+            running = true;
+            killFlag = false;
+            while (!killFlag && currentSeed <= endSeed) {
+                if (verifySeed(currentSeed, solution, emulator)) {
+                    successes++;
+                    lastSuccess = currentSeed;
+                }
+                attempts++;
+                currentSeed++;
+                if (currentSeed % UPDATE_VALUE_RATE == 0)
+                    updateValues(attempts, successes, lastSuccess);
+            }
+            updateValues(attempts, successes, lastSuccess); //just have it update with the last result, in case a success is found before an update and it gets canceled
+            threadCurrentSeed[threadNum] = currentSeed;
+            if (numAlive.decrementAndGet() == 0) { //last one cleans up
+                updateText();
+                running = false;
+                killFlag = false;
+            }
+        }
+
+        SeedSearchThread(int threadNum, int endSeed, SuperCC emulator, Solution solution) {
+            this.threadNum = threadNum;
+            this.currentSeed = threadCurrentSeed[threadNum];
+            this.endSeed = endSeed;
+            this.lastSuccess = -1;
+            this.emulator = emulator;
+            this.solution = solution;
+
+            numAlive.incrementAndGet();
+        }
+    }
 }
