@@ -36,6 +36,10 @@ public class DatParser{
         return file.getName().replaceFirst("[.][^.]+$", "");
     }
 
+    public String getLevelsetPath() {
+        return file.getPath();
+    }
+
     /**
      * Reads either layer 1 or layer 2 of the .dat file. Only call this if the
      * FileInputStream stream is pointing at the layer data, so that the next

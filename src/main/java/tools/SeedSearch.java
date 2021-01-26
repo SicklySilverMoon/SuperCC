@@ -8,9 +8,11 @@ import game.Ruleset;
 
 import javax.swing.*;
 
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.io.File;
 import java.text.DecimalFormat;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeedSearch {
 
@@ -28,17 +30,19 @@ public class SeedSearch {
     private JLabel searchTypeLabel;
     private JTextField positionField;
 
-    private static final int UPDATE_RATE = 1000;
-    
+    private static final int UPDATE_VALUE_RATE = 1000;
+    private static final int UPDATE_GUI_RATE = UPDATE_VALUE_RATE * 2;
+
     private final byte[] startingState;
     private int seed;
     private static boolean killFlag = false;
     private static boolean running = false;
+    private static AtomicInteger numAlive = new AtomicInteger(0);
     private DecimalFormat df;
-    
-    private int successes = 0;
-    private int attempts = 0;
-    private int lastSuccess = -1;
+
+    private AtomicInteger globalAttempts = new AtomicInteger(0);
+    private AtomicInteger globalSuccesses = new AtomicInteger(0);
+    private AtomicInteger globalLastSuccess = new AtomicInteger(-1);
     private boolean untilPosition = false;
     private Position endPosition = new Position(0, 0);
 
@@ -47,9 +51,6 @@ public class SeedSearch {
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), seed, solution.step, false,
                 Ruleset.CURRENT, solution.initialSlide);
         startingState = emulator.getLevel().save();
-        
-        this.emulator = emulator;
-        this.solution = solution;
     
         resultsLabel.setText("Successes: 0/0 (0%)");
         df = new DecimalFormat("##.####");
@@ -68,7 +69,6 @@ public class SeedSearch {
                     endPosition = new Position(
                             positions[0] < 32 ? positions[0] : 31, //Just a little ternary check to make sure the position are within bounds, and to put them in bounds if they aren't
                             positions[1] < 32 ? positions[1] : 31);
-                    System.out.println(endPosition);
                 }
                 searchTypeLabel.setVisible(false);
                 untilExitRadioButton.setVisible(false);
@@ -94,11 +94,8 @@ public class SeedSearch {
         frame.pack();
         frame.setLocationRelativeTo(emulator.getMainWindow());
         frame.setVisible(true);
-        frame.addWindowListener(new WindowListener() {
+        frame.addWindowListener(new WindowAdapter() {
             @Override public void windowClosing(WindowEvent windowEvent) { killFlag = true; }
-
-            //None of these are useful but the code requires them to be here so i shoved them all into one line
-            @Override public void windowOpened(WindowEvent windowEvent) {}@Override public void windowClosed(WindowEvent windowEvent) {}@Override public void windowIconified(WindowEvent windowEvent) {}@Override public void windowDeiconified(WindowEvent windowEvent) {}@Override public void windowActivated(WindowEvent windowEvent) { }@Override public void windowDeactivated(WindowEvent windowEvent) { }
         });
     }
 
@@ -107,20 +104,41 @@ public class SeedSearch {
         exampleSeedLabel = new JLabel("Example seed:");
     }
 
+    private void updateValues(int attemps, int successes, int exampleSuccess) {
+        globalAttempts.addAndGet(attemps);
+        globalSuccesses.addAndGet(successes);
+        if (exampleSuccess >= 0)
+            globalLastSuccess.set(exampleSuccess);
+        if (attemps % UPDATE_GUI_RATE == 0)
+            updateText();
+    }
+
     private void updateText() {
-        resultsLabel.setText("Successes: "+successes+"/"+attempts+" ("+df.format(100.0 * (double) successes / (double) attempts)+"%)");
+        int lastSuccessNA = globalLastSuccess.get();
+        int globalSuccessesNA = globalSuccesses.get();
+        int globalAttemptsNA = globalAttempts.get();
+        resultsLabel.setText("Successes: "+ globalSuccessesNA +"/"+globalAttemptsNA+" ("+df.format(100.0 * globalSuccessesNA / globalAttemptsNA)+"%)");
         resultsLabel.repaint();
         currentSeedLabel.setText("Current Seed: "+seed);
         if (lastSuccess >= 0) exampleSeedLabel.setText("Example seed: " + lastSuccess);
         exampleSeedLabel.repaint();
     }
-    
+
+    private boolean verifySeed(int seed, Solution solution, SuperCC emulator) {
+        solution.rngSeed = seed;
+        emulator.getLevel().load(startingState);
+        emulator.getLevel().getCheats().setRng(seed);
+        solution.loadMoves(emulator, TickFlags.LIGHT, false);
+        if (!untilPosition)
+            return emulator.getLevel().isCompleted();
+        else
+            return emulator.getLevel().getChip().getPosition().equals(endPosition) && !emulator.getLevel().getChip().isDead();
+    }
+
     private class SeedSearchThread extends Thread {
         public void run(){
-            running = true;
-            killFlag = false;
-            while (!killFlag && seed >= 0) {
-                if (verifySeed(seed)) {
+            while (!killFlag && currentSeed <= endSeed) {
+                if (verifySeed(currentSeed, solution, emulator)) {
                     successes++;
                     lastSuccess = seed;
                 }
@@ -128,31 +146,17 @@ public class SeedSearch {
                 seed++;
                 if (seed % UPDATE_RATE == 0) updateText();
             }
-            running = false;
-            killFlag = false;
-            updateText(); //just have it update with the last result, in case a success is found before an update and it gets canceled
-                emulator.getSavestates().restart();
-                emulator.getLevel().load(emulator.getSavestates().getSavestate());
-                emulator.showAction("Restarted Level");
-                emulator.getMainWindow().repaint(false);
+            updateValues(attempts, successes, lastSuccess);
+            if (numAlive.decrementAndGet() == 0) { //last one to die should do some cleanup
+                updateText();
+                killFlag = false;
+                running = false;
+            }
         }
-    }
-    
-    public boolean verifySeed(int seed) {
-        solution.rngSeed = seed;
-        emulator.getLevel().load(startingState);
-        emulator.getLevel().getCheats().setRng(seed);
-        solution.loadMoves(emulator, TickFlags.LIGHT, false);
-        if (!untilPosition) return emulator.getLevel().isCompleted();
-        else return emulator.getLevel().getChip().getPosition().equals(endPosition) && !emulator.getLevel().getChip().isDead();
     }
 
     public static boolean isRunning() {
         return running;
-    }
-
-    public static void kill() {
-        killFlag = true;
     }
 
 }

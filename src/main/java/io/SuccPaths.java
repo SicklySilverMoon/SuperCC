@@ -45,11 +45,11 @@ public class SuccPaths {
         }
     }
 
-    public String getLevelsetPath() {
-        String levelset = settingsMap.get("Paths:Levelset");
-        if (levelset != null) return levelset;
+    public String getLevelsetFolderPath() {
+        String levelsetFolder = settingsMap.get("Paths:Levelset");
+        if (levelsetFolder != null) return levelsetFolder;
         else {
-            setLevelsetPath("");
+            setLevelsetFolderPath("");
             return "";
         }
     }
@@ -128,8 +128,8 @@ public class SuccPaths {
         return Paths.get(getSuccPath(), levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();
     }
 
-    public void setLevelsetPath(String levelsetPath) {
-        settingsMap.put("Paths:Levelset", levelsetPath);
+    public void setLevelsetFolderPath(String levelsetFolderPath) {
+        settingsMap.put("Paths:Levelset", levelsetFolderPath);
         updateSettingsFile();
     }
     public void setTWSPath(String twsPath) {

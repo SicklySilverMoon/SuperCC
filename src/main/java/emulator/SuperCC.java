@@ -59,7 +59,11 @@ public class SuperCC {
     public String getSerPath() {
         return getJSONPath().replace(".json", ".ser");
     }
-    
+
+    public String getLevelsetPath() {
+        return dat.getLevelsetPath();
+    }
+
     public void repaint(boolean fromScratch) {
         window.repaint(fromScratch);
     }
@@ -183,7 +187,6 @@ public class SuperCC {
     }
 
     public synchronized void loadLevel(int levelNumber){
-        SeedSearch.kill();
         loadLevel(levelNumber, 0, Step.EVEN, true, Ruleset.CURRENT, Direction.UP);
     }
 

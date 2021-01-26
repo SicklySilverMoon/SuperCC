@@ -54,9 +54,9 @@ class MenuBar extends JMenuBar{
 
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
-                File levelset = openFile(emulator.getPaths().getLevelsetPath(), "dat", "ccl");
+                File levelset = openFile(emulator.getPaths().getLevelsetFolderPath(), "dat", "ccl");
                 if (levelset != null) {
-                    emulator.getPaths().setLevelsetPath(levelset.getParent());
+                    emulator.getPaths().setLevelsetFolderPath(levelset.getParent());
                     emulator.openLevelset(levelset);
                 }
             });

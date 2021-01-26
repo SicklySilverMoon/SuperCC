@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 import util.CharList;
 
 import java.io.CharArrayWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
@@ -231,6 +232,14 @@ public class Solution{
         this.ruleset = ruleset;
         this.initialSlide = initialSlide;
         //for (int move = 0; move < basicMoves.length; move++) System.out.println(basicMoves[move]);
+    }
+
+    public Solution(Solution solution) { //copy constructor
+        this.basicMoves = Arrays.copyOf(solution.basicMoves, solution.basicMoves.length);
+        this.rngSeed = solution.rngSeed;
+        this.step = solution.step;
+        this.ruleset = solution.ruleset;
+        this.initialSlide = solution.initialSlide;
     }
 
 }
