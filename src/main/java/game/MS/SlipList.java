@@ -27,7 +27,7 @@ public class SlipList extends ArrayList<Creature> { //This should only ever be u
     public void setSliplist(Creature[] slidingCreatures){
         clear();
         for (Creature slider : slidingCreatures){
-            Creature c = level.getMonsterList().creatureAt(slider.getPosition());
+            Creature c = level.getMonsterList().creatureAt(slider.getPosition(), false);
             if (c == null) c = slider;
             add(c);                // Blocks are not in the monster list, so they are added separately
         }

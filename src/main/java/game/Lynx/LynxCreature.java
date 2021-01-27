@@ -84,7 +84,7 @@ public class LynxCreature extends Creature {
                 blockedByCreature = monsterList.claimed(newPosition);
 
             else if ((monsterList.claimed(newPosition)
-                    && monsterList.creatureAt(newPosition).getCreatureType() == CreatureID.BLOCK)
+                    && monsterList.creatureAt(newPosition, false).getCreatureType() == CreatureID.BLOCK)
                     || monsterList.animationAt(newPosition) != null) {
                         blockedByCreature = true;
             }

@@ -155,6 +155,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public boolean isUntimed() {
+        return startTime < 0;
+    }
+
+    @Override
     public int getTimer(){
         if (tickNumber == 0) return startTime;
         else return startTime - tickNumber*5;
@@ -373,9 +378,9 @@ public class LynxLevel extends LynxSavestate implements Level {
             }
             newPosition = chip.getPosition().move(directions[0]);
         }
-        if (canMove && monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition).getCreatureType() != BLOCK) {
+        if (canMove && monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition, false).getCreatureType() != BLOCK) {
             chip.kill();
-            monsterList.creatureAt(newPosition).kill();
+            monsterList.creatureAt(newPosition, false).kill();
         }
     }
 
@@ -438,7 +443,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private void pushBlock(Position position, Direction direction) {
         if (layerFG.get(position) == Tile.CLONE_MACHINE)
             return;
-        Creature block = monsterList.creatureAt(position);
+        Creature block = monsterList.creatureAt(position, false);
         if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
             block.setDirection(direction);
             monsterList.tickCreature(block, direction);
@@ -451,7 +456,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private boolean chipDeathCheck() {
         if (monsterList.claimed(chip.getPosition())) {
             chip.kill();
-            monsterList.creatureAt(chip.getPosition()).kill();
+            monsterList.creatureAt(chip.getPosition(), false).kill();
             return true;
         }
         return false;

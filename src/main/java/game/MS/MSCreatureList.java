@@ -142,11 +142,11 @@ public class MSCreatureList extends game.CreatureList {
 
     @Override
     public void springTrappedCreature(Position position) { //ideally shouldn't be used as this will mess up monster order stuff for ms
-        if (level.getLayerBG().get(position) != TRAP || creatureAt(position) == null
+        if (level.getLayerBG().get(position) != TRAP || creatureAt(position, false) == null
         || !level.isTrapOpen(position))
             return;
 
-        tickTrappedMonster((MSCreature) creatureAt(position));
+        tickTrappedMonster((MSCreature) creatureAt(position, false));
     }
 
     @Override

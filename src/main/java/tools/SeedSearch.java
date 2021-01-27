@@ -22,7 +22,6 @@ public class SeedSearch {
     private JLabel exampleSeedLabel;
     private JLabel startLabel;
     private JTextField startField;
-    private JLabel currentSeedLabel;
     private JRadioButton untilExitRadioButton;
     private JRadioButton untilPositionRadioButton;
     private JLabel searchTypeLabel;
@@ -125,12 +124,12 @@ public class SeedSearch {
         exampleSeedLabel = new JLabel("Example seed:");
     }
 
-    private void updateValues(int attemps, int successes, int exampleSuccess) {
-        globalAttempts.addAndGet(attemps);
+    private void updateValues(int attempsSinceUpdate, int successes, int exampleSuccess, int currentSeed) {
+        globalAttempts.addAndGet(attempsSinceUpdate);
         globalSuccesses.addAndGet(successes);
         if (exampleSuccess >= 0)
             globalLastSuccess.set(exampleSuccess);
-        if (attemps % UPDATE_GUI_RATE == 0)
+        if (currentSeed % UPDATE_GUI_RATE == 0)
             updateText();
     }
 
@@ -140,8 +139,8 @@ public class SeedSearch {
         int globalAttemptsNA = globalAttempts.get();
         resultsLabel.setText("Successes: "+ globalSuccessesNA +"/"+globalAttemptsNA+" ("+df.format(100.0 * globalSuccessesNA / globalAttemptsNA)+"%)");
         resultsLabel.repaint();
-//        currentSeedLabel.setText("Current Seed: "+ seed);
-        if (lastSuccessNA >= 0) exampleSeedLabel.setText("Example seed: " + lastSuccessNA);
+        if (lastSuccessNA >= 0)
+            exampleSeedLabel.setText("Example seed: " + lastSuccessNA);
         exampleSeedLabel.repaint();
     }
 
@@ -161,7 +160,7 @@ public class SeedSearch {
     }
 
     private class SeedSearchThread extends Thread {
-        int threadNum, endSeed, currentSeed, attempts, successes, lastSuccess;
+        int threadNum, endSeed, currentSeed, attemptsSinceUpdate, successesSinceUpdate, lastSuccess;
         SuperCC emulator;
         Solution solution;
         public void run(){
@@ -169,15 +168,18 @@ public class SeedSearch {
             killFlag = false;
             while (!killFlag && currentSeed <= endSeed) {
                 if (verifySeed(currentSeed, solution, emulator)) {
-                    successes++;
+                    successesSinceUpdate++;
                     lastSuccess = currentSeed;
                 }
-                attempts++;
+                attemptsSinceUpdate++;
                 currentSeed++;
-                if (currentSeed % UPDATE_VALUE_RATE == 0)
-                    updateValues(attempts, successes, lastSuccess);
+                if (currentSeed % UPDATE_VALUE_RATE == 0) {
+                    updateValues(attemptsSinceUpdate, successesSinceUpdate, lastSuccess, currentSeed);
+                    attemptsSinceUpdate = 0;
+                    successesSinceUpdate = 0;
+                }
             }
-            updateValues(attempts, successes, lastSuccess); //just have it update with the last result, in case a success is found before an update and it gets canceled
+            updateValues(attemptsSinceUpdate, successesSinceUpdate, lastSuccess, currentSeed); //just have it update with the last result, in case a success is found before an update and it gets canceled
             threadCurrentSeed[threadNum] = currentSeed;
             if (numAlive.decrementAndGet() == 0) { //last one cleans up
                 updateText();

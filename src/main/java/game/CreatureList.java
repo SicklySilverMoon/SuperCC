@@ -21,13 +21,16 @@ public abstract class CreatureList implements Iterable<Creature> {
         list = monsters;
     }
 
-    public Creature creatureAt(Position position){
+    public Creature creatureAt(Position position, boolean includeChip){
         for (Creature c : list) {
-            if (c.getCreatureType() == CreatureID.CHIP || c == level.getChip() || c.getCreatureType() == CreatureID.DEAD) {
+            if (((c.getCreatureType() == CreatureID.CHIP || c == level.getChip()) && !includeChip)
+                    || c.getCreatureType() == CreatureID.DEAD) {
                 continue;
             }
-            if (c.getPosition().equals(position))
+            if (c.getPosition().equals(position)) {
+                System.out.println(c.getCreatureType());
                 return c;
+            }
         }
         return null;
     }

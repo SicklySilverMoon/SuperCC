@@ -144,6 +144,11 @@ public class MSLevel extends MSSavestate implements Level {
     public Layer getLayerFG() {
         return layerFG;
     }
+
+    @Override
+    public boolean isUntimed() {
+        return startTime < 0;
+    }
     /**
      *
      * @return The current value of the timer that is displayed on screen.

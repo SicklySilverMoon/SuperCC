@@ -207,7 +207,7 @@ public abstract class GamePanel extends JPanel
                     add(close);
                 }
 
-                Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+                Creature c = emulator.getLevel().getMonsterList().creatureAt(position, false);
                 if (c == null) {
                     if (tile.isMonster()) {
                         JMenuItem animate = new JMenuItem("Animate Monster");
@@ -218,7 +218,7 @@ public abstract class GamePanel extends JPanel
                 
             }
             
-            Creature c = emulator.getLevel().getMonsterList().creatureAt(position);
+            Creature c = emulator.getLevel().getMonsterList().creatureAt(position, false);
             if (c != null) {
                 JMenu setDirection = new JMenu("Change Creature's Direction");
                 for (Direction d : Direction.values()) {

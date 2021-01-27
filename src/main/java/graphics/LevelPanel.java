@@ -12,8 +12,8 @@ public class LevelPanel extends TextPanel {
         int timePerSecond = level.ticksPerMove()*5;
         int twsMax = timePerSecond == 10 ? 90 : 95;
 
-        int time = level.getTimer();
-        if (time < 0) {
+        int time;
+        if (level.isUntimed()) {
             time = level.getTChipTime();
             if (!twsNotation) return String.format("[%d.%d]",
                     time / 100,
@@ -22,7 +22,9 @@ public class LevelPanel extends TextPanel {
                     time / 100,
                     twsMax - Math.abs(time % 100));
         }
-        if (!twsNotation) return String.format("%d.%d",
+        time = level.getTimer();
+        if (!twsNotation)
+            return String.format("%d.%d",
                 time / 100,
                 Math.abs(time % 100));
         else return String.format("%d (-.%d)",

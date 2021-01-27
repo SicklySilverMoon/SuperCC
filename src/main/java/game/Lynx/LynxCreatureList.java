@@ -188,11 +188,11 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void springTrappedCreature(Position position) {
-        if (level.getLayerFG().get(position) != Tile.TRAP || !claimed(position)
-        || !level.isTrapOpen(position))
+        if (level.getLayerFG().get(position) != Tile.TRAP || !level.isTrapOpen(position))
             return;
-
-        Creature trapped = creatureAt(position);
+        Creature trapped = creatureAt(position, true);
+        if (trapped == null)
+            return;
         CreatureID trappedType = trapped.getCreatureType();
         trapped.tick(trapped.getDirection());
         updateLayer(trapped, position, trappedType);

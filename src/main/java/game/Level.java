@@ -56,6 +56,8 @@ public interface Level extends Savestate {
 
     Layer getLayerFG();
 
+    boolean isUntimed();
+
     /**
      *
      * @return The current value of the timer that is displayed on screen.
