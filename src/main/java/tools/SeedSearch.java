@@ -95,7 +95,7 @@ public class SeedSearch {
 
                     SuperCC threadEmulator = new SuperCC(false);
                     threadEmulator.openLevelset(new File(emulator.getLevelsetPath()));
-                    threadEmulator.loadLevel(emulator.getLevel().getLevelNumber());
+                    threadEmulator.loadLevel(emulator.getLevel().getLevelNumber(), solution.rngSeed, solution.step, false, solution.ruleset, solution.initialSlide);
                     new SeedSearchThread(i, end, threadEmulator, new Solution(solution)).start();
                 }
             }

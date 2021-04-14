@@ -133,6 +133,12 @@ public class SavestateManager implements Serializable {
             currentNode = playbackNodes.get(++playbackIndex);
         }
     }
+
+    public void replayAll() {
+        while (playbackIndex + 1 < playbackNodes.size()) {
+            currentNode = playbackNodes.get(++playbackIndex);
+        }
+    }
     
     public void togglePause() {
         pause = !pause;

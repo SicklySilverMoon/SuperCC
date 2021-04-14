@@ -341,39 +341,12 @@ class MenuBar extends JMenuBar{
 
             JMenuItem newTWS = new JMenuItem("Write solution to new tws");
             newTWS.addActionListener(event -> {
-                SavestateManager savestates = emulator.getSavestates();
                 Level level = emulator.getLevel();
-                Solution solution = new Solution(savestates.getMoveList(),
+                Solution solution = new Solution(emulator.getSavestates().getMoveList(),
                         level.getRngSeed(),
                         level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
 
-                CharList twsMouseMovesX = new CharList(); //This probably isn't the best place for this, however considering it used to be in SavestateManager, its a hell of a lot better here
-                CharList twsMouseMovesY = new CharList();
-                CharList twsMouseMoves = new CharList();
-                savestates.addSavestate(-1); //Ideally a savestate should never be possible to be saved to this key
-                ListIterator<Character> itr = savestates.getMoveList().listIterator(true);
-                while (itr.hasPrevious()) {
-                    char c = itr.previous();
-                    if (SuperCC.isClick(c)) { //Use to math out the relative click position for TWS writing with mouse moves
-                        Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-                        Position clickedPosition = Position.clickPosition(screenPosition, c);
-                        int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
-                        int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
-
-                        twsMouseMovesX.add(relativeClickX);
-                        twsMouseMovesY.add(relativeClickY);
-                    }
-                    savestates.rewind();
-                }
-                twsMouseMovesX.reverse(); //We were rewind through the entire solution so now we have to reverse the resulting list
-                twsMouseMovesY.reverse();
-                for (int i = 0; i < twsMouseMovesX.size(); i++){
-                    twsMouseMoves.add(twsMouseMovesX.get(i));
-                    twsMouseMoves.add(twsMouseMovesY.get(i));
-                }
-
-                savestates.load(-1, level);
-                Path tws = saveNewFile(TWSWriter.write(level, solution, twsMouseMoves), emulator.getPaths().getTWSPath(), "tws");
+                Path tws = saveNewFile(TWSWriter.write(level, solution, emulator.getSavestates()), emulator.getPaths().getTWSPath(), "tws");
                 emulator.getPaths().setTWSPath(tws.getParent().toString());
             });
             add(newTWS);

@@ -159,7 +159,8 @@ public class CharList implements Iterable<Character>, RandomAccess, Serializable
     private class ListItr implements ListIterator<Character> {
         private int cursor;
         ListItr(boolean reverse) {
-            if (reverse) cursor = size;
+            if (reverse)
+                cursor = size;
             else cursor = 0;
         }
 

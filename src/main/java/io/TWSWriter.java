@@ -1,18 +1,39 @@
 package io;
 
+import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
 import game.Level;
+import game.Position;
 import game.Ruleset;
 import util.CharList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ListIterator;
 
 public class TWSWriter{
     
-    public static byte[] write(Level level, Solution solution, CharList mouseMoves) {
+    public static byte[] write(Level level, Solution solution, SavestateManager savestates) {
+        //Goes over the level and transforms all mouse moves into a form TW can handle
+        CharList mouseMoves = new CharList();
+        savestates.restart();
+        ListIterator<Character> itr = savestates.getMoveList().listIterator(false);
+        while (itr.hasNext()) {
+            char c = itr.next();
+            if (SuperCC.isClick(c)) { //Use to math out the relative click position for TWS writing with mouse moves
+                Position screenPosition = Position.screenPosition(level.getChip().getPosition());
+                Position clickedPosition = Position.clickPosition(screenPosition, c);
+                int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
+                int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
+
+                mouseMoves.add(relativeClickX);
+                mouseMoves.add(relativeClickY);
+            }
+            savestates.replay();
+        }
+
         try(TWSOutputStream writer = new TWSOutputStream()) {
             writer.writeTWSHeader(level, solution);
             writer.writeInt(writer.solutionLength(solution));

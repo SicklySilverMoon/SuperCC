@@ -16,8 +16,11 @@ public interface Savestate {
      * @param savestate a byte[] savestate
      * @return A creature containing chip
      */
-    static MSCreature getChip(byte[] savestate){
-        return new MSCreature(((savestate[1] & 0xFF) << 8) | (savestate[2] & 0xFF)); //TODO: FIX!
+    static Creature getChip(byte[] savestate){
+        if (savestate[1] == Ruleset.MS.ordinal())
+            return new MSCreature(((savestate[2] & 0xFF) << 8) | (savestate[3] & 0xFF));
+        else //todo: lynx
+            return null;
     }
 
     /**

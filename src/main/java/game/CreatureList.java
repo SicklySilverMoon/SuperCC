@@ -28,7 +28,6 @@ public abstract class CreatureList implements Iterable<Creature> {
                 continue;
             }
             if (c.getPosition().equals(position)) {
-                System.out.println(c.getCreatureType());
                 return c;
             }
         }
