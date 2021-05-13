@@ -70,6 +70,13 @@ public abstract class CreatureList implements Iterable<Creature> {
      */
     public abstract boolean claimed(Position position);
 
+    /** Attach or detach a claim to a position.
+     *
+     * @param position The position to claim.
+     * @param claim the state to set the position claim to.
+     */
+    public abstract void adjustClaim(Position position, boolean claim);
+
     /** Returns the animation currently occurring at the given position (null if there is no animation).
      *
      * @param position The position to check.
@@ -86,8 +93,6 @@ public abstract class CreatureList implements Iterable<Creature> {
     public abstract void addClone(Position position);
 
     public abstract void springTrappedCreature(Position position);
-
-    public abstract boolean tickCreature(Creature creature, Direction direction);
 
     @Override
     public String toString(){

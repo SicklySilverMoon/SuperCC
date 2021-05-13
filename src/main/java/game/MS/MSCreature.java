@@ -5,6 +5,7 @@ import game.button.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import static game.CreatureID.BLOCK;
 import static game.CreatureID.*;
@@ -12,6 +13,12 @@ import static game.CreatureID.CHIP;
 import static game.Direction.*;
 import static game.Tile.*;
 
+/**
+ * MS Creatures are encoded as follows:
+ *
+ *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
+ *    DIRECTION | MONSTER |    ROW    |    COL
+ */
 public class MSCreature extends Creature {
 
     // Direction-related methods
@@ -128,7 +135,7 @@ public class MSCreature extends Creature {
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
             else if(!(creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP)) msLevel.slipList.remove(this);
             // Handles block colliding on trap
-            else if (creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, msLevel.getLayerBG().get(position), position)) {
+            else if (creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, position)) {
                 msLevel.slipList.remove(this);
                 msLevel.slipList.add(this);
             }
@@ -147,13 +154,13 @@ public class MSCreature extends Creature {
             }
         }
         if (creatureType.isBlock() && isSliding && msLevel.getLayerBG().get(position) == TRAP
-            && (!canLeave(direction, msLevel.getLayerBG().get(position), position)) && !entered){
+            && (!canLeave(direction, position)) && !entered){
             msLevel.slipList.remove(this);
             msLevel.slipList.add(this);
             this.sliding = true;
             return;
         }
-        if (creatureType.isBlock() && wasSliding && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, msLevel.getLayerBG().get(position), position))
+        if (creatureType.isBlock() && wasSliding && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, position))
             this.sliding = true; //This prevents errors about adding a block to the sliplist twice
         else this.sliding = isSliding;
     }
@@ -224,7 +231,7 @@ public class MSCreature extends Creature {
                     }
                 }
 
-                if (canEnter(direction, level.getLayerBG().get(exitPosition)) && block.canLeave(direction, level.getLayerBG().get(exitPosition), exitPosition)) {
+                if (canEnter(direction, level.getLayerBG().get(exitPosition)) && block.canLeave(direction, exitPosition)) {
                     Position blockPushPosition = exitPosition.move(direction);
                     if (blockPushPosition.getX() < 0 || blockPushPosition.getX() > 31 ||
                         blockPushPosition.getY() < 0 || blockPushPosition.getY() > 31) continue;
@@ -258,7 +265,8 @@ public class MSCreature extends Creature {
     }
 
     @Override
-    public boolean canLeave(Direction direction, Tile tile, Position position){
+    public boolean canLeave(Direction direction, Position position){
+        Tile tile = level.getLayerBG().get(position);
         switch (tile){
             case THIN_WALL_UP: return direction != UP;
             case THIN_WALL_RIGHT: return direction != RIGHT;
@@ -351,6 +359,16 @@ public class MSCreature extends Creature {
             case CHIP_RIGHT:
             case CHIP_DOWN: return !creatureType.isChip();
         }
+    }
+
+    //pretty much exists for Lynx benefit
+    public boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims) {
+        return canEnter(direction, level.getLayerFG().get(position));
+    }
+
+    @Override
+    public boolean canOverride() {
+        return creatureType.isChip();
     }
 
     private boolean tryEnter(Direction direction, Position newPosition, Tile tile, List<Button> pressedButtons){
@@ -709,7 +727,7 @@ public class MSCreature extends Creature {
     }
     private boolean tryMove(Direction direction, boolean slidingMove, List<Button> pressedButtons){
         if (direction == null) return false;
-        if (!canLeave(direction, level.getLayerBG().get(position), position)) return false;
+        if (!canLeave(direction, position)) return false;
         Direction oldDirection = this.direction;
         boolean wasSliding = sliding;
         setDirection(direction);
@@ -858,7 +876,30 @@ public class MSCreature extends Creature {
 
     @Override
     public int bits(){
-        return direction.getBits() | creatureType.getBits() | position.getIndex();
+        return ((direction.getBits() << 14) & 0b11) | creatureType.getBits() | position.getIndex();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        MSCreature that = (MSCreature) o;
+
+        if (position != that.position)
+            return false;
+        if (creatureType != that.creatureType)
+            return false;
+        if (direction != that.direction)
+            return false;
+        return sliding == that.sliding;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, creatureType, direction, sliding);
     }
 
     @Override

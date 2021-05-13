@@ -2,11 +2,16 @@ package game;
 
 public enum Direction {
     
-    UP(0b00_0000_0000000000),
-    LEFT(0b01_0000_0000000000),
-    DOWN(0b10_0000_0000000000),
-    RIGHT(0b11_0000_0000000000);
-    
+    UP(0b0000),
+    LEFT(0b0001),
+    DOWN(0b0010),
+    RIGHT(0b0011),
+    UP_LEFT(0b0100),
+    DOWN_LEFT(0b0101),
+    DOWN_RIGHT(0b0110),
+    UP_RIGHT(0b0111),
+    NONE(0b1000);
+
     public static final Direction TURN_LEFT = LEFT, TURN_RIGHT = RIGHT,
         TURN_AROUND = DOWN, TURN_FORWARD = UP;
     
@@ -22,6 +27,8 @@ public enum Direction {
     }
 
     public Direction turn(Direction turn) {
+        if (turn.bits > RIGHT.bits || this.bits > RIGHT.bits) //meaningless for non cardinal directions on either side
+            return this;
         return fromOrdinal(ordinal() + turn.ordinal() & 0b11);
     }
 
@@ -31,6 +38,42 @@ public enum Direction {
             dirs[i] = turn(turns[i]);
         }
         return dirs;
+    }
+
+    public boolean isDiagonal() {
+        return bits >= UP_LEFT.bits && bits <= UP_RIGHT.bits;
+    }
+
+    public boolean isComponent(Direction comp) {
+        if (!isDiagonal()) //only makes sense for diags
+            return false;
+        switch (this) {
+            case UP_LEFT:
+                return comp == UP || comp == LEFT;
+            case DOWN_LEFT:
+                return comp == DOWN || comp == LEFT;
+            case DOWN_RIGHT:
+                return comp == DOWN || comp == RIGHT;
+            case UP_RIGHT:
+                return comp == UP || comp == RIGHT;
+        }
+        return false;
+    }
+
+    public Direction[] decompose() {
+        if (!isDiagonal())
+            return new Direction[] {this};
+        switch (this) {
+            case UP_LEFT:
+                return new Direction[] {UP, LEFT};
+            case DOWN_LEFT:
+                return new Direction[] {DOWN, LEFT};
+            case DOWN_RIGHT:
+                return new Direction[] {DOWN, RIGHT};
+            case UP_RIGHT:
+                return new Direction[] {UP, RIGHT};
+        }
+        return new Direction[] {NONE};
     }
 
     public static Direction fromTWS(int n) {

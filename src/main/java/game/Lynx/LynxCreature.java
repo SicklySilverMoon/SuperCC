@@ -4,6 +4,8 @@ import game.*;
 import game.button.BrownButton;
 import game.button.Button;
 
+import java.util.Objects;
+
 import static game.CreatureID.*;
 import static game.Direction.*;
 import static game.Direction.TURN_AROUND;
@@ -12,15 +14,14 @@ import static game.Tile.*;
 /**
  * Lynx creatures are encoded as follows:
  *
- *     0    |  0 0 0 0  |    0 0 0    |    0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
- *  SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
+ *      0    |    0    |  0 0 0 0  |    0 0 0    |  0 0 0 0  | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
+ *  OVERRIDE | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
  */
 public class LynxCreature extends Creature {
 
     private int timeTraveled;
     private int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
-
-    private final int defaultMoveSpeed;
+    protected boolean overrideToken;
 
     @Override
     public Tile toTile() { //Used exclusively for drawing creatures, please do not use for anything else
@@ -51,83 +52,63 @@ public class LynxCreature extends Creature {
 
     @Override
     public boolean tick(Direction direction) {
+        if (direction == null) { //todo: you should really just overload the function you know
+            direction = this.direction;
+        } //todo: see TW's lxlogic.c line 1184, basically if there's no tdir or fdir it bails out, however due to shenanigans we can't currently do that, see if something about that can be done please
+        if (direction == NONE && timeTraveled == 0 && animationTimer == 0)
+            return false;
+
         if (animationTimer != 0) {
             animationTimer--;
-            if (creatureType == CreatureID.CHIP && level.getLayerFG().get(position.index) == EXIT) {
-                level.setLevelWon(true);
-                level.getLayerFG().set(position, EXITED_CHIP);
-                kill(); //kill and get rid of the animation as well
-                kill();
-            }
             return false;
         }
 
-        if (creatureType == DEAD) return false;
+        if (timeTraveled == 0) { //analog to TW's startmovement()
+            Position from = position;
+            Position to = position.move(direction);
 
-        if (timeTraveled == 0) {
-            if ((creatureType == CreatureID.BLOCK || creatureType == CHIP_SWIMMING) && direction == null && !sliding)
+            if (!canEnter(direction, to, false, true) && canLeave(direction, from)) {
+                if (level.getLayerFG().get(from).isIce()) {
+                    direction = direction.turn(TURN_AROUND);
+                    getSlideDirection(direction, level.getLayerFG().get(from), null, false);
+                    this.direction = direction; //todo: why the fuck do we pass direction as a param instead of using the dir stored in the creature?
+                }
                 return false;
-            /* yeah so these 2 creatures don't move on their own, represented by passing null,
-            however they do need to move if sliding (blocks also have tick manually called when pushed)
-            so this little messy if takes care of that odd situation */
-            if (direction == null)
-                direction = this.direction;
+            }
 
-            Position newPosition = position.move(direction);
-            boolean canMove = canEnter(direction, level.getLayerFG().get(newPosition))
-                    && canLeave(direction, level.getLayerFG().get(position), position);
-
-            CreatureList monsterList = level.getMonsterList();
-
-            boolean blockedByCreature = false;
             if (creatureType != CreatureID.CHIP)
-                blockedByCreature = monsterList.claimed(newPosition);
+                level.getMonsterList().adjustClaim(from, false);
 
-            else if ((monsterList.claimed(newPosition)
-                    && monsterList.creatureAt(newPosition, false).getCreatureType() == CreatureID.BLOCK)
-                    || monsterList.animationAt(newPosition) != null) {
-                        blockedByCreature = true;
+            position = to;
+            if (creatureType != CreatureID.CHIP)
+                level.getMonsterList().adjustClaim(to, true);
+
+            timeTraveled = creatureType == BLOB ? 7 : 6;
+            if (creatureType != CreatureID.CHIP && level.getChip().getPosition() == position) {
+                level.getChip().kill();
+                return false;
+            }
+            else if (creatureType == CreatureID.CHIP && level.getMonsterList().claimed(position)) {
+                kill();
+                return false;
             }
 
-            Tile currentTile = level.getLayerFG().get(position);
-            if (!canMove || blockedByCreature || !newPosition.isValid()) {
-                    if (sliding) {
-                        if (currentTile.isIce())
-                            direction = getSlideDirection(direction.turn(TURN_AROUND), currentTile, null, true);
-                        else if (creatureType != CreatureID.CHIP) //todo: check if this is gonna cause other issues
-                            direction = getSlideDirection(direction, currentTile, null, true);
-                        this.direction = direction; //the passed direction is (usually) formed from the creature's direction, therefore setting this.direction here and down a bit is correct
-                    }
-                    return false;
-            }
-
-            finishLeaving(position);
-            position = newPosition;
-            Tile newTile = level.getLayerFG().get(newPosition);
-            //sliding tiles
-            if (newTile.isIce() && (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0))
-                sliding = true;
-            else if (newTile.isFF() && (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0))
-                sliding = true;
-            else if (newTile == TELEPORT)
-                sliding = true;
-                //todo: oh god traps kinda count as sliding
-            else
-                sliding = false;
+            return true;
         }
-        Tile newTile = level.getLayerFG().get(position);
-        Tile oldTile = getOldTile();
 
-        timeTraveled += defaultMoveSpeed;
-        if (newTile.isFF() || newTile.isIce())
-            timeTraveled += defaultMoveSpeed; //Sliding on ice or FFs doubles move speed
-        timeTraveled += (newTile == TRAP ? 1 : 0) + (oldTile == TRAP ? 1 : 0);
-        if (timeTraveled > 7)
-            timeTraveled = 0;
-
-        if (timeTraveled != 0)
+        if (creatureType != DEAD) { //analog to TW's continue movement
+            int speed = creatureType == BLOB ? 1 : 2;
+            Tile tile = level.getLayerFG().get(position);
+            if (tile.isIce() && (creatureType != CreatureID.CHIP || level.getBoots()[2] != 0))
+                speed *= 2;
+            else if (tile.isFF() && (creatureType != CreatureID.CHIP || level.getBoots()[3] != 0))
+                speed *= 2;
+            timeTraveled -= speed;
+        }
+        if (timeTraveled > 0)
             return true;
 
+        Tile newTile = level.getLayerFG().get(position);
         switch (newTile) {
             case WATER:
                 if (creatureType == CreatureID.BLOCK)
@@ -141,7 +122,7 @@ public class LynxCreature extends Creature {
             case ICE_SLIDE_NORTHWEST:
             case ICE_SLIDE_NORTHEAST:
                 if (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0) {
-                    this.direction = getSlideDirection(this.direction, newTile, null, true);
+                    this.direction = getSlideDirection(this.direction, newTile, null, false);
                 }
                 break;
             case FF_DOWN:
@@ -155,14 +136,14 @@ public class LynxCreature extends Creature {
                 break;
             case BUTTON_GREEN:
             case BUTTON_RED:
-            case BUTTON_BROWN:
+//            case BUTTON_BROWN: //todo: handle like TW does
             case BUTTON_BLUE:
                 Button button = level.getButton(position);
                 if (button != null) {
                     button.press(level);
-                    if (button instanceof BrownButton) {
-                        level.getMonsterList().springTrappedCreature(((BrownButton) button).getTargetPosition());
-                    }
+//                    if (button instanceof BrownButton) {
+//                        level.getMonsterList().springTrappedCreature(((BrownButton) button).getTargetPosition());
+//                    }
                 }
                 break;
             case FIRE:
@@ -263,7 +244,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public Direction[] getDirectionPriority(Creature chip, RNG rng) {
-        if (nextMoveDirectionCheat != null) {
+        if (nextMoveDirectionCheat != null && creatureType != CreatureID.CHIP) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
             nextMoveDirectionCheat = null;
             if (creatureType == BLOB)
@@ -273,8 +254,15 @@ public class LynxCreature extends Creature {
             return directions;
         }
 
-        if (sliding)
-            return direction.turn(new Direction[] {TURN_FORWARD});
+        if (creatureType == CreatureID.CHIP) { //todo: see the corresponding todo about really hacky in LynxLevel
+            if (level.getBoots()[3] == 0) {
+                Tile tile = level.getLayerFG().get(position);
+                if (tile.isFF() && nextMoveDirectionCheat == NONE)
+                    overrideToken = true;
+                else if (!tile.isIce() || level.getBoots()[2] != 0)
+                    overrideToken = false;
+            }
+        }
 
         switch (creatureType) {
             case BUG:
@@ -301,7 +289,7 @@ public class LynxCreature extends Creature {
             case PARAMECIUM:
                 return direction.turn(new Direction[] {TURN_RIGHT, TURN_FORWARD, TURN_LEFT, TURN_AROUND});
             default:
-                return new Direction[] {};
+                return new Direction[] {NONE};
         }
     }
 
@@ -346,6 +334,8 @@ public class LynxCreature extends Creature {
     @Override
     public void kill() {
         if (creatureType != DEAD) {
+            if (creatureType != CreatureID.CHIP)
+                level.getMonsterList().adjustClaim(position, false);
             creatureType = DEAD;
             animationTimer = ((level.getTickNumber() + level.getStep().ordinal()) & 1) == 0 ? 11 : 10; //basically copied out of TW's source
             timeTraveled = 0;
@@ -482,8 +472,42 @@ public class LynxCreature extends Creature {
         }
     }
 
+    public boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims) {
+        boolean canEnterTile = canEnter(direction, level.getLayerFG().get(position));
+        boolean positionClaimed = level.getMonsterList().claimed(position);
+        if (level.getMonsterList().animationAt(position) != null) {
+            if (clearAnims)
+                level.getMonsterList().animationAt(position).kill();
+            else
+                positionClaimed = creatureType == CreatureID.CHIP;
+        }
+
+
+        if (!canEnterTile)
+            return false;
+        if (creatureType != CreatureID.CHIP || !positionClaimed) {
+            return !positionClaimed;
+        }
+
+        Creature creature = level.getMonsterList().creatureAt(position, false);
+        if (creature == null) {
+            System.out.println("null creature in canEnter despite claim value of: " + level.getMonsterList().claimed(position) + " and !claimedPosition value of:" + positionClaimed);
+            throw new NullPointerException();
+        }
+        if (creature.getCreatureType() != CreatureID.BLOCK) //Chip can always enter into tiles with monsters
+            return true;
+        Position creaturePos = creature.getPosition();
+        if (creature.canEnter(direction, creaturePos.move(direction), false, true) && creature.canLeave(direction, creaturePos)) {
+            if (pushBlocks)
+                creature.tick(direction);
+            return true;
+        }
+        return false;
+    }
+
     @Override
-    public boolean canLeave(Direction direction, Tile tile, Position position) {
+    public boolean canLeave(Direction direction, Position position) {
+        Tile tile = level.getLayerFG().get(position);
         switch (tile){
             case THIN_WALL_UP: return direction != UP;
             case THIN_WALL_RIGHT: return direction != RIGHT;
@@ -491,19 +515,23 @@ public class LynxCreature extends Creature {
             case THIN_WALL_LEFT: return direction != LEFT;
             case THIN_WALL_DOWN_RIGHT: return direction != DOWN && direction != RIGHT;
             case TRAP: return level.isTrapOpen(position);
-            default: return true;
         }
+        if (tile.isFF()) {
+            if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0)
+                return direction.turn(TURN_AROUND) != getSlideDirection(NONE, tile, null, false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean canOverride() {
+        return overrideToken;
     }
 
     @Override
     public int bits() {
-        return ((sliding ? 1 : 0) << 22) | (animationTimer << 19) | (timeTraveled << 16)
-                | direction.getBits() | creatureType.getBits() | position.getIndex();
-    }
-
-    private Tile getOldTile() {
-        Position oldPosition = position.move(direction.turn(TURN_AROUND));
-        return level.getLayerFG().get(oldPosition);
+        return ((overrideToken ? 1 : 0) << 25) | ((sliding ? 1 : 0) << 24) | (animationTimer << 21) | (timeTraveled << 18)
+                | (direction.getBits() << 14) | creatureType.getBits() | position.getIndex();
     }
 
     private void finishLeaving(Position position) {
@@ -515,6 +543,33 @@ public class LynxCreature extends Creature {
                     b.release(level);
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        LynxCreature that = (LynxCreature) o;
+
+        if (position != that.position)
+            return false;
+        if (creatureType != that.creatureType)
+            return false;
+        if (direction != that.direction)
+            return false;
+        if (sliding != that.sliding)
+            return false;
+        if (timeTraveled != that.timeTraveled)
+            return false;
+        return animationTimer == that.animationTimer;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(position, creatureType, direction, sliding, timeTraveled, animationTimer);
     }
 
     @Override
@@ -551,15 +606,14 @@ public class LynxCreature extends Creature {
         }
         if (creatureType == TANK_STATIONARY)
             creatureType = TANK_MOVING;
-
-        defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
     }
 
     public LynxCreature(int bitMonster) {
-        sliding = ((bitMonster >>> 22) & 0b1) == 1;
-        animationTimer = (bitMonster >>> 19) & 0b111;
-        timeTraveled = (bitMonster >>> 16) & 0b111;
-        direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b11);
+        overrideToken = ((bitMonster >>> 25) & 0b1) == 1;
+        sliding = ((bitMonster >>> 24) & 0b1) == 1;
+        animationTimer = (bitMonster >>> 21) & 0b111;
+        timeTraveled = (bitMonster >>> 18) & 0b111;
+        direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b1111);
         creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);
         if (creatureType == CHIP_SLIDING) {
             sliding = true;
@@ -568,7 +622,5 @@ public class LynxCreature extends Creature {
         if (creatureType == TANK_STATIONARY)
             creatureType = TANK_MOVING;
         position = new Position(bitMonster & 0b00_0000_1111111111);
-
-        defaultMoveSpeed = (creatureType != BLOB ? 2 : 1); //Blobs take 2 turns to move between tiles
     }
 }

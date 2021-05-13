@@ -19,7 +19,7 @@ public class LynxSavestate implements Savestate {
     public CreatureList monsterList;
 
     protected BitSet traps;
-    protected boolean canOverride, lastMoveForced;
+    protected boolean lastMoveForced;
 
     @Override
     public byte[] save() {
@@ -39,7 +39,6 @@ public class LynxSavestate implements Savestate {
                 traps.length +                  // traps
                 2 +                             // monsterlist size
                 monsterList.size() * 4 +        // monsterlist
-                1 +                             // canOverride
                 1;                              // lastMoveForced
 
         SavestateWriter writer = new SavestateWriter(length);
@@ -58,7 +57,6 @@ public class LynxSavestate implements Savestate {
         writer.write(traps);
         writer.writeShort(monsterList.size());
         writer.writeIntMonsterArray(monsterList.getCreatures());
-        writer.writeBool(canOverride);
         writer.writeBool(lastMoveForced);
 
         return writer.toByteArray();
@@ -82,7 +80,6 @@ public class LynxSavestate implements Savestate {
             rffDirection = Direction.fromOrdinal(reader.read());
             traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG, null);
-            canOverride = reader.readBool();
             lastMoveForced = reader.readBool();
 
             chip = monsterList.get(0);

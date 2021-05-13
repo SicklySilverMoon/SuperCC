@@ -7,8 +7,6 @@ import game.button.*;
 
 import java.util.BitSet;
 
-import static game.CreatureID.BLOCK;
-
 public class LynxLevel extends LynxSavestate implements Level {
 
     private static final int HALF_WAIT = 0, KEY = 1;
@@ -327,139 +325,63 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         monsterList.initialise();
         monsterList.tick(); //select monster moves
-        selectChipMove(directions);
+        Direction moveDir = selectChipMove(directions[0]);
         monsterList.tick(); //move monsters
-        boolean result = moveChip(directions);
+        boolean result = moveChip(moveDir);
         monsterList.tick(); //teleport monsters
         monsterList.finalise();
+
+        if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getAnimationTimer() == 0) {
+            chip.kill();
+            chip.kill(); //destroys the animation as well
+            layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);
+            setLevelWon(true);
+            return false;
+        }
         return (result && !chip.isSliding());
     }
 
-    private void selectChipMove(Direction[] directions) {
-        if (directions.length == 0)
-            return;
-        if (directions.length > 1) {
-            assert directions.length == 2;
-            for (int j = 0; j < directions.length; j++) {
-                Direction dir = directions[j];
-                if (chip.getDirection() == dir && j > 0) {
-                    int k = 0;
-                    directions[j] = directions[k];
-                    directions[k] = dir;
-                    break;
+    private Direction selectChipMove(Direction direction) {
+        chip.setNextMoveDirectionCheat(direction); //todo: this is REALLY hacky, for the love of god make it sane
+        chip.getDirectionPriority(chip, null); //used to set the override token, god that's bad
+
+        Position chipPos = chip.getPosition();
+        if (direction.isDiagonal()) {
+            Direction chipDir = chip.getDirection();
+            if (direction.isComponent(chipDir)) {
+                boolean canMoveMain = chip.canEnter(chipDir, chipPos.move(chipDir), true, false) && chip.canLeave(chipDir, chipPos);
+                Direction other = direction.decompose()[0] == chipDir ? direction.decompose()[1] : direction.decompose()[0];
+                boolean canMoveOther = chip.canEnter(other, chipPos.move(other), true, false) && chip.canLeave(other, chipPos);
+                if (!canMoveMain && canMoveOther) {
+                    chip.setDirection(other);
+                    return other;
                 }
-            }
-        }
-
-        Tile currentTile = layerFG.get(chip.getPosition());
-        if (boots[3] == 0) {
-            if (currentTile.isFF() && lastMoveForced)
-                canOverride = true;
-            else if (!currentTile.isIce() || boots[2] != 0)
-                canOverride = false;
-        }
-
-        Position newPosition = chip.getPosition().move(directions[0]);
-        Tile newTile = layerFG.get(newPosition);
-        boolean canMove = (chip.canEnter(directions[0], newTile) && chip.canLeave(directions[0], currentTile, chip.getPosition()));
-        if (currentTile.isFF()) {
-            Direction slideDir = chip.getSlideDirection(directions[0], currentTile, null, false);
-            if (slideDir.equals(directions[0].turn(Direction.TURN_AROUND))) {
-                canMove = false;
-            }
-        }
-
-        if (!canMove || monsterList.animationAt(newPosition) != null) {
-            if (directions.length > 1) {
-                Direction first = directions[0];
-                directions[0] = directions[1];
-                directions[1] = first;
-                canMove = true; //todo: this certainly isn't correct, need to split checking if a move is legal into its own method so that this is sane
-            }
-            newPosition = chip.getPosition().move(directions[0]);
-        }
-        if (canMove && monsterList.claimed(newPosition) && monsterList.creatureAt(newPosition, false).getCreatureType() != BLOCK) {
-            chip.kill();
-            monsterList.creatureAt(newPosition, false).kill();
-        }
-    }
-
-    private boolean moveChip(Direction[] directions) {
-        if (chipDeathCheck())
-            return false;
-
-        if (chip.getTimeTraveled() != 0 || chip.getAnimationTimer() != 0) {
-            return chip.tick(null);
-        }
-        if (directions.length == 0 && !chip.isSliding())
-            return false;
-
-        Tile currentTile = layerFG.get(chip.getPosition());
-        if (!chip.isSliding() || (currentTile.isFF() && directions.length != 0)) {
-            chip.setDirection(directions[0]); //chip just ignores the rules about can move into tiles and such
-        }
-
-        if (currentTile.isFF() && boots[3] == 0) {
-            Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null, true);
-            if (canOverride && directions.length != 0) {
-                if (chip.getDirection() == slideDirection.turn(Direction.TURN_AROUND)) {
-                    lastMoveForced = false;
-                    return false;
-                }
-                if (chip.getDirection() == slideDirection) {
-                    directions = new Direction[]{slideDirection};
-                    lastMoveForced = true;
-                }
-                else lastMoveForced = false;
+                chip.setDirection(chipDir);
+                return chipDir;
             }
             else {
-                directions = new Direction[]{slideDirection};
-                chip.setDirection(slideDirection);
-                lastMoveForced = true;
+                Direction vert = direction.decompose()[0];
+                Direction horz = direction.decompose()[1]; //horz dir is always second in decompose
+                if (chip.canEnter(horz, chipPos.move(horz), true, false) && chip.canLeave(horz, chipPos)) {
+                    chip.setDirection(horz);
+                    return horz;
+                }
+                else {
+//                    chip.canEnter(vert, chipPos.move(vert), true, false); //side effects, note: not correct to TW
+                    chip.setDirection(vert);
+                    return vert;
+                }
             }
         }
-        else if (currentTile.isSliding() || currentTile == Tile.TRAP) {
-            if (!(currentTile.isIce() && boots[2] != 0) && !(currentTile.isFF() && boots[3] != 0)) {
-                if (!currentTile.isIce())
-                    lastMoveForced = false;
-                Direction slideDirection = chip.getSlideDirection(chip.getDirection(), currentTile, null, true);
-                directions = new Direction[]{slideDirection};
-                chip.setDirection(slideDirection);
-            }
-        }
 
-        //block slap
-        if (directions.length > 1) {
-            pushBlock(chip.getPosition().move(directions[1]), directions[1]);
-        }
-
-        //blocks ahead of chip
-        if (directions.length > 0)
-            pushBlock(chip.getPosition().move(directions[0]), directions[0]);
-
-        return chip.tick(directions[0]);
+        chip.canEnter(direction, chipPos.move(direction), true, false); //for side effects
+        if (direction != Direction.NONE)
+            chip.setDirection(direction);
+        return direction;
     }
 
-    private void pushBlock(Position position, Direction direction) {
-        if (layerFG.get(position) == Tile.CLONE_MACHINE)
-            return;
-        Creature block = monsterList.creatureAt(position, false);
-        if (block != null && block.getCreatureType() == CreatureID.BLOCK && block.getTimeTraveled() == 0) {
-            block.setDirection(direction);
-            monsterList.tickCreature(block, direction);
-        }
-    }
-
-    /**
-     * @return true if Chip is killed as a result of this, false otherwise
-     */
-    private boolean chipDeathCheck() {
-        if (monsterList.claimed(chip.getPosition())) {
-            chip.kill();
-            monsterList.creatureAt(chip.getPosition(), false).kill();
-            return true;
-        }
-        return false;
+    private boolean moveChip(Direction direction) {
+        return chip.tick(direction) && !chip.isSliding() && direction != Direction.NONE;
     }
 
     @Override

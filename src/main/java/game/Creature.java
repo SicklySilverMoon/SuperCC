@@ -2,12 +2,6 @@ package game;
 
 import static game.CreatureID.DEAD;
 
-/**
- * Creatures are (at minimum, subclasses can extend this as needed) encoded as follows:
- *
- *       0 0    | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0
- *    DIRECTION | MONSTER |    ROW    |    COL
- */
 public abstract class Creature {
     protected Level level;
     protected Position position;
@@ -99,15 +93,31 @@ public abstract class Creature {
      */
     public abstract boolean canEnter(Direction direction, Tile tile);
 
+    /** Returns a boolean representing if the creature can enter the given position in the given direction.
+     *
+     * @param direction The direction the creature is moving.
+     * @param position The position the creature is attempting to enter.
+     * @param pushBlocks If any blocks found should be pushed.
+     * @param clearAnims If any animations found should be stopped.
+     * @return A boolean representing if the creature can enter the provided position.
+     */
+    public abstract boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims);
+
     /** Returns a boolean representing if the creature can leave the given tile, in the given direction,
      * at the given position.
      *
      * @param direction The direction the creature is moving.
-     * @param tile The tile the creature is attempting to exit.
      * @param position The position of the creature and tile.
      * @return A boolean representing if the creature can leave the given tile and position.
      */
-    public abstract boolean canLeave(Direction direction, Tile tile, Position position);
+    public abstract boolean canLeave(Direction direction, Position position);
+
+    /** Returns a boolean representing if the given creature can override a force floor move.
+     * Really only useful for Chip and even then only in Lynx.
+     *
+     * @return A boolean representing if the creature can override a force floor at this moment.
+     */
+    public abstract boolean canOverride();
 
     /** Advances the creature one tick (uses the creature's internal state).
      * Currently used only by Lynx as MS Creatures are always downcasted and
@@ -140,5 +150,4 @@ public abstract class Creature {
     }
 
     public abstract Creature clone();
-
 }

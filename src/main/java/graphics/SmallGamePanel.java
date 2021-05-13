@@ -162,33 +162,22 @@ public class SmallGamePanel extends GamePanel {
             if (creature.isDead() && creature.getAnimationTimer() == 0)
                 continue;
 
-            int x = tileWidth;
-            int y = tileHeight;
-
-            if (creature.getTimeTraveled() != 0) {
-                Position pos = creature.getPosition().move(creature.getDirection().turn(Direction.TURN_AROUND));
-                x *= pos.x;
-                y *= pos.y;
-            }
-            else {
-                x *= creature.getPosition().x;
-                y *= creature.getPosition().y;
-            }
-
-            int vPixelsBetweenTiles = tileHeight / 8;//Lynx has values between 0 and 7 for this, and i don't want to extend level for something so trivial, so I just hardcode it here for now
-            int hPixelsBetweenTiles = tileWidth / 8;
+            int x = tileWidth * creature.getPosition().x;
+            int y = tileHeight * creature.getPosition().y;
+            final int vPixelsBetweenTiles = tileHeight / 8;//Lynx has values between 0 and 7 for this, and i don't want to extend level for something so trivial, so I just hardcode it here for now
+            final int hPixelsBetweenTiles = tileWidth / 8;
             switch (creature.getDirection()) {
                 case UP:
-                    y -= vPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
-                case LEFT:
-                    x -= hPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
-                case DOWN:
                     y += vPixelsBetweenTiles * creature.getTimeTraveled();
                     break;
-                case RIGHT:
+                case LEFT:
                     x += hPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+                case DOWN:
+                    y -= vPixelsBetweenTiles * creature.getTimeTraveled();
+                    break;
+                case RIGHT:
+                    x -= hPixelsBetweenTiles * creature.getTimeTraveled();
                     break;
             }
             Image creatureImage;

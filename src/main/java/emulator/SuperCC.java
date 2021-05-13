@@ -22,10 +22,10 @@ public class SuperCC {
     public static final char UP = 'u', LEFT = 'l', DOWN = 'd', RIGHT = 'r', WAIT = '-', UP_LEFT = '↖', DOWN_LEFT = '↙',
             DOWN_RIGHT = '↘', UP_RIGHT = '↗',  MIN_CLICK_LOWERCASE = '¯', MAX_CLICK_LOWERCASE = 'ÿ',
     MIN_CLICK_UPPERCASE = 'Ā', MAX_CLICK_UPPERCASE = 'Ő';
-    private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, WAIT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT};
+    private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT, WAIT};
     private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
-        {Direction.DOWN}, {Direction.RIGHT}, {}, {Direction.UP, Direction.LEFT}, {Direction.DOWN, Direction.LEFT},
-            {Direction.DOWN, Direction.RIGHT}, {Direction.UP, Direction.RIGHT}};
+        {Direction.DOWN}, {Direction.RIGHT}, {Direction.UP_LEFT}, {Direction.DOWN_LEFT},
+            {Direction.DOWN_RIGHT}, {Direction.UP_RIGHT}, {Direction.NONE}};
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private SavestateManager savestates;
@@ -196,7 +196,7 @@ public class SuperCC {
         if (flags.multiTick && tickMulti) {
             for (int i=0; i < level.ticksPerMove() - 1; i++) {
                 c = capital(c);
-                level.tick(c, DIRECTIONS[4]);
+                level.tick(c, DIRECTIONS[8]);
             }
         }
         if (flags.save) {
@@ -357,7 +357,8 @@ public class SuperCC {
     }
 
     public void throwError(String s){
-        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
+//        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
+        throw new UnsupportedOperationException();
     }
 
     public void throwMessage(String s){

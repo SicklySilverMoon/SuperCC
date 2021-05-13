@@ -150,15 +150,6 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
-    public boolean tickCreature(Creature creature, Direction direction) {
-        for (Creature c : list) {
-            if (c == creature)
-                return creature.tick(direction);
-        }
-        return false;
-    }
-
-    @Override
     public void finalise(){
 
         if (numDeadMonsters == 0 && newClones.size() == 0) return;
@@ -186,14 +177,17 @@ public class MSCreatureList extends game.CreatureList {
 
     @Override
     public boolean claimed(Position position) {
-        if (!position.isValid())
-            return false;
-        return level.getLayerFG().get(position).isCreature() || level.getLayerFG().get(position).isChip();
+        throw new UnsupportedOperationException("MS does not have a concept of claims.");
+    }
+
+    @Override
+    public void adjustClaim(Position position, boolean claim) {
+        throw new UnsupportedOperationException("MS does not have a concept of claims.");
     }
 
     @Override
     public Creature animationAt(Position position) {
-        return null; //only useful for Lynx-like rulesets
+        throw new UnsupportedOperationException("MS does not have a concept of animations.");
     }
 
     public MSCreatureList(MSCreature[] monsters, Layer layerFG, Layer layerBG){
