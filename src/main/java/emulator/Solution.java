@@ -81,7 +81,7 @@ public class Solution{
 
     private void tickBasicMoves(SuperCC emulator, TickFlags tickFlags) {
         Level level = emulator.getLevel();
-        try{
+//        try{
             for (int move = 0; move < basicMoves.length; move++){
                 char c = basicMoves[move];
                 if (c == CHIP_RELATIVE_CLICK){
@@ -105,11 +105,11 @@ public class Solution{
                     break;
                 }
             }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            emulator.throwError("Something went wrong:\n" + e);
-        }
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//            emulator.throwError("Something went wrong:\n" + e);
+//        }
     }
     
     private static char[] succToBasicMoves(char[] succMoves, Ruleset ruleset){

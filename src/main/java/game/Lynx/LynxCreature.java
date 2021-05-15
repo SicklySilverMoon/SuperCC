@@ -42,7 +42,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public int getTimeTraveled() {
-        return timeTraveled & 0b111; //timeTraveled should always be between 0 and 7 anyways but just to be safe
+        return timeTraveled % 9; //timeTraveled should always be between 0 and 8 anyways but just to be safe
     }
 
     @Override
@@ -67,7 +67,7 @@ public class LynxCreature extends Creature {
             Position from = position;
             Position to = position.move(direction);
 
-            if (!canEnter(direction, to, false, true) && canLeave(direction, from)) {
+            if (!canEnter(direction, to, false, creatureType != CreatureID.CHIP) && canLeave(direction, from)) {
                 if (level.getLayerFG().get(from).isIce()) {
                     direction = direction.turn(TURN_AROUND);
                     getSlideDirection(direction, level.getLayerFG().get(from), null, false);
@@ -83,7 +83,7 @@ public class LynxCreature extends Creature {
             if (creatureType != CreatureID.CHIP)
                 level.getMonsterList().adjustClaim(to, true);
 
-            timeTraveled = creatureType == BLOB ? 7 : 6;
+            timeTraveled = 8;
             if (creatureType != CreatureID.CHIP && level.getChip().getPosition() == position) {
                 level.getChip().kill();
                 return false;
@@ -92,16 +92,14 @@ public class LynxCreature extends Creature {
                 kill();
                 return false;
             }
-
-            return true;
         }
 
         if (creatureType != DEAD) { //analog to TW's continue movement
             int speed = creatureType == BLOB ? 1 : 2;
             Tile tile = level.getLayerFG().get(position);
-            if (tile.isIce() && (creatureType != CreatureID.CHIP || level.getBoots()[2] != 0))
+            if (tile.isIce() && (creatureType != CreatureID.CHIP || level.getBoots()[2] == 0))
                 speed *= 2;
-            else if (tile.isFF() && (creatureType != CreatureID.CHIP || level.getBoots()[3] != 0))
+            else if (tile.isFF() && (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0))
                 speed *= 2;
             timeTraveled -= speed;
         }
@@ -116,7 +114,7 @@ public class LynxCreature extends Creature {
                 if (creatureType != GLIDER && !(creatureType == CreatureID.CHIP && level.getBoots()[0] != 0))
                     kill();
                 break;
-            case ICE:
+//            case ICE:
             case ICE_SLIDE_SOUTHEAST:
             case ICE_SLIDE_SOUTHWEST:
             case ICE_SLIDE_NORTHWEST:
@@ -125,15 +123,15 @@ public class LynxCreature extends Creature {
                     this.direction = getSlideDirection(this.direction, newTile, null, false);
                 }
                 break;
-            case FF_DOWN:
-            case FF_UP:
-            case FF_RIGHT:
-            case FF_LEFT:
-            case FF_RANDOM:
-                if (creatureType != CreatureID.CHIP) {
-                    this.direction = getSlideDirection(this.direction, newTile, null, true);
-                }
-                break;
+//            case FF_DOWN:
+//            case FF_UP:
+//            case FF_RIGHT:
+//            case FF_LEFT:
+//            case FF_RANDOM:
+//                if (creatureType != CreatureID.CHIP) {
+//                    this.direction = getSlideDirection(this.direction, newTile, null, true);
+//                }
+//                break;
             case BUTTON_GREEN:
             case BUTTON_RED:
 //            case BUTTON_BROWN: //todo: handle like TW does
@@ -475,25 +473,25 @@ public class LynxCreature extends Creature {
     public boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims) {
         boolean canEnterTile = canEnter(direction, level.getLayerFG().get(position));
         boolean positionClaimed = level.getMonsterList().claimed(position);
+        boolean animationClaimed = false;
         if (level.getMonsterList().animationAt(position) != null) {
             if (clearAnims)
                 level.getMonsterList().animationAt(position).kill();
             else
-                positionClaimed = creatureType == CreatureID.CHIP;
+                animationClaimed = creatureType == CreatureID.CHIP;
         }
-
 
         if (!canEnterTile)
             return false;
-        if (creatureType != CreatureID.CHIP || !positionClaimed) {
+        if (creatureType != CreatureID.CHIP) {
             return !positionClaimed;
         }
+        if (animationClaimed)
+            return false;
+        if (!positionClaimed)
+            return true;
 
         Creature creature = level.getMonsterList().creatureAt(position, false);
-        if (creature == null) {
-            System.out.println("null creature in canEnter despite claim value of: " + level.getMonsterList().claimed(position) + " and !claimedPosition value of:" + positionClaimed);
-            throw new NullPointerException();
-        }
         if (creature.getCreatureType() != CreatureID.BLOCK) //Chip can always enter into tiles with monsters
             return true;
         Position creaturePos = creature.getPosition();

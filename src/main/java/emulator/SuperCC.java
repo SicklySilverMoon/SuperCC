@@ -16,6 +16,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class SuperCC {
 
@@ -23,9 +24,9 @@ public class SuperCC {
             DOWN_RIGHT = '↘', UP_RIGHT = '↗',  MIN_CLICK_LOWERCASE = '¯', MAX_CLICK_LOWERCASE = 'ÿ',
     MIN_CLICK_UPPERCASE = 'Ā', MAX_CLICK_UPPERCASE = 'Ő';
     private static final char[] CHAR_MOVEMENT_KEYS = {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT, DOWN_RIGHT, UP_RIGHT, WAIT};
-    private static final Direction[][] DIRECTIONS = new Direction[][] {{Direction.UP}, {Direction.LEFT},
-        {Direction.DOWN}, {Direction.RIGHT}, {Direction.UP_LEFT}, {Direction.DOWN_LEFT},
-            {Direction.DOWN_RIGHT}, {Direction.UP_RIGHT}, {Direction.NONE}};
+    private static final Map<Character, Direction> DIRECTIONS = Map.of(UP, Direction.UP, LEFT, Direction.LEFT,
+            DOWN, Direction.DOWN, RIGHT, Direction.RIGHT, UP_LEFT, Direction.UP_LEFT, DOWN_LEFT, Direction.DOWN_LEFT,
+            DOWN_RIGHT, Direction.DOWN_RIGHT, UP_RIGHT, Direction.UP_RIGHT, WAIT, Direction.NONE);
     public static final byte CHIP_RELATIVE_CLICK = 1;
 
     private SavestateManager savestates;
@@ -196,7 +197,7 @@ public class SuperCC {
         if (flags.multiTick && tickMulti) {
             for (int i=0; i < level.ticksPerMove() - 1; i++) {
                 c = capital(c);
-                level.tick(c, DIRECTIONS[8]);
+                level.tick(c, new Direction[] {Direction.NONE});
             }
         }
         if (flags.save) {
@@ -224,7 +225,7 @@ public class SuperCC {
         else{
             for (int i = 0; i < CHAR_MOVEMENT_KEYS.length; i++) {
                 if (CHAR_MOVEMENT_KEYS[i] == c) {
-                    directions = DIRECTIONS[i];
+                    directions = new Direction[] {DIRECTIONS.get(c)};
                     return tick(c, directions, flags);
                 }
             }

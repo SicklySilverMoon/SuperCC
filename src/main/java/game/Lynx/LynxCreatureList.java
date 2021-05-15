@@ -103,10 +103,13 @@ public class LynxCreatureList extends CreatureList {
                 //Actual movement should be done here
                 Creature creature = list[i];
                 if (creature.getCreatureType().isChip() || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE
+                        || creature.getCreatureType() == DEAD
                         || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
                     continue;
 
                 Direction direction = null;
+                if (creature.getCreatureType() == BLOCK || creature.getCreatureType() == CHIP_SWIMMING)
+                    direction = Direction.NONE; //todo: see a corrosponding todo in creature.tick
                 if (forcedDirs.containsKey(creature)) //why spent 4 bits on saving fdir to a creature when you could just do this
                     direction = forcedDirs.get(creature);
                 creature.tick(direction);
@@ -215,14 +218,17 @@ public class LynxCreatureList extends CreatureList {
                 if (creature.getCreatureType() == CHIP && level.getBoots()[2] != 0)
                     return false;
                 forcedDirs.put(creature, slideDir);
+                creature.setDirection(slideDir);
                 return true;
             }
             else if (tile.isFF()) {
                 forcedDirs.put(creature, slideDir);
+                creature.setDirection(slideDir);
                 return !creature.canOverride();
             }
             else if (tile == Tile.TELEPORT) { //please find how the CS_TELEPORTED flag works in TW
                 forcedDirs.put(creature, slideDir);
+                creature.setDirection(slideDir);
                 return true;
             }
         }
