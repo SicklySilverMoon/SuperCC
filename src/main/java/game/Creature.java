@@ -6,7 +6,7 @@ public abstract class Creature {
     protected Level level;
     protected Position position;
     protected CreatureID creatureType;
-    protected Direction direction;
+    protected Direction direction, tDirection = Direction.NONE, fDirection = Direction.NONE;
     protected boolean sliding;
     protected Direction nextMoveDirectionCheat = null;
 
@@ -16,6 +16,22 @@ public abstract class Creature {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
+    }
+
+    public Direction getTDirection() {
+        return tDirection;
+    }
+
+    public void setTDirection(Direction tDirection) {
+        this.tDirection = tDirection;
+    }
+
+    public Direction getFDirection() {
+        return fDirection;
+    }
+
+    public void setFDirection(Direction fDirection) {
+        this.fDirection = fDirection;
     }
 
     public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {
@@ -33,6 +49,14 @@ public abstract class Creature {
     public abstract Direction[] getDirectionPriority(Creature chip, RNG rng);
 
     public abstract Direction getSlideDirection(Direction direction, Tile tile, RNG rng, boolean advanceRFF);
+
+    /** Returns a direction besides NONE if the creature's move will be forced.
+     * Side effects such as setting the creature's direction can occur.
+     *
+     * @param tile The tile the creature is currently on (may be ignored).
+     * @return NONE if the next move isn't forced, the forced direction otherwise.
+     */
+    public abstract boolean getForcedMove(Tile tile);
 
     public void setCreatureType(CreatureID creatureType) {
         this.creatureType = creatureType;
@@ -119,14 +143,11 @@ public abstract class Creature {
      */
     public abstract boolean canOverride();
 
-    /** Advances the creature one tick (uses the creature's internal state).
-     * Currently used only by Lynx as MS Creatures are always downcasted and
-     * have their specialized tick method used.
+    /** Advances a creature 1 tick according to their internal state.
      *
-     * @param direction the direction to move the creature in
-     * @return A boolean representing if the creature successfully advanced or not.
+     * @return If the move was successful or not.
      */
-    public abstract boolean tick(Direction direction);
+    public abstract boolean tick();
 
     /** Returns an int representing a creature.
      *

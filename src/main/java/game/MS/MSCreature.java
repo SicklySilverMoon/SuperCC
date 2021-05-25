@@ -97,6 +97,12 @@ public class MSCreature extends Creature {
         }
         return direction;
     }
+
+    @Override
+    public boolean getForcedMove(Tile tile) {
+        return sliding; //todo: idk maybe make this work eventually
+    }
+
     Direction[] getSlideDirectionPriority(Tile tile, RNG rng, boolean changeOnRFF){
         if (nextMoveDirectionCheat != null) {
             Direction[] directions = new Direction[] {nextMoveDirectionCheat};
@@ -842,7 +848,7 @@ public class MSCreature extends Creature {
     }
 
     @Override
-    public boolean tick(Direction direction) { //Ideally shouldn't be used for MS, the method this calls should be used instead
+    public boolean tick() { //Ideally shouldn't be used for MS, the method this calls should be used instead
         return tick(new Direction[]{direction}, sliding);
     }
     
@@ -868,15 +874,16 @@ public class MSCreature extends Creature {
         if (creatureType == TANK_STATIONARY) creatureType = TANK_MOVING;
     }
     public MSCreature(int bitMonster){
-        direction = Direction.fromOrdinal(bitMonster >>> 14);
+        direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b11);
         creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);
-        if (creatureType == CHIP_SLIDING) sliding = true;
+        if (creatureType == CHIP_SLIDING)
+            sliding = true;
         position = new Position(bitMonster & 0b00_0000_1111111111);
     }
 
     @Override
     public int bits(){
-        return ((direction.getBits() << 14) & 0b11) | creatureType.getBits() | position.getIndex();
+        return ((direction.getBits() & 0b11) << 14) | creatureType.getBits() | position.getIndex();
     }
 
     @Override

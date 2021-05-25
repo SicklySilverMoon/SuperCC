@@ -220,7 +220,7 @@ public class DatParser{
             return readUnsignedByte() + 256*readUnsignedByte() + 65536*readUnsignedByte() + 16777216*readUnsignedByte();
         }
         private byte[] readAscii(int length) throws IOException{
-            byte[] asciiBytes = new byte[length];
+            byte[] asciiBytes = new byte[length-1];
             read(asciiBytes, 0, length-1);
             read();                                         // trailing '\0'
             return asciiBytes;

@@ -17,7 +17,7 @@ public abstract class TextPanel extends JPanel{
 
     protected int textHeight;
     
-    private static String addLineBreaks(String str, int lineWidth, FontMetrics m){
+    private static String addLineBreaks(String str, int lineWidth, FontMetrics m){ //todo: make this an iterative loop, recursion can and will crash
         int width = 0, i, cutoff = 0;
         for (i = 0; i < str.length(); i++){
             char ch = str.charAt(i);

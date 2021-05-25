@@ -56,11 +56,11 @@ public class Position {
     }
     public Position move(Direction direction){
         Position p = clone();
-        switch (direction){
-            case UP:    p.moveUp(); break;
-            case LEFT:  p.moveLeft(); break;
-            case DOWN:  p.moveDown(); break;
-            case RIGHT: p.moveRight(); break;
+        switch (direction) {
+            case UP -> p.moveUp();
+            case LEFT -> p.moveLeft();
+            case DOWN -> p.moveDown();
+            case RIGHT -> p.moveRight();
         }
         return p;
     }

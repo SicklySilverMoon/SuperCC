@@ -7,6 +7,8 @@ import game.button.*;
 
 import java.util.BitSet;
 
+import static game.Direction.NONE;
+
 public class LynxLevel extends LynxSavestate implements Level {
 
     private static final int HALF_WAIT = 0, KEY = 1;
@@ -23,7 +25,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private Step step;
     private final Direction INITIAL_SLIDE;
     private final Ruleset RULESET = Ruleset.LYNX;
-    private boolean levelWon;
+    private boolean levelWon, chipSliding;
 
     private final Cheats cheats;
 
@@ -325,9 +327,9 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         monsterList.initialise();
         monsterList.tick(); //select monster moves
-        Direction moveDir = selectChipMove(directions[0]);
+        selectChipMove(directions[0]);
         monsterList.tick(); //move monsters
-        boolean result = moveChip(moveDir);
+        boolean result = moveChip();
         monsterList.tick(); //teleport monsters
         monsterList.finalise();
 
@@ -341,47 +343,53 @@ public class LynxLevel extends LynxSavestate implements Level {
         return (result && !chip.isSliding());
     }
 
-    private Direction selectChipMove(Direction direction) {
-        chip.setNextMoveDirectionCheat(direction); //todo: this is REALLY hacky, for the love of god make it sane
-        chip.getDirectionPriority(chip, null); //used to set the override token, god that's bad
+    private void selectChipMove(Direction direction) {
+        chip.setTDirection(NONE);
+        chip.setFDirection(NONE);
 
         Position chipPos = chip.getPosition();
+        if (chip.getForcedMove(layerFG.get(chipPos))) {
+            return;
+        }
+
+        if (direction == NONE) {
+            return;
+        }
+
         if (direction.isDiagonal()) {
             Direction chipDir = chip.getDirection();
-            if (direction.isComponent(chipDir)) {
+            if (direction.isComponent(chipDir)) { //todo: these should set the blocks to be moved when their turn comes, not push them instantly
                 boolean canMoveMain = chip.canEnter(chipDir, chipPos.move(chipDir), true, false) && chip.canLeave(chipDir, chipPos);
                 Direction other = direction.decompose()[0] == chipDir ? direction.decompose()[1] : direction.decompose()[0];
                 boolean canMoveOther = chip.canEnter(other, chipPos.move(other), true, false) && chip.canLeave(other, chipPos);
                 if (!canMoveMain && canMoveOther) {
-                    chip.setDirection(other);
-                    return other;
+                    chip.setTDirection(other);
+                    return;
                 }
-                chip.setDirection(chipDir);
-                return chipDir;
+                chip.setTDirection(chipDir);
             }
             else {
                 Direction vert = direction.decompose()[0];
                 Direction horz = direction.decompose()[1]; //horz dir is always second in decompose
                 if (chip.canEnter(horz, chipPos.move(horz), true, false) && chip.canLeave(horz, chipPos)) {
-                    chip.setDirection(horz);
-                    return horz;
+                    chip.setTDirection(horz);
                 }
                 else {
-//                    chip.canEnter(vert, chipPos.move(vert), true, false); //side effects, note: not correct to TW
-                    chip.setDirection(vert);
-                    return vert;
+                    chip.setTDirection(vert);
                 }
             }
+            return;
         }
 
         chip.canEnter(direction, chipPos.move(direction), true, false); //for side effects
-        if (direction != Direction.NONE)
-            chip.setDirection(direction);
-        return direction;
+        chip.setTDirection(direction);
     }
 
-    private boolean moveChip(Direction direction) {
-        return chip.tick(direction) && !chip.isSliding() && direction != Direction.NONE;
+    private boolean moveChip() {
+        boolean result = chip.tick() && chip.getTDirection() != Direction.NONE;
+        chip.setTDirection(NONE); //mirror TW clearing the dirs at the end of the monster loop
+        chip.setFDirection(NONE);
+        return result;
     }
 
     @Override
