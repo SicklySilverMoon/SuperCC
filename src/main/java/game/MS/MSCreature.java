@@ -594,7 +594,16 @@ public class MSCreature extends Creature {
                 }
                 kill();
                 return true;
-            case TRAP: return true;
+            case TRAP:
+                for(BrownButton button : level.getBrownButtons()) {
+                    if(button.getTargetPosition().equals(newPosition)) {
+                        if(msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {
+                            msLevel.getOpenTraps().set(button.getTrapIndex(), true);
+                        }
+                        break;
+                    }
+                }
+                return true;
             case HIDDENWALL_TEMP:
                 if (creatureType.isChip()) {
                     msLevel.getLayerFG().set(newPosition, WALL);

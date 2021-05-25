@@ -5,6 +5,7 @@ import game.*;
 import game.button.*;
 
 import java.util.BitSet;
+import java.util.HashSet;
 
 import static emulator.SuperCC.WAIT;
 import static emulator.SuperCC.UP;
@@ -379,9 +380,11 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     private void finaliseTraps(){
+        HashSet<Position> pressedButtons = new HashSet<>();
         for (BrownButton b : brownButtons) {
-            if (layerBG.get(b.getButtonPosition()) == BUTTON_BROWN){
+            if (layerFG.get(b.getButtonPosition()) != BUTTON_BROWN && !pressedButtons.contains(b.getButtonPosition())){
                 traps.set(b.getTrapIndex(), true);
+                pressedButtons.add(b.getButtonPosition());
             }
             else if (layerFG.get(b.getTargetPosition()) == TRAP){
                 traps.set(b.getTrapIndex(), false);

@@ -4,3 +4,6 @@
 .project
 .settings/
 .idea/
+libs/
+output/
+settings.ini
