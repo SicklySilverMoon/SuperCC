@@ -4,6 +4,7 @@ import emulator.SuperCC;
 import game.Position;
 import util.CharList;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class FunctionEvaluator {
@@ -106,6 +107,9 @@ public class FunctionEvaluator {
                 int time = emulator.getLevel().getTimer();
                 if(emulator.getLevel().isUntimed()) time = emulator.getLevel().getTChipTime();
                 return (double)time / 100;
+            case "printe":
+                interpreter.print("e\n", Color.WHITE);
+                return null;
         }
         return null;
     }

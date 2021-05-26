@@ -64,6 +64,7 @@ public class Tokenizer {
         keywords.put("move", TokenType.FUNCTION);
         keywords.put("distanceto", TokenType.FUNCTION);
         keywords.put("gettimeleft", TokenType.FUNCTION);
+        keywords.put("printe", TokenType.FUNCTION);
 
         for (Tile t : Tile.values()) {
             keywords.put(t.name().toLowerCase(), TokenType.TILE);
