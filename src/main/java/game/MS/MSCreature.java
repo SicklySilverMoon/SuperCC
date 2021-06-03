@@ -270,8 +270,19 @@ public class MSCreature extends Creature {
         while (i != teleportIndex);
     }
 
-    @Override
-    public boolean canLeave(Direction direction, Position position){
+    //the booleans go unused so they are given junk names
+    //This should not ever be used by MS logically speaking
+    public boolean canMakeMove(Direction direction, Position position, boolean a, boolean b, boolean c, boolean releasing) {
+        Tile fg = level.getLayerFG().get(position);
+        Tile tile = fg;
+        if (fg.isChip() && !creatureType.isBlock()) {
+            if (!creatureType.isChip())
+            tile = level.getLayerBG().get(position);
+        }
+        return canLeave(direction, this.position) && canEnter(direction, tile);
+    }
+
+    private boolean canLeave(Direction direction, Position position){
         Tile tile = level.getLayerBG().get(position);
         switch (tile){
             case THIN_WALL_UP: return direction != UP;
@@ -283,7 +294,7 @@ public class MSCreature extends Creature {
             default: return true;
         }
     }
-    @Override
+
     public boolean canEnter(Direction direction, Tile tile){
         switch (tile) {
             case FLOOR: return true;
@@ -368,7 +379,7 @@ public class MSCreature extends Creature {
     }
 
     //pretty much exists for Lynx benefit
-    public boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims) {
+    public boolean canEnter(Direction direction, Position position, boolean clearAnims, boolean pushBlocks, boolean pushBlocksNow) {
         return canEnter(direction, level.getLayerFG().get(position));
     }
 
@@ -741,7 +752,7 @@ public class MSCreature extends Creature {
         }
     }
     private boolean tryMove(Direction direction, boolean slidingMove, List<Button> pressedButtons){
-        if (direction == null) return false;
+        if (direction == null || direction == NONE) return false;
         if (!canLeave(direction, position)) return false;
         Direction oldDirection = this.direction;
         boolean wasSliding = sliding;
@@ -857,7 +868,7 @@ public class MSCreature extends Creature {
     }
 
     @Override
-    public boolean tick() { //Ideally shouldn't be used for MS, the method this calls should be used instead
+    public boolean tick(boolean releasing) { //Ideally shouldn't be used for MS, the method this calls should be used instead
         return tick(new Direction[]{direction}, sliding);
     }
     

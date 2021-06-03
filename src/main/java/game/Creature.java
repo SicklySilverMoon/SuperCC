@@ -109,32 +109,47 @@ public abstract class Creature {
      */
     public abstract int getAnimationTimer();
 
-    /** Returns a boolean representing if the creature can enter the given tile in the given direction.
+    /** Returns a boolean representing if a creature can make a move with the given direction into the given position.
+     * Checking both that it can leave its current position and enter the given one.
+     * Side effects can and will occur, some based on the flags passed.
      *
-     * @param direction The direction the creature is moving.
-     * @param tile The tile the creature is attempting to enter.
-     * @return A boolean representing if the creature can enter the provided tile.
-     */
-    public abstract boolean canEnter(Direction direction, Tile tile);
-
-    /** Returns a boolean representing if the creature can enter the given position in the given direction.
-     *
-     * @param direction The direction the creature is moving.
-     * @param position The position the creature is attempting to enter.
-     * @param pushBlocks If any blocks found should be pushed.
+     * @param direction The direction the creature should try to move in.
+     * @param position The position the creature should try to enter.
      * @param clearAnims If any animations found should be stopped.
-     * @return A boolean representing if the creature can enter the provided position.
+     * @param pushBlocks If any blocks found should be prepped to move.
+     * @param pushBlocksNow If any blocks found should be prepped AND moved at this time.
+     * @param releasing If the creature is releasing from a trap.
+     * @return A boolean representing that the creature can make this move.
      */
-    public abstract boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims);
+    public abstract boolean canMakeMove(Direction direction, Position position, boolean clearAnims, boolean pushBlocks, boolean pushBlocksNow, boolean releasing);
 
-    /** Returns a boolean representing if the creature can leave the given tile, in the given direction,
-     * at the given position.
-     *
-     * @param direction The direction the creature is moving.
-     * @param position The position of the creature and tile.
-     * @return A boolean representing if the creature can leave the given tile and position.
-     */
-    public abstract boolean canLeave(Direction direction, Position position);
+//    /** Returns a boolean representing if the creature can enter the given tile in the given direction.
+//     *
+//     * @param direction The direction the creature is moving.
+//     * @param tile The tile the creature is attempting to enter.
+//     * @return A boolean representing if the creature can enter the provided tile.
+//     */
+//    public abstract boolean canEnter(Direction direction, Tile tile);
+//
+//    /** Returns a boolean representing if the creature can enter the given position in the given direction, side effects can and will occur.
+//     *
+//     * @param direction The direction the creature is moving.
+//     * @param position The position the creature is attempting to enter.
+//     * @param clearAnims If any animations found should be stopped.
+//     * @param pushBlocks If any blocks found should be prepped to move.
+//     * @param pushBlocksNow If any blocks found should be prepped AND moved at this time.
+//     * @return A boolean representing if the creature can enter the provided position.
+//     */
+//    public abstract boolean canEnter(Direction direction, Position position, boolean clearAnims, boolean pushBlocks, boolean pushBlocksNow);
+//
+//    /** Returns a boolean representing if the creature can leave the given tile, in the given direction,
+//     * at the given position.
+//     *
+//     * @param direction The direction the creature is moving.
+//     * @param position The position of the creature and tile.
+//     * @return A boolean representing if the creature can leave the given tile and position.
+//     */
+//    public abstract boolean canLeave(Direction direction, Position position);
 
     /** Returns a boolean representing if the given creature can override a force floor move.
      * Really only useful for Chip and even then only in Lynx.
@@ -145,9 +160,10 @@ public abstract class Creature {
 
     /** Advances a creature 1 tick according to their internal state.
      *
+     * @param releasing if the creature is releasing from a trap.
      * @return If the move was successful or not.
      */
-    public abstract boolean tick();
+    public abstract boolean tick(boolean releasing);
 
     /** Returns an int representing a creature.
      *

@@ -359,9 +359,9 @@ public class LynxLevel extends LynxSavestate implements Level {
         if (direction.isDiagonal()) {
             Direction chipDir = chip.getDirection();
             if (direction.isComponent(chipDir)) { //todo: these should set the blocks to be moved when their turn comes, not push them instantly
-                boolean canMoveMain = chip.canEnter(chipDir, chipPos.move(chipDir), true, false) && chip.canLeave(chipDir, chipPos);
+                boolean canMoveMain = chip.canMakeMove(chipDir, chipPos.move(chipDir), false, true, false, false);
                 Direction other = direction.decompose()[0] == chipDir ? direction.decompose()[1] : direction.decompose()[0];
-                boolean canMoveOther = chip.canEnter(other, chipPos.move(other), true, false) && chip.canLeave(other, chipPos);
+                boolean canMoveOther = chip.canMakeMove(other, chipPos.move(other), false, true, false, false);
                 if (!canMoveMain && canMoveOther) {
                     chip.setTDirection(other);
                     return;
@@ -371,7 +371,7 @@ public class LynxLevel extends LynxSavestate implements Level {
             else {
                 Direction vert = direction.decompose()[0];
                 Direction horz = direction.decompose()[1]; //horz dir is always second in decompose
-                if (chip.canEnter(horz, chipPos.move(horz), true, false) && chip.canLeave(horz, chipPos)) {
+                if (chip.canMakeMove(horz, chipPos.move(horz), false, true, false, false)) {
                     chip.setTDirection(horz);
                 }
                 else {
@@ -381,14 +381,24 @@ public class LynxLevel extends LynxSavestate implements Level {
             return;
         }
 
-        chip.canEnter(direction, chipPos.move(direction), true, false); //for side effects
+        chip.canMakeMove(direction, chipPos.move(direction), false, true, false, false); //for side effects
         chip.setTDirection(direction);
     }
 
     private boolean moveChip() {
-        boolean result = chip.tick() && chip.getTDirection() != Direction.NONE;
+        boolean result = chip.tick(false) && chip.getTDirection() != Direction.NONE;
         chip.setTDirection(NONE); //mirror TW clearing the dirs at the end of the monster loop
         chip.setFDirection(NONE);
+
+        //todo: this is an exact copy of the same code in the creature list because we handle chip outside the creature list, look into why we do that
+        if (chip.getTimeTraveled() == 0 && layerFG.get(chip.getPosition()) == Tile.BUTTON_BROWN) {
+            for (BrownButton b : brownButtons) {
+                if (b.getButtonPosition().equals(chip.getPosition())) {
+                    monsterList.springTrappedCreature(b.getTargetPosition());
+                    break;
+                }
+            }
+        }
         return result;
     }
 

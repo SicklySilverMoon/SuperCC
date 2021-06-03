@@ -102,12 +102,12 @@ public class Position {
     public Direction[] seek(Position seekedPosition){
         int verticalDifference = y - seekedPosition.y;
         int horizontalDifference = x - seekedPosition.x;
-    
-        Direction verticalDirection = null;
+
+        Direction verticalDirection = NONE;
         if (verticalDifference > 0) verticalDirection = UP;
         else if (verticalDifference < 0) verticalDirection = DOWN;
     
-        Direction horizontalDirection = null;
+        Direction horizontalDirection = NONE;
         if (horizontalDifference > 0) horizontalDirection = LEFT;
         else if (horizontalDifference < 0) horizontalDirection = RIGHT;
         

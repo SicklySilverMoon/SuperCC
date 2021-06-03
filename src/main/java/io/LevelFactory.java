@@ -101,7 +101,7 @@ public class LevelFactory {
                 break;
             }
         }
-        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]), layerFG, layerBG);
+        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]), layerFG);
     }
     private static MSCreature findMSPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){

@@ -45,8 +45,9 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public boolean tick() {
+    public boolean tick(boolean releasing) {
         Direction direction;
+        Direction tdir;
 
         if (animationTimer != 0) {
             animationTimer--;
@@ -55,6 +56,11 @@ public class LynxCreature extends Creature {
 
         if (timeTraveled == 0) { //analog to TW's startmovement()
             sliding = false;
+            if (releasing) {
+                tdir = this.tDirection;
+                this.tDirection = this.direction;
+            }
+            //equiv. to TW's startmovement
             if (tDirection != NONE)
                 direction = tDirection;
             else if (fDirection != NONE) {
@@ -79,7 +85,7 @@ public class LynxCreature extends Creature {
             }
 
             boolean isChip = creatureType == CreatureID.CHIP;
-            if (!canEnter(direction, to, isChip, !isChip) || !canLeave(direction, from)) { //todo: this is the only place CMM_PUSHBLOCKSNOW is used, that's probably important
+            if (!canMakeMove(direction, to, !isChip, isChip, isChip, releasing)) {
                 if (level.getLayerFG().get(from).isIce()) {
                     direction = direction.turn(TURN_AROUND);
                     this.direction = getSlideDirection(direction, level.getLayerFG().get(from), null, false);
@@ -379,7 +385,54 @@ public class LynxCreature extends Creature {
     }
 
     @Override
-    public boolean canEnter(Direction direction, Tile tile) {
+    public boolean canMakeMove(Direction direction, Position position, boolean clearAnims, boolean pushBlocks, boolean pushBlocksNow, boolean releasing) {
+        if (timeTraveled != 0) //this is more defensive than TW which only checks for Blocks, see if that's an issue anywhere
+            return false;
+
+        if (!canLeave(direction, this.position, releasing) || !position.isValid())
+            return false;
+
+        Tile enteringTile = level.getLayerFG().get(position);
+        if (!canEnter(direction, enteringTile))
+            return false;
+        if (creatureType == CreatureID.CHIP) {
+            if (level.getMonsterList().animationAt(position) != null)
+                return false;
+
+            Creature other = level.getMonsterList().creatureAt(position, false);
+            if (other != null && other.getCreatureType() == CreatureID.BLOCK) {
+                Position blockPos = other.getPosition(); //equiv. to TW's canpushblock()
+                if (!other.canMakeMove(direction, blockPos.move(direction), true, false, false, false)) {
+                    if (other.getTimeTraveled() == 0 && (pushBlocks || pushBlocksNow))
+                        other.setDirection(direction);
+                    return false;
+                }
+                if (pushBlocks || pushBlocksNow) {
+                    other.setDirection(direction);
+                    other.setTDirection(direction);
+                    if (pushBlocksNow)
+                        other.tick(false);
+                }
+            }
+
+            if (enteringTile == HIDDENWALL_TEMP || enteringTile == BLUEWALL_REAL) {
+                if (timeTraveled == 0)
+                    level.getLayerFG().set(position, WALL);
+                return false;
+            }
+        }
+        else {
+            if (level.getMonsterList().claimed(position))
+                return false;
+            Creature anim = level.getMonsterList().animationAt(position);
+            if (anim != null && clearAnims)
+                anim.kill();
+        }
+
+        return true;
+    }
+
+    private boolean canEnter(Direction direction, Tile tile) {
         boolean isChip = creatureType.isChip();
 
         return switch (tile) {
@@ -405,14 +458,14 @@ public class LynxCreature extends Creature {
             case ICE_SLIDE_NORTHWEST -> direction != UP && direction != LEFT;
             case ICE_SLIDE_NORTHEAST -> direction != UP && direction != RIGHT;
             case BLUEWALL_FAKE -> isChip;
-            case BLUEWALL_REAL -> false;
+            case BLUEWALL_REAL -> isChip;
             case OVERLAY_BUFFER -> false;
             case THIEF -> isChip;
             case SOCKET -> isChip && level.getChipsLeft() <= 0;
             case BUTTON_GREEN, BUTTON_RED -> true;
             case TOGGLE_CLOSED -> false;
             case TOGGLE_OPEN, BUTTON_BROWN, BUTTON_BLUE, TELEPORT, BOMB, TRAP -> true;
-            case HIDDENWALL_TEMP -> false;
+            case HIDDENWALL_TEMP -> isChip;
             case GRAVEL -> isChip || creatureType == CreatureID.BLOCK;
             case POP_UP_WALL, HINT -> isChip;
             case THIN_WALL_DOWN_RIGHT -> direction != UP && direction != LEFT;
@@ -426,42 +479,7 @@ public class LynxCreature extends Creature {
         };
     }
 
-    public boolean canEnter(Direction direction, Position position, boolean pushBlocks, boolean clearAnims) {
-        boolean canEnterTile = canEnter(direction, level.getLayerFG().get(position));
-        boolean positionClaimed = level.getMonsterList().claimed(position);
-        boolean animationClaimed = false;
-        if (level.getMonsterList().animationAt(position) != null) {
-            if (clearAnims)
-                level.getMonsterList().animationAt(position).kill();
-            else
-                animationClaimed = creatureType == CreatureID.CHIP;
-        }
-
-        if (!canEnterTile)
-            return false;
-        if (creatureType != CreatureID.CHIP) {
-            return !positionClaimed;
-        }
-        if (animationClaimed)
-            return false;
-        if (!positionClaimed)
-            return true;
-
-        Creature creature = level.getMonsterList().creatureAt(position, false);
-        if (creature.getCreatureType() != CreatureID.BLOCK) //Chip can always enter into tiles with monsters
-            return true;
-        Position creaturePos = creature.getPosition();
-        //todo: see how TW uses CMM_PUSHBLOCKSNOW
-        if (creature.canEnter(direction, creaturePos.move(direction), false, true) && creature.canLeave(direction, creaturePos)) {
-            if (pushBlocks)
-                creature.setTDirection(direction);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean canLeave(Direction direction, Position position) {
+    private boolean canLeave(Direction direction, Position position, boolean releasing) {
         Tile tile = level.getLayerFG().get(position);
         switch (tile){
             case THIN_WALL_UP: return direction != UP;
@@ -469,7 +487,7 @@ public class LynxCreature extends Creature {
             case THIN_WALL_DOWN: return direction != DOWN;
             case THIN_WALL_LEFT: return direction != LEFT;
             case THIN_WALL_DOWN_RIGHT: return direction != DOWN && direction != RIGHT;
-            case TRAP: return level.isTrapOpen(position);
+            case TRAP: return releasing;
         }
         if (tile.isFF()) {
             if (creatureType != CreatureID.CHIP || level.getBoots()[3] == 0)

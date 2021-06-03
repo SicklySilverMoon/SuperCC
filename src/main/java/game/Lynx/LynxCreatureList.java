@@ -3,9 +3,6 @@ package game.Lynx;
 import game.*;
 import game.button.BrownButton;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static game.CreatureID.*;
 
 public class LynxCreatureList extends CreatureList {
@@ -13,7 +10,7 @@ public class LynxCreatureList extends CreatureList {
     private int phase;
 
     @Override
-    public void setCreatures(Creature[] creatures, Layer layerFG, Layer layerBG) {
+    public void setCreatures(Creature[] creatures, Layer layerFG) {
         list = creatures;
         creatureLayer = new boolean[1024];
 
@@ -66,7 +63,7 @@ public class LynxCreatureList extends CreatureList {
 
                 if (creature.isDead()) {
                     if (creature.getAnimationTimer() != 0)
-                        creature.tick();
+                        creature.tick(false);
                     continue;
                 }
 
@@ -90,7 +87,7 @@ public class LynxCreatureList extends CreatureList {
                     Position crPos = creature.getPosition();
                     Position newPos = crPos.move(dir);
                     creature.setTDirection(dir);
-                    boolean canMove = creature.canEnter(dir, newPos, false, true) && creature.canLeave(dir, crPos);
+                    boolean canMove = creature.canMakeMove(dir, newPos, true, false, false, false);
                     if (canMove)
                         break;
                 }
@@ -108,7 +105,7 @@ public class LynxCreatureList extends CreatureList {
                         || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
                     continue;
 
-                creature.tick();
+                creature.tick(false);
 
                 creature.setFDirection(Direction.NONE);
                 creature.setTDirection(Direction.NONE);
@@ -183,7 +180,7 @@ public class LynxCreatureList extends CreatureList {
             }
         }
         if (list.length + newClones.size() >= 2048) { //MAX_CREATURES in TW
-            creature.tick();
+            creature.tick(false);
             return;
         }
         if (clone == null) {
@@ -192,7 +189,7 @@ public class LynxCreatureList extends CreatureList {
         }
 
         clone.setTDirection(clone.getDirection());
-        clone.tick(); //todo: might want to check how TW uses the releasing flag
+        clone.tick(false); //todo: might want to check how TW uses the releasing flag
     }
 
     @Override
@@ -203,7 +200,8 @@ public class LynxCreatureList extends CreatureList {
         if (creature == null)
             return;
         creature.setTDirection(creature.getDirection());
-        creature.tick(); //todo: releasing flag again
+//        System.out.println("Springing creature: " + creature);
+        creature.tick(true); //todo: releasing flag again
     }
 
     private void teleportCreature(Creature creature) {
@@ -223,10 +221,11 @@ public class LynxCreatureList extends CreatureList {
             if (index < 0)
                 index = teleports.length - 1;
             Position teleportPosition = teleports[index];
-            if (creature.getCreatureType() != CHIP)
+            boolean isChip = creature.getCreatureType() == CHIP;
+            if (!isChip)
                 creatureLayer[creature.getPosition().index] = false;
             creature.setPosition(teleportPosition);
-            if (!claimed(teleportPosition) && creature.canEnter(creature.getDirection(), level.getLayerFG().get(teleportPosition)))
+            if (!claimed(teleportPosition) && creature.canMakeMove(creature.getDirection(), teleportPosition, !isChip, isChip, false, false))
                 break;
             if (teleportPosition.equals(originalPosition)) {
                 if (creature.getCreatureType() != CHIP)
@@ -239,8 +238,8 @@ public class LynxCreatureList extends CreatureList {
             creatureLayer[creature.getPosition().index] = true;
     }
 
-    public LynxCreatureList(Creature[] creatures, Layer layerFG, Layer layerBG) {
+    public LynxCreatureList(Creature[] creatures, Layer layerFG) {
         super(creatures);
-        setCreatures(creatures, layerFG, layerBG);
+        setCreatures(creatures, layerFG);
     }
 }
