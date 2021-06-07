@@ -97,8 +97,9 @@ public class TWSWriter{
             if (level.getRuleset() == Ruleset.MS) write(2);
             else write(1); //Lynx Ruleset
             writeShort(level.getLevelNumber());
-            write(4);
-            writeInt(Arrays.hashCode(solution.basicMoves));
+            write(5);
+            writeInt(Arrays.hashCode(solution.basicMoves)); //sig
+            write(0); //in case of further extensions
         }
         void writeLevelHeader (Level level, Solution solution) throws IOException {
             writeShort(level.getLevelNumber());

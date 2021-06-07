@@ -162,7 +162,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public int getTimer(){
         if (tickNumber == 0) return startTime;
-        else return startTime - tickNumber*5;
+        else return startTime - tickNumber*5 + 5; //first tick does not change timer
     }
     @Override
     public void setTimer(int n) {
@@ -172,7 +172,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public int getTChipTime() {
         if (tickNumber == 0) return 99995;
-        else return 99995 - tickNumber*5;
+        else return 99995 - tickNumber*5 + 5; //first tick does not change timer
     }
 
     @Override
@@ -333,7 +333,8 @@ public class LynxLevel extends LynxSavestate implements Level {
         monsterList.tick(); //teleport monsters
         monsterList.finalise();
 
-        if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getAnimationTimer() == 0) {
+        if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getTimeTraveled() == 0
+                && chip.getAnimationTimer() == 0) {
             chip.kill();
             chip.kill(); //destroys the animation as well
             layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);

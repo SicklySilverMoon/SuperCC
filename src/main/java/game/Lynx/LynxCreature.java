@@ -247,7 +247,7 @@ public class LynxCreature extends Creature {
                 break;
             case EXIT:
                 if (creatureType == CreatureID.CHIP)
-                    animationTimer = 4;
+                    animationTimer = 1;
                 break;
             case THIEF:
                 if (creatureType == CreatureID.CHIP)
