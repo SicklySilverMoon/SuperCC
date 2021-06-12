@@ -26,6 +26,7 @@ public class SimulatedAnnealing {
     private ArrayList<TSPGUI.RestrictionNode> restrictionNodes;
     private JTextPane output;
     private Random r = new Random();
+    private boolean unreachable;
 
     public SimulatedAnnealing(TSPGUI gui, int startTime, SimulatedAnnealingParameters simulatedAnnealingParameters, int[][] distances,
                               int[][] distancesBoost, boolean[][] boostNodes, boolean[][] boostNodesBoost,
@@ -46,6 +47,7 @@ public class SimulatedAnnealing {
         this.bestDistance = Integer.MAX_VALUE;
         this.restrictionNodes = restrictionNodes;
         this.output = output;
+        this.unreachable = false;
     }
 
     public int[] start() {
@@ -69,7 +71,8 @@ public class SimulatedAnnealing {
             output.setText("Calculating shortest path..." +
                     "\nProgress: " + (steps/totalSteps*100) + "%" +
                     "\nTemperature: " + temperature +
-                    "\nCurrent best: " + ((double)(startTime - bestDistance + 2)/10));
+                    "\nCurrent best: " + ((double)(startTime - bestDistance + 2)/10) +
+                    (unreachable ? "\n\nCould not find path that goes through all nodes!" : ""));
             int startDistance = distance;
             for(int i = 0; i < iterations; i++) {
                 int[] newSolution = solution.clone();
@@ -101,6 +104,10 @@ public class SimulatedAnnealing {
         return bestSolution;
     }
 
+    public boolean isUnreachable() {
+        return unreachable;
+    }
+
     private int[] initialSolution() {
         int[] solution = new int[inputNodeSize];
         for(int i = 0; i < inputNodeSize; i++) {
@@ -118,9 +125,14 @@ public class SimulatedAnnealing {
     private int calculateDistance(int[] solution) {
         int distance = distances[0][solution[0]];
         boolean boosted = false;
+        unreachable = false;
         for(int i = 0; i < solution.length - 1; i++) {
-            distance += boosted ?
+            int segmentDistance = boosted ?
                     distancesBoost[solution[i]][solution[i + 1]] : distances[solution[i]][solution[i + 1]];
+            distance += segmentDistance;
+            if(segmentDistance == TSPSolver.INFINITE_DISTANCE) {
+                unreachable = true;
+            }
             boosted = boosted ?
                     boostNodesBoost[solution[i]][solution[i + 1]] : boostNodes[solution[i]][solution[i + 1]];
         }
@@ -139,7 +151,7 @@ public class SimulatedAnnealing {
             }
         }
         distance += bestExitDistance;
-        if(distance < 0) return 9999;
+        if(distance < 0) return TSPSolver.INFINITE_DISTANCE;
         return distance;
     }
 

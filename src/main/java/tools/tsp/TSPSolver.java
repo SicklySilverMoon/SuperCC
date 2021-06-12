@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.PriorityQueue;
 
 public class TSPSolver {
-    public final int INFINITE_DISTANCE = 9999;
+    public static final int INFINITE_DISTANCE = 9999;
     private SuperCC emulator;
     private TSPGUI gui;
     private Level level;
@@ -207,15 +207,20 @@ public class TSPSolver {
         return "";
     }
 
-    private void solveWithSA() {
+    private void solveWithSA() throws Exception {
         level.getMonsterList().setCreatures(monsterList, level.getLayerFG());
         SimulatedAnnealing sa = new SimulatedAnnealing(gui, level.getStartTime(), simulatedAnnealingParameters, distances, distancesBoost,
                 boostNodes, boostNodesBoost, inputNodeSize, exitNodeSize, restrictionNodes, output);
         int[] solution = sa.start();
         chosenExit = sa.bestExit;
 
-        createSolution(solution);
-        output.setText("Finished!");
+        if(!sa.isUnreachable()) {
+            createSolution(solution);
+            output.setText("Finished!");
+        }
+        else {
+            throw new Exception("    Could not find path that goes through all nodes!");
+        }
     }
 
     private void searchBFS(int from) {
