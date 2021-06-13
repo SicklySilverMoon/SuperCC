@@ -12,6 +12,8 @@ import static emulator.SuperCC.UP;
 import static emulator.SuperCC.DOWN;
 import static emulator.SuperCC.LEFT;
 import static emulator.SuperCC.RIGHT;
+import static game.CreatureID.TANK_MOVING;
+import static game.Direction.TURN_AROUND;
 import static game.Tile.*;
 
 public class MSLevel extends MSSavestate implements Level {
@@ -407,6 +409,22 @@ public class MSLevel extends MSSavestate implements Level {
 
     public boolean shouldDrawCreatureNumber(Creature creature) {
         return true; //method is only useful for lynx really
+    }
+
+    public void turnTanks() {
+        for (Creature m : monsterList) {
+            if (m.getCreatureType().isTank() && !m.isSliding()) {
+                m.setCreatureType(TANK_MOVING);
+                m.turn(TURN_AROUND);
+                    layerFG.set(m.getPosition(), m.toTile());
+            }
+        }
+        for (Creature m : monsterList.getNewClones()) { //Ensures Frankenstein glitch works in all situations, prior to this it wouldn't flip tanks that had been cloned earlier that tick due to them not being on the monster list and instead being on the newClones list, this now flips those on the newClones list as well
+            if (m.getCreatureType().isTank() && !m.isSliding()) {
+                m.setCreatureType(TANK_MOVING);
+                m.turn(TURN_AROUND);
+            }
+        }
     }
     
     /**

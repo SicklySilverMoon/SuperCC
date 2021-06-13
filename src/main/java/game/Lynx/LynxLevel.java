@@ -8,6 +8,7 @@ import game.button.*;
 import java.util.BitSet;
 
 import static game.Direction.NONE;
+import static game.Direction.TURN_AROUND;
 
 public class LynxLevel extends LynxSavestate implements Level {
 
@@ -25,7 +26,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private Step step;
     private final Direction INITIAL_SLIDE;
     private final Ruleset RULESET = Ruleset.LYNX;
-    private boolean levelWon;
+    private boolean levelWon, turnTanks;
 
     private final Cheats cheats;
 
@@ -324,20 +325,32 @@ public class LynxLevel extends LynxSavestate implements Level {
     public boolean tick(char c, Direction[] directions) {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
+        turnTanks = false;
 
         monsterList.initialise();
         monsterList.tick(); //select monster moves
         Tile chipTileOld = layerFG.get(chip.getPosition());
         if (chip.getTimeTraveled() == 0)
             selectChipMove(directions[0]);
+        Direction chipTDir = chip.getTDirection();
         monsterList.tick(); //move monsters
         boolean result = moveChip();
         Tile chipTileNew = layerFG.get(chip.getPosition());
         monsterList.tick(); //teleport monsters
         monsterList.finalise();
 
+        if (turnTanks) {
+            for (Creature m : monsterList) {
+                Tile floor = layerFG.get(m.getPosition());
+                if (m.getCreatureType() == CreatureID.TANK_MOVING && m.getTimeTraveled() == 0
+                        && floor != Tile.CLONE_MACHINE && !floor.isIce())
+                    m.turn(TURN_AROUND);
+            }
+        }
+
         if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getTimeTraveled() == 0
                 && chip.getAnimationTimer() == 0) {
+            //todo: move this into the "entered tile" logic area as currently starting on the exit wins lol
             chip.kill();
             chip.kill(); //destroys the animation as well
             layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);
@@ -422,6 +435,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     public boolean shouldDrawCreatureNumber(Creature creature) {
         return !(creature.isDead() && creature.getAnimationTimer() == 0)
                 && layerFG.get(creature.getPosition()) != Tile.CLONE_MACHINE;
+    }
+
+    @Override
+    public void turnTanks() {
+        turnTanks = true;
     }
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,

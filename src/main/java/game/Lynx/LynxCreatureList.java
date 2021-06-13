@@ -84,6 +84,16 @@ public class LynxCreatureList extends CreatureList {
                     if (dir == Direction.NONE)
                         break;
 
+                    if (dir == Direction.WALKER_TURN) {
+                        int turns = level.getRNG().pseudoRandom4();
+                        dir = creature.getDirection();
+                        while (turns-- != 0)
+                            dir = dir.turn(Direction.RIGHT);
+                    }
+                    else if (dir == Direction.BLOB_TURN) {
+                        dir = new Direction[] {Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT}[level.getRNG().random4()];
+                    }
+
                     Position crPos = creature.getPosition();
                     Position newPos = crPos.move(dir);
                     creature.setTDirection(dir);

@@ -98,8 +98,13 @@ public class LynxCreature extends Creature {
                 return false;
             }
 
-            if (creatureType != CreatureID.CHIP)
+            if (creatureType != CreatureID.CHIP) {
                 level.getMonsterList().adjustClaim(from, false);
+                //this is a semi-hacky implimentation of TW's chiptocr() and chiptopos()
+                Creature chip = level.getChip();
+                if (creatureType != CreatureID.BLOCK && position.equals(chip.getPosition().move(chip.getTDirection())))
+                    level.getChip().kill();
+            }
 
             position = to;
             if (creatureType != CreatureID.CHIP)
@@ -156,7 +161,7 @@ public class LynxCreature extends Creature {
 //                break;
             case BUTTON_GREEN:
             case BUTTON_RED:
-                //BUTTON_BROWN left out intentionally, handled later
+//            case BUTTON_BROWN left out intentionally, handled later
             case BUTTON_BLUE:
                 Button button = level.getButton(position);
                 if (button != null)
@@ -287,14 +292,9 @@ public class LynxCreature extends Creature {
             case TEETH:
                 return position.seek(chip.getPosition());
             case WALKER:
-                int turns = rng.pseudoRandom4();
-                Direction walkerDirection = direction;
-                while(turns-- != 0)
-                    walkerDirection = walkerDirection.turn(TURN_RIGHT);
-                return new Direction[] {direction, walkerDirection};
+                return new Direction[] {direction, WALKER_TURN};
             case BLOB:
-                Direction[] blobDirs = new Direction[] {UP, RIGHT, DOWN, LEFT};
-                return new Direction[] { blobDirs[rng.random4()] };
+                return new Direction[] {BLOB_TURN};
             case PARAMECIUM:
                 return direction.turn(new Direction[] {TURN_RIGHT, TURN_FORWARD, TURN_LEFT, TURN_AROUND});
             default:

@@ -175,4 +175,6 @@ public interface Level extends Savestate {
      * @return a boolean representing if the monsterlist number of this creature should be drawn.
      */
     boolean shouldDrawCreatureNumber(Creature creature);
+
+    void turnTanks();
 }

@@ -10,7 +10,9 @@ public enum Direction {
     DOWN_LEFT(0b0101),
     DOWN_RIGHT(0b0110),
     UP_RIGHT(0b0111),
-    NONE(0b1000);
+    NONE(0b1000),
+    WALKER_TURN(0b1001), //WOW! This is extremely hacky!
+    BLOB_TURN(0b1010);
 
     public static final Direction TURN_LEFT = LEFT, TURN_RIGHT = RIGHT,
         TURN_AROUND = DOWN, TURN_FORWARD = UP;
@@ -29,7 +31,7 @@ public enum Direction {
     public Direction turn(Direction turn) {
         if (turn.bits > RIGHT.bits || this.bits > RIGHT.bits) //meaningless for non cardinal directions on either side
             return this;
-        return fromOrdinal(ordinal() + turn.ordinal() & 0b11);
+        return fromOrdinal((ordinal() + turn.ordinal()) & 0b11);
     }
 
     public Direction[] turn(Direction[] turns) {
