@@ -25,7 +25,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private Step step;
     private final Direction INITIAL_SLIDE;
     private final Ruleset RULESET = Ruleset.LYNX;
-    private boolean levelWon, chipSliding;
+    private boolean levelWon;
 
     private final Cheats cheats;
 
@@ -327,9 +327,12 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         monsterList.initialise();
         monsterList.tick(); //select monster moves
-        selectChipMove(directions[0]);
+        Tile chipTileOld = layerFG.get(chip.getPosition());
+        if (chip.getTimeTraveled() == 0)
+            selectChipMove(directions[0]);
         monsterList.tick(); //move monsters
         boolean result = moveChip();
+        Tile chipTileNew = layerFG.get(chip.getPosition());
         monsterList.tick(); //teleport monsters
         monsterList.finalise();
 
@@ -341,7 +344,9 @@ public class LynxLevel extends LynxSavestate implements Level {
             setLevelWon(true);
             return false;
         }
-        return (result && !chip.isSliding());
+        return (result && !chip.isSliding() && !(chipTileOld.isSliding() || chipTileNew.isSliding()
+                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP));
+        //traps perform forced moves but aren't counted as sliding tiles as it would fuck some logic up
     }
 
     private void selectChipMove(Direction direction) {

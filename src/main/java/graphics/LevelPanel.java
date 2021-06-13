@@ -15,19 +15,19 @@ public class LevelPanel extends TextPanel {
         int time;
         if (level.isUntimed()) {
             time = level.getTChipTime();
-            if (!twsNotation) return String.format("[%d.%d]",
+            if (!twsNotation) return String.format("[%d.%02d]",
                     time / 100,
                     Math.abs(time % 100));
-            else return String.format("[%d (-.%d)]",
+            else return String.format("[%d (-.%02d)]",
                     time / 100,
                     twsMax - Math.abs(time % 100));
         }
         time = level.getTimer();
         if (!twsNotation)
-            return String.format("%d.%d",
+            return String.format("%d.%02d",
                 time / 100,
                 Math.abs(time % 100));
-        else return String.format("%d (-.%d)",
+        else return String.format("%d (-.%02d)",
                 time / 100,
                 twsMax - Math.abs(time % 100));
     }

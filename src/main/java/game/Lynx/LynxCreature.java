@@ -1,7 +1,6 @@
 package game.Lynx;
 
 import game.*;
-import game.button.BrownButton;
 import game.button.Button;
 
 import java.util.Objects;
@@ -47,7 +46,7 @@ public class LynxCreature extends Creature {
     @Override
     public boolean tick(boolean releasing) {
         Direction direction;
-        Direction tdir;
+        Direction tdir = NONE;
 
         if (animationTimer != 0) {
             animationTimer--;
@@ -59,7 +58,8 @@ public class LynxCreature extends Creature {
             if (releasing) {
                 tdir = this.tDirection;
                 this.tDirection = this.direction;
-            }
+            } else if (tDirection == NONE && fDirection == NONE)
+                return true;
             //equiv. to TW's startmovement
             if (tDirection != NONE)
                 direction = tDirection;
@@ -67,8 +67,11 @@ public class LynxCreature extends Creature {
                 direction = fDirection;
                 sliding = true;
             }
-            else
+            else {
+                if (releasing)
+                    tDirection = tdir;
                 return false;
+            }
             this.direction = direction;
 
             Position from = position;
@@ -90,6 +93,8 @@ public class LynxCreature extends Creature {
                     direction = direction.turn(TURN_AROUND);
                     this.direction = getSlideDirection(direction, level.getLayerFG().get(from), null, false);
                 }
+                if (releasing)
+                    tDirection = tdir;
                 return false;
             }
 
@@ -101,11 +106,11 @@ public class LynxCreature extends Creature {
                 level.getMonsterList().adjustClaim(to, true);
 
             timeTraveled = 8;
-            if (creatureType != CreatureID.CHIP && level.getChip().getPosition() == position) {
+            if (creatureType != CreatureID.CHIP && level.getChip().getPosition().equals(position)) {
                 level.getChip().kill();
                 return false;
             }
-            else if (creatureType == CreatureID.CHIP && level.getMonsterList().claimed(position)) {
+            else if (creatureType == CreatureID.CHIP && level.getMonsterList().creatureAt(position, false) != null) {
                 kill();
                 return false;
             }
@@ -151,15 +156,11 @@ public class LynxCreature extends Creature {
 //                break;
             case BUTTON_GREEN:
             case BUTTON_RED:
-//            case BUTTON_BROWN: //todo: handle like TW does
+                //BUTTON_BROWN left out intentionally, handled later
             case BUTTON_BLUE:
                 Button button = level.getButton(position);
-                if (button != null) {
+                if (button != null)
                     button.press(level);
-//                    if (button instanceof BrownButton) {
-//                        level.getMonsterList().springTrappedCreature(((BrownButton) button).getTargetPosition());
-//                    }
-                }
                 break;
             case FIRE:
                 if (creatureType == CreatureID.CHIP && level.getBoots()[1] == 0)
@@ -487,6 +488,7 @@ public class LynxCreature extends Creature {
             case THIN_WALL_DOWN: return direction != DOWN;
             case THIN_WALL_LEFT: return direction != LEFT;
             case THIN_WALL_DOWN_RIGHT: return direction != DOWN && direction != RIGHT;
+            case CLONE_MACHINE:
             case TRAP: return releasing;
         }
         if (tile.isFF()) {
@@ -505,17 +507,6 @@ public class LynxCreature extends Creature {
     public int bits() {
         return ((overrideToken ? 1 : 0) << 25) | ((sliding ? 1 : 0) << 24) | (animationTimer << 21) | (timeTraveled << 18)
                 | (direction.getBits() << 14) | creatureType.getBits() | position.getIndex();
-    }
-
-    private void finishLeaving(Position position) {
-        Tile tile = level.getLayerFG().get(position);
-        if (tile == BUTTON_BROWN) {
-            for (BrownButton b : level.getBrownButtons()) {
-                //todo: refactor this later to have a releaseBrownButton(Position buttonPos) in Level or something so as to avoid having this loop in multiple places
-                if (b.getButtonPosition().equals(position))
-                    b.release(level);
-            }
-        }
     }
 
     @Override

@@ -15,7 +15,7 @@ public class LynxCreatureList extends CreatureList {
         creatureLayer = new boolean[1024];
 
         for (Creature c : creatures) {
-            if (c.getCreatureType() == CHIP || layerFG.get(c.getPosition()) == Tile.CLONE_MACHINE)
+            if (c.getCreatureType() == CHIP)
                 continue;
             if (c.getCreatureType() != DEAD)
                 creatureLayer[c.getPosition().index] = true;
@@ -126,7 +126,7 @@ public class LynxCreatureList extends CreatureList {
             for (int i = list.length - 1; i >= 0; i--) {
                 Creature creature = list[i];
                 if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT) {
-                    if (creature.getTimeTraveled() != 0 || creature.getAnimationTimer() != 0)
+                    if (creature.getTimeTraveled() != 0 || creature.isDead())
                         continue;
                     if (level.getLayerFG().get(creature.getPosition()) == Tile.TELEPORT)
                         teleportCreature(creature);
@@ -177,10 +177,11 @@ public class LynxCreatureList extends CreatureList {
             if (c.isDead() && c.getAnimationTimer() == 0) {
                 clone = creature.clone();
                 list[i] = clone;
+                break;
             }
         }
         if (list.length + newClones.size() >= 2048) { //MAX_CREATURES in TW
-            creature.tick(false);
+            creature.tick(true);
             return;
         }
         if (clone == null) {
@@ -188,8 +189,10 @@ public class LynxCreatureList extends CreatureList {
             newClones.add(clone);
         }
 
-        clone.setTDirection(clone.getDirection());
-        clone.tick(false); //todo: might want to check how TW uses the releasing flag
+        if (!clone.tick(true)) { //todo: might want to check how TW uses the releasing flag
+            clone.kill();
+            clone.kill(); //kill creature and anim
+        }
     }
 
     @Override
@@ -197,45 +200,52 @@ public class LynxCreatureList extends CreatureList {
         if (!position.isValid() || level.getLayerFG().get(position) != Tile.TRAP)
             return;
         Creature creature = creatureAt(position, true);
-        if (creature == null)
+        if (creature == null || creature.getDirection() == Direction.NONE)
             return;
-        creature.setTDirection(creature.getDirection());
-//        System.out.println("Springing creature: " + creature);
         creature.tick(true); //todo: releasing flag again
     }
 
     private void teleportCreature(Creature creature) {
-        Position originalPosition = creature.getPosition();
         Position[] teleports = level.getTeleports();
-        int index = 0;
-        for (int i = 0; i < teleports.length; i++) {
-            Position teleportPosition = teleports[i];
-            if (teleportPosition.equals(originalPosition)) {
-                index = i;
+        int teleportIndex = -1;
+        for (int i = 0; i < level.getTeleports().length; i++) {
+            if (teleports[i].equals(creature.getPosition())) {
+                teleportIndex = i;
                 break;
             }
         }
+        if (teleportIndex == -1) //not found
+            return;
+        int origIndex = teleportIndex; //use then dec
 
-        for (;;) {
-            --index;
-            if (index < 0)
-                index = teleports.length - 1;
-            Position teleportPosition = teleports[index];
-            boolean isChip = creature.getCreatureType() == CHIP;
-            if (!isChip)
-                creatureLayer[creature.getPosition().index] = false;
-            creature.setPosition(teleportPosition);
-            if (!claimed(teleportPosition) && creature.canMakeMove(creature.getDirection(), teleportPosition, !isChip, isChip, false, false))
+        while (true) {
+            --teleportIndex;
+            if (teleportIndex == -1)
+                teleportIndex = teleports.length - 1;
+
+            Position telePos = teleports[teleportIndex];
+            if (creature.getCreatureType() != CHIP)
+                adjustClaim(creature.getPosition(), false);
+
+            creature.setPosition(telePos);
+            if (!claimed(telePos) && creature.canMakeMove(creature.getDirection(), telePos.move(creature.getDirection()),
+                    false, false, false, false)) {
                 break;
-            if (teleportPosition.equals(originalPosition)) {
-                if (creature.getCreatureType() != CHIP)
-                    creatureLayer[originalPosition.index] = true;
+            }
+            if (teleportIndex == origIndex) {
+                if (creature.getCreatureType() == CHIP) //TW sets chipstuck() to true here but its a death sentence
+                    creature.kill();
+                else
+                    adjustClaim(telePos, true);
                 return;
             }
+            //note: TW has something about else if (ismarkedteleport(pos)) around this part, find out why maybe
         }
 
         if (creature.getCreatureType() != CHIP)
-            creatureLayer[creature.getPosition().index] = true;
+            adjustClaim(creature.getPosition(), true);
+        //TW sets cr->state |= CS_TELEPORTED, might be important
+        return;
     }
 
     public LynxCreatureList(Creature[] creatures, Layer layerFG) {

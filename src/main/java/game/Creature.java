@@ -6,7 +6,9 @@ public abstract class Creature {
     protected Level level;
     protected Position position;
     protected CreatureID creatureType;
-    protected Direction direction, tDirection = Direction.NONE, fDirection = Direction.NONE;
+    protected Direction direction;
+    protected Direction tDirection = Direction.NONE;
+    protected Direction fDirection = Direction.NONE;
     protected boolean sliding;
     protected Direction nextMoveDirectionCheat = null;
 
@@ -54,7 +56,7 @@ public abstract class Creature {
      * Side effects such as setting the creature's direction can occur.
      *
      * @param tile The tile the creature is currently on (may be ignored).
-     * @return NONE if the next move isn't forced, the forced direction otherwise.
+     * @return true if the next move is forced, false otherwise.
      */
     public abstract boolean getForcedMove(Tile tile);
 

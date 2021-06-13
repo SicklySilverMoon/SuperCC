@@ -41,8 +41,9 @@ public class TWSWriter{
             int timeBetween = 0;
             boolean firstMove = true;
             int i = 0;
-            for (char c : solution.basicMoves) {
-                if (c == SuperCC.WAIT) timeBetween += 2;
+            for (char c : solution.basicMoves) { //todo: boy you really need to make this lynx compatible
+                if (c == SuperCC.WAIT)
+                    timeBetween += 2;
                 else {
                     int relativeClickX;
                     int relativeClickY;
@@ -129,7 +130,10 @@ public class TWSWriter{
         }
         public int solutionLength(Solution s) {
             int length = LEVEL_HEADER_SIZE;
-            for (char c : s.basicMoves) if (c != SuperCC.WAIT) length += 4;
+            for (char c : s.basicMoves) {
+                if (c != SuperCC.WAIT)
+                    length += 4;
+            }
             return length;
         }
         void writeFormat2(byte twsMoveByte, int time) throws IOException {
