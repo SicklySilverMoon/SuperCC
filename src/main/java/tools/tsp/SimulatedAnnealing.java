@@ -32,7 +32,7 @@ public class SimulatedAnnealing {
                               int[][] distancesBoost, boolean[][] boostNodes, boolean[][] boostNodesBoost,
                               int inputNodeSize, int exitNodeSize, ArrayList<TSPGUI.RestrictionNode> restrictionNodes, JTextPane output) {
         this.gui = gui;
-        this.startTime = startTime <= 0 ? 9999 : startTime;
+        this.startTime = startTime <= 0 ? 9999 : startTime/10;
         this.temperature = simulatedAnnealingParameters.startTemp;
         this.end = simulatedAnnealingParameters.endTemp;
         this.cooling = simulatedAnnealingParameters.cooling;

@@ -352,10 +352,7 @@ public class TSPSolver {
         if(t == Tile.THIEF && actingWallParameters.isThiefWall) {
             return true;
         }
-        if(t == Tile.TRAP && actingWallParameters.isTrapWall) {
-            return true;
-        }
-        return false;
+        return t == Tile.TRAP && actingWallParameters.isTrapWall;
     }
 
     private boolean isTSPTile(Tile t) {
@@ -369,6 +366,9 @@ public class TSPSolver {
     private boolean handleSliding(char direction, int position, int[] visitedAt, int[] visitedCount, int from, Tile onTile, PathNode node) {
         Direction dir = level.getChip().getDirection();
         int delta = getDelta(dir);
+        if(position % 1024 + delta >= 1024) {
+            return false;
+        }
         int newPosition = ((position % 1024) + delta) + 1024 * getDirectionIndex(direction);
         Tile newTile = level.getLayerFG().get(newPosition % 1024);
 
