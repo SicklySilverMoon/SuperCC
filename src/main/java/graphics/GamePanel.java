@@ -221,7 +221,7 @@ public abstract class GamePanel extends JPanel
             Creature c = emulator.getLevel().getMonsterList().creatureAt(position, false);
             if (c != null) {
                 JMenu setDirection = new JMenu("Change Creature's Direction");
-                for (Direction d : Direction.values()) {
+                for (Direction d : Direction.CARDINALS) {
                     JMenuItem menuItem = new JMenuItem(d.toString());
                     menuItem.addActionListener((e) -> {
                         cheats.setDirection(c, d);

@@ -7,8 +7,7 @@ import game.button.*;
 
 import java.util.BitSet;
 
-import static game.Direction.NONE;
-import static game.Direction.TURN_AROUND;
+import static game.Direction.*;
 
 public class LynxLevel extends LynxSavestate implements Level {
 
@@ -290,20 +289,10 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public Direction getAndCycleRFFDirection() {
-        Direction priorDirection = rffDirection;
-        rffDirection = rffDirection.turn(Direction.RIGHT);
-        return priorDirection;
-    }
-
-    @Override
-    public Direction getRFFDirection() {
+    public Direction getRFFDirection(boolean advance) {
+        if (advance)
+            rffDirection = rffDirection.turn(Direction.RIGHT);
         return rffDirection;
-    }
-
-    @Override
-    public void cycleRFFDirection() {
-        getAndCycleRFFDirection();
     }
 
     @Override
@@ -439,7 +428,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public void turnTanks() {
-        turnTanks = true;
+        turnTanks ^= true;
     }
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
@@ -463,7 +452,7 @@ public class LynxLevel extends LynxSavestate implements Level {
         this.brownButtons = brownButtons;
         this.blueButtons = blueButtons;
         this.rngSeed = rngSeed;
-        this.rffDirection = INITIAL_SLIDE;
+        this.rffDirection = INITIAL_SLIDE.turn(TURN_LEFT); //Yup, easier to rotate left here than have every other section rotate right
         this.step = step;
         this.cheats = new Cheats(this);
         this.LEVELSET_LENGTH = levelsetLength;

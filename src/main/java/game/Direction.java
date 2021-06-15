@@ -16,6 +16,8 @@ public enum Direction {
 
     public static final Direction TURN_LEFT = LEFT, TURN_RIGHT = RIGHT,
         TURN_AROUND = DOWN, TURN_FORWARD = UP;
+
+    public static final Direction[] CARDINALS = new Direction[] {UP, LEFT, DOWN, RIGHT};
     
     private static final Direction[] allDirections = Direction.values();
     public static Direction fromOrdinal(int ordinal){

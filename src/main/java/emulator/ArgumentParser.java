@@ -58,7 +58,7 @@ final class ArgumentParser {
                                 continue;
                             }
                             catch (IllegalArgumentException e) {
-                                enumError(Step.class, stepLong+"/"+stepShort, s +" "+ stepString);
+                                enumError(Arrays.toString(Step.values()), stepLong+"/"+stepShort, s +" "+ stepString);
                             }
                         case rffLong:
                         case rffShort:
@@ -68,7 +68,7 @@ final class ArgumentParser {
                                 continue;
                             }
                             catch (IllegalArgumentException e) {
-                                enumError(Direction.class, rffLong+"/"+rffShort, s +" "+ rffString);
+                                enumError(Arrays.toString(Direction.CARDINALS), rffLong+"/"+rffShort, s +" "+ rffString);
                             }
                         case rulesLong:
                         case rulesShort:
@@ -78,7 +78,7 @@ final class ArgumentParser {
                                 continue;
                             }
                             catch (IllegalArgumentException e) {
-                                enumError(Ruleset.class, rulesLong+"/"+rulesShort, s +" "+ rulesString);
+                                enumError(Arrays.toString(Ruleset.PLAYABLES), rulesLong+"/"+rulesShort, s +" "+ rulesString);
                             }
                         case rngLong:
                         case rngShort:
@@ -117,9 +117,9 @@ final class ArgumentParser {
         }
     }
 
-    private static void enumError(Class<? extends Enum> c, String flag, String arg) throws IllegalArgumentException {
+    private static void enumError(String values, String flag, String arg) throws IllegalArgumentException {
         System.err.println("The " + flag + " flag MUST be followed by one of the following: " +
-                Arrays.toString(c.getEnumConstants()));
+                values);
         throw new IllegalArgumentException(arg);
     }
 
@@ -129,8 +129,7 @@ final class ArgumentParser {
     }
 
     private static void help() {
-        //exclude CURRENT
-        String croppedRulesets = Arrays.toString(Arrays.copyOfRange(Ruleset.values(), 1, Ruleset.values().length));
+        //exclude CURRENT and the non cardinal directions
         System.out.println(
                 "usage: SuperCC.jar [-h] [LEVELSET [-lr N] [-s STEP] [-f DIR] [-m RULE] [TWS [--testtws]]]\n"+
                         "-h        Display this help and exit.\n"+
@@ -144,8 +143,8 @@ final class ArgumentParser {
                         "--testtws Perform a unit test on the given TWS file with the given levelset.\n\n" +
 
                         "STEP must be one of: " + Arrays.toString(Step.values()) + ".\n" +
-                        "DIR must be one of:  " + Arrays.toString(Direction.values()) + ".\n" +
-                        "RULE must be one of: " + croppedRulesets + ".\n\n" +
+                        "DIR must be one of:  " + Arrays.toString(Direction.CARDINALS) + ".\n" +
+                        "RULE must be one of: " + Arrays.toString(Ruleset.PLAYABLES) + ".\n\n" +
 
                         "Each flag has an alternate form of: [-h/--help/-?], [-l/--level], [-r/--rng],\n" +
                         "[-s/--step], [-f/--rff], [-m/--rules].");

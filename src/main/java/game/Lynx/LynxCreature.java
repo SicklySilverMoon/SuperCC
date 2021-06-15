@@ -315,9 +315,9 @@ public class LynxCreature extends Creature {
                 return LEFT;
             case FF_RANDOM:
                 if (advanceRFF)
-                    return level.getAndCycleRFFDirection();
+                    return level.getRFFDirection(true);
                 else
-                    return level.getRFFDirection();
+                    return level.getRFFDirection(false);
             case ICE_SLIDE_SOUTHEAST:
                 if (direction == UP) return RIGHT;
                 else if (direction == LEFT) return DOWN;
@@ -373,7 +373,7 @@ public class LynxCreature extends Creature {
             if (creatureType != CreatureID.CHIP)
                 level.getMonsterList().adjustClaim(position, false);
             creatureType = DEAD;
-            animationTimer = ((level.getTickNumber() + level.getStep().ordinal()) & 1) == 0 ? 11 : 10; //basically copied out of TW's source
+            animationTimer = ((level.getTickNumber() + level.getStep().ordinal()) & 1) == 0 ? 12 : 11; //basically copied out of TW's source
             timeTraveled = 0;
             switch (level.getLayerFG().get(position)) { //direction is used for determining which graphic to draw
                 case WATER, DIRT -> direction = UP;
@@ -488,6 +488,10 @@ public class LynxCreature extends Creature {
             case THIN_WALL_DOWN: return direction != DOWN;
             case THIN_WALL_LEFT: return direction != LEFT;
             case THIN_WALL_DOWN_RIGHT: return direction != DOWN && direction != RIGHT;
+            case ICE_SLIDE_SOUTHEAST: return direction != UP && direction != LEFT;
+            case ICE_SLIDE_SOUTHWEST: return direction != UP && direction != RIGHT;
+            case ICE_SLIDE_NORTHWEST: return direction != DOWN && direction != RIGHT;
+            case ICE_SLIDE_NORTHEAST: return direction != DOWN && direction != LEFT;
             case CLONE_MACHINE:
             case TRAP: return releasing;
         }

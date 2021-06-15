@@ -8,6 +8,8 @@ public enum Ruleset { //For the love of god do not use this outside of solution/
 
     public final int ticksPerMove;
 
+    public static final Ruleset[] PLAYABLES = new Ruleset[] {MS, LYNX};
+
     Ruleset(int ticksPerMove) {
         this.ticksPerMove = ticksPerMove;
     }

@@ -271,19 +271,12 @@ public class MSLevel extends MSSavestate implements Level {
         return Direction.UP; //unused in MS, return the "default" value
     }
     @Override
-    public Direction getAndCycleRFFDirection() {
-        return Direction.fromOrdinal(rng.random4());
-    }
-    @Override
-    public Direction getRFFDirection() {
+    public Direction getRFFDirection(boolean advance) {
         int rngValue = rng.getCurrentValue();
         Direction slideDir = Direction.fromOrdinal(rng.random4());
-        rng.setCurrentValue(rngValue);
+        if (!advance)
+            rng.setCurrentValue(rngValue);
         return slideDir;
-    }
-    @Override
-    public void cycleRFFDirection() {
-        rng.random4();
     }
     /**
      * @param position the last clicked position.
