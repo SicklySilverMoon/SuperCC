@@ -28,7 +28,7 @@ public class LynxCreatureList extends CreatureList {
     @Override
     public void initialise() {
         teethStep = ((level.getTickNumber()-1 + level.getStep().ordinal()) & 4) == 0;
-
+        chipToCr = null;
         newClones.clear();
     }
 
@@ -111,8 +111,7 @@ public class LynxCreatureList extends CreatureList {
                 //Actual movement should be done here
                 Creature creature = list[i];
                 if (creature.getCreatureType() == CHIP || level.getLayerFG().get(creature.getPosition()) == Tile.CLONE_MACHINE
-                        || creature.getCreatureType() == DEAD
-                        || (creature.getCreatureType() == TEETH && !teethStep && creature.getTimeTraveled() == 0))
+                        || creature.getCreatureType() == DEAD)
                     continue;
 
                 creature.tick(false);
@@ -199,9 +198,9 @@ public class LynxCreatureList extends CreatureList {
             newClones.add(clone);
         }
 
-        if (!clone.tick(true)) { //todo: might want to check how TW uses the releasing flag
-            clone.kill();
-            clone.kill(); //kill creature and anim
+        if (!creature.tick(true)) {
+            creature.kill();
+            creature.kill(); //kill creature and anim
         }
     }
 
@@ -212,7 +211,7 @@ public class LynxCreatureList extends CreatureList {
         Creature creature = creatureAt(position, true);
         if (creature == null || creature.getDirection() == Direction.NONE)
             return;
-        creature.tick(true); //todo: releasing flag again
+        creature.tick(true);
     }
 
     private void teleportCreature(Creature creature) {

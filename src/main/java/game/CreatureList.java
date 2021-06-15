@@ -16,6 +16,7 @@ public abstract class CreatureList implements Iterable<Creature> {
     protected Creature[] list;
     protected List<Creature> newClones;
     protected boolean teethStep;
+    protected Creature chipToCr; //not used for MS but eh
 
     public CreatureList(Creature[] monsters) {
         list = monsters;
@@ -53,8 +54,20 @@ public abstract class CreatureList implements Iterable<Creature> {
         return -1;
     }
 
+    public boolean getTeethStep() {
+        return teethStep;
+    }
+
     public List<Creature> getNewClones() {
         return newClones;
+    }
+
+    public Creature getChipToCr() {
+        return chipToCr;
+    }
+
+    public void setChipToCr(Creature cr) {
+        chipToCr = cr;
     }
 
     public void setCreatures(Creature[] creatures, Layer layerFG) {

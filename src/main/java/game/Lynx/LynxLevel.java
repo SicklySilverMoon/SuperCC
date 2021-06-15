@@ -366,7 +366,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         if (direction.isDiagonal()) {
             Direction chipDir = chip.getDirection();
-            if (direction.isComponent(chipDir)) { //todo: these should set the blocks to be moved when their turn comes, not push them instantly
+            if (direction.isComponent(chipDir)) {
                 boolean canMoveMain = chip.canMakeMove(chipDir, chipPos.move(chipDir), false, true, false, false);
                 Direction other = direction.decompose()[0] == chipDir ? direction.decompose()[1] : direction.decompose()[0];
                 boolean canMoveOther = chip.canMakeMove(other, chipPos.move(other), false, true, false, false);

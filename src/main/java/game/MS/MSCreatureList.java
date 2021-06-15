@@ -12,6 +12,7 @@ public class MSCreatureList extends game.CreatureList {
     public void initialise() {
         newClones.clear();
         numDeadMonsters = 0;
+        chipToCr = null;
         teethStep = (level.getStep().isEven()) != (level.getTickNumber() % 4 == 2);
     }
 

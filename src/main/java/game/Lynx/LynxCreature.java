@@ -18,8 +18,8 @@ import static game.Tile.*;
  */
 public class LynxCreature extends Creature {
 
-    private int timeTraveled;
-    private int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
+    protected int timeTraveled;
+    protected int animationTimer; //Exists primarily for death effect and Chip in exit timing, but adds future ability to implement actual animations
     protected boolean overrideToken;
 
     @Override
@@ -59,7 +59,7 @@ public class LynxCreature extends Creature {
                 tdir = this.tDirection;
                 this.tDirection = this.direction;
             } else if (tDirection == NONE && fDirection == NONE)
-                return true;
+                return false;
             //equiv. to TW's startmovement
             if (tDirection != NONE)
                 direction = tDirection;
@@ -78,7 +78,7 @@ public class LynxCreature extends Creature {
             Position to = position.move(direction);
 
             Tile tileFrom = level.getLayerFG().get(from);
-            if (creatureType == CreatureID.CHIP) { //todo: make this actually work please
+            if (creatureType == CreatureID.CHIP) {
                 if (level.getBoots()[3] == 0) {
                     if (tileFrom.isFF() && tDirection == NONE)
                         overrideToken = true;
@@ -103,7 +103,12 @@ public class LynxCreature extends Creature {
                 //this is a semi-hacky implimentation of TW's chiptocr() and chiptopos()
                 Creature chip = level.getChip();
                 if (creatureType != CreatureID.BLOCK && position.equals(chip.getPosition().move(chip.getTDirection())))
-                    level.getChip().kill();
+                    level.getMonsterList().setChipToCr(this);
+            }
+            else if (level.getMonsterList().getChipToCr() != null) {
+                kill();
+                level.getMonsterList().getChipToCr().kill();
+                return false;
             }
 
             position = to;
@@ -290,6 +295,8 @@ public class LynxCreature extends Creature {
             case GLIDER:
                 return direction.turn(new Direction[] {TURN_FORWARD, TURN_LEFT, TURN_RIGHT, TURN_AROUND});
             case TEETH:
+                if (!level.getMonsterList().getTeethStep())
+                    return new Direction[] {NONE};
                 return position.seek(chip.getPosition());
             case WALKER:
                 return new Direction[] {direction, WALKER_TURN};
@@ -343,6 +350,10 @@ public class LynxCreature extends Creature {
     @Override
     public boolean getForcedMove(Tile tile) {
         fDirection = NONE;
+
+        if (level.getTickNumber() == 1)
+            return false;
+
         if (tile.isSliding()) { //replication of TW's getforcedmove(), todo: check how TW uses and sets the teleport flag
             Direction slideDir = getSlideDirection(direction, tile, null, true);
             if (tile.isIce()) {

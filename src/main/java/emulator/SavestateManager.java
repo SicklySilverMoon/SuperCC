@@ -10,6 +10,7 @@ import util.TreeNode;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
@@ -41,6 +42,7 @@ public class SavestateManager implements Serializable {
     };
     public static final int NUM_SPEEDS = waitTimes.length;
     
+    @Serial
     private static final long serialVersionUID = -3232323211211410511L;
     private static final int VERSION_V0 = 0;
 
@@ -52,6 +54,7 @@ public class SavestateManager implements Serializable {
         currentNode = node;
     }
 
+    @Serial
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
         stream.write(VERSION_V0);
         stream.writeObject(savestates);
@@ -92,6 +95,7 @@ public class SavestateManager implements Serializable {
             playbackIndex = currentNode.depth();
             playbackNodes = new ArrayList<>(playbackIndex * 2);
             playbackNodes.addAll(currentNode.getHistory());
+            emulator.repaint(true);
             System.out.println("Current node depth: " + currentNode.depth());
         }
     }
