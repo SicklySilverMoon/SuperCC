@@ -91,6 +91,7 @@ public class LevelFactory {
                 creatures.add(new LynxCreature(new Position(index), tile));
 
                 layerFG.set(index, layerBG.get(index)); //Lynx doesn't have a lowerImage layer, so every creature's tile needs to be popped
+                layerBG.set(index, Tile.FLOOR);
             }
             index++;
         }

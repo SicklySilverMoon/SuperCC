@@ -80,6 +80,7 @@ public class LynxCreatureList extends CreatureList {
                 }
 
                 Direction[] moves = creature.getDirectionPriority(chip, level.getRNG());
+                boolean canMove = false;
                 for (Direction dir : moves) {
                     if (dir == Direction.NONE)
                         break;
@@ -97,10 +98,13 @@ public class LynxCreatureList extends CreatureList {
                     Position crPos = creature.getPosition();
                     Position newPos = crPos.move(dir);
                     creature.setTDirection(dir);
-                    boolean canMove = creature.canMakeMove(dir, newPos, true, false, false, false);
-                    if (canMove)
+                    if (creature.canMakeMove(dir, newPos, true, false, false, false)) {
+                        canMove = true;
                         break;
+                    }
                 }
+                if (!canMove && creature.getCreatureType() == TEETH)
+                    creature.setTDirection(moves[0]); //emulation of TW's pdir as teeth were the only thing that used it
             }
             phase = 1;
             return;
