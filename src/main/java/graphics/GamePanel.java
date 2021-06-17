@@ -203,7 +203,7 @@ public abstract class GamePanel extends JPanel
                     open.addActionListener((e) -> cheats.setTrap(position, true));
                     add(open);
                     JMenuItem close = new JMenuItem("Close Trap");
-                    close.addActionListener((e) -> cheats.setTrap(position, true));
+                    close.addActionListener((e) -> cheats.setTrap(position, false));
                     add(close);
                 }
 
@@ -296,40 +296,48 @@ public abstract class GamePanel extends JPanel
     public void mouseClicked(MouseEvent e) {}
     public void mousePressed(MouseEvent e) {}
     private void leftClick(GameGraphicPosition clickPosition) {
-        if (!emulator.getLevel().supportsClick()) return;
-        MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //Relies on MS code, might want to refactor that
-        if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
-            char c = clickPosition.clickChar(chip.getPosition());
-            if (c == UNCLICKABLE) return;
-            emulator.showAction("Clicked " + clickPosition);
-            emulator.getLevel().setClick(clickPosition.getIndex());
-            Direction[] directions = chip.seek(clickPosition);
-            emulator.tick(c, directions, TickFlags.GAME_PLAY);
+        if(emulator.isLevelLoaded()) {
+            if (!emulator.getLevel().supportsClick()) return;
+            MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //Relies on MS code, might want to refactor that
+            if (!emulator.getLevel().getChip().isDead() && !SuperCC.areToolsRunning()) {
+                char c = clickPosition.clickChar(chip.getPosition());
+                if (c == UNCLICKABLE) return;
+                emulator.showAction("Clicked " + clickPosition);
+                emulator.getLevel().setClick(clickPosition.getIndex());
+                Direction[] directions = chip.seek(clickPosition);
+                emulator.tick(c, directions, TickFlags.GAME_PLAY);
+            }
         }
     }
     private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
-        GamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
-        popupMenu.show(e.getComponent(), e.getX(), e.getY());
+        if(emulator.isLevelLoaded()) {
+            GamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
+            popupMenu.show(e.getComponent(), e.getX(), e.getY());
+        }
     }
     public void mouseReleased(MouseEvent e) {
-        GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
-        if (e.isPopupTrigger()) rightClick(clickPosition, e);
-        else leftClick(clickPosition);
+        if(emulator.isLevelLoaded()) {
+            GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
+            if (e.isPopupTrigger()) rightClick(clickPosition, e);
+            else leftClick(clickPosition);
+        }
     }
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {
-        GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
-        Tile bgTile = null;
-        Tile fgTile;
-        if (emulator.getLevel().supportsLayerBG()) bgTile = emulator.getLevel().getLayerBG().get(pos);
+        if(emulator.isLevelLoaded()) {
+            GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
+            Tile bgTile = null;
+            Tile fgTile;
+            if (emulator.getLevel().supportsLayerBG()) bgTile = emulator.getLevel().getLayerBG().get(pos);
             fgTile = emulator.getLevel().getLayerFG().get(pos);
-        String str = pos.toString() + " " + fgTile;
-        if (emulator.getLevel().supportsLayerBG()) {
-            if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+            String str = pos.toString() + " " + fgTile;
+            if (emulator.getLevel().supportsLayerBG()) {
+                if (bgTile != Tile.FLOOR) str += " / " + bgTile;
+            }
+            emulator.showAction(str);
         }
-        emulator.showAction(str);
     }
     
 }
