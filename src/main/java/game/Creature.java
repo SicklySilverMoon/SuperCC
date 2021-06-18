@@ -9,7 +9,7 @@ public abstract class Creature {
     protected Direction direction;
     protected Direction tDirection = Direction.NONE;
     protected Direction fDirection = Direction.NONE;
-    protected boolean sliding;
+    protected boolean sliding, teleportFlag;
     protected Direction nextMoveDirectionCheat = null;
 
     public Direction getDirection() {
@@ -34,6 +34,14 @@ public abstract class Creature {
 
     public void setFDirection(Direction fDirection) {
         this.fDirection = fDirection;
+    }
+
+    public boolean getTeleportFlag() {
+        return teleportFlag;
+    }
+
+    public void setTeleportFlag(boolean teleportFlag) {
+        this.teleportFlag = teleportFlag;
     }
 
     public void setNextMoveDirectionCheat(Direction nextMoveDirectionCheat) {

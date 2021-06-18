@@ -117,6 +117,7 @@ class SuperCCTest {
     void solveCHIPSLynx() {
         emulator.openLevelset(new File("testData/sets/CHIPS-lynx.DAT"));
         boolean[] solved = solveLevelset("testData/tws/public_CHIPS-lynx.dac.tws");
+        solved[144] = true; //"Thanks to...", not playable in Lynx, so we give it a free pass
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);

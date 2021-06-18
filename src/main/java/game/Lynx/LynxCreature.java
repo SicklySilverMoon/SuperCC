@@ -13,8 +13,8 @@ import static game.Tile.*;
 /**
  * Lynx creatures are encoded as follows:
  *
- *      0    |    0    |  0 0 0 0  |    0 0 0    |  0 0 0 0  | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
- *  OVERRIDE | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
+ *      0    |     0    |    0    |  0 0 0 0  |    0 0 0    |  0 0 0 0  | 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
+ *  TELEPORT | OVERRIDE | SLIDING | ANIMATION | TIME TRAVEL | DIRECTION | MONSTER |    ROW    |    COL    |
  */
 public class LynxCreature extends Creature {
 
@@ -118,10 +118,12 @@ public class LynxCreature extends Creature {
             timeTraveled = 8;
             if (creatureType != CreatureID.CHIP && level.getChip().getPosition().equals(position)) {
                 level.getChip().kill();
+                kill();
                 return false;
             }
             else if (creatureType == CreatureID.CHIP && level.getMonsterList().creatureAt(position, false) != null) {
                 kill();
+                level.getMonsterList().creatureAt(position, false).kill();
                 return false;
             }
         }
@@ -355,23 +357,23 @@ public class LynxCreature extends Creature {
             return false;
 
         if (tile.isSliding()) { //replication of TW's getforcedmove(), todo: check how TW uses and sets the teleport flag
-            Direction slideDir = getSlideDirection(direction, tile, null, true);
             if (tile.isIce()) {
                 if (direction == Direction.NONE)
                     return false;
                 if (creatureType == CreatureID.CHIP && level.getBoots()[2] != 0)
                     return false;
-                fDirection = slideDir;
+                fDirection = direction;
                 return true;
             }
             else if (tile.isFF()) {
                 if (creatureType == CreatureID.CHIP && level.getBoots()[3] != 0)
                     return false;
-                fDirection = slideDir;
+                fDirection = getSlideDirection(direction, tile, null, true);;
                 return !overrideToken;
             }
-            else if (tile == Tile.TELEPORT) { //please find how the CS_TELEPORTED flag works in TW
-                fDirection = slideDir;
+            else if (teleportFlag) { //please find how the CS_TELEPORTED flag works in TW
+                teleportFlag = false;
+                fDirection = direction;
                 return true;
             }
         }
@@ -520,7 +522,7 @@ public class LynxCreature extends Creature {
 
     @Override
     public int bits() {
-        return ((overrideToken ? 1 : 0) << 25) | ((sliding ? 1 : 0) << 24) | (animationTimer << 21) | (timeTraveled << 18)
+        return ((teleportFlag ? 1 : 0) << 26) | ((overrideToken ? 1 : 0) << 25) | ((sliding ? 1 : 0) << 24) | (animationTimer << 21) | (timeTraveled << 18)
                 | (direction.getBits() << 14) | creatureType.getBits() | position.getIndex();
     }
 

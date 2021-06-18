@@ -185,7 +185,7 @@ public class LynxCreatureList extends CreatureList {
 
         //equivalent to TW's newcreature
         Creature clone = null;
-        for (int i = 0; i < list.length; i++) {
+        for (int i = 1; i < list.length; i++) {
             Creature c = list[i];
             if (c.isDead() && c.getAnimationTimer() == 0) {
                 clone = creature.clone();
@@ -193,18 +193,22 @@ public class LynxCreatureList extends CreatureList {
                 break;
             }
         }
-        if (list.length + newClones.size() >= 2048) { //MAX_CREATURES in TW
+        if (clone == null && list.length + newClones.size() >= 2048) { //MAX_CREATURES in TW
             creature.tick(true);
             return;
         }
+        boolean newClone = false;
         if (clone == null) {
             clone = creature.clone();
             newClones.add(clone);
+            newClone = true;
         }
 
         if (!creature.tick(true)) {
-            creature.kill();
-            creature.kill(); //kill creature and anim
+            if (newClone)
+                newClones.remove(clone);
+            clone.kill();
+            clone.kill(); //kill creature and anim
         }
     }
 
@@ -257,7 +261,7 @@ public class LynxCreatureList extends CreatureList {
 
         if (creature.getCreatureType() != CHIP)
             adjustClaim(creature.getPosition(), true);
-        //TW sets cr->state |= CS_TELEPORTED, might be important
+        creature.setTeleportFlag(true);
         return;
     }
 
