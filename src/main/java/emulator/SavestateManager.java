@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class SavestateManager implements Serializable {
 
@@ -24,9 +25,9 @@ public class SavestateManager implements Serializable {
     private transient SuperCC emulator;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 0;
-    private transient ArrayList<TreeNode<byte[]>> undesirableSavestates = new ArrayList<>();
     private transient boolean[] recordingCheckpoints = new boolean[10];
     private transient int[] checkpointStartIndex = new int[10];
+    private transient byte[] levelTitle;
 
     private transient boolean pause = true;
     private static final int STANDARD_WAIT_TIME = 100;              // 100 ms means 10 half-ticks per second.
@@ -50,6 +51,17 @@ public class SavestateManager implements Serializable {
         playbackWaitTime = waitTimes[i];
     }
 
+    public int getPlaybackSpeed() {
+        return IntStream.range(0, waitTimes.length)
+                .filter(i -> waitTimes[i] == playbackWaitTime)
+                .findFirst()
+                .orElse(-1);
+    }
+
+    public byte[] getLevelTitle() {
+        return levelTitle;
+    }
+
     public void setNode(TreeNode<byte[]> node) {
         currentNode = node;
     }
@@ -63,11 +75,13 @@ public class SavestateManager implements Serializable {
             stream.write(i);
             stream.writeObject(savestateMoves.get(i).toArray());
         }
-        stream.writeObject(currentNode);
-        stream.writeObject(moves.toArray());
         stream.write(checkpoints.length);
         for (CharList checkpoint : checkpoints) {
             stream.writeObject(checkpoint.toArray());
+        }
+        stream.write(levelTitle.length);
+        for(byte b : levelTitle) {
+            stream.write(b);
         }
     }
 
@@ -81,22 +95,16 @@ public class SavestateManager implements Serializable {
             for (int i=0; i < movesLength; i++) {
                 savestateMoves.put(stream.read(), (new CharList((char[]) stream.readObject())));
             }
-            currentNode = (TreeNode<byte[]>) stream.readObject();
-            moves = new CharList((char[]) stream.readObject());
             int checkpointLength = stream.read();
             checkpoints = new CharList[checkpointLength];
             for (int i=0; i < checkpointLength; i++) {
                 checkpoints[i] = new CharList((char[]) stream.readObject());
             }
-
-            undesirableSavestates = new ArrayList<>();
-            pause = false;
-            playbackWaitTime = STANDARD_WAIT_TIME;
-            playbackIndex = currentNode.depth();
-            playbackNodes = new ArrayList<>(playbackIndex * 2);
-            playbackNodes.addAll(currentNode.getHistory());
-            emulator.repaint(true);
-            System.out.println("Current node depth: " + currentNode.depth());
+            int levelTitleLength = stream.read();
+            levelTitle = new byte[levelTitleLength];
+            for(int i = 0; i < levelTitleLength; i++) {
+                levelTitle[i] = (byte) stream.read();
+            }
         }
     }
 
@@ -219,10 +227,6 @@ public class SavestateManager implements Serializable {
         savestateMoves.put(key, moves.clone());
     }
 
-    void addUndesirableSavestate(){
-        undesirableSavestates.add(currentNode); //Marks a level state as undesired so it can be checked for and alerted
-    }
-
     boolean checkpointRecorder(int key) {
         if (!recordingCheckpoints[key]) {
             checkpointStartIndex[key] = playbackIndex; //Store the current position in the move array so we can come back to it later
@@ -255,21 +259,22 @@ public class SavestateManager implements Serializable {
     public List<TreeNode<byte[]>> getPlaybackNodes() {
         return playbackNodes;
     }
+
+    public void setPlaybackNodes(TreeNode<byte[]> node) {
+        this.playbackNodes = new ArrayList<>();
+        this.playbackNodes.addAll(node.getHistory());
+    }
     
     public int getPlaybackIndex() {
         return playbackIndex;
     }
+
+    public void setPlaybackIndex(int index) {
+        this.playbackIndex = index;
+    }
     
     public byte[] getSavestate(){
         return currentNode.getData();
-    }
-
-    boolean isUndesirableSavestate() {
-        for (TreeNode<byte[]> node : undesirableSavestates) {
-            byte[] savedState = node.getData();
-            if (Arrays.equals(savedState, currentNode.getData())) return true;
-        }
-        return false;
     }
     
     public byte[] getStartingState() {
@@ -288,6 +293,10 @@ public class SavestateManager implements Serializable {
         return moves;
     }
 
+    public void setMoves(CharList moves) {
+        this.moves = moves;
+    }
+
     public CharList getCheckpoint(int key) {
         return checkpoints[key];
     }
@@ -302,6 +311,7 @@ public class SavestateManager implements Serializable {
     
     SavestateManager(SuperCC emulator, Level level){
         this.emulator = emulator;
+        levelTitle = level.getTitle();
 //        emulator.savestateCompressor.initialise();
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
@@ -317,6 +327,8 @@ public class SavestateManager implements Serializable {
 
     public void setEmulator(SuperCC emulator) {
         this.emulator = emulator;
+        levelTitle = emulator.getLevel().getTitle();
+        emulator.repaint(true);
 //        emulator.savestateCompressor.initialise();
         /* Yes having this here does make the method do more than its name implies, however seeing as the only reason
         emulator is used is in order to have access to the compressor, and whenever emulator is changed it means that

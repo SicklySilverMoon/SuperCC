@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
@@ -321,8 +322,19 @@ class MenuBar extends JMenuBar{
                     if (fileBytes != null) {
                         ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
                         SavestateManager savestates = (SavestateManager) new ObjectInputStream(bis).readObject();
-                        savestates.setEmulator(emulator);
-                        emulator.setSavestates(savestates);
+                        if(Arrays.equals(emulator.getLevel().getTitle(), savestates.getLevelTitle())) {
+                            savestates.setEmulator(emulator);
+                            savestates.setNode(emulator.getSavestates().getNode());
+                            savestates.setMoves(emulator.getSavestates().getMoveList().clone());
+                            savestates.setPlaybackIndex(emulator.getSavestates().getPlaybackIndex());
+                            savestates.setPlaybackNodes(emulator.getSavestates().getNode());
+                            savestates.setPlaybackSpeed(emulator.getSavestates().getPlaybackSpeed());
+                            emulator.setSavestates(savestates);
+                        }
+                        else {
+                            String levelString = new String(savestates.getLevelTitle());
+                            emulator.throwMessage("Cannot load savestates for level " + levelString + " into current level.");
+                        }
                     }
                 }
                 catch (IOException | ClassNotFoundException e) {
@@ -375,11 +387,6 @@ class MenuBar extends JMenuBar{
             });
             add(loadSolution);
             addIcon(loadSolution, "/resources/icons/skip.gif");
-
-            JMenuItem saveSolution = new JMenuItem("Save solution");
-            saveSolution.setEnabled(false);
-            add(saveSolution);
-            addIcon(saveSolution, "/resources/icons/save.gif");
 
             JMenuItem verify = new JMenuItem("Verify tws");
             verify.addActionListener(e -> new VerifyTWS(emulator));

@@ -52,10 +52,6 @@ public class EmulatorKeyListener extends KeyAdapter {
                     if (recording) emulator.showAction("Started Checkpoint Record");
                     else emulator.showAction("Finished Checkpoint Record");
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SLASH) { //Hardcoded value for the '/' key, should switch this to a proper keybind
-                    emulator.getSavestates().addUndesirableSavestate();
-                    emulator.showAction("Undesirable State saved");
-                }
                 else {
                     if (!e.isControlDown()) { //Just so you can't accidentally save a state into these
                         emulator.getSavestates().addSavestate(keyCode);

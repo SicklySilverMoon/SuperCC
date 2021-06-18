@@ -135,7 +135,7 @@ public class SuperCC {
             paths = new SuccPaths(f);
         }
         catch (IOException e){
-            throwError("Could not find settings.ini file, creating"); //If it can't find the settings file make it with some defaults
+            throwMessage("Could not find settings.ini file, creating"); //If it can't find the settings file make it with some defaults
                 SuccPaths.createSettingsFile();
                 //Now that the settings file exists we can call this again safely
                 File f = new File("settings.ini");
@@ -205,10 +205,6 @@ public class SuperCC {
         }
         if (flags.repaint) window.repaint(false);
 
-        if (savestates.isUndesirableSavestate()) { //As far as I'm aware the way the actual method is setup its only possible to encounter this during gameplay, which is what we want
-            throwMessage("Undesirable State Reached"); //Just a little pop up window that tells the user that they reached a prior marked undesirable state
-        }
-
         return tickMulti;
     }
     
@@ -231,6 +227,10 @@ public class SuperCC {
             }
         }
         return false;
+    }
+
+    public boolean isLevelLoaded() {
+        return level != null;
     }
 
     public static boolean isClick(char c){
