@@ -56,6 +56,12 @@ public class SmallGamePanel extends GamePanel {
         return screenTopLeft.getX() <= p.getX() && p.getX() < screenBottomRight.getX()
             && screenTopLeft.getY() <= p.getY() && p.getY() < screenBottomRight.getY();
     }
+
+    //onScreen but with one more tile per edge, useful for things like Lynx which can have monsters between tiles
+    private boolean onScreenExtended(Position p) {
+        return screenTopLeft.getX() - 1 <= p.getX() && p.getX() < screenBottomRight.getX() + 1
+                && screenTopLeft.getY() - 1 <= p.getY() && p.getY() < screenBottomRight.getY() + 1;
+    }
     
     @Override
     void updateGraphics(boolean fromScratch) {
@@ -161,42 +167,25 @@ public class SmallGamePanel extends GamePanel {
         for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
             if (creature.isDead() && creature.getAnimationTimer() == 0)
                 continue;
+            if (!onScreenExtended(creature.getPosition()))
+                continue;
 
-            int x = tileWidth * creature.getPosition().x;
-            int y = tileHeight * creature.getPosition().y;
-            final int vPixelsBetweenTiles = tileHeight / 8;//Lynx has values between 0 and 7 for this, and i don't want to extend level for something so trivial, so I just hardcode it here for now
-            final int hPixelsBetweenTiles = tileWidth / 8;
+            int x = (creature.getPosition().x - screenTopLeft.getX()) * tileWidth;
+            int y = (creature.getPosition().y - screenTopLeft.getY()) * tileHeight;
+
             switch (creature.getDirection()) {
-                case UP:
-                    y += vPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
-                case LEFT:
-                    x += hPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
-                case DOWN:
-                    y -= vPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
-                case RIGHT:
-                    x -= hPixelsBetweenTiles * creature.getTimeTraveled();
-                    break;
+                case UP -> y += vBetweenTiles * creature.getTimeTraveled();
+                case LEFT -> x += hBetweenTiles * creature.getTimeTraveled();
+                case DOWN -> y -= vBetweenTiles * creature.getTimeTraveled();
+                case RIGHT -> x -= hBetweenTiles * creature.getTimeTraveled();
             }
-            Image creatureImage;
-            switch (creature.getCreatureType()) { //creatureImages is laid out the same way as the creatures in the tilesheet
-                default:
-                    creatureImage = creatureImages[creature.getCreatureType().ordinal() + 1][creature.getDirection().ordinal()];
-                    break;
-                case BLOCK:
-                    creatureImage = creatureImages[11][creature.getDirection().ordinal()];
-                    break;
-                case CHIP:
-                    creatureImage = creatureImages[10][creature.getDirection().ordinal()];
-                    break;
-                case CHIP_SWIMMING:
-                    creatureImage = creatureImages[0][creature.getDirection().ordinal()];
-                    break;
-                case DEAD:
-                    creatureImage = creatureImages[12][creature.getDirection().ordinal()];
-            }
+            Image creatureImage = switch (creature.getCreatureType()) { //creatureImages is laid out the same way as the creatures in the tilesheet
+                default -> creatureImages[creature.getCreatureType().ordinal() + 1][creature.getDirection().ordinal()];
+                case BLOCK -> creatureImages[11][creature.getDirection().ordinal()];
+                case CHIP -> creatureImages[10][creature.getDirection().ordinal()];
+                case CHIP_SWIMMING -> creatureImages[0][creature.getDirection().ordinal()];
+                case DEAD -> creatureImages[12][creature.getDirection().ordinal()];
+            };
             graphicsCreatures.drawImage(creatureImage, x, y, tileWidth, tileHeight, null);
         }
 

@@ -522,8 +522,9 @@ public class LynxCreature extends Creature {
 
     @Override
     public int bits() {
-        return ((teleportFlag ? 1 : 0) << 26) | ((overrideToken ? 1 : 0) << 25) | ((sliding ? 1 : 0) << 24) | (animationTimer << 21) | (timeTraveled << 18)
-                | (direction.getBits() << 14) | creatureType.getBits() | position.getIndex();
+        return ((teleportFlag ? 1 : 0) << 28) | ((overrideToken ? 1 : 0) << 27) | ((sliding ? 1 : 0) << 26)
+                | (animationTimer << 22) | (timeTraveled << 18) | (direction.getBits() << 14) | creatureType.getBits()
+                | position.getIndex();
     }
 
     @Override
@@ -583,9 +584,10 @@ public class LynxCreature extends Creature {
     }
 
     public LynxCreature(int bitMonster) {
-        overrideToken = ((bitMonster >>> 25) & 0b1) == 1;
-        sliding = ((bitMonster >>> 24) & 0b1) == 1;
-        animationTimer = (bitMonster >>> 21) & 0b111;
+        teleportFlag = ((bitMonster >>> 28) & 0b1) == 1;
+        overrideToken = ((bitMonster >>> 27) & 0b1) == 1;
+        sliding = ((bitMonster >>> 26) & 0b1) == 1;
+        animationTimer = (bitMonster >>> 22) & 0b1111;
         timeTraveled = (bitMonster >>> 18) & 0b111;
         direction = Direction.fromOrdinal((bitMonster >>> 14) & 0b1111);
         creatureType = CreatureID.fromOrdinal((bitMonster >>> 10) & 0b1111);

@@ -22,7 +22,7 @@ public abstract class GamePanel extends JPanel
     
     static final int CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
     protected int bgBorderSize;
-    protected int tileHeight, tileWidth;
+    protected int tileHeight, tileWidth, hBetweenTiles, vBetweenTiles;
     private TileSheet tileSheet;
 
     protected Position screenTopLeft = new Position(0, 0);
@@ -160,6 +160,8 @@ public abstract class GamePanel extends JPanel
         this.emulator = emulator;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
+        this.hBetweenTiles = tileWidth / 8;
+        this.vBetweenTiles = tileHeight / 8;
         this.tileSheet = tileSheet;
         initialiseDigits();
         initialiseTileGraphics((BufferedImage) tilespng);
