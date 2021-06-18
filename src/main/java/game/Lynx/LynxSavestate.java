@@ -18,13 +18,10 @@ public class LynxSavestate implements Savestate {
     public Direction rffDirection;
     public CreatureList monsterList;
 
-    protected BitSet traps;
     protected boolean lastMoveForced;
 
     @Override
     public byte[] save() {
-        byte[] traps = this.traps.toByteArray();
-
         int length =
                 1 +                             // version
                 1 +                             // ruleset
@@ -35,8 +32,6 @@ public class LynxSavestate implements Savestate {
                 4 * 1 +                         // boots
                 3 * 4 +                         // rng
                 1 +                             // RFF
-                2 +                             // traps length
-                traps.length +                  // traps
                 2 +                             // monsterlist size
                 monsterList.size() * 4 +        // monsterlist
                 1;                              // lastMoveForced
@@ -53,8 +48,6 @@ public class LynxSavestate implements Savestate {
         writer.writeInt(rng.getPRNG1());
         writer.writeInt(rng.getPRNG2());
         writer.write(rffDirection.ordinal());
-        writer.writeShort(traps.length);
-        writer.write(traps);
         writer.writeShort(monsterList.size());
         writer.writeIntMonsterArray(monsterList.getCreatures());
         writer.writeBool(lastMoveForced);
@@ -78,7 +71,6 @@ public class LynxSavestate implements Savestate {
             rng.setPRNG1(reader.readInt());
             rng.setPRNG2(reader.readInt());
             rffDirection = Direction.fromOrdinal(reader.read());
-            traps = BitSet.valueOf(reader.readBytes(reader.readShort()));
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG);
             lastMoveForced = reader.readBool();
 
@@ -87,7 +79,7 @@ public class LynxSavestate implements Savestate {
     }
 
     protected LynxSavestate(Layer layerFG, CreatureList monsterList, Creature chip,
-                            int chipsLeft, short[] keys, byte[] boots, RNG rng, BitSet traps){
+                            int chipsLeft, short[] keys, byte[] boots, RNG rng){
         this.layerFG = layerFG;
         this.monsterList = monsterList;
         this.chip = chip;
@@ -96,6 +88,5 @@ public class LynxSavestate implements Savestate {
         this.keys = keys;
         this.boots = boots;
         this.rng = rng;
-        this.traps = traps;
     }
 }

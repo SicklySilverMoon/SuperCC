@@ -29,11 +29,7 @@ public class Cheats {
         button.press(level);
     }
     public void setTrap(Position trapPosition, boolean open) {
-        for (int i = 0; i < level.getBrownButtons().length; i++) {
-            if (level.getBrownButtons()[i].getTargetPosition().equals(trapPosition)) {
-                level.getOpenTraps().set(i, open);
-            }
-        }
+        level.setTrap(trapPosition, open);
     }
     public void pressBlueButton() {
         new BlueButton(null).press(level);
@@ -42,10 +38,10 @@ public class Cheats {
         button.press(level);
     }
     public void pressButton(Button button) {
-        if (button instanceof GreenButton) button.press(level);
-        if (button instanceof RedButton) pressRedButton((RedButton) button);
-        if (button instanceof BrownButton) pressBrownButton((BrownButton) button);
-        if (button instanceof BlueButton) button.press(level);
+        if (button instanceof RedButton)
+            pressRedButton((RedButton) button);
+        else
+            button.press(level);
     }
     public void pressButton(Position position) {
         Button button = level.getButton(position);

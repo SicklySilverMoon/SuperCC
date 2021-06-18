@@ -239,7 +239,6 @@ public class LevelFactory {
                 getRedButtons(cloneConnections),
                 getBrownButtons(trapConnections),
                 getBlueButtons(layerFG, layerBG),
-                new BitSet(trapConnections.length),
                 layerFG,
                 creatures,
                 creatures.get(0),

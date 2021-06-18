@@ -243,8 +243,11 @@ public class MSLevel extends MSSavestate implements Level {
         return slipList;
     }
     @Override
-    public BitSet getOpenTraps(){
-        return traps;
+    public void setTrap(Position trapPos, boolean open) {
+        for (BrownButton b : brownButtons) {
+            if (b.getTargetPosition().equals(trapPos))
+                traps.set(b.getTrapIndex(), open);
+        }
     }
     @Override
     public int getLevelsetLength() {

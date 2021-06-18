@@ -9,15 +9,15 @@ public class BrownButton extends ConnectionButton {
     
     @Override
     public void press(Level level) {
-        level.getOpenTraps().set(trapIndex);
+        level.setTrap(targetPosition, true);
     }
     
-    public boolean isOpen (Level level) {
-        return level.getOpenTraps().get(trapIndex);
+    public boolean isOpen(Level level) {
+        return level.isTrapOpen(targetPosition);
     }
     
     public void release(Level level) {
-        level.getOpenTraps().set(trapIndex, false);
+        level.setTrap(targetPosition, false);
     }
     
     public int getTrapIndex() {

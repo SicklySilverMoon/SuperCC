@@ -221,8 +221,13 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public BitSet getOpenTraps() {
-        return traps;
+    public void setTrap(Position trapPos, boolean open) {
+        if (open) {
+            for (BrownButton b : brownButtons) {
+                if (b.getTargetPosition().equals(trapPos))
+                    monsterList.springTrappedCreature(b.getTargetPosition());
+            }
+        }
     }
 
     @Override
@@ -433,12 +438,12 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
                    GreenButton[] greenButtons, RedButton[] redButtons,
-                   BrownButton[] brownButtons, BlueButton[] blueButtons, BitSet traps,
+                   BrownButton[] brownButtons, BlueButton[] blueButtons,
                    Layer layerFG, CreatureList monsterList,
                    Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction INITIAL_SLIDE){
 
         super(layerFG, monsterList, chip,
-                chips, new short[4], new byte[4], rng, traps);
+                chips, new short[4], new byte[4], rng);
 
         this.levelNumber = levelNumber;
         this.startTime = time;

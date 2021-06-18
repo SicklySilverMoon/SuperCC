@@ -115,7 +115,7 @@ public interface Level extends Savestate {
 
     SlipList getSlipList();
 
-    BitSet getOpenTraps();
+    void setTrap(Position trapPos, boolean open);
 
     int getLevelsetLength();
 

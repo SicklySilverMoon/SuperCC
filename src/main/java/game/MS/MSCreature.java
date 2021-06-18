@@ -609,7 +609,7 @@ public class MSCreature extends Creature {
                 for(BrownButton button : level.getBrownButtons()) {
                     if(button.getTargetPosition().equals(newPosition)) {
                         if(msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {
-                            msLevel.getOpenTraps().set(button.getTrapIndex(), true);
+                            msLevel.traps.set(button.getTrapIndex(), true);
                         }
                         break;
                     }
