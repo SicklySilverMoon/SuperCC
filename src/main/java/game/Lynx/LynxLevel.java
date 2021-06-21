@@ -272,7 +272,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
-            if (b.getTargetPosition().equals(position) && b.isOpen(this))
+            if (b.getTargetPosition().equals(position) && monsterList.creatureAt(b.getTargetPosition(), true) != null)
                 return true;
         }
         return false;

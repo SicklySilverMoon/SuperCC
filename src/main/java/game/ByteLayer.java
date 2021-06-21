@@ -49,14 +49,14 @@ public class ByteLayer implements Layer {
     }
     
     public Iterator<Tile> iterator() {
-        return new Iterator<Tile>() {
+        return new Iterator<>() {
             private int i;
-            
+
             @Override
             public boolean hasNext() {
-                return i < 32*32;
+                return i < 32 * 32;
             }
-    
+
             @Override
             public Tile next() {
                 return get(i++);

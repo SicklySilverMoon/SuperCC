@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.ListIterator;
+import java.util.Set;
 
 public class TWSWriter{
     
@@ -35,15 +36,21 @@ public class TWSWriter{
         }
 
         try(TWSOutputStream writer = new TWSOutputStream()) {
+            final int ticksPerMove = level.getRuleset().ticksPerMove;
+
             writer.writeTWSHeader(level, solution);
             writer.writeInt(writer.solutionLength(solution));
             writer.writeLevelHeader(level, solution);
             int timeBetween = 0;
             boolean firstMove = true;
             int i = 0;
-            for (char c : solution.basicMoves) { //todo: boy you really need to make this lynx compatible
-                if (c == SuperCC.WAIT)
-                    timeBetween += 2;
+            for (char c : solution.basicMoves) {
+                if (c == SuperCC.WAIT) {
+                    if (ticksPerMove == 2)
+                        timeBetween += 2;
+                    else
+                        timeBetween += 1;
+                }
                 else {
                     int relativeClickX;
                     int relativeClickY;
@@ -55,7 +62,10 @@ public class TWSWriter{
                         twsRelativeClick = 16 + ((relativeClickY + 9) * 19) + (relativeClickX + 9);
                     }
                     writer.writeMove(c, timeBetween, firstMove, twsRelativeClick);
-                    timeBetween = 2;
+                    if (ticksPerMove == 2)
+                        timeBetween = 2;
+                    else
+                        timeBetween = 1;
                     firstMove = false;
                 }
             }
@@ -69,28 +79,37 @@ public class TWSWriter{
 
     private static class TWSOutputStream extends ByteArrayOutputStream{
 
-        private final byte UP = 3, LEFT = 7, DOWN = 11, RIGHT = 15;
+        private final byte NORTH = 0, WEST = 1, SOUTH = 2, EAST = 3,
+                NORTHWEST = -3, SOUTHWEST = -6, NORTHEAST = -9, SOUTHEAST = -12,
+                MOUSE = -1;
+        private final Set<Byte> CARDINALS = Set.of(NORTH, WEST, SOUTH, EAST);
 
-        //all key directions (u, l, d, r) use format 2 on this page http://www.muppetlabs.com/~breadbox/software/tworld/tworldff.html#3
-
+        //all cardinal directions (u, l, d, r) use format 2 on this page http://www.muppetlabs.com/~breadbox/software/tworld/tworldff.html#3
         void writeMove(char c, int time, boolean firstMove, int relativeClick) throws IOException {
-            if (!firstMove) time -= 1;
-            byte twsMoveByte;
-            boolean useFormat4 = false;
-            switch (c) {
-                case SuperCC.UP: twsMoveByte = UP; break;
-                case SuperCC.LEFT: twsMoveByte = LEFT; break;
-                case SuperCC.DOWN: twsMoveByte = DOWN; break;
-                case SuperCC.RIGHT: twsMoveByte = RIGHT; break;
-                default:
-                    twsMoveByte = 0;
-                    useFormat4 = true;
-            }
-            if (!useFormat4) { //This is all format 2 which is all SuCC supports using for key moves
+            if (!firstMove)
+                time -= 1;
+            byte twsMoveByte = switch (c) {
+                case SuperCC.UP -> NORTH;
+                case SuperCC.LEFT -> WEST;
+                case SuperCC.DOWN -> SOUTH;
+                case SuperCC.RIGHT -> EAST;
+                case SuperCC.UP_LEFT -> NORTHWEST;
+                case SuperCC.DOWN_LEFT -> SOUTHWEST;
+                case SuperCC.UP_RIGHT -> NORTHEAST;
+                case SuperCC.DOWN_RIGHT -> SOUTHEAST;
+                default -> MOUSE;
+            };
+            if (CARDINALS.contains(twsMoveByte))
                 writeFormat2(twsMoveByte, time);
-            }
             else {
-                writeFormat4(time, relativeClick);
+                if (twsMoveByte == MOUSE) { //mouse moves
+                    writeFormat4(relativeClick, time);
+                }
+                else
+                    writeFormat4(-twsMoveByte, time);
+                /* for some reason format 4 doesn't use the move type mentioned in the docs, it uses the moves as they
+                appear in TW's source, which overlap with the ones given in the docs, so we resolve that by assigning
+                them negative values and then inverting it here */
             }
         }
         void writeTWSHeader(Level level, Solution solution) throws IOException {
@@ -102,19 +121,23 @@ public class TWSWriter{
             writeInt(Arrays.hashCode(solution.basicMoves)); //sig
             write(0); //in case of further extensions
         }
-        void writeLevelHeader (Level level, Solution solution) throws IOException {
+        void writeLevelHeader(Level level, Solution solution) throws IOException {
             writeShort(level.getLevelNumber());
             byte[] password = level.getPassword();
-            for (int i = 0; i < 4; i++) write(password[i]);
+            for (int i = 0; i < 4; i++)
+                write(password[i]);
             write(0x83);                                   // Other flags
             write(solution.step.toTWS());
             writeInt(solution.rngSeed);
-            writeInt(2 * solution.basicMoves.length - 2);
+            if (level.getRuleset().ticksPerMove == 2)
+                writeInt(2 * solution.basicMoves.length - 2);
             /* minus 2 because the time value is always 2 extra for unknown reasons
             (likely tick counting differences between TW and SuCC).
             there's actually an issue here in that if Chip slides into the exit in MS Mode
             SuCC writes a time value one higher than it should be,
             this however can't be helped without introducing potential side effects */
+            else if (level.getRuleset().ticksPerMove == 4)
+                writeInt(solution.basicMoves.length);
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     
@@ -137,32 +160,33 @@ public class TWSWriter{
             return length;
         }
         void writeFormat2(byte twsMoveByte, int time) throws IOException {
-            write(twsMoveByte | (time & 0b111) << 5);
+            write(twsMoveByte << 2 | 0b11 | (time & 0b111) << 5);
             write((time >> 3) & 0xFF);
             write((time >> 11) & 0xFF);
             write(((time >> 19) & 0b00001111) | 011 << 01104);
         }
-        void writeFormat4(int time, int direction) throws IOException {
+        void writeFormat4(int direction, int time) throws IOException {
+            System.out.println(direction);
             // First byte DDD1NN11
             //int numBytes = measureTime(time);
             write(0b11011 | (direction & 0b111) << 5); //(2 << 2), the first 2 used to be the result of measureTime however as all bytes have to be 4 long its forced to being 2 now
 
             // Second byte TTDDDDDD
-            write (((time & 0b11) << 6) | ((direction & 0b11_1111_000) >> 3));
+            write(((time & 0b11) << 6) | ((direction & 0b11_1111_000) >> 3));
 
             // Third byte TTTTTTTT
             //if (numBytes > 0) {
-                write ((time & 0b1111_1111_00) >> 2);
+                write((time & 0b1111_1111_00) >> 2);
             //}
 
             // Fourth byte TTTTTTTT
             //if (numBytes > 1) {
-                write ((time & 0b1111_1111_0000_0000_00) >> 10);
+                write((time & 0b1111_1111_0000_0000_00) >> 10);
             //}
 
             // Fifth byte 000TTTTT
 //            if (numBytes > 2) {
-//                write ((time & 0b1_1111_0000_0000_0000_0000_00) >> 18);
+//                write((time & 0b1_1111_0000_0000_0000_0000_00) >> 18);
 //            }
         }
 //        int measureTime(int time) {

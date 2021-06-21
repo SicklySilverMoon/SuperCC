@@ -339,7 +339,8 @@ public class MSLevel extends MSSavestate implements Level {
     @Override
     public boolean isTrapOpen(Position position) {
         for (BrownButton b : brownButtons) {
-            if (b.getTargetPosition().equals(position) && b.isOpen(this)) return true;
+            if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex()))
+                return true;
         }
         return false;
     }

@@ -18,10 +18,11 @@ public enum Direction {
         TURN_AROUND = DOWN, TURN_FORWARD = UP;
 
     public static final Direction[] CARDINALS = new Direction[] {UP, LEFT, DOWN, RIGHT};
-    
-    private static final Direction[] allDirections = Direction.values();
+    private static final Direction[] MOVEMENTS = new Direction[] {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT,
+            DOWN_RIGHT, UP_RIGHT};
+
     public static Direction fromOrdinal(int ordinal){
-        return allDirections[ordinal];
+        return values()[ordinal];
     }
     
     private final int bits;
@@ -51,47 +52,35 @@ public enum Direction {
     public boolean isComponent(Direction comp) {
         if (!isDiagonal()) //only makes sense for diags
             return false;
-        switch (this) {
-            case UP_LEFT:
-                return comp == UP || comp == LEFT;
-            case DOWN_LEFT:
-                return comp == DOWN || comp == LEFT;
-            case DOWN_RIGHT:
-                return comp == DOWN || comp == RIGHT;
-            case UP_RIGHT:
-                return comp == UP || comp == RIGHT;
-        }
-        return false;
+        return switch (this) {
+            case UP_LEFT -> comp == UP || comp == LEFT;
+            case DOWN_LEFT -> comp == DOWN || comp == LEFT;
+            case DOWN_RIGHT -> comp == DOWN || comp == RIGHT;
+            case UP_RIGHT -> comp == UP || comp == RIGHT;
+            default -> false;
+        };
     }
 
     public Direction[] decompose() {
         if (!isDiagonal())
             return new Direction[] {this};
-        switch (this) {
-            case UP_LEFT:
-                return new Direction[] {UP, LEFT};
-            case DOWN_LEFT:
-                return new Direction[] {DOWN, LEFT};
-            case DOWN_RIGHT:
-                return new Direction[] {DOWN, RIGHT};
-            case UP_RIGHT:
-                return new Direction[] {UP, RIGHT};
-        }
-        return new Direction[] {NONE};
+        return switch (this) {
+            case UP_LEFT -> new Direction[] {UP, LEFT};
+            case DOWN_LEFT -> new Direction[] {DOWN, LEFT};
+            case DOWN_RIGHT -> new Direction[] {DOWN, RIGHT};
+            case UP_RIGHT -> new Direction[] {UP, RIGHT};
+            default -> new Direction[] {NONE};
+        };
     }
 
     public static Direction fromTWS(int n) {
         n &= 0b11;
-        switch (n) {
-            case 0b00:
-                return RIGHT;
-            case 0b01:
-                return UP;
-            case 0b10:
-                return LEFT;
-            default:
-                return DOWN;
-        }
+        return switch (n) {
+            case 0b00 -> RIGHT;
+            case 0b01 -> UP;
+            case 0b10 -> LEFT;
+            default -> DOWN;
+        };
     }
 
     Direction(int bits) {

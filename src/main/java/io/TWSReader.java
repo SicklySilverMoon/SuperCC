@@ -155,7 +155,10 @@ public class TWSReader{
             writer.write(waits);
             writer.write(DIRECTIONS[(b >>> 6) & 0b11]);
         }
-        public void readFormat4(int b, Writer writer) throws IOException{
+        public void readFormat4(int b, Writer writer) throws IOException { //format 4 DOES NOT use the format given in the docs
+            final int NORTH = 1, WEST = 2, SOUTH = 4, EAST = 8,
+                    NORTHWEST = NORTH | WEST, SOUTHWEST = SOUTH | WEST, SOUTHEAST = SOUTH | EAST,
+                    NORTHEAST = NORTH | EAST;
             int length = ((b >>> 2) & 0b11) + 2;
             counter += length;
             int b2 = readByte();
@@ -163,11 +166,20 @@ public class TWSReader{
             int time = (b2 & 0b11000000) >> 6;
             for (int i = 0; i < length - 2; i++) time |= ((readByte() & (i == 2 ? 0x1f : 0xff)) << (2 + 8*i));
             for (int i = 0; i < time; i++) writer.write('~');
-            if (d < 4){
-                char direction = DIRECTIONS[d];
+            char direction = switch (d) {
+                case NORTH -> UP;
+                case WEST -> LEFT;
+                case SOUTH -> DOWN;
+                case EAST -> RIGHT;
+                case NORTHWEST -> UP_LEFT;
+                case SOUTHWEST -> DOWN_LEFT;
+                case SOUTHEAST -> DOWN_RIGHT;
+                case NORTHEAST -> UP_RIGHT;
+                default -> Character.MAX_VALUE; //mouse moves
+            };
+            if (direction != Character.MAX_VALUE)
                 writer.write(direction);
-            }
-            else{
+            else { //mouse moves
                 d -= 16;
                 int x9 = d % 19;
                 int y9 = (d - x9) / 19;
