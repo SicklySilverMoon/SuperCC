@@ -3,6 +3,7 @@ package io;
 import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
+import game.Direction;
 import game.Level;
 import game.Position;
 import game.Ruleset;
@@ -127,7 +128,7 @@ public class TWSWriter{
             for (int i = 0; i < 4; i++)
                 write(password[i]);
             write(0x83);                                   // Other flags
-            write(solution.step.toTWS());
+            write(solution.step.toTWS() | solution.initialSlide.turn(Direction.LEFT).toTWS()); //Compensation for TW's turning of the RFF on load
             writeInt(solution.rngSeed);
             if (level.getRuleset().ticksPerMove == 2)
                 writeInt(2 * solution.basicMoves.length - 2);
@@ -137,7 +138,8 @@ public class TWSWriter{
             SuCC writes a time value one higher than it should be,
             this however can't be helped without introducing potential side effects */
             else if (level.getRuleset().ticksPerMove == 4)
-                writeInt(solution.basicMoves.length);
+                writeInt(solution.basicMoves.length - 1);
+            //solutions are always 1 extra for unknown reasons, likely TW stopping the counter early or something
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     

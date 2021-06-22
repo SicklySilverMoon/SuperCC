@@ -83,6 +83,16 @@ public enum Direction {
         };
     }
 
+    public int toTWS() {
+        return switch (this) {
+            case UP -> 0;
+            case LEFT -> 1;
+            case DOWN -> 2;
+            case RIGHT -> 3;
+            default -> 0; //failsafe
+        };
+    }
+
     Direction(int bits) {
         this.bits = bits;
     }
