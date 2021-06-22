@@ -15,7 +15,7 @@ public class SuccPaths {
     
     private void updateSettingsFile() {
         try (PrintWriter writer = new PrintWriter(settingsFile, "UTF-8")) {
-            writer.println("[Paths]"); //todo: refactor this into loops lol
+            writer.println("[Paths]");
             writer.printf("%s = %s\n", "Levelset", settingsMap.get("Paths:Levelset"));
             writer.printf("%s = %s\n", "TWS", settingsMap.get("Paths:TWS"));
             writer.printf("%s = %s\n\n", "succ", settingsMap.get("Paths:succ"));

@@ -89,7 +89,7 @@ public class LynxCreature extends Creature {
 
             boolean isChip = creatureType == CreatureID.CHIP;
             if (!canMakeMove(direction, to, !isChip, isChip, isChip, releasing)) {
-                if (level.getLayerFG().get(from).isIce()) {
+                if (level.getLayerFG().get(from).isIce() && (!isChip || level.getBoots()[2] == 0)) {
                     direction = direction.turn(TURN_AROUND);
                     this.direction = getSlideDirection(direction, level.getLayerFG().get(from), null, false);
                 }
@@ -260,7 +260,7 @@ public class LynxCreature extends Creature {
                 break;
             case EXIT:
                 if (creatureType == CreatureID.CHIP)
-                    animationTimer = 1;
+                    animationTimer = 2; //see the relevant comment in LynxLevel.java's tick() method
                 break;
             case THIEF:
                 if (creatureType == CreatureID.CHIP)
@@ -356,7 +356,7 @@ public class LynxCreature extends Creature {
         if (level.getTickNumber() == 1)
             return false;
 
-        if (tile.isSliding()) { //replication of TW's getforcedmove(), todo: check how TW uses and sets the teleport flag
+        if (tile.isSliding()) { //replication of TW's getforcedmove()
             if (tile.isIce()) {
                 if (direction == Direction.NONE)
                     return false;

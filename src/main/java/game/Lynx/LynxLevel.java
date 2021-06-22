@@ -343,16 +343,19 @@ public class LynxLevel extends LynxSavestate implements Level {
         }
 
         if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getTimeTraveled() == 0
-                && chip.getAnimationTimer() == 0) {
-            //todo: move this into the "entered tile" logic area as currently starting on the exit wins lol
+                && chip.getAnimationTimer() == 1) { //this is a hack but it ensures that starting on an exit won't win the level
             chip.kill();
             chip.kill(); //destroys the animation as well
             layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);
             setLevelWon(true);
             return false;
         }
-        return (result && !chip.isSliding() && !(chipTileOld.isSliding() || chipTileNew.isSliding()
-                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP));
+        boolean sliding = chipTileOld.isSliding() || chipTileNew.isSliding()
+                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP;
+        boolean ff = (chipTileNew.isFF() || chipTileOld.isFF()) && boots[3] == 0;
+        boolean ice = (chipTileNew.isIce() || chipTileOld.isIce()) && boots[2] == 0;
+
+        return (result && !chip.isSliding() && !(sliding && (ff || ice)));
         //traps perform forced moves but aren't counted as sliding tiles as it would fuck some logic up
     }
 
@@ -403,7 +406,6 @@ public class LynxLevel extends LynxSavestate implements Level {
         chip.setTDirection(NONE); //mirror TW clearing the dirs at the end of the monster loop
         chip.setFDirection(NONE);
 
-        //todo: this is an exact copy of the same code in the creature list because we handle chip outside the creature list, look into why we do that
         if (chip.getTimeTraveled() == 0 && layerFG.get(chip.getPosition()) == Tile.BUTTON_BROWN) {
             for (BrownButton b : brownButtons) {
                 if (b.getButtonPosition().equals(chip.getPosition())) {

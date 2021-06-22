@@ -4,13 +4,15 @@ import emulator.SavestateManager;
 import emulator.Solution;
 import emulator.SuperCC;
 import emulator.TickFlags;
-import game.*;
+import game.Direction;
+import game.Level;
+import game.Ruleset;
+import game.Step;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import tools.*;
-import util.CharList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -27,10 +29,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.function.Consumer;
 
 import static java.awt.event.KeyEvent.*;
@@ -39,8 +39,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 class MenuBar extends JMenuBar{
 
-    private SuperCC emulator;
-    private Gui window;
+    private final SuperCC emulator;
+    private final Gui window;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -61,7 +61,7 @@ class MenuBar extends JMenuBar{
                     emulator.openLevelset(levelset);
                 }
             });
-            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
+            openLevelset.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK));
             addIcon(openLevelset, "/resources/icons/open.gif");
             add(openLevelset);
 
@@ -76,7 +76,7 @@ class MenuBar extends JMenuBar{
                     window.repaint(false);
                 }
             });
-            restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, InputEvent.CTRL_MASK));
+            restart.setAccelerator(KeyStroke.getKeyStroke(VK_R, InputEvent.CTRL_DOWN_MASK));
             addIcon(restart, "/resources/icons/restart.gif");
             add(restart);
     
@@ -84,7 +84,7 @@ class MenuBar extends JMenuBar{
             next.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1);
             });
-            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, InputEvent.CTRL_MASK));
+            next.setAccelerator(KeyStroke.getKeyStroke(VK_N, InputEvent.CTRL_DOWN_MASK));
             addIcon(next, "/resources/icons/right.gif");
             add(next);
 
@@ -92,7 +92,7 @@ class MenuBar extends JMenuBar{
             previous.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1);
             });
-            previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, InputEvent.CTRL_MASK));
+            previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, InputEvent.CTRL_DOWN_MASK));
             addIcon(previous, "/resources/icons/left.gif");
             add(previous);
 
@@ -109,7 +109,7 @@ class MenuBar extends JMenuBar{
                     }
                 }
             });
-            goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, InputEvent.CTRL_MASK));
+            goTo.setAccelerator(KeyStroke.getKeyStroke(VK_G, InputEvent.CTRL_DOWN_MASK));
             addIcon(goTo, "/resources/icons/goto.gif");
             add(goTo);
 
@@ -176,8 +176,8 @@ class MenuBar extends JMenuBar{
         SolutionMenu(){
             super("Solution");
 
-            JMenuItem saveAs = new JMenuItem("Save as"); //TODO: make saving a solution or opening from a new file adjust sccpath so things actually change and you don't have to go get the new solution each time
-            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK));
+            JMenuItem saveAs = new JMenuItem("Save as");
+            saveAs.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK));
             saveAs.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset(), l.getInitialRFFDirection());
@@ -187,7 +187,7 @@ class MenuBar extends JMenuBar{
             add(saveAs);
     
             JMenuItem save = new JMenuItem("Save");
-            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.CTRL_MASK));
+            save.setAccelerator(KeyStroke.getKeyStroke(VK_S, InputEvent.CTRL_DOWN_MASK));
             save.addActionListener(event -> {
                 Level l = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), l.getRngSeed(), l.getStep(), l.getRuleset(), l.getInitialRFFDirection());
@@ -205,7 +205,7 @@ class MenuBar extends JMenuBar{
             add(save);
     
             JMenuItem open = new JMenuItem("Open");
-            open.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.CTRL_MASK));
+            open.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.CTRL_DOWN_MASK));
             open.addActionListener(event -> {
                 byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
                 if (fileBytes != null) {
@@ -254,7 +254,7 @@ class MenuBar extends JMenuBar{
             addSeparator();
     
             JMenuItem copy = new JMenuItem("Copy solution");
-            copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, InputEvent.CTRL_MASK));
+            copy.setAccelerator(KeyStroke.getKeyStroke(VK_C, InputEvent.CTRL_DOWN_MASK));
             copy.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList(), level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
@@ -266,7 +266,7 @@ class MenuBar extends JMenuBar{
             add(copy);
     
             JMenuItem paste = new JMenuItem("Paste solution");
-            paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, InputEvent.CTRL_MASK));
+            paste.setAccelerator(KeyStroke.getKeyStroke(VK_V, InputEvent.CTRL_DOWN_MASK));
             paste.addActionListener(event -> {
                 Level level = emulator.getLevel();
                 Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this);
@@ -559,7 +559,7 @@ class MenuBar extends JMenuBar{
             JMenuItem controls = new JMenuItem("Controls");
             controls.addActionListener(e -> new SwingWorker<Void, Void>(){
                 @Override
-                protected Void doInBackground() throws Exception {
+                protected Void doInBackground() {
                     new ControlGUI(emulator);
                     return null;
                 }
@@ -567,22 +567,16 @@ class MenuBar extends JMenuBar{
             add(controls);
     
             JMenuItem gif = new JMenuItem("Record gif");
-            gif.addActionListener(e -> {
-                GameGifRecorder c = new GameGifRecorder(emulator);
-            });
+            gif.addActionListener(e -> new GameGifRecorder(emulator));
             addIcon(gif, "/resources/icons/video.gif");
             add(gif);
 
             JMenuItem variations = new JMenuItem("Variation testing");
-            variations.addActionListener(e -> {
-                VariationTesting v = new VariationTesting(emulator);
-            });
+            variations.addActionListener(e -> new VariationTesting(emulator));
             add(variations);
 
             JMenuItem tsp = new JMenuItem("TSP Solver");
-            tsp.addActionListener(e -> {
-                TSPGUI t = new TSPGUI(emulator);
-            });
+            tsp.addActionListener(e -> new TSPGUI(emulator));
             add(tsp);
 
         }

@@ -100,7 +100,7 @@ public class MSCreature extends Creature {
 
     @Override
     public boolean getForcedMove(Tile tile) {
-        return sliding; //todo: idk maybe make this work eventually
+        return sliding;
     }
 
     Direction[] getSlideDirectionPriority(Tile tile, RNG rng, boolean changeOnRFF){

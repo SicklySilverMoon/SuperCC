@@ -1,5 +1,6 @@
 package game;
 
+import game.Lynx.LynxCreature;
 import game.MS.MSCreature;
 
 public interface Savestate {
@@ -19,8 +20,13 @@ public interface Savestate {
     static Creature getChip(byte[] savestate){
         if (savestate[1] == Ruleset.MS.ordinal())
             return new MSCreature(((savestate[2] & 0xFF) << 8) | (savestate[3] & 0xFF));
-        else //todo: lynx
-            return null;
+        else if (savestate[1] == Ruleset.LYNX.ordinal()) { //Yeah yeah hardcoded values into an array, Chip is always present so its safe
+            int x = (savestate[1059] & 0xFF) << 24 | (savestate[1060] & 0xFF) << 16
+                    | (savestate[1061] & 0xFF) << 8 | (savestate[1062] & 0xFF);
+            return new LynxCreature(x);
+        }
+
+        return null;
     }
 
     /**

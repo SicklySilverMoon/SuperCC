@@ -64,14 +64,15 @@ public class EmulatorKeyListener extends KeyAdapter {
                     //Time to code in loading the checkpoint moves
                     int size = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).size();
                     for (int i = 0; i < size; i++) {
-                        char c = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).get(i);
-                        switch (c){
-                            case 'U': c = SuperCC.UP; break;
-                            case 'L': c = SuperCC.LEFT; break;
-                            case 'D': c = SuperCC.DOWN; break;
-                            case 'R': c = SuperCC.RIGHT; break;
-                            case '-': c = SuperCC.WAIT; break;
-                        }
+                        char c = emulator.getSavestates().getCheckpoint(keyCode - KeyEvent.VK_0).get(i);
+                        c = switch (c) {
+                            case 'U' -> SuperCC.UP;
+                            case 'L' -> SuperCC.LEFT;
+                            case 'D' -> SuperCC.DOWN;
+                            case 'R' -> SuperCC.RIGHT;
+                            case '-' -> SuperCC.WAIT;
+                            default -> emulator.getSavestates().getCheckpoint(keyCode - KeyEvent.VK_0).get(i);
+                        };
                         emulator.tick(c, TickFlags.GAME_PLAY);
                     }
                 emulator.showAction("Checkpoint " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
