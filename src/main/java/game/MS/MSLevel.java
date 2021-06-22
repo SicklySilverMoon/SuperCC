@@ -125,6 +125,11 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     @Override
+    public boolean supportsDiagonal() {
+        return false;
+    }
+
+    @Override
     public boolean hasCyclicRFF() {
         return false;
     }

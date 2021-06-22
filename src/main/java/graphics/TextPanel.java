@@ -4,6 +4,10 @@ import emulator.SuperCC;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+import static emulator.SuperCC.*;
 
 public abstract class TextPanel extends JPanel{
 
@@ -17,30 +21,30 @@ public abstract class TextPanel extends JPanel{
 
     protected int textHeight;
     
-    private static String addLineBreaks(String str, int lineWidth, FontMetrics m){ //todo: make this an iterative loop, recursion can and will crash
-        int width = 0, i, cutoff = 0;
-        for (i = 0; i < str.length(); i++){
-            char ch = str.charAt(i);
-            width += m.charWidth(ch);
-            if (width > lineWidth){
-                //i--;
-                break;
+    private static String[] addLineBreaks(String str, int lineWidth, FontMetrics m) {
+        ArrayList<String> lines = new ArrayList<>();
+
+        StringBuilder builder = new StringBuilder();
+        int len = 0;
+        for (char c : str.toCharArray()) {
+            if (len + m.charWidth(c) > lineWidth) {
+                lines.add(builder.toString());
+                builder = new StringBuilder();
+                len = 0;
             }
-            if (ch == ' ') cutoff = i;
+            len += m.charWidth(c);
+            builder.append(c);
         }
-        if (i <= 0) return str;
-        if (width <= lineWidth) return str;
-        if (cutoff == 0) return str.substring(0, i) + "\n" + addLineBreaks(str.substring(i), lineWidth, m);
-        else return str.substring(0, cutoff) + "\n" + addLineBreaks(str.substring(cutoff + 1), lineWidth, m);
-        
+        lines.add(builder.toString());
+
+        return lines.toArray(new String[0]);
     }
 
     protected void drawText(Graphics g, String text, int maxLines){
-        text = addLineBreaks(text, getWidth() - 2 * BORDER_HORIZONTAL, g.getFontMetrics());
-        String[] textLines = text.split("\n");
+        String[] lines = addLineBreaks(text, getWidth() - 2 * BORDER_HORIZONTAL, g.getFontMetrics());
         for (int i = 0; i < maxLines; i++){
-            if (textLines.length == i) break;
-            g.drawString(textLines[i], BORDER_HORIZONTAL, textHeight);
+            if (lines.length == i) break;
+            g.drawString(lines[i], BORDER_HORIZONTAL, textHeight);
             textHeight += g.getFont().getSize();
         }
     }

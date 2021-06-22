@@ -72,31 +72,31 @@ public class SuperCC {
     public static char capital(char c){
         if (isClick(c) && isLowercase(c))
             return (char) (c + (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the uppercase click range
-        switch (c) {
-            case WAIT: return '_';
-            case UP_LEFT: return '⇖';
-            case DOWN_LEFT: return '⇙';
-            case DOWN_RIGHT: return '⇘';
-            case UP_RIGHT: return '⇗';
-            default: return Character.toUpperCase(c);
-        }
+        return switch (c) {
+            case WAIT -> '_';
+            case UP_LEFT -> '⇖';
+            case DOWN_LEFT -> '⇙';
+            case DOWN_RIGHT -> '⇘';
+            case UP_RIGHT -> '⇗';
+            default -> Character.toUpperCase(c);
+        };
     }
     
     public static char lowerCase(char c) {
         if (isClick(c) && isUppercase(c))
             return (char) (c - (MAX_CLICK_UPPERCASE - MAX_CLICK_LOWERCASE)); //puts it into the lowercase click range
-        switch (c) {
-            case 'U': return UP;
-            case 'L': return LEFT;
-            case 'D': return DOWN;
-            case 'R': return RIGHT;
-            case '_': return WAIT;
-            case '⇖': return UP_LEFT;
-            case '⇙': return DOWN_LEFT;
-            case '⇘': return DOWN_RIGHT;
-            case '⇗': return UP_RIGHT;
-            default: return c;
-        }
+        return switch (c) {
+            case 'U' -> UP;
+            case 'L' -> LEFT;
+            case 'D' -> DOWN;
+            case 'R' -> RIGHT;
+            case '_' -> WAIT;
+            case '⇖' -> UP_LEFT;
+            case '⇙' -> DOWN_LEFT;
+            case '⇘' -> DOWN_RIGHT;
+            case '⇗' -> UP_RIGHT;
+            default -> Character.toLowerCase(c);
+        };
     }
     
     public int lastLevelNumber() {
@@ -192,7 +192,15 @@ public class SuperCC {
     }
 
     public boolean tick(char c, Direction[] directions, TickFlags flags){
-        if (level == null) return false;
+        if (level == null)
+            return false;
+        if (directions[0].isDiagonal() && !level.supportsDiagonal()) {
+            directions[0] = directions[0].decompose()[0]; //take vertical
+            for (char c1 : DIRECTIONS.keySet()) { //switch the char part to vertical
+                if (directions[0] == DIRECTIONS.get(c1))
+                    c = c1;
+            }
+        }
         boolean tickMulti = level.tick(c, directions);
         if (flags.multiTick && tickMulti) {
             for (int i=0; i < level.ticksPerMove() - 1; i++) {
@@ -219,9 +227,9 @@ public class SuperCC {
             return tick(c, directions, flags);
         }
         else{
-            for (int i = 0; i < CHAR_MOVEMENT_KEYS.length; i++) {
-                if (CHAR_MOVEMENT_KEYS[i] == c) {
-                    directions = new Direction[] {DIRECTIONS.get(c)};
+            for (char charMovementKey : CHAR_MOVEMENT_KEYS) {
+                if (charMovementKey == c) {
+                    directions = new Direction[]{DIRECTIONS.get(c)};
                     return tick(c, directions, flags);
                 }
             }
@@ -261,9 +269,6 @@ public class SuperCC {
                 Solution s = twsReader.readSolution(level);
                 // System.out.println(s.efficiency);
                 s.load(this);
-                for (int waits = 0; waits < 100 & !level.getChip().isDead(); waits++) {
-                    level.tick(WAIT, new Direction[] {});
-                }
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
                     System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
                 }

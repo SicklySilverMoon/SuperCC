@@ -130,6 +130,11 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
+    public boolean supportsDiagonal() {
+        return true;
+    }
+
+    @Override
     public boolean hasCyclicRFF() {
         return true;
     }
@@ -355,7 +360,8 @@ public class LynxLevel extends LynxSavestate implements Level {
         boolean ff = (chipTileNew.isFF() || chipTileOld.isFF()) && boots[3] == 0;
         boolean ice = (chipTileNew.isIce() || chipTileOld.isIce()) && boots[2] == 0;
 
-        return (result && !chip.isSliding() && !(sliding && (ff || ice)));
+        return (result && !chip.isSliding() && !(sliding && (ff || ice)
+                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP));
         //traps perform forced moves but aren't counted as sliding tiles as it would fuck some logic up
     }
 

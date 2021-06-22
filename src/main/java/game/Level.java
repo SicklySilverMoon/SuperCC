@@ -46,6 +46,8 @@ public interface Level extends Savestate {
 
     boolean supportsSliplist();
 
+    boolean supportsDiagonal();
+
     boolean hasCyclicRFF();
 
     boolean chipInMonsterList();

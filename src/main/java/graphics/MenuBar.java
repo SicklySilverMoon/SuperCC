@@ -276,12 +276,17 @@ class MenuBar extends JMenuBar{
                     emulator.getMainWindow().repaint(false);
                 }
                 catch (IllegalArgumentException e){ //If the clipboard isn't an entire JSON solution it might be raw moves, which should be put in
-                    try {   //todo: fix this shit to not be garbage
-                        for (char ch : (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray()) {
+                    try {
+                        char[] moves = (t.getTransferData(DataFlavor.stringFlavor)).toString().toCharArray();
+                        for (int i = 0; i < moves.length; i++) {
+                            char ch = moves[i];
+                            if (level.getChip().isDead())
+                                break;
                             char c = SuperCC.lowerCase(ch);
-                            emulator.tick(c, TickFlags.GAME_PLAY);
-                            if (level.getChip().isDead()) break;
+                            if (emulator.tick(c, TickFlags.PRELOADING))
+                                i += level.ticksPerMove() - 1;
                         }
+                        emulator.repaint(true);
                         emulator.showAction("Pasted moves");
                     }
                     catch (UnsupportedFlavorException | IOException e2) {
