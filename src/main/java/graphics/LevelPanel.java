@@ -9,27 +9,31 @@ public class LevelPanel extends TextPanel {
     private static boolean twsNotation;
 
     private static String timerToString(Level level){
+        boolean untimed = level.isUntimed();
         int timePerSecond = level.ticksPerMove()*5;
         int twsMax = timePerSecond == 10 ? 90 : 95;
+        String decimalPoints = ".%0" + (timePerSecond == 10 ? 1 : 2) + "d"; //%02d in lynx so that .05 renders correctly
 
         int time;
-        if (level.isUntimed()) {
+        if (untimed)
             time = level.getTChipTime();
-            if (!twsNotation) return String.format("[%d.%02d]",
-                    time / 100,
-                    Math.abs(time % 100));
-            else return String.format("[%d (-.%02d)]",
-                    time / 100,
-                    twsMax - Math.abs(time % 100));
-        }
-        time = level.getTimer();
-        if (!twsNotation)
-            return String.format("%d.%02d",
-                time / 100,
-                Math.abs(time % 100));
-        else return String.format("%d (-.%02d)",
-                time / 100,
-                twsMax - Math.abs(time % 100));
+        else
+            time = level.getTimer();
+        int integerPart = time / 100;
+        int fractionalPart = Math.abs(time % 100);
+
+        if (twsNotation)
+            fractionalPart = twsMax - fractionalPart;
+        if (timePerSecond == 10)
+            fractionalPart /= 10; //correction for MS so that it won't display with a trailing 0
+
+        String formatString = decimalPoints;
+        if (twsNotation)
+            formatString = " (-" + formatString + ")";
+        formatString = "%d" + formatString;
+        if (untimed)
+            formatString = "[" + formatString + "]";
+        return String.format(formatString, integerPart, fractionalPart);
     }
 
     public void changeNotation(boolean change) {

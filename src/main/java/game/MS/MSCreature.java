@@ -753,10 +753,10 @@ public class MSCreature extends Creature {
     }
     private boolean tryMove(Direction direction, boolean slidingMove, List<Button> pressedButtons){
         if (direction == null || direction == NONE) return false;
-        if (!canLeave(direction, position)) return false;
         Direction oldDirection = this.direction;
-        boolean wasSliding = sliding;
         setDirection(direction);
+        if (!canLeave(direction, position)) return false;
+        boolean wasSliding = sliding;
         Position newPosition = position.move(direction);
         if (!newPosition.isValid()) newPosition.setIndex(-1);
 

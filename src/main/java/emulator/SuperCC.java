@@ -363,8 +363,7 @@ public class SuperCC {
     }
 
     public void throwError(String s){
-//        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
-        throw new UnsupportedOperationException();
+        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public void throwMessage(String s){
