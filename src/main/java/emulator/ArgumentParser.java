@@ -37,6 +37,7 @@ final class ArgumentParser {
                         case helpShort:
                         case helpQuestion:
                             help();
+                            continue;
                         case twsLong:
                             testTWS = true;
                             continue;
@@ -50,6 +51,7 @@ final class ArgumentParser {
                             catch (NumberFormatException e) {
                                 numberError(levelLong+"/"+levelShort, s +" "+ levelString);
                             }
+                            continue;
                         case stepLong:
                         case stepShort:
                             String stepString = args[++i];
@@ -60,6 +62,7 @@ final class ArgumentParser {
                             catch (IllegalArgumentException e) {
                                 enumError(Arrays.toString(Step.values()), stepLong+"/"+stepShort, s +" "+ stepString);
                             }
+                            continue;
                         case rffLong:
                         case rffShort:
                             String rffString = args[++i];
@@ -70,6 +73,7 @@ final class ArgumentParser {
                             catch (IllegalArgumentException e) {
                                 enumError(Arrays.toString(Direction.CARDINALS), rffLong+"/"+rffShort, s +" "+ rffString);
                             }
+                            continue;
                         case rulesLong:
                         case rulesShort:
                             String rulesString = args[++i];
@@ -80,6 +84,7 @@ final class ArgumentParser {
                             catch (IllegalArgumentException e) {
                                 enumError(Arrays.toString(Ruleset.PLAYABLES), rulesLong+"/"+rulesShort, s +" "+ rulesString);
                             }
+                            continue;
                         case rngLong:
                         case rngShort:
                             String rngString = args[++i];

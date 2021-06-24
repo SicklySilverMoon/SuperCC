@@ -40,7 +40,7 @@ public class SmallGamePanel extends GamePanel {
         this.windowSizeX = windowSizeX;
         this.windowSizeY = windowSizeY;
         try {
-            super.initialise(emulator, getTileSheet().getTileSheet(tileWidth, tileHeight), getTileSheet(), tileWidth, tileHeight);
+            super.initialise(emulator, getTileSheet().getTileSheets(tileWidth, tileHeight), getTileSheet(), tileWidth, tileHeight);
         }
         catch (IOException e) {}
     }
@@ -116,10 +116,10 @@ public class SmallGamePanel extends GamePanel {
                 if (fromScratch || layerFG[i] != previousLayerFG[i - screenMotion] || layerBG[i] != previousLayerBG[i - screenMotion]) {
                     int x = tileWidth * xPos, y = tileHeight * yPos;
                     rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[i]]);
-                    rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
-                    if (showBG && !Tile.fromOrdinal(layerFG[i]).isTransparent() && layerBG[i] != 0) {
-                        rasterFG.setPixels(x + bgBorderSize, y + bgBorderSize, tileWidth - 2 * bgBorderSize, tileHeight - 2 * bgBorderSize, bgTileImage[layerBG[i]]);
-                    }
+                    if (layerBG[i] != Tile.FLOOR.ordinal())
+                        rasterFG.setPixels(x, y, tileWidth, tileHeight, overlayTileImage[layerFG[i]]);
+                    else
+                        rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
                 }
             }
         }
@@ -278,14 +278,12 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    protected void initialiseBGTileGraphics(BufferedImage allTiles) {
-        bgTileImage = new int[7*16][tileWidth*tileHeight*CHANNELS];
-        bgBorderSize = tileWidth / 5;
+    protected void initialiseOverlayGraphics(BufferedImage allTiles) {
+        overlayTileImage = new int[7*16][tileWidth*tileHeight*CHANNELS];
         for (int i = 0; i < 16 * 7; i++) {
             int x = i / 16;
             int y = i % 16;
-            allTiles.getRaster().getPixels(x * tileWidth + bgBorderSize, y * tileHeight + bgBorderSize,
-                                           tileWidth - 2 * bgBorderSize, tileHeight - 2 * bgBorderSize, bgTileImage[i]);
+            allTiles.getRaster().getPixels(x * tileWidth, y * tileHeight, tileWidth, tileHeight, overlayTileImage[i]);
         }
     }
 
@@ -333,7 +331,7 @@ public class SmallGamePanel extends GamePanel {
         WritableRaster bbgRaster = backingImage.getRaster();
         for (int i = 0; i < windowSizeX * windowSizeY; i++){
             int x = tileWidth * (i % windowSizeX), y = tileHeight * (i / windowSizeX);
-            bbgRaster.setPixels(x, y, tileWidth, tileHeight, tileImage[0]);
+            bbgRaster.setPixels(x, y, tileWidth, tileHeight, tileImage[Tile.FLOOR.ordinal()]);
         }
     }
     

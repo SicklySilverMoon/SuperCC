@@ -21,8 +21,8 @@ public abstract class GamePanel extends JPanel
     implements MouseMotionListener, MouseListener {
     
     static final int CHANNELS = 4, SMALL_NUMERAL_WIDTH = 3, SMALL_NUMERAL_HEIGHT = 5;
-    protected int bgBorderSize;
-    protected int tileHeight, tileWidth, hBetweenTiles, vBetweenTiles;
+    protected int tileHeight, tileWidth;
+    protected double hBetweenTiles, vBetweenTiles;
     private TileSheet tileSheet;
 
     protected Position screenTopLeft = new Position(0, 0);
@@ -30,10 +30,10 @@ public abstract class GamePanel extends JPanel
     protected static final int[][]
         blackDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS],
         blueDigits = new int[10][(SMALL_NUMERAL_WIDTH+2)*(SMALL_NUMERAL_HEIGHT+2)*CHANNELS];
-    static int[][] tileImage, bgTileImage;
+    static int[][] tileImage, overlayTileImage;
     static Image[][] creatureImages;
     
-    protected boolean showBG = true, showMonsterListNumbers = true, showSlipListNumbers = true; //Makes sure that the BG layer, the slip list, and the monster list show by default
+    protected boolean showMonsterListNumbers = true, showSlipListNumbers = true; //Makes sure that the BG layer, the slip list, and the monster list show by default
     protected boolean showTrapConnections, showCloneConnections, showHistory;
 
     // The background image
@@ -100,10 +100,7 @@ public abstract class GamePanel extends JPanel
         if (showHistory) drawChipHistory(level.getChip().getPosition(), overlayImage);
     
     }
-    
-    public void setBGVisible(boolean visible) {
-        showBG = visible;
-    }
+
     public void setMonsterListVisible(boolean visible){
         showMonsterListNumbers = visible;
     }
@@ -152,21 +149,21 @@ public abstract class GamePanel extends JPanel
         }
     }
     protected abstract void initialiseTileGraphics(BufferedImage tilespng);
-    protected abstract void initialiseBGTileGraphics(BufferedImage tilespng);
+    protected abstract void initialiseOverlayGraphics(BufferedImage tilespng);
     protected abstract void initialiseCreatureGraphics(BufferedImage tilespng);
     protected abstract void initialiseLayers();
 
-    public void initialise(SuperCC emulator, Image tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
+    public void initialise(SuperCC emulator, BufferedImage[] tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
         this.emulator = emulator;
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
-        this.hBetweenTiles = tileWidth / 8;
-        this.vBetweenTiles = tileHeight / 8;
+        this.hBetweenTiles = tileWidth / 8.0;
+        this.vBetweenTiles = tileHeight / 8.0;
         this.tileSheet = tileSheet;
         initialiseDigits();
-        initialiseTileGraphics((BufferedImage) tilespng);
-        initialiseBGTileGraphics((BufferedImage) tilespng);
-        initialiseCreatureGraphics((BufferedImage) tilespng);
+        initialiseTileGraphics(tilespng[0]);
+        initialiseOverlayGraphics(tilespng[1]);
+        initialiseCreatureGraphics(tilespng[1]);
         initialiseLayers();
         if (getMouseListeners().length == 0) { //Just so you don't add extra mouse listeners when you update tilesize or something
             addMouseListener(this);
@@ -334,7 +331,7 @@ public abstract class GamePanel extends JPanel
             Tile fgTile;
             if (emulator.getLevel().supportsLayerBG()) bgTile = emulator.getLevel().getLayerBG().get(pos);
             fgTile = emulator.getLevel().getLayerFG().get(pos);
-            String str = pos.toString() + " " + fgTile;
+            String str = pos + " " + fgTile;
             if (emulator.getLevel().supportsLayerBG()) {
                 if (bgTile != Tile.FLOOR) str += " / " + bgTile;
             }

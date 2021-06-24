@@ -339,14 +339,14 @@ public class SuperCC {
         int height = tileSizes[1];
         SmallGamePanel gamePanel = (SmallGamePanel) window.getGamePanel();
         this.getMainWindow().getGamePanel().setTileSheet(tileSheet);
-        BufferedImage tilesetImage = null;
+        BufferedImage[] tilesetImages = null;
         try {
-            tilesetImage = tileSheet.getTileSheet(width, height);
+            tilesetImages = tileSheet.getTileSheets(width, height);
         } catch (IOException e) {
             e.printStackTrace();
         }
         //see if all of this can't be refactored out of existence by pressing the buttons in MenuBar if their setting is changed
-        window.getGamePanel().initialise(this, tilesetImage, tileSheet, tileSizes[0], tileSizes[1]);
+        window.getGamePanel().initialise(this, tilesetImages, tileSheet, tileSizes[0], tileSizes[1]);
         window.getInventoryPanel().initialise(this);
         window.setSize(200+width*gamePanel.getWindowSizeX(), 200+height*gamePanel.getWindowSizeY());
         window.getGamePanel().setPreferredSize(new Dimension(width * gamePanel.getWindowSizeX(), height * gamePanel.getWindowSizeY()));

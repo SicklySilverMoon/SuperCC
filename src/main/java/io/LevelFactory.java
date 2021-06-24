@@ -23,28 +23,18 @@ public class LevelFactory {
 
     // Various helper functions for processing parts of the .dat file.
     private static Position[] getToggleDoors(Layer layerFG, Layer layerBG){
-        int l = 0;
-        for (int i = 0; i < 32*32; i++){
-            Tile tile = layerFG.get(i);
-            if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN) l++;
-            tile = layerBG.get(i);
-            if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN) l++;
-        }
-        Position[] toggleDoors = new Position[l];
-        l = 0;
+        List<Position> toggleDoors = new ArrayList<>();
         for (short i = 0; i < 32*32; i++){
-            Tile tile = layerFG.get(i);
-            if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN){
-                toggleDoors[l] = new Position(i);
-                l++;
+            Tile tileFG = layerFG.get(i);
+            if (tileFG == Tile.TOGGLE_CLOSED || tileFG == Tile.TOGGLE_OPEN){
+                toggleDoors.add(new Position(i));
             }
-            tile = layerBG.get(i);
-            if (tile == Tile.TOGGLE_CLOSED || tile == Tile.TOGGLE_OPEN){
-                toggleDoors[l] = new Position(i);
-                l++;
+            Tile tileBG = layerBG.get(i);
+            if ((tileBG == Tile.TOGGLE_CLOSED || tileBG == Tile.TOGGLE_OPEN) && tileFG.isMonster()){
+                toggleDoors.add(new Position(i));
             }
         }
-        return toggleDoors;
+        return toggleDoors.toArray(new Position[0]);
     }
     private static Position[] getTeleports(Layer layerFG, Layer layerBG){
         int l = 0;

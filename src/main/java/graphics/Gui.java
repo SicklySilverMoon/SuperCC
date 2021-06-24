@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
@@ -83,13 +84,16 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new BasicSliderUI(timeSlider));
         try {
-            ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheet(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+            ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheets(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
-                ((GamePanel) gamePanel).initialise(emulator, ImageIO.read(getClass().getResource("/resources/tw-editor.png")), TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+                ((GamePanel) gamePanel).initialise(emulator,
+                        new BufferedImage[] {ImageIO.read(getClass().getResource("/resources/tw-edit-overlay.png")),
+                                ImageIO.read(getClass().getResource("/resources/tw-edit-tiles.png"))},
+                        TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             }
             catch (IOException e2){ }
         }

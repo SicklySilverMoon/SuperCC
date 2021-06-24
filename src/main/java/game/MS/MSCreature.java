@@ -766,8 +766,7 @@ public class MSCreature extends Creature {
         boolean isBlock = creatureType.isBlock();
         boolean isMonster = creatureType.isMonster();
         boolean pickupCheck = false;
-        boolean blockMachineCheck = true;
-        if (newTileBG == CLONE_MACHINE && !isBlock) blockMachineCheck = false;
+        boolean blockMachineCheck = newTileBG != CLONE_MACHINE || isBlock;
 
         if ((creatureType.isMonster()) && newTileFG.isChip()) newTileFG = newTileBG;
         if (newTileFG.isPickup()) {

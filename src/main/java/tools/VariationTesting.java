@@ -195,8 +195,8 @@ public class VariationTesting {
     private void setEditorArea() {
         editorArea = new JLayeredPane();
 
-        editorArea.add(editor, new Integer(1));
-        editorArea.add(output, new Integer(1));
+        editorArea.add(editor, Integer.valueOf(1));
+        editorArea.add(output, Integer.valueOf(1));
     }
 
     private void setEditorPanel() {
@@ -283,7 +283,7 @@ public class VariationTesting {
                 lineNumber.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
                 lineNumber.setHorizontalAlignment(SwingConstants.RIGHT);
                 lineNumbers.add(lineNumber);
-                editorArea.add(lineNumber, new Integer(2));
+                editorArea.add(lineNumber, Integer.valueOf(2));
             }
             else {
                 lineNumbers.get(i).setVisible(true);

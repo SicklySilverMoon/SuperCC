@@ -40,7 +40,7 @@ public class ChooseTileSize {
                 int height = ((Number) heightSpinner.getValue()).intValue();
                 Gui window = emulator.getMainWindow();
                 SmallGamePanel gamePanel = (SmallGamePanel) window.getGamePanel();
-                window.getGamePanel().initialise(emulator, ts.getTileSheet(width, height), ts, width, height);
+                window.getGamePanel().initialise(emulator, ts.getTileSheets(width, height), ts, width, height);
                 window.getInventoryPanel().initialise(emulator);
                 window.getInventoryPanel().repaint();
                 window.setSize(200+width*gamePanel.getWindowSizeX(), 200+height*gamePanel.getWindowSizeY());

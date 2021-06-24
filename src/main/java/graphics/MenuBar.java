@@ -421,8 +421,8 @@ class MenuBar extends JMenuBar{
                         tileHeight = Gui.DEFAULT_TILE_HEIGHT;
                     }
                     try {
-                        BufferedImage tilesetImage = tileSheet.getTileSheet(tileWidth, tileHeight);
-                        window.getGamePanel().initialise(emulator, tilesetImage, tileSheet,
+                        BufferedImage[] tilesetImages = tileSheet.getTileSheets(tileWidth, tileHeight);
+                        window.getGamePanel().initialise(emulator, tilesetImages, tileSheet,
                                 window.getGamePanel().getTileWidth(), window.getGamePanel().getTileHeight());
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(true);
@@ -451,7 +451,7 @@ class MenuBar extends JMenuBar{
                             ts = Gui.DEFAULT_TILESHEET;
                         }
                         SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
-                        emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheet(size, size), ts, size, size);
+                        emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheets(size, size), ts, size, size);
                         window.getInventoryPanel().initialise(emulator);
                         window.getInventoryPanel().setPreferredSize(new Dimension(4 * size + 10, 2 * size + 10));
                         window.getInventoryPanel().setSize(4 * size + 10, 2 * size + 10);
@@ -502,7 +502,6 @@ class MenuBar extends JMenuBar{
             add(new JSeparator());
     
             String[] setterNames = new String[] {
-                "Show Background Tiles",
                 "Show Monster List",
                 "Show Slip List",
                 "Show Clone connections",
@@ -511,7 +510,6 @@ class MenuBar extends JMenuBar{
             };
             
             List<Consumer<Boolean>> setters = Arrays.asList(
-                b -> window.getGamePanel().setBGVisible(b),
                 b -> window.getGamePanel().setMonsterListVisible(b),
                 b -> window.getGamePanel().setSlipListVisible(b),
                 b -> window.getGamePanel().setClonesVisible(b),
@@ -522,7 +520,7 @@ class MenuBar extends JMenuBar{
             for (int i = 0; i < setterNames.length; i++){
                 JToggleButton b = new JToggleButton(setterNames[i]);
                 Consumer<Boolean> setter = setters.get(i);
-                if (i == 0 || i == 1 || i == 2) b.setSelected(true); //These are already selected by default in the backend (GamePanel.java, at the top with all the variable declarations) so i just make the buttons default the on state
+                if (i == 0 || i == 1) b.setSelected(true); //These are already selected by default in the backend (GamePanel.java, at the top with all the variable declarations) so i just make the buttons default the on state
                 b.addActionListener(e -> {
                     setter.accept(((AbstractButton) e.getSource()).isSelected());
                     window.repaint(true);
