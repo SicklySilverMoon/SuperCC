@@ -2,8 +2,6 @@ package game.Lynx;
 
 import game.*;
 
-import java.util.BitSet;
-
 public class LynxSavestate implements Savestate {
 
     private static final byte UNCOMPRESSED_V2 = 6;
@@ -34,6 +32,7 @@ public class LynxSavestate implements Savestate {
                 1 +                             // RFF
                 2 +                             // monsterlist size
                 monsterList.size() * 4 +        // monsterlist
+                1024 +                          // claimed array
                 1;                              // lastMoveForced
 
         SavestateWriter writer = new SavestateWriter(length);
@@ -50,6 +49,7 @@ public class LynxSavestate implements Savestate {
         writer.write(rffDirection.ordinal());
         writer.writeShort(monsterList.size());
         writer.writeIntMonsterArray(monsterList.getCreatures());
+        writer.writeBools(monsterList.getClaimedArray());
         writer.writeBool(lastMoveForced);
 
         return writer.toByteArray();
@@ -72,6 +72,7 @@ public class LynxSavestate implements Savestate {
             rng.setPRNG2(reader.readInt());
             rffDirection = Direction.fromOrdinal(reader.read());
             monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG);
+            monsterList.setClaimedArray(reader.readBools(1024));
             lastMoveForced = reader.readBool();
 
             chip = monsterList.get(0);

@@ -599,8 +599,17 @@ class MenuBar extends JMenuBar{
             add(time);
 
             JMenuItem monsterList = new JMenuItem("Change Monster List Positions");
-            monsterList.addActionListener(e -> new MonsterlistRearrangeGUI(emulator));
+            monsterList.addActionListener(e -> new MonsterlistRearrangeGUI(emulator, false));
             add(monsterList);
+
+            JMenuItem slipList = new JMenuItem("Change Slip List Positions");
+            slipList.addActionListener(e -> {
+                if (emulator.getLevel().supportsSliplist())
+                    new MonsterlistRearrangeGUI(emulator, true);
+                else
+                    emulator.throwError("The Slip List does not exist in this ruleset.");
+            });
+            add(slipList);
             
             add(new JSeparator());
     

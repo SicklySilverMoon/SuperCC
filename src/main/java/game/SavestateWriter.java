@@ -46,6 +46,14 @@ public class SavestateWriter {
         if (n) write(1);
         else write(0);
     }
+    public void writeBools(boolean[] list) {
+        for (boolean b : list) {
+            if (b)
+                write(1);
+            else
+                write(0);
+        }
+    }
 
     public byte[] toByteArray() {
         return bytes;
@@ -54,5 +62,4 @@ public class SavestateWriter {
     public SavestateWriter(int size) {
         bytes = new byte[size];
     }
-
 }

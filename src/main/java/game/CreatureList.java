@@ -90,6 +90,13 @@ public abstract class CreatureList implements Iterable<Creature> {
      */
     public abstract void adjustClaim(Position position, boolean claim);
 
+    /**
+     * @return the array of claimed positions.
+     */
+    public abstract boolean[] getClaimedArray();
+
+    public abstract void setClaimedArray(boolean[] claimedArray);
+
     /** Returns the animation currently occurring at the given position (null if there is no animation).
      *
      * @param position The position to check.

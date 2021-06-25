@@ -33,7 +33,7 @@ class SuperCCTest {
             Level level = emulator.getLevel();
             try {
                 Solution s = getSolution(solutionName, i);
-                s.load(emulator);
+                s.load(emulator, TickFlags.LIGHT);
                 level = emulator.getLevel();
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
                     System.out.println("failed level " + level.getLevelNumber() + " " + new String(level.getTitle()));

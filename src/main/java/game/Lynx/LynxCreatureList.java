@@ -165,6 +165,16 @@ public class LynxCreatureList extends CreatureList {
     }
 
     @Override
+    public boolean[] getClaimedArray() {
+        return creatureLayer;
+    }
+
+    @Override
+    public void setClaimedArray(boolean[] claimedArray) {
+        this.creatureLayer = claimedArray;
+    }
+
+    @Override
     public Creature animationAt(Position position) {
         if (!position.isValid())
             return null;

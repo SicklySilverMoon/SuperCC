@@ -191,6 +191,8 @@ public class SmallGamePanel extends GamePanel {
 
         previousLayerFG = layerFG.clone();
         previousScreenTopLeft = screenTopLeft.clone();
+
+        graphicsCreatures.dispose();
     }
     
     @Override

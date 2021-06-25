@@ -69,9 +69,15 @@ public class SavestateReader extends ByteArrayInputStream {
     public boolean readBool() {
         return read() == 1;
     }
+    public boolean[] readBools(int length) {
+        boolean[] list = new boolean[length];
+        for (int i = 0; i < length; i++) {
+            list[i] = readBool();
+        }
+        return list;
+    }
 
     public SavestateReader(byte[] b){
         super(b);
     }
-
 }

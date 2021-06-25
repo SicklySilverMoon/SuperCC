@@ -187,6 +187,16 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
+    public boolean[] getClaimedArray() {
+        return new boolean[0];
+    }
+
+    @Override
+    public void setClaimedArray(boolean[] claimedArray) {
+        return;
+    }
+
+    @Override
     public Creature animationAt(Position position) {
         throw new UnsupportedOperationException("MS does not have a concept of animations.");
     }
