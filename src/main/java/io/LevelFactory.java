@@ -10,10 +10,7 @@ import game.button.BrownButton;
 import game.button.GreenButton;
 import game.button.RedButton;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * A class for turning creating a Level object using only the data from the
@@ -111,45 +108,39 @@ public class LevelFactory {
         for (Tile t : layerFG) if (t.isSliding()) counter++;
         return counter;
     }
-    private static GreenButton[] getGreenButtons(Layer layerFG, Layer layerBG) {
-        int l = 0;
-        for (int i = 0; i < 32*32; i++){
-            if (layerFG.get(i) == Tile.BUTTON_GREEN || layerBG.get(i) == Tile.BUTTON_GREEN) l++;
-        }
-        GreenButton[] buttons = new GreenButton[l];
-        l = 0;
+    private static Map<Position, GreenButton> getGreenButtons(Layer layerFG, Layer layerBG) {
+        Map<Position, GreenButton> buttons = new HashMap<>();
         for (short i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.BUTTON_GREEN || layerBG.get(i) == Tile.BUTTON_GREEN){
-                buttons[l++] = new GreenButton(new Position(i));
+                Position p = new Position(i);
+                buttons.put(p, new GreenButton(p));
             }
         }
         return buttons;
     }
-    private static BlueButton[] getBlueButtons(Layer layerFG, Layer layerBG) {
-        int l = 0;
-        for (int i = 0; i < 32*32; i++){
-            if (layerFG.get(i) == Tile.BUTTON_BLUE || layerBG.get(i) == Tile.BUTTON_BLUE) l++;
-        }
-        BlueButton[] buttons = new BlueButton[l];
-        l = 0;
+    private static Map<Position, BlueButton> getBlueButtons(Layer layerFG, Layer layerBG) {
+        Map<Position, BlueButton> buttons = new HashMap<>();
         for (short i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.BUTTON_BLUE || layerBG.get(i) == Tile.BUTTON_BLUE){
-                buttons[l++] = new BlueButton(new Position(i));
+                Position p = new Position(i);
+                buttons.put(p, new BlueButton(p));
             }
         }
         return buttons;
     }
-    private static BrownButton[] getBrownButtons(int[][] trapConnections) {
-        BrownButton[] buttons = new BrownButton[trapConnections.length];
+    private static Map<Position, BrownButton> getBrownButtons(int[][] trapConnections) {
+        Map<Position, BrownButton> buttons = new HashMap<>(trapConnections.length);
         for (int i = 0; i < trapConnections.length; i++) {
-            buttons[i] = new BrownButton(new Position(trapConnections[i][0]), new Position(trapConnections[i][1]), i);
+            Position buttonPos = new Position(trapConnections[i][0]);
+            buttons.put(buttonPos, new BrownButton(buttonPos, new Position(trapConnections[i][1]), i));
         }
         return buttons;
     }
-    private static RedButton[] getRedButtons(int[][] cloneConnections) {
-        RedButton[] buttons = new RedButton[cloneConnections.length];
-        for (int i = 0; i < cloneConnections.length; i++) {
-            buttons[i] = new RedButton(new Position(cloneConnections[i][0]), new Position(cloneConnections[i][1]));
+    private static Map<Position, RedButton> getRedButtons(int[][] cloneConnections) {
+        Map<Position, RedButton> buttons = new HashMap<>(cloneConnections.length);
+        for (int[] cloneConnection : cloneConnections) {
+            Position buttonPos = new Position(cloneConnection[0]);
+            buttons.put(buttonPos, new RedButton(buttonPos, new Position(cloneConnection[1])));
         }
         return buttons;
     }

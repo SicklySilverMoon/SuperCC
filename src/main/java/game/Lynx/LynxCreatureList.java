@@ -123,12 +123,9 @@ public class LynxCreatureList extends CreatureList {
                 creature.setFDirection(Direction.NONE);
                 creature.setTDirection(Direction.NONE);
                 if (creature.getTimeTraveled() == 0 && level.getLayerFG().get(creature.getPosition()) == Tile.BUTTON_BROWN) {
-                    for (BrownButton b : level.getBrownButtons()) {
-                        if (b.getButtonPosition().equals(creature.getPosition())) {
-                            springTrappedCreature(b.getTargetPosition());
-                            break;
-                        }
-                    }
+                    BrownButton b = level.getBrownButtons().get(creature.getPosition());
+                    if (b != null)
+                        springTrappedCreature(b.getTargetPosition());
                 }
             }
             phase = 2;
@@ -224,7 +221,7 @@ public class LynxCreatureList extends CreatureList {
 
     @Override
     public void springTrappedCreature(Position position) {
-        if (!position.isValid() || level.getLayerFG().get(position) != Tile.TRAP)
+        if (position == null || !position.isValid() || level.getLayerFG().get(position) != Tile.TRAP)
             return;
         Creature creature = creatureAt(position, true);
         if (creature == null || creature.getDirection() == Direction.NONE)

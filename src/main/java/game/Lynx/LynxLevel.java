@@ -6,6 +6,8 @@ import game.MS.SlipList;
 import game.button.*;
 
 import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
 
 import static game.Direction.*;
 
@@ -17,10 +19,10 @@ public class LynxLevel extends LynxSavestate implements Level {
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
     private final Position[] toggleDoors, teleports;
-    private GreenButton[] greenButtons;
-    private RedButton[] redButtons;
-    private BrownButton[] brownButtons;
-    private BlueButton[] blueButtons;
+    private Map<Position, GreenButton> greenButtons;
+    private Map<Position, RedButton> redButtons;
+    private Map<Position, BrownButton> brownButtons;
+    private Map<Position, BlueButton> blueButtons;
     private int rngSeed;
     private Step step;
     private final Direction INITIAL_SLIDE;
@@ -65,42 +67,42 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public GreenButton[] getGreenButtons() {
+    public Map<Position, GreenButton> getGreenButtons() {
         return greenButtons;
     }
 
     @Override
-    public RedButton[] getRedButtons() {
+    public Map<Position, RedButton> getRedButtons() {
         return redButtons;
     }
 
     @Override
-    public BrownButton[] getBrownButtons() {
+    public Map<Position, BrownButton> getBrownButtons() {
         return brownButtons;
     }
 
     @Override
-    public BlueButton[] getBlueButtons() {
+    public Map<Position, BlueButton> getBlueButtons() {
         return blueButtons;
     }
 
     @Override
-    public void setGreenButtons(GreenButton[] greenButtons) {
+    public void setGreenButtons(Map<Position, GreenButton> greenButtons) {
         this.greenButtons = greenButtons;
     }
 
     @Override
-    public void setRedButtons(RedButton[] redButtons) {
+    public void setRedButtons(Map<Position, RedButton> redButtons) {
         this.redButtons = redButtons;
     }
 
     @Override
-    public void setBrownButtons(BrownButton[] brownButtons) {
+    public void setBrownButtons(Map<Position, BrownButton> brownButtons) {
         this.brownButtons = brownButtons;
     }
 
     @Override
-    public void setBlueButtons(BlueButton[] blueButtons) {
+    public void setBlueButtons(Map<Position, BlueButton> blueButtons) {
         this.blueButtons = blueButtons;
     }
 
@@ -228,7 +230,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public void setTrap(Position trapPos, boolean open) {
         if (open) {
-            for (BrownButton b : brownButtons) {
+            for (BrownButton b : brownButtons.values()) {
                 if (b.getTargetPosition().equals(trapPos))
                     monsterList.springTrappedCreature(b.getTargetPosition());
             }
@@ -252,31 +254,29 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public Button getButton(Position position, Class<? extends Button> buttonType) {
-        Button[] buttons;
-        if (buttonType.equals(GreenButton.class)) buttons = greenButtons;
-        else if (buttonType.equals(RedButton.class)) buttons = redButtons;
-        else if (buttonType.equals(BrownButton.class)) buttons = brownButtons;
-        else if (buttonType.equals(BlueButton.class)) buttons = blueButtons;
+        if (buttonType.equals(GreenButton.class))
+            return greenButtons.get(position);
+        else if (buttonType.equals(RedButton.class))
+            return redButtons.get(position);
+        else if (buttonType.equals(BrownButton.class))
+            return brownButtons.get(position);
+        else if (buttonType.equals(BlueButton.class))
+            return blueButtons.get(position);
         else throw new RuntimeException("Invalid class");
-        for (Button b : buttons) {
-            if (b.getButtonPosition().equals(position)) return b;
-        }
-        return null;
     }
 
     @Override
     public Button getButton(Position position) {
-        for (Button[] buttons : new Button[][] {greenButtons, redButtons, brownButtons, blueButtons}) {
-            for (Button b : buttons) {
-                if (b.getButtonPosition().equals(position)) return b;
-            }
+        for (Map<Position, ? extends Button> buttons : List.of(greenButtons, redButtons, brownButtons, blueButtons)) {
+            if (buttons.get(position) != null)
+                return buttons.get(position);
         }
         return null;
     }
 
     @Override
     public boolean isTrapOpen(Position position) {
-        for (BrownButton b : brownButtons) {
+        for (BrownButton b : brownButtons.values()) {
             if (b.getTargetPosition().equals(position) && monsterList.creatureAt(b.getTargetPosition(), true) != null)
                 return true;
         }
@@ -413,12 +413,9 @@ public class LynxLevel extends LynxSavestate implements Level {
         chip.setFDirection(NONE);
 
         if (chip.getTimeTraveled() == 0 && layerFG.get(chip.getPosition()) == Tile.BUTTON_BROWN) {
-            for (BrownButton b : brownButtons) {
-                if (b.getButtonPosition().equals(chip.getPosition())) {
-                    monsterList.springTrappedCreature(b.getTargetPosition());
-                    break;
-                }
-            }
+            BrownButton b = brownButtons.get(chip.getPosition());
+            if (b != null)
+            monsterList.springTrappedCreature(b.getTargetPosition());
         }
         return result;
     }
@@ -445,8 +442,8 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
-                   GreenButton[] greenButtons, RedButton[] redButtons,
-                   BrownButton[] brownButtons, BlueButton[] blueButtons,
+                   Map<Position, GreenButton> greenButtons, Map<Position, RedButton> redButtons,
+                   Map<Position, BrownButton> brownButtons, Map<Position, BlueButton> blueButtons,
                    Layer layerFG, CreatureList monsterList,
                    Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction INITIAL_SLIDE){
 

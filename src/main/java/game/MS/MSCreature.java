@@ -467,7 +467,7 @@ public class MSCreature extends Creature {
                         return false; //Normally you would check if Chip could enter the resulting tile but seeing as its always a clone machine on the bottom it'll always be false, therefore i always have this return false
                     }
                     if (block.tryMove(direction, false, pressedButtons)){
-                        for (BrownButton b : msLevel.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
+                        for (BrownButton b : msLevel.getBrownButtons().values()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
                             if (b.getTargetPosition().equals(newPosition) && msLevel.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
                                 b.release(msLevel);
                             }
@@ -606,7 +606,7 @@ public class MSCreature extends Creature {
                 kill();
                 return true;
             case TRAP:
-                for(BrownButton button : level.getBrownButtons()) {
+                for(BrownButton button : level.getBrownButtons().values()) {
                     if(button.getTargetPosition().equals(newPosition)) {
                         if(msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {
                             msLevel.traps.set(button.getTrapIndex(), true);
@@ -665,7 +665,7 @@ public class MSCreature extends Creature {
                         return false; //Normally you would check if Chip could enter the resulting tile but seeing as its always a clone machine on the bottom it'll always be false, therefore i always have this return false
                     }
                     if (block.tryMove(direction, false, pressedButtons)){
-                        for (BrownButton b3 : msLevel.getBrownButtons()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
+                        for (BrownButton b3 : msLevel.getBrownButtons().values()) { //Ok so since blocks don't follow normal creature rules they don't get caught in the section of tick() further down that closes traps after creatures leave, so I had to manually do it here
                             if (b3.getTargetPosition().equals(newPosition) && msLevel.getLayerFG().get(b3.getButtonPosition()) == BUTTON_BROWN) {
                                 b3.release(msLevel);
                             }
@@ -844,7 +844,7 @@ public class MSCreature extends Creature {
                     }
                 }
                 if (msLevel.getLayerFG().get(oldCreature.position) == TRAP || msLevel.getLayerBG().get(oldCreature.position) == TRAP){
-                    for (BrownButton b : msLevel.getBrownButtons()) {
+                    for (BrownButton b : msLevel.getBrownButtons().values()) {
                         if (b.getTargetPosition().equals(oldCreature.position) && msLevel.getLayerFG().get(b.getButtonPosition()) == BUTTON_BROWN) {
                             b.release(msLevel);
                         }

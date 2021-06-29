@@ -48,9 +48,16 @@ public class EmulatorKeyListener extends KeyAdapter {
         if (k == null) {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
                 if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
-                    boolean recording = emulator.getSavestates().checkpointRecorder(keyCode-KeyEvent.VK_0);
-                    if (recording) emulator.showAction("Started Checkpoint Record");
-                    else emulator.showAction("Finished Checkpoint Record");
+                    try {
+                        boolean recording = emulator.getSavestates().macroRecorder(keyCode - KeyEvent.VK_0);
+                        if (recording)
+                            emulator.showAction("Started macro record");
+                        else
+                            emulator.showAction("Finished macro record");
+                    }
+                    catch (IllegalArgumentException e1) {
+                        emulator.throwError("The macro start position was after the end.");
+                    }
                 }
                 else {
                     if (!e.isControlDown()) { //Just so you can't accidentally save a state into these
@@ -59,23 +66,11 @@ public class EmulatorKeyListener extends KeyAdapter {
                     }
                 }
             }
-            else {//todo: fix this up to be more... just fix the damn thing and make it not hot garbage
+            else {
                 if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
-                    //Time to code in loading the checkpoint moves
-                    int size = emulator.getSavestates().getCheckpoint(keyCode-KeyEvent.VK_0).size();
-                    for (int i = 0; i < size; i++) {
-                        char c = emulator.getSavestates().getCheckpoint(keyCode - KeyEvent.VK_0).get(i);
-                        c = switch (c) {
-                            case 'U' -> SuperCC.UP;
-                            case 'L' -> SuperCC.LEFT;
-                            case 'D' -> SuperCC.DOWN;
-                            case 'R' -> SuperCC.RIGHT;
-                            case '-' -> SuperCC.WAIT;
-                            default -> emulator.getSavestates().getCheckpoint(keyCode - KeyEvent.VK_0).get(i);
-                        };
-                        emulator.tick(c, TickFlags.GAME_PLAY);
-                    }
-                emulator.showAction("Checkpoint " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
+                    emulator.getSavestates().playMacro(keyCode-KeyEvent.VK_0);
+                    emulator.getMainWindow().repaint(false);
+                    emulator.showAction("Macro " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
                 }
                 else if (emulator.getSavestates().load(keyCode, emulator.getLevel())) {
                     emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");

@@ -21,12 +21,12 @@ public class SavestateManager implements Serializable {
     private HashMap<Integer, CharList> savestateMoves = new HashMap<>();
     private TreeNode<byte[]> currentNode;
     private CharList moves;
-    private CharList[] checkpoints = new CharList[10];
+    private CharList[] macros = new CharList[10];
     private transient SuperCC emulator;
     private transient List<TreeNode<byte[]>> playbackNodes = new ArrayList<>();
     private transient int playbackIndex = 0;
-    private transient boolean[] recordingCheckpoints = new boolean[10];
-    private transient int[] checkpointStartIndex = new int[10];
+    private transient boolean[] recordingMacros = new boolean[10];
+    private transient int[] macroStartIndices = new int[10];
     private transient byte[] levelTitle;
 
     private transient boolean pause = true;
@@ -75,9 +75,9 @@ public class SavestateManager implements Serializable {
             stream.write(i);
             stream.writeObject(savestateMoves.get(i).toArray());
         }
-        stream.write(checkpoints.length);
-        for (CharList checkpoint : checkpoints) {
-            stream.writeObject(checkpoint.toArray());
+        stream.write(macros.length);
+        for (CharList m : macros) {
+            stream.writeObject(m.toArray());
         }
         stream.write(levelTitle.length);
         for(byte b : levelTitle) {
@@ -95,10 +95,10 @@ public class SavestateManager implements Serializable {
             for (int i=0; i < movesLength; i++) {
                 savestateMoves.put(stream.read(), (new CharList((char[]) stream.readObject())));
             }
-            int checkpointLength = stream.read();
-            checkpoints = new CharList[checkpointLength];
-            for (int i=0; i < checkpointLength; i++) {
-                checkpoints[i] = new CharList((char[]) stream.readObject());
+            int macroListLength = stream.read();
+            macros = new CharList[macroListLength];
+            for (int i=0; i < macroListLength; i++) {
+                macros[i] = new CharList((char[]) stream.readObject());
             }
             int levelTitleLength = stream.read();
             levelTitle = new byte[levelTitleLength];
@@ -227,16 +227,28 @@ public class SavestateManager implements Serializable {
         savestateMoves.put(key, moves.clone());
     }
 
-    boolean checkpointRecorder(int key) {
-        if (!recordingCheckpoints[key]) {
-            checkpointStartIndex[key] = playbackIndex; //Store the current position in the move array so we can come back to it later
-            recordingCheckpoints[key] = true;
+    /**
+     * Begins or ends 'recording' a move macro in the specified key slot.
+     * @param key an int value between 0 and 9 representing the macro slot to use.
+     * @return true if this is start of a recording, false if this the end and the recording has been saved.
+     */
+    boolean macroRecorder(int key) {
+        if (!recordingMacros[key]) {
+            macroStartIndices[key] = playbackIndex; //Store the current position in the move array so we can come back to it later
+            recordingMacros[key] = true;
             return true;
         }
         else {
-            checkpoints[key] = moves.sublist(checkpointStartIndex[key], moves.size()); //Puts all the moves recorded into this list
-            recordingCheckpoints[key] = false;
+            macros[key] = moves.sublist(macroStartIndices[key], playbackIndex); //Puts all the moves recorded into this list
+            recordingMacros[key] = false;
             return false;
+        }
+    }
+
+    void playMacro(int key) {
+        CharList macro = macros[key];
+        for (char c : macro) {
+            emulator.tick(SuperCC.lowerCase(c), TickFlags.PRELOADING);
         }
     }
     
@@ -296,10 +308,6 @@ public class SavestateManager implements Serializable {
     public void setMoves(CharList moves) {
         this.moves = moves;
     }
-
-    public CharList getCheckpoint(int key) {
-        return checkpoints[key];
-    }
     
     public String movesToString() {
         return moves.toString(playbackIndex);
@@ -316,7 +324,8 @@ public class SavestateManager implements Serializable {
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
         moves = new CharList();
-        for (int i=0; i < checkpoints.length; i++) checkpoints[i] = new CharList();
+        for (int i = 0; i < macros.length; i++)
+            macros[i] = new CharList();
     }
     
     public LinkedList<Position> getChipHistory(){

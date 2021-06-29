@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 public class SmallGamePanel extends GamePanel {
@@ -224,14 +225,24 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    protected void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay){
+    protected void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay){
         Graphics2D g = overlay.createGraphics();
         g.setColor(Color.BLACK);
         for (ConnectionButton connection : connections){
+            if (connection == null || connection == hoveredButton)
+                continue;
             int x1 = (connection.getButtonPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
             int y1 = (connection.getButtonPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
             int x2 = (connection.getTargetPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
             int y2 = (connection.getTargetPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
+            g.drawLine(x1, y1, x2, y2);
+        }
+        if (hoveredButton != null) {
+            g.setColor(Color.RED);
+            int x1 = (hoveredButton.getButtonPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
+            int y1 = (hoveredButton.getButtonPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
+            int x2 = (hoveredButton.getTargetPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
+            int y2 = (hoveredButton.getTargetPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
             g.drawLine(x1, y1, x2, y2);
         }
     }

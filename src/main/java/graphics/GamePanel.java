@@ -13,6 +13,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.util.Collection;
 import java.util.List;
 
 import static game.Position.UNCLICKABLE;
@@ -46,6 +47,8 @@ public abstract class GamePanel extends JPanel
     protected BufferedImage overlayImage;
     
     protected SuperCC emulator;
+
+    protected ConnectionButton hoveredButton;
     
     public void setEmulator(SuperCC emulator){
         this.emulator = emulator;
@@ -85,7 +88,7 @@ public abstract class GamePanel extends JPanel
     protected abstract void drawLevel(Level level, boolean fromScratch);
     protected abstract void drawMonsterListNumbers(Level level, CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipListNumbers(SlipList monsterList, BufferedImage overlay);
-    protected abstract void drawButtonConnections(ConnectionButton[] connections, BufferedImage overlay);
+    protected abstract void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay);
     public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
     
@@ -95,10 +98,9 @@ public abstract class GamePanel extends JPanel
         overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterListNumbers) drawMonsterListNumbers(level, level.getMonsterList(), overlayImage);
         if (showSlipListNumbers && level.supportsSliplist()) drawSlipListNumbers(level.getSlipList(), overlayImage);
-        if (showCloneConnections) drawButtonConnections(level.getRedButtons(), overlayImage);
-        if (showTrapConnections) drawButtonConnections(level.getBrownButtons(), overlayImage);
+        if (showCloneConnections) drawButtonConnections(level.getRedButtons().values(), overlayImage);
+        if (showTrapConnections) drawButtonConnections(level.getBrownButtons().values(), overlayImage);
         if (showHistory) drawChipHistory(level.getChip().getPosition(), overlayImage);
-    
     }
 
     public void setMonsterListVisible(boolean visible){
@@ -173,7 +175,7 @@ public abstract class GamePanel extends JPanel
     
     class GamePopupMenu extends JPopupMenu {
         
-        GamePopupMenu(GameGraphicPosition position) {
+        GamePopupMenu(Position position) {
             add(new JLabel("Cheats", SwingConstants.CENTER));
             Cheats cheats = emulator.getLevel().getCheats();
 
@@ -294,7 +296,7 @@ public abstract class GamePanel extends JPanel
     
     public void mouseClicked(MouseEvent e) {}
     public void mousePressed(MouseEvent e) {}
-    private void leftClick(GameGraphicPosition clickPosition) {
+    private void leftClick(Position clickPosition) {
         if(emulator.isLevelLoaded()) {
             if (!emulator.getLevel().supportsClick()) return;
             MSCreature chip = (MSCreature) emulator.getLevel().getChip(); //Relies on MS code, might want to refactor that
@@ -308,7 +310,7 @@ public abstract class GamePanel extends JPanel
             }
         }
     }
-    private void rightClick(GameGraphicPosition clickPosition, MouseEvent e) {
+    private void rightClick(Position clickPosition, MouseEvent e) {
         if(emulator.isLevelLoaded()) {
             GamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
             popupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -316,7 +318,7 @@ public abstract class GamePanel extends JPanel
     }
     public void mouseReleased(MouseEvent e) {
         if(emulator.isLevelLoaded()) {
-            GameGraphicPosition clickPosition = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
+            Position clickPosition = new Position(e.getX() / tileWidth + screenTopLeft.getX(), e.getY() / tileHeight + screenTopLeft.getY());
             if (e.isPopupTrigger()) rightClick(clickPosition, e);
             else leftClick(clickPosition);
         }
@@ -325,18 +327,27 @@ public abstract class GamePanel extends JPanel
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void mouseMoved(MouseEvent e) {
-        if(emulator.isLevelLoaded()) {
-            GameGraphicPosition pos = new GameGraphicPosition(e, tileWidth, tileHeight, screenTopLeft);
+        if (emulator.isLevelLoaded()) {
+            Level level = emulator.getLevel();
+            Position pos = new Position(e.getX() / tileWidth + screenTopLeft.getX(), e.getY() / tileHeight + screenTopLeft.getY());
             Tile bgTile = null;
             Tile fgTile;
-            if (emulator.getLevel().supportsLayerBG()) bgTile = emulator.getLevel().getLayerBG().get(pos);
-            fgTile = emulator.getLevel().getLayerFG().get(pos);
+            if (level.supportsLayerBG())
+                bgTile = level.getLayerBG().get(pos);
+            fgTile = level.getLayerFG().get(pos);
             String str = pos + " " + fgTile;
-            if (emulator.getLevel().supportsLayerBG()) {
+            if (level.supportsLayerBG()) {
                 if (bgTile != Tile.FLOOR) str += " / " + bgTile;
             }
             emulator.showAction(str);
+
+            hoveredButton = null;
+            boolean fgButton = fgTile == Tile.BUTTON_BROWN || fgTile == Tile.BUTTON_RED;
+            boolean bgButton = level.supportsLayerBG() && (bgTile == Tile.BUTTON_BROWN || bgTile == Tile.BUTTON_RED);
+            if (fgButton || bgButton) {
+                hoveredButton = (ConnectionButton) emulator.getLevel().getButton(pos); //red and brown buttons SHOULD always be safe to downcast like this
+            }
+            emulator.getMainWindow().repaint(false);
         }
     }
-    
 }

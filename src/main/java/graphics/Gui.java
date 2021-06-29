@@ -91,7 +91,7 @@ public class Gui extends JFrame{
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
                 ((GamePanel) gamePanel).initialise(emulator,
-                        new BufferedImage[] {ImageIO.read(getClass().getResource("/resources/tw-edit-overlay.png")),
+                        new BufferedImage[] {ImageIO.read(getClass().getResource("/resources/tw-edit-overlay.png")), //complete backfall in case of emergencies
                                 ImageIO.read(getClass().getResource("/resources/tw-edit-tiles.png"))},
                         TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             }
@@ -106,10 +106,11 @@ public class Gui extends JFrame{
         catch (Exception e){
             e.printStackTrace();
         }
-        try{
+        try {
             setIconImage(ImageIO.read(getClass().getResource("/resources/icons/windowIcon.png")));
         }
-        catch (IOException e){}
+        catch (IOException ignored) {
+        }
         playButton.addActionListener((e) -> {
             emulator.getMainWindow().requestFocus();
             emulator.getSavestates().togglePause();

@@ -4,6 +4,7 @@ import game.MS.*;
 import game.button.*;
 
 import java.util.BitSet;
+import java.util.Map;
 
 public interface Level extends Savestate {
     int getLevelNumber();
@@ -20,21 +21,21 @@ public interface Level extends Savestate {
 
     Position[] getTeleports();
 
-    GreenButton[] getGreenButtons();
+    Map<Position, GreenButton> getGreenButtons();
 
-    RedButton[] getRedButtons();
+    Map<Position, RedButton> getRedButtons();
 
-    BrownButton[] getBrownButtons();
+    Map<Position, BrownButton> getBrownButtons();
 
-    BlueButton[] getBlueButtons();
+    Map<Position, BlueButton> getBlueButtons();
 
-    void setGreenButtons(GreenButton[] greenButtons);
+    void setGreenButtons(Map<Position, GreenButton> greenButtons);
 
-    void setRedButtons(RedButton[] redButtons);
+    void setRedButtons(Map<Position, RedButton> redButtons);
 
-    void setBrownButtons(BrownButton[] brownButtons);
+    void setBrownButtons(Map<Position, BrownButton> brownButtons);
 
-    void setBlueButtons(BlueButton[] blueButtons);
+    void setBlueButtons(Map<Position, BlueButton> blueButtons);
 
     int getRngSeed();
 

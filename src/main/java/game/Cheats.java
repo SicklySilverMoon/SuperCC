@@ -3,6 +3,9 @@ package game;
 import game.MS.MSCreatureList;
 import game.button.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Cheats {
     
     private final Level level;
@@ -110,22 +113,16 @@ public class Cheats {
         if (tile == Tile.BUTTON_GREEN) { //All this just to avoid a null pointer when you use insert tile to add a blue or green button
             GreenButton button = new GreenButton(position);
 
-            GreenButton[] oldGreenButtons = level.getGreenButtons();
-            GreenButton[] greenButtons = new GreenButton[oldGreenButtons.length + 1];
-            System.arraycopy(oldGreenButtons, 0, greenButtons, 0, oldGreenButtons.length);
-
-            greenButtons[greenButtons.length - 1] = button;
+            Map<Position, GreenButton> greenButtons = new HashMap<>(level.getGreenButtons());
+            greenButtons.put(position ,button);
 
             level.setGreenButtons(greenButtons);
         }
         if (tile == Tile.BUTTON_BLUE) {
             BlueButton button = new BlueButton(position);
 
-            BlueButton[] oldBlueButtons = level.getBlueButtons();
-            BlueButton[] blueButtons = new BlueButton[oldBlueButtons.length + 1];
-            System.arraycopy(oldBlueButtons, 0, blueButtons, 0, oldBlueButtons.length);
-
-            blueButtons[blueButtons.length - 1] = button;
+            Map<Position, BlueButton> blueButtons = new HashMap<>(level.getBlueButtons());
+            blueButtons.put(position, button);
 
             level.setBlueButtons(blueButtons);
         }
