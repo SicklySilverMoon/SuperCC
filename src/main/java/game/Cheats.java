@@ -64,7 +64,7 @@ public class Cheats {
     public void setPosition(Creature creature, Position position) {
         if (level.supportsLayerBG())
             level.popTile(creature.getPosition());
-        creature.getPosition().setIndex(position.getIndex());
+        creature.setPosition(position);
         if (level.supportsLayerBG())
             level.insertTile(creature.getPosition(), creature.toTile());
     }
@@ -91,7 +91,7 @@ public class Cheats {
     public void moveChip(Position position) {
         if (level.supportsLayerBG())
             level.popTile(level.getChip().getPosition());
-        level.getChip().getPosition().setIndex(position.getIndex());
+        level.getChip().setPosition(position);
         if (level.supportsLayerBG())
             level.insertTile(position, level.getChip().toTile());
     }

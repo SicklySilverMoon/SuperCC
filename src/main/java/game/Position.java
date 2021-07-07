@@ -32,6 +32,8 @@ public class Position {
     public int getIndex(){
         return index;
     }
+
+    @Deprecated
     public void setIndex(int index){
         this.index = index;
         x = index & 0b11111;
@@ -123,7 +125,9 @@ public class Position {
     }
     
     public Position(int index){
-        setIndex(index);
+        this.index = index;
+        x = index & 0b11111;
+        y = index >>> 5;
     }
     
     public Position(int x, int y, int index) {

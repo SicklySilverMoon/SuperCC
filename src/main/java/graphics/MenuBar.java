@@ -408,9 +408,9 @@ class MenuBar extends JMenuBar{
             String[] tilesetNames = TileSheet.getNames();
             TileSheet[] tileSheets = TileSheet.values();
             for (int i = 0; i < tilesetNames.length; i++) {
-                JRadioButton msccEditor = new JRadioButton(tilesetNames[i]);
+                JRadioButton tilesheetButton = new JRadioButton(tilesetNames[i]);
                 TileSheet tileSheet = tileSheets[i];
-                msccEditor.addActionListener(e -> {
+                tilesheetButton.addActionListener(e -> {
                     int tileWidth, tileHeight;
                     try {
                         tileWidth = emulator.getMainWindow().getGamePanel().getTileWidth();
@@ -432,8 +432,8 @@ class MenuBar extends JMenuBar{
                         emulator.throwError(exc.getMessage());
                     }
                 });
-                allTilesets.add(msccEditor);
-                tileset.add(msccEditor);
+                allTilesets.add(tilesheetButton);
+                tileset.add(tilesheetButton);
             }
             add(tileset);
     

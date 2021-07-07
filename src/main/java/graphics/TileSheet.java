@@ -12,8 +12,8 @@ public enum TileSheet {
     TW("/resources/tw-overlay.png", "/resources/tw-tiles.png", "Tile World"),
     CCEDIT_MSCC("/resources/ms-edit-overlay.png", "/resources/ms-edit-tiles.png", "MSCC (CCEdit)"),
     MSCC("/resources/ms-overlay.png", "/resources/ms-tiles.png", "MSCC"),
-    CCEDIT_CC2("/resources/cc2-edit-overlay.png", "/resources/cc2-edit-tiles.png", "CC2 (CCEdit)"),
-    CC2("/resources/cc2-overlay.png", "/resources/cc2-tiles.png", "CC2"),
+//    CCEDIT_CC2("/resources/cc2-edit-overlay.png", "/resources/cc2-edit-tiles.png", "CC2 (CCEdit)"), //removed on account of not having permission to use and trying to avoid issues
+//    CC2("/resources/cc2-overlay.png", "/resources/cc2-tiles.png", "CC2"),
     CCEDIT_BLACK_AND_WHITE("/resources/bw-overlay.png", "/resources/bw-tiles.png", "MSCC (Black and White - Editor)"); //should probably do a non-editor version
 
     private static final int TILESHEET_WIDTH = 7, TILESHEET_HEIGHT = 16;

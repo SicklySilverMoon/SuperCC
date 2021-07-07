@@ -133,13 +133,14 @@ public class MSCreature extends Creature {
 
     // The entered parameter is for checking if a block has just slid into a trap since in this case it shouldn't generate slide delay
     public void setSliding(boolean wasSliding, boolean isSliding, boolean entered) {
-        if(!(wasSliding || isSliding)) {
+        if (!wasSliding && !isSliding) {
             return;
         }
         MSLevel msLevel = (MSLevel) level;
         if (wasSliding && !isSliding){
             if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
-            else if(!(creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP)) msLevel.slipList.remove(this);
+            else if (!creatureType.isBlock() || msLevel.getLayerBG().get(position) != TRAP)
+                msLevel.slipList.remove(this);
             // Handles block colliding on trap
             else if (creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, position)) {
                 msLevel.slipList.remove(this);
@@ -284,15 +285,15 @@ public class MSCreature extends Creature {
 
     private boolean canLeave(Direction direction, Position position){
         Tile tile = level.getLayerBG().get(position);
-        switch (tile){
-            case THIN_WALL_UP: return direction != UP;
-            case THIN_WALL_RIGHT: return direction != RIGHT;
-            case THIN_WALL_DOWN: return direction != DOWN;
-            case THIN_WALL_LEFT: return direction != LEFT;
-            case THIN_WALL_DOWN_RIGHT: return direction != DOWN && direction != RIGHT;
-            case TRAP: return level.isTrapOpen(position);
-            default: return true;
-        }
+        return switch (tile) {
+            case THIN_WALL_UP -> direction != UP;
+            case THIN_WALL_RIGHT -> direction != RIGHT;
+            case THIN_WALL_DOWN -> direction != DOWN;
+            case THIN_WALL_LEFT -> direction != LEFT;
+            case THIN_WALL_DOWN_RIGHT -> direction != DOWN && direction != RIGHT;
+            case TRAP -> level.isTrapOpen(position);
+            default -> true;
+        };
     }
 
     public boolean canEnter(Direction direction, Tile tile){
@@ -755,10 +756,12 @@ public class MSCreature extends Creature {
         if (direction == null || direction == NONE) return false;
         Direction oldDirection = this.direction;
         setDirection(direction);
-        if (!canLeave(direction, position)) return false;
+        if (!canLeave(direction, position))
+            return false;
         boolean wasSliding = sliding;
         Position newPosition = position.move(direction);
-        if (!newPosition.isValid()) newPosition.setIndex(-1);
+        if (!newPosition.isValid())
+            newPosition = new Position(-1);
 
         Tile newTileFG = level.getLayerFG().get(newPosition);
         Tile newTileBG = level.getLayerBG().get(newPosition);
