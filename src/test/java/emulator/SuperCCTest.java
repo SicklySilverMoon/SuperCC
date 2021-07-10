@@ -68,8 +68,8 @@ class SuperCCTest {
 
     @Test
     void solveCHIPS() {
-        emulator.openLevelset(new File("testData/sets/CHIPS.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CHIPS.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CHIPS.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CHIPS.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -79,8 +79,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP1() {
-        emulator.openLevelset(new File("testData/sets/CCLP1.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP1.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP1.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP1.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -90,8 +90,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP2() {
-        emulator.openLevelset(new File("testData/sets/CCLP2.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP2.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP2.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP2.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -101,7 +101,7 @@ class SuperCCTest {
 
     @Test
     void solveCCLP3() {
-        emulator.openLevelset(new File("testData/sets/CCLP3.DAT"));
+        emulator.openLevelset(new File("./testData/sets/CCLP3.DAT"));
         boolean[] solved = solveLevelset("testData/tws/public_CCLP3.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
@@ -112,8 +112,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP4() {
-        emulator.openLevelset(new File("testData/sets/CCLP4.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP4.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP4.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP4.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -123,8 +123,8 @@ class SuperCCTest {
 
     @Test
     void solveCHIPSLynx() {
-        emulator.openLevelset(new File("testData/sets/CHIPS-lynx.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CHIPS-lynx.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CHIPS-lynx.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CHIPS-lynx.dac.tws");
         solved[144] = true; //"Thanks to...", not playable in Lynx, so we give it a free pass
 
         boolean[] expectedSolved = new boolean[149];
@@ -135,8 +135,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP1Lynx() {
-        emulator.openLevelset(new File("testData/sets/CCLP1-Lynx.dat"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP1-lynx.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP1-Lynx.dat"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP1-lynx.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -146,8 +146,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLXP2() {
-        emulator.openLevelset(new File("testData/sets/CCLXP2.dat"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLXP2.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLXP2.dat"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLXP2.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -157,8 +157,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP3Lynx() {
-        emulator.openLevelset(new File("testData/sets/CCLP3-Lynx.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP3-lynx.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP3-Lynx.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP3-lynx.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -168,8 +168,8 @@ class SuperCCTest {
 
     @Test
     void solveCCLP4Lynx() {
-        emulator.openLevelset(new File("testData/sets/CCLP4-Lynx.DAT"));
-        boolean[] solved = solveLevelset("testData/tws/public_CCLP4-lynx.dac.tws");
+        emulator.openLevelset(new File("./testData/sets/CCLP4-Lynx.DAT"));
+        boolean[] solved = solveLevelset("./testData/tws/public_CCLP4-lynx.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
         Arrays.fill(expectedSolved, Boolean.TRUE);
@@ -179,8 +179,8 @@ class SuperCCTest {
 
     @Test
     void solveUnitTests() {
-        emulator.openLevelset(new File("testData/sets/unitTest.dat"));
-        boolean[] solved = solveLevelset("testData/json/unitTest/unitTest");
+        emulator.openLevelset(new File("./testData/sets/unitTest.dat"));
+        boolean[] solved = solveLevelset("./testData/json/unitTest/unitTest");
 
         boolean[] expectedSolved = new boolean[emulator.lastLevelNumber() - 1];
         Arrays.fill(expectedSolved, Boolean.TRUE);
