@@ -21,9 +21,9 @@ jobs:
       with:
         java-version: '16'
         distribution: 'adopt'
-    - name: Build (Maven)
+    - name: Compile (Maven)
       run: |
         mvn -B package --file pom.xml clean
-        mvn -B package --file pom.xml build
+        mvn -B package --file pom.xml compile
     - name: Test (Maven)
       run: mvn -B package --file pom.xml test

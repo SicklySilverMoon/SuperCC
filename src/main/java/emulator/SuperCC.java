@@ -363,16 +363,28 @@ public class SuperCC {
     }
 
     public void throwError(String s){
-        JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
+        if (hasGui)
+            JOptionPane.showMessageDialog(getMainWindow(), s, "Error", JOptionPane.ERROR_MESSAGE);
+        else
+            System.err.println("[SuperCC Error] " + s);
     }
 
     public void throwMessage(String s){
-        JOptionPane.showMessageDialog(getMainWindow(), s, "SuCC Message", JOptionPane.PLAIN_MESSAGE);
+        if (hasGui)
+            JOptionPane.showMessageDialog(getMainWindow(), s, "SuCC Message", JOptionPane.PLAIN_MESSAGE);
+        else
+            System.out.println("[SuperCC Message] " + s);
     }
 
     public boolean throwQuestion(String s) {
-        return JOptionPane.showConfirmDialog(getMainWindow(), s, "SuCC Option",
-                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+        if (hasGui) {
+            return JOptionPane.showConfirmDialog(getMainWindow(), s, "SuCC Option",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+        }
+        else {
+            System.err.println("Tried throwing question without GUI!");
+            return false;
+        }
     }
 
     public static void main(String[] args){
