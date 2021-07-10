@@ -23,7 +23,7 @@ jobs:
         distribution: 'adopt'
     - name: Compile (Maven)
       run: |
-        mvn -B package --file pom.xml clean
-        mvn -B package --file pom.xml compile
+        mvn -B clean --file pom.xml
+        mvn -B compile --file pom.xml
     - name: Test (Maven)
-      run: mvn -B package --file pom.xml test
+      run: mvn -B test --file pom.xml
