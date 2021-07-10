@@ -9,6 +9,7 @@ import game.button.BlueButton;
 import game.button.BrownButton;
 import game.button.GreenButton;
 import game.button.RedButton;
+import util.MultiHashMap;
 
 import java.util.*;
 
@@ -108,8 +109,8 @@ public class LevelFactory {
         for (Tile t : layerFG) if (t.isSliding()) counter++;
         return counter;
     }
-    private static Map<Position, GreenButton> getGreenButtons(Layer layerFG, Layer layerBG) {
-        Map<Position, GreenButton> buttons = new HashMap<>();
+    private static MultiHashMap<Position, GreenButton> getGreenButtons(Layer layerFG, Layer layerBG) {
+        MultiHashMap<Position, GreenButton> buttons = new MultiHashMap<>();
         for (short i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.BUTTON_GREEN || layerBG.get(i) == Tile.BUTTON_GREEN){
                 Position p = new Position(i);
@@ -118,8 +119,8 @@ public class LevelFactory {
         }
         return buttons;
     }
-    private static Map<Position, BlueButton> getBlueButtons(Layer layerFG, Layer layerBG) {
-        Map<Position, BlueButton> buttons = new HashMap<>();
+    private static MultiHashMap<Position, BlueButton> getBlueButtons(Layer layerFG, Layer layerBG) {
+        MultiHashMap<Position, BlueButton> buttons = new MultiHashMap<>();
         for (short i = 0; i < 32*32; i++){
             if (layerFG.get(i) == Tile.BUTTON_BLUE || layerBG.get(i) == Tile.BUTTON_BLUE){
                 Position p = new Position(i);
@@ -128,16 +129,16 @@ public class LevelFactory {
         }
         return buttons;
     }
-    private static Map<Position, BrownButton> getBrownButtons(int[][] trapConnections) {
-        Map<Position, BrownButton> buttons = new HashMap<>(trapConnections.length);
+    private static MultiHashMap<Position, BrownButton> getBrownButtons(int[][] trapConnections) {
+        MultiHashMap<Position, BrownButton> buttons = new MultiHashMap<>(trapConnections.length);
         for (int i = 0; i < trapConnections.length; i++) {
             Position buttonPos = new Position(trapConnections[i][0]);
             buttons.put(buttonPos, new BrownButton(buttonPos, new Position(trapConnections[i][1]), i));
         }
         return buttons;
     }
-    private static Map<Position, RedButton> getRedButtons(int[][] cloneConnections) {
-        Map<Position, RedButton> buttons = new HashMap<>(cloneConnections.length);
+    private static MultiHashMap<Position, RedButton> getRedButtons(int[][] cloneConnections) {
+        MultiHashMap<Position, RedButton> buttons = new MultiHashMap<>(cloneConnections.length);
         for (int[] cloneConnection : cloneConnections) {
             Position buttonPos = new Position(cloneConnection[0]);
             buttons.put(buttonPos, new RedButton(buttonPos, new Position(cloneConnection[1])));

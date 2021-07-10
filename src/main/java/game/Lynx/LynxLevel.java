@@ -4,6 +4,7 @@ import game.*;
 import game.Cheats;
 import game.MS.SlipList;
 import game.button.*;
+import util.MultiHashMap;
 
 import java.util.BitSet;
 import java.util.List;
@@ -19,10 +20,10 @@ public class LynxLevel extends LynxSavestate implements Level {
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
     private final Position[] toggleDoors, teleports;
-    private Map<Position, GreenButton> greenButtons;
-    private Map<Position, RedButton> redButtons;
-    private Map<Position, BrownButton> brownButtons;
-    private Map<Position, BlueButton> blueButtons;
+    private MultiHashMap<Position, GreenButton> greenButtons;
+    private MultiHashMap<Position, RedButton> redButtons;
+    private MultiHashMap<Position, BrownButton> brownButtons;
+    private MultiHashMap<Position, BlueButton> blueButtons;
     private int rngSeed;
     private Step step;
     private final Direction INITIAL_SLIDE;
@@ -67,42 +68,42 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public Map<Position, GreenButton> getGreenButtons() {
+    public MultiHashMap<Position, GreenButton> getGreenButtons() {
         return greenButtons;
     }
 
     @Override
-    public Map<Position, RedButton> getRedButtons() {
+    public MultiHashMap<Position, RedButton> getRedButtons() {
         return redButtons;
     }
 
     @Override
-    public Map<Position, BrownButton> getBrownButtons() {
+    public MultiHashMap<Position, BrownButton> getBrownButtons() {
         return brownButtons;
     }
 
     @Override
-    public Map<Position, BlueButton> getBlueButtons() {
+    public MultiHashMap<Position, BlueButton> getBlueButtons() {
         return blueButtons;
     }
 
     @Override
-    public void setGreenButtons(Map<Position, GreenButton> greenButtons) {
+    public void setGreenButtons(MultiHashMap<Position, GreenButton> greenButtons) {
         this.greenButtons = greenButtons;
     }
 
     @Override
-    public void setRedButtons(Map<Position, RedButton> redButtons) {
+    public void setRedButtons(MultiHashMap<Position, RedButton> redButtons) {
         this.redButtons = redButtons;
     }
 
     @Override
-    public void setBrownButtons(Map<Position, BrownButton> brownButtons) {
+    public void setBrownButtons(MultiHashMap<Position, BrownButton> brownButtons) {
         this.brownButtons = brownButtons;
     }
 
     @Override
-    public void setBlueButtons(Map<Position, BlueButton> blueButtons) {
+    public void setBlueButtons(MultiHashMap<Position, BlueButton> blueButtons) {
         this.blueButtons = blueButtons;
     }
 
@@ -442,8 +443,8 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
-                   Map<Position, GreenButton> greenButtons, Map<Position, RedButton> redButtons,
-                   Map<Position, BrownButton> brownButtons, Map<Position, BlueButton> blueButtons,
+                   MultiHashMap<Position, GreenButton> greenButtons, MultiHashMap<Position, RedButton> redButtons,
+                   MultiHashMap<Position, BrownButton> brownButtons, MultiHashMap<Position, BlueButton> blueButtons,
                    Layer layerFG, CreatureList monsterList,
                    Creature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength, Direction INITIAL_SLIDE){
 

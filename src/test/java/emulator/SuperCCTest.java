@@ -33,6 +33,9 @@ class SuperCCTest {
             Level level = emulator.getLevel();
             try {
                 Solution s = getSolution(solutionName, i);
+                if (s == null) {
+                    continue;
+                }
                 s.load(emulator, TickFlags.LIGHT);
                 level = emulator.getLevel();
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
@@ -50,11 +53,16 @@ class SuperCCTest {
     }
 
     Solution getSolution(String solutionName, int level) throws IOException {
-        if (emulator.twsReader != null) {
-            return emulator.twsReader.readSolution(emulator.getLevel());
-        } else {
-            byte[] fileBytes = Files.readAllBytes((new File(solutionName + level + ".json")).toPath());
-            return Solution.fromJSON(new String(fileBytes, UTF_8));
+        try {
+            if (emulator.twsReader != null) {
+                return emulator.twsReader.readSolution(emulator.getLevel());
+            }
+            else {
+                byte[] fileBytes = Files.readAllBytes((new File(solutionName + level + ".json")).toPath());
+                return Solution.fromJSON(new String(fileBytes, UTF_8));
+            }
+        } catch (IOException e) {
+            return null;
         }
     }
 

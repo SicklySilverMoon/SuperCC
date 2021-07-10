@@ -16,9 +16,9 @@ import java.util.Objects;
 
 public class TSPGUI {
     private JPanel mainPanel;
-    private JList nodesList;
-    private JList exitsList;
-    private JList restrictionsList;
+    private JList<ListNode> nodesList;
+    private JList<ListNode> exitsList;
+    private JList<RestrictionNode> restrictionsList;
     private JTextField nodesInput;
     private JButton addNodeButton;
     private JTextField exitsInput;
@@ -78,6 +78,12 @@ public class TSPGUI {
     }
 
     private void setup() {
+        if (nodesList == null || exitsList == null || restrictionsList == null) {
+            nodesList = new JList<>(); //yes yes its overriden by the IntelliJ forms generator, but maven doesn't
+            exitsList = new JList<>(); //have that so this prevents errors from building it with maven
+            restrictionsList = new JList<>();
+        }
+
         this.nodesList.setModel(nodes);
         this.exitsList.setModel(exitNodes);
         this.restrictionsList.setModel(restrictionNodes);
@@ -118,128 +124,139 @@ public class TSPGUI {
                 public void windowDeactivated(WindowEvent windowEvent) {
                 }
             });
-        }
 
-        runButton.addActionListener(e -> {
-            if(running) {
-                killFlag = true;
-                return;
-            }
-            new TSPSolverThread(this).start();
-        });
-
-
-        addNodeButton.addActionListener(e -> {
-            try {
-                String[] coords = nodesInput.getText().split(" ");
-                if(coords.length != 2) throw new Exception("Please enter two numbers between 0 and 31 separated by a space.");
-                int x = Integer.parseInt(coords[0]);
-                int y = Integer.parseInt(coords[1]);
-                if(x < 0 || x > 31 || y < 0 || y > 31) throw new Exception("Numbers must be between 0 and 31 inclusive.");
-
-                ListNode node = new ListNode(x, y, emulator.getLevel().getLayerFG().get(new Position(x, y)));
-                if(checkDuplicate(nodes, node)) throw new Exception("No duplicates allowed");
-                nodes.addElement(node);
-                nodesInput.setText("");
-            } catch(Exception ex) {
-                emulator.throwError(ex.getMessage());
-            }
-        });
-
-        removeNodeButton.addActionListener(e -> {
-            int index = nodesList.getSelectedIndex();
-            if(index != -1) {
-                removeRelatedRestrictions(nodes.getElementAt(index));
-                nodes.remove(index);
-            }
-        });
-
-        allChipsButton.addActionListener(e -> {
-            nodes.clear();
-            restrictionNodes.clear();
-            addAllTilesToContainer(nodes, Tile.CHIP);
-        });
+            runButton.addActionListener(e -> {
+                if (running) {
+                    killFlag = true;
+                    return;
+                }
+                new TSPSolverThread(this).start();
+            });
 
 
-        addExitButton.addActionListener(e -> {
-            try {
-                String[] coords = exitsInput.getText().split(" ");
-                if(coords.length != 2) throw new Exception("Please enter two numbers between 0 and 31 separated by a space.");
-                int x = Integer.parseInt(coords[0]);
-                int y = Integer.parseInt(coords[1]);
-                if(x < 0 || x > 31 || y < 0 || y > 31) throw new Exception("Numbers must be between 0 and 31 inclusive.");
+            addNodeButton.addActionListener(e -> {
+                try {
+                    String[] coords = nodesInput.getText().split(" ");
+                    if (coords.length != 2)
+                        throw new Exception("Please enter two numbers between 0 and 31 separated by a space.");
+                    int x = Integer.parseInt(coords[0]);
+                    int y = Integer.parseInt(coords[1]);
+                    if (x < 0 || x > 31 || y < 0 || y > 31)
+                        throw new Exception("Numbers must be between 0 and 31 inclusive.");
 
-                ListNode node = new ListNode(x, y, emulator.getLevel().getLayerFG().get(new Position(x, y)));
-                if(checkDuplicate(exitNodes, node)) throw new Exception("No duplicates allowed.");
-                exitNodes.addElement(node);
-                exitsInput.setText("");
-            } catch(Exception ex) {
-                emulator.throwError(ex.getMessage());
-            }
-        });
+                    ListNode node = new ListNode(x, y, emulator.getLevel().getLayerFG().get(new Position(x, y)));
+                    if (checkDuplicate(nodes, node))
+                        throw new Exception("No duplicates allowed");
+                    nodes.addElement(node);
+                    nodesInput.setText("");
+                } catch (Exception ex) {
+                    emulator.throwError(ex.getMessage());
+                }
+            });
 
-        removeExitButton.addActionListener(e -> {
-            int index = exitsList.getSelectedIndex();
-            if(index != -1) {
-                exitNodes.remove(index);
-            }
-        });
+            removeNodeButton.addActionListener(e -> {
+                int index = nodesList.getSelectedIndex();
+                if (index != -1) {
+                    removeRelatedRestrictions(nodes.getElementAt(index));
+                    nodes.remove(index);
+                }
+            });
 
-        allExitsButton.addActionListener(e -> {
-            exitNodes.clear();
-            addAllTilesToContainer(exitNodes, Tile.EXIT);
-        });
-
-
-        addRestrictionButton.addActionListener(e -> {
-            try {
-                String[] coords = restrictionsInput.getText().split(" ");
-                if(coords.length != 4) throw new Exception("Please enter four numbers between 0 and 31 separated by a space.");
-                int x1 = Integer.parseInt(coords[0]);
-                int y1 = Integer.parseInt(coords[1]);
-                int x2 = Integer.parseInt(coords[2]);
-                int y2 = Integer.parseInt(coords[3]);
-                if(x1 < 0 || x1 > 31 || y1 < 0 || y1 > 31 || x2 < 0 || x2 > 31 || y2 < 0 || y2 > 31) throw new Exception("Numbers must be between 0 and 31 inclusive.");
-                if(x1 == x2 && y1 == y2) throw new Exception("Both coordinates cannot be equal.");
-
-                ListNode n1 = new ListNode(x1, y1, emulator.getLevel().getLayerFG().get(new Position(x1, y1)));
-                ListNode n2 = new ListNode(x2, y2, emulator.getLevel().getLayerFG().get(new Position(x2, y2)));
-                if(!nodesExist(n1, n2)) throw new Exception("Coordinates must refer to nodes.");
-
-                RestrictionNode node = new RestrictionNode(n1, n2);
-                if(checkDuplicate(restrictionNodes, node)) throw new Exception("No duplicates allowed.");
-                restrictionNodes.addElement(node);
-                restrictionsInput.setText("");
-            } catch(Exception ex) {
-                emulator.throwError(ex.getMessage());
-            }
-        });
-
-        removeRestrictionButton.addActionListener(e -> {
-            int index = restrictionsList.getSelectedIndex();
-            if(index != -1) {
-                restrictionNodes.remove(index);
-            }
-        });
+            allChipsButton.addActionListener(e -> {
+                nodes.clear();
+                restrictionNodes.clear();
+                addAllTilesToContainer(nodes, Tile.CHIP);
+            });
 
 
-        setParameters(100, 0.1, 0.995, 20000);
+            addExitButton.addActionListener(e -> {
+                try {
+                    String[] coords = exitsInput.getText().split(" ");
+                    if (coords.length != 2)
+                        throw new Exception("Please enter two numbers between 0 and 31 separated by a space.");
+                    int x = Integer.parseInt(coords[0]);
+                    int y = Integer.parseInt(coords[1]);
+                    if (x < 0 || x > 31 || y < 0 || y > 31)
+                        throw new Exception("Numbers must be between 0 and 31 inclusive.");
 
-        quickButton.addActionListener(e -> {
-            setParameters(100, 0.1, 0.98, 10000);
-        });
+                    ListNode node = new ListNode(x, y, emulator.getLevel().getLayerFG().get(new Position(x, y)));
+                    if (checkDuplicate(exitNodes, node))
+                        throw new Exception("No duplicates allowed.");
+                    exitNodes.addElement(node);
+                    exitsInput.setText("");
+                } catch (Exception ex) {
+                    emulator.throwError(ex.getMessage());
+                }
+            });
 
-        normalButton.addActionListener(e -> {
+            removeExitButton.addActionListener(e -> {
+                int index = exitsList.getSelectedIndex();
+                if (index != -1) {
+                    exitNodes.remove(index);
+                }
+            });
+
+            allExitsButton.addActionListener(e -> {
+                exitNodes.clear();
+                addAllTilesToContainer(exitNodes, Tile.EXIT);
+            });
+
+
+            addRestrictionButton.addActionListener(e -> {
+                try {
+                    String[] coords = restrictionsInput.getText().split(" ");
+                    if (coords.length != 4)
+                        throw new Exception("Please enter four numbers between 0 and 31 separated by a space.");
+                    int x1 = Integer.parseInt(coords[0]);
+                    int y1 = Integer.parseInt(coords[1]);
+                    int x2 = Integer.parseInt(coords[2]);
+                    int y2 = Integer.parseInt(coords[3]);
+                    if (x1 < 0 || x1 > 31 || y1 < 0 || y1 > 31 || x2 < 0 || x2 > 31 || y2 < 0 || y2 > 31)
+                        throw new Exception("Numbers must be between 0 and 31 inclusive.");
+                    if (x1 == x2 && y1 == y2)
+                        throw new Exception("Both coordinates cannot be equal.");
+
+                    ListNode n1 = new ListNode(x1, y1, emulator.getLevel().getLayerFG().get(new Position(x1, y1)));
+                    ListNode n2 = new ListNode(x2, y2, emulator.getLevel().getLayerFG().get(new Position(x2, y2)));
+                    if (!nodesExist(n1, n2))
+                        throw new Exception("Coordinates must refer to nodes.");
+
+                    RestrictionNode node = new RestrictionNode(n1, n2);
+                    if (checkDuplicate(restrictionNodes, node))
+                        throw new Exception("No duplicates allowed.");
+                    restrictionNodes.addElement(node);
+                    restrictionsInput.setText("");
+                } catch (Exception ex) {
+                    emulator.throwError(ex.getMessage());
+                }
+            });
+
+            removeRestrictionButton.addActionListener(e -> {
+                int index = restrictionsList.getSelectedIndex();
+                if (index != -1) {
+                    restrictionNodes.remove(index);
+                }
+            });
+
+
             setParameters(100, 0.1, 0.995, 20000);
-        });
 
-        longButton.addActionListener(e -> {
-            setParameters(100, 0.05, 0.998, 50000);
-        });
+            quickButton.addActionListener(e -> {
+                setParameters(100, 0.1, 0.98, 10000);
+            });
 
-        thoroughButton.addActionListener(e -> {
-            setParameters(100, 0.05, 0.999, 100000);
-        });
+            normalButton.addActionListener(e -> {
+                setParameters(100, 0.1, 0.995, 20000);
+            });
+
+            longButton.addActionListener(e -> {
+                setParameters(100, 0.05, 0.998, 50000);
+            });
+
+            thoroughButton.addActionListener(e -> {
+                setParameters(100, 0.05, 0.999, 100000);
+            });
+        }
     }
 
     private void removeRelatedRestrictions(ListNode node) {

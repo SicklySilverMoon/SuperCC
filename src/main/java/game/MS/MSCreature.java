@@ -607,12 +607,14 @@ public class MSCreature extends Creature {
                 kill();
                 return true;
             case TRAP:
-                for(BrownButton button : level.getBrownButtons().values()) {
-                    if(button.getTargetPosition().equals(newPosition)) {
-                        if(msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {
-                            msLevel.traps.set(button.getTrapIndex(), true);
+                for (List<BrownButton> buttons : level.getBrownButtons().valuesList()) {
+                    for (BrownButton button : buttons) {
+                        if (button.getTargetPosition().equals(newPosition)) {
+                            if (msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {
+                                msLevel.traps.set(button.getTrapIndex(), true);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
                 return true;

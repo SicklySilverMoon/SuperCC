@@ -2,6 +2,7 @@ package game;
 
 import game.MS.*;
 import game.button.*;
+import util.MultiHashMap;
 
 import java.util.BitSet;
 import java.util.Map;
@@ -21,21 +22,21 @@ public interface Level extends Savestate {
 
     Position[] getTeleports();
 
-    Map<Position, GreenButton> getGreenButtons();
+    MultiHashMap<Position, GreenButton> getGreenButtons();
 
-    Map<Position, RedButton> getRedButtons();
+    MultiHashMap<Position, RedButton> getRedButtons();
 
-    Map<Position, BrownButton> getBrownButtons();
+    MultiHashMap<Position, BrownButton> getBrownButtons();
 
-    Map<Position, BlueButton> getBlueButtons();
+    MultiHashMap<Position, BlueButton> getBlueButtons();
 
-    void setGreenButtons(Map<Position, GreenButton> greenButtons);
+    void setGreenButtons(MultiHashMap<Position, GreenButton> greenButtons);
 
-    void setRedButtons(Map<Position, RedButton> redButtons);
+    void setRedButtons(MultiHashMap<Position, RedButton> redButtons);
 
-    void setBrownButtons(Map<Position, BrownButton> brownButtons);
+    void setBrownButtons(MultiHashMap<Position, BrownButton> brownButtons);
 
-    void setBlueButtons(Map<Position, BlueButton> blueButtons);
+    void setBlueButtons(MultiHashMap<Position, BlueButton> blueButtons);
 
     int getRngSeed();
 

@@ -3,6 +3,7 @@ package game.MS;
 import emulator.SuperCC;
 import game.*;
 import game.button.*;
+import util.MultiHashMap;
 
 import java.util.BitSet;
 import java.util.HashSet;
@@ -32,12 +33,12 @@ public class MSLevel extends MSSavestate implements Level {
     private int levelNumber, startTime;
     private final byte[] title, password, hint;
     private final Position[] toggleDoors, teleports;
-    private Map<Position, GreenButton> greenButtons;
-    private Map<Position, RedButton> redButtons;
-    private Map<Position, BrownButton> brownButtons;
-    private Map<Position, BlueButton> blueButtons;
-    private int rngSeed;
-    private Step step;
+    private MultiHashMap<Position, GreenButton> greenButtons;
+    private MultiHashMap<Position, RedButton> redButtons;
+    private MultiHashMap<Position, BrownButton> brownButtons;
+    private MultiHashMap<Position, BlueButton> blueButtons;
+    private final int rngSeed;
+    private final Step step;
     private boolean levelWon;
     
     private final Cheats cheats;
@@ -71,35 +72,35 @@ public class MSLevel extends MSSavestate implements Level {
         return teleports;
     }
     @Override
-    public Map<Position, GreenButton> getGreenButtons() {
+    public MultiHashMap<Position, GreenButton> getGreenButtons() {
         return greenButtons;
     }
     @Override
-    public Map<Position, RedButton> getRedButtons() {
+    public MultiHashMap<Position, RedButton> getRedButtons() {
         return redButtons;
     }
     @Override
-    public Map<Position, BrownButton> getBrownButtons() {
+    public MultiHashMap<Position, BrownButton> getBrownButtons() {
         return brownButtons;
     }
     @Override
-    public Map<Position, BlueButton> getBlueButtons() {
+    public MultiHashMap<Position, BlueButton> getBlueButtons() {
         return blueButtons;
     }
     @Override
-    public void setGreenButtons(Map<Position, GreenButton> greenButtons) {
+    public void setGreenButtons(MultiHashMap<Position, GreenButton> greenButtons) {
         this.greenButtons = greenButtons;
     }
     @Override
-    public void setRedButtons(Map<Position, RedButton> redButtons) {
+    public void setRedButtons(MultiHashMap<Position, RedButton> redButtons) {
         this.redButtons = redButtons;
     }
     @Override
-    public void setBrownButtons(Map<Position, BrownButton> brownButtons) {
+    public void setBrownButtons(MultiHashMap<Position, BrownButton> brownButtons) {
         this.brownButtons = brownButtons;
     }
     @Override
-    public void setBlueButtons(Map<Position, BlueButton> blueButtons) {
+    public void setBlueButtons(MultiHashMap<Position, BlueButton> blueButtons) {
         this.blueButtons = blueButtons;
     }
     @Override
@@ -251,9 +252,11 @@ public class MSLevel extends MSSavestate implements Level {
     }
     @Override
     public void setTrap(Position trapPos, boolean open) {
-        for (BrownButton b : brownButtons.values()) {
-            if (b.getTargetPosition().equals(trapPos))
-                traps.set(b.getTrapIndex(), open);
+        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+            for (BrownButton b : buttons) {
+                if (b.getTargetPosition().equals(trapPos))
+                    traps.set(b.getTrapIndex(), open);
+            }
         }
     }
     @Override
@@ -343,9 +346,11 @@ public class MSLevel extends MSSavestate implements Level {
     }
     @Override
     public boolean isTrapOpen(Position position) {
-        for (BrownButton b : brownButtons.values()) {
-            if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex()))
-                return true;
+        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+            for (BrownButton b : buttons) {
+                if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex()))
+                    return true;
+            }
         }
         return false;
     }
@@ -385,13 +390,15 @@ public class MSLevel extends MSSavestate implements Level {
 
     private void finaliseTraps(){
         HashSet<Position> pressedButtons = new HashSet<>();
-        for (BrownButton b : brownButtons.values()) {
-            if (layerFG.get(b.getButtonPosition()) != BUTTON_BROWN && !pressedButtons.contains(b.getButtonPosition())){
-                traps.set(b.getTrapIndex(), true);
-                pressedButtons.add(b.getButtonPosition());
-            }
-            else if (layerFG.get(b.getTargetPosition()) == TRAP){
-                traps.set(b.getTrapIndex(), false);
+        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+            for (BrownButton b : buttons) {
+                if (layerFG.get(b.getButtonPosition()) != BUTTON_BROWN && !pressedButtons.contains(b.getButtonPosition())) {
+                    traps.set(b.getTrapIndex(), true);
+                    pressedButtons.add(b.getButtonPosition());
+                }
+                else if (layerFG.get(b.getTargetPosition()) == TRAP) {
+                    traps.set(b.getTrapIndex(), false);
+                }
             }
         }
     }
@@ -632,8 +639,8 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
-                   Map<Position, GreenButton> greenButtons, Map<Position, RedButton> redButtons,
-                   Map<Position, BrownButton> brownButtons, Map<Position, BlueButton> blueButtons, BitSet traps,
+                   MultiHashMap<Position, GreenButton> greenButtons, MultiHashMap<Position, RedButton> redButtons,
+                   MultiHashMap<Position, BrownButton> brownButtons, MultiHashMap<Position, BlueButton> blueButtons, BitSet traps,
                    Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
                    MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
 
@@ -663,9 +670,11 @@ public class MSLevel extends MSSavestate implements Level {
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
 
-        for (BrownButton b : getBrownButtons().values()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
-            if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK || getLayerFG().get(b.getTargetPosition()) == ICE_BLOCK) {
-                b.press(this);
+        for (List<BrownButton> buttons : getBrownButtons().valuesList()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
+            for (BrownButton b : buttons) {
+                if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK || getLayerFG().get(b.getTargetPosition()) == ICE_BLOCK) {
+                    b.press(this);
+                }
             }
         }
     }
