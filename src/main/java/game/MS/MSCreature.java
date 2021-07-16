@@ -150,7 +150,7 @@ public class MSCreature extends Creature {
         else if (!wasSliding && isSliding){
             if (creatureType.isChip()) setCreatureType(CHIP_SLIDING);
             else if (msLevel.getSlipList().contains(this)) {
-                new RuntimeException("adding block twice on level "+msLevel.getLevelNumber()+" "+new String(msLevel.getTitle())).printStackTrace();
+                new RuntimeException("adding block twice on level "+msLevel.getLevelNumber()+" "+ msLevel.getTitle()).printStackTrace();
             }
             else {
                 msLevel.getSlipList().add(this);
@@ -607,7 +607,7 @@ public class MSCreature extends Creature {
                 kill();
                 return true;
             case TRAP:
-                for (List<BrownButton> buttons : level.getBrownButtons().valuesList()) {
+                for (List<BrownButton> buttons : level.getBrownButtons().rawValues()) {
                     for (BrownButton button : buttons) {
                         if (button.getTargetPosition().equals(newPosition)) {
                             if (msLevel.getLayerFG().get(button.getButtonPosition()) != BUTTON_BROWN) {

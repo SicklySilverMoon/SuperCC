@@ -54,15 +54,23 @@ public class LevelPanel extends TextPanel {
     
         g.setColor(Color.DARK_GRAY);
         g.fillRect(0, 0, getWidth(), getHeight());
+
         g.setColor(Color.WHITE);
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         drawText(g, "Level "+level.getLevelNumber()+": ", 1);
         drawText(g, "", 1);
+
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 32));
-        drawText(g, new String(level.getTitle()), 3);
+        drawText(g, level.getTitle(), 3);
+
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
+        drawText(g, "Password: " + new String(level.getPassword()), 1);
+        if (level.getAuthor() != null)
+            drawText(g, "Author: " + new String(level.getAuthor()), 1);
         drawText(g, level.getStep().toString()+" step, seed: "+level.getRngSeed(), 1);
-        if (level.hasCyclicRFF()) drawText(g, "RFF Initial Direction: "+level.getInitialRFFDirection(), 1);
+        if (level.hasCyclicRFF())
+            drawText(g, "RFF Initial Direction: "+level.getInitialRFFDirection(), 1);
+
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 24));
         drawText(g, "", 1);
         drawText(g, "Time: "+ timerToString(level), 1);

@@ -39,12 +39,12 @@ class SuperCCTest {
                 s.load(emulator, TickFlags.LIGHT);
                 level = emulator.getLevel();
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
-                    System.out.println("failed level " + level.getLevelNumber() + " " + new String(level.getTitle()));
+                    System.out.println("failed level " + level.getLevelNumber() + " " + level.getTitle());
                 } else {
                     solved[i - 1] = true;
                 }
             } catch (Exception exc) {
-                System.out.println("Error loading " + level.getLevelNumber() + " " + new String(level.getTitle()));
+                System.out.println("Error loading " + level.getLevelNumber() + " " + level.getTitle());
                 exc.printStackTrace();
             }
         }

@@ -327,7 +327,7 @@ class MenuBar extends JMenuBar{
                     if (fileBytes != null) {
                         ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
                         SavestateManager savestates = (SavestateManager) new ObjectInputStream(bis).readObject();
-                        if(Arrays.equals(emulator.getLevel().getTitle(), savestates.getLevelTitle())) {
+                        if(Arrays.equals(emulator.getLevel().getTitle().getBytes("Windows-1252"), savestates.getLevelTitle())) {
                             savestates.setEmulator(emulator);
                             savestates.setNode(emulator.getSavestates().getNode());
                             savestates.setMoves(emulator.getSavestates().getMoveList().clone());

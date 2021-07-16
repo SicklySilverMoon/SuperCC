@@ -175,9 +175,9 @@ public class LevelFactory {
      * @return A Level
      */
     static Level makeLevel(int levelNumber, int timeLimit, int chips, byte[] byteLayerFG, byte[] byteLayerBG,
-                             byte[] title, int[][] trapConnections, int[][] cloneConnections, byte[] password,
-                             byte[] hint, int[][] monsterPositions, int rngSeed, Step step, int lastLevel,
-                             Ruleset rules, Direction initialSlide){
+                             String title, int[][] trapConnections, int[][] cloneConnections, String password,
+                             String hint, String author, int[][] monsterPositions, int rngSeed, Step step,
+                             int lastLevel, Ruleset rules, Direction initialSlide) {
 
         Layer layerBG = new ByteLayer(byteLayerBG);
         Layer layerFG = new ByteLayer(byteLayerFG);
@@ -188,6 +188,7 @@ public class LevelFactory {
                 title,
                 password,
                 hint,
+                author,
                 getToggleDoors(layerFG, layerBG),
                 getTeleports(layerFG, layerBG),
                 getGreenButtons(layerFG, layerBG),
@@ -215,6 +216,7 @@ public class LevelFactory {
                 title,
                 password,
                 hint,
+                author,
                 getToggleDoors(layerFG, layerBG),
                 getTeleports(layerFG, layerBG),
                 getGreenButtons(layerFG, layerBG),

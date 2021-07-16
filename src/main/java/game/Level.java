@@ -12,11 +12,13 @@ public interface Level extends Savestate {
 
     int getStartTime();
 
-    byte[] getTitle();
+    String getTitle();
 
-    byte[] getPassword();
+    String getPassword();
 
-    byte[] getHint();
+    String getHint();
+
+    String getAuthor();
 
     Position[] getToggleDoors();
 

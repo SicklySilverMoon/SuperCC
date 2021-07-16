@@ -124,7 +124,7 @@ public class TWSWriter{
         }
         void writeLevelHeader(Level level, Solution solution) throws IOException {
             writeShort(level.getLevelNumber());
-            byte[] password = level.getPassword();
+            byte[] password = level.getPassword().getBytes("Windows-1252");
             for (int i = 0; i < 4; i++)
                 write(password[i]);
             write(0x83);                                   // Other flags

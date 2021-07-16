@@ -113,11 +113,12 @@ public class DatParser{
             final int mapDetail = reader.readWord();
             final byte[] layerFG = readLayer(reader);
             final byte[] layerBG = readLayer(reader);
-            byte[] title = null;
+            String title = null;
             int[][] trapConnections = new int[][] {};
             int[][] cloneConnections = new int[][] {};
-            byte[] password = null;
-            byte[] hint = null;
+            String password = null;
+            String hint = null;
+            String author = null;
             int[][] monsterPositions = null;
             int optionalFieldsLength = reader.readWord();
             while (optionalFieldsLength > 0) {
@@ -133,7 +134,7 @@ public class DatParser{
                         chips = reader.readWord();
                         break;
                     case 3:
-                        title = reader.readAscii(fieldLength);
+                        title = reader.readText(fieldLength);
                         break;
                     case 4:
                         trapConnections = readConnections(reader, fieldLength / 10, true);
@@ -142,16 +143,16 @@ public class DatParser{
                         cloneConnections = readConnections(reader, fieldLength / 8, false);
                         break;
                     case 6:
-                        password = reader.readEncodedAscii(fieldLength);
+                        password = reader.readEncodedText(fieldLength);
                         break;
                     case 7:
-                        hint = reader.readAscii(fieldLength);
+                        hint = reader.readText(fieldLength);
                         break;
                     case 8:
-                        password = reader.readAscii(fieldLength);
+                        password = reader.readText(fieldLength);
                         break;
                     case 9:
-                        for (int j = 0; j < fieldLength; j++) reader.readUnsignedByte();
+                        author = reader.readText(fieldLength);
                         break;
                     case 10:
                         int numMonsters = fieldLength / 2;
@@ -167,7 +168,7 @@ public class DatParser{
 
             reader.close();
             return LevelFactory.makeLevel(levelNumber, timeLimit, chips, layerFG, layerBG, title, trapConnections,
-                    cloneConnections, password, hint, monsterPositions, rngSeed, step, lastLevel(), this.rules, initialSlide);
+                    cloneConnections, password, hint, author, monsterPositions, rngSeed, step, lastLevel(), this.rules, initialSlide);
         }
         catch (IOException e){
             reader.close();
@@ -219,18 +220,19 @@ public class DatParser{
         private int readInt32() throws IOException{
             return readUnsignedByte() + 256*readUnsignedByte() + 65536*readUnsignedByte() + 16777216*readUnsignedByte();
         }
-        private byte[] readAscii(int length) throws IOException{
-            byte[] asciiBytes = new byte[length-1];
-            read(asciiBytes, 0, length-1);
+        private String readText(int length) throws IOException{
+            byte[] textBytes = new byte[length-1];
+            read(textBytes, 0, length-1);
             read();                                         // trailing '\0'
-            return asciiBytes;
+            return new String(textBytes, "Windows-1252");
         }
-        private byte[] readEncodedAscii(int length) throws IOException{
-            byte[] asciiBytes = new byte[length];
-            read(asciiBytes, 0, length-1);
+        private String readEncodedText(int length) throws IOException{
+            byte[] textBytes = new byte[length-1];
+            read(textBytes, 0, length-1);
             read();                                         // trailing '\0'
-            for (int i = 0; i < length; i++) asciiBytes[i] = (byte) ((int) asciiBytes[i] ^ 0x99);
-            return asciiBytes;
+            for (int i = 0; i < length - 1; i++)
+                textBytes[i] = (byte) (textBytes[i] ^ 0x99);
+            return new String(textBytes, "Windows-1252");
         }
         DatReader (File datFile) throws IOException{
             super(datFile);

@@ -6,7 +6,6 @@ import game.MS.SlipList;
 import game.button.*;
 import util.MultiHashMap;
 
-import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     private final int LEVELSET_LENGTH;
 
     private int levelNumber, startTime;
-    private final byte[] title, password, hint;
+    private final String title, password, hint, author;
     private final Position[] toggleDoors, teleports;
     private MultiHashMap<Position, GreenButton> greenButtons;
     private MultiHashMap<Position, RedButton> redButtons;
@@ -43,18 +42,23 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public byte[] getTitle() {
+    public String getTitle() {
         return title;
     }
 
     @Override
-    public byte[] getPassword() {
+    public String getPassword() {
         return password;
     }
 
     @Override
-    public byte[] getHint() {
+    public String getHint() {
         return hint;
+    }
+
+    @Override
+    public String getAuthor() {
+        return author;
     }
 
     @Override
@@ -442,7 +446,8 @@ public class LynxLevel extends LynxSavestate implements Level {
         turnTanks ^= true;
     }
 
-    public LynxLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
+    public LynxLevel(int levelNumber, String title, String password, String hint, String author,
+                   Position[] toggleDoors, Position[] teleports,
                    MultiHashMap<Position, GreenButton> greenButtons, MultiHashMap<Position, RedButton> redButtons,
                    MultiHashMap<Position, BrownButton> brownButtons, MultiHashMap<Position, BlueButton> blueButtons,
                    Layer layerFG, CreatureList monsterList,
@@ -456,6 +461,7 @@ public class LynxLevel extends LynxSavestate implements Level {
         this.title = title;
         this.password = password;
         this.hint = hint;
+        this.author = author;
         this.toggleDoors = toggleDoors;
         this.teleports = teleports;
         this.greenButtons = greenButtons;

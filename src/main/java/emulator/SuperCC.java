@@ -52,7 +52,7 @@ public class SuperCC {
     }
     
     public String getJSONPath() {
-        String levelName = new String(level.getTitle()).replaceAll("[^a-zA-Z0-9 ]",""); //Delete everything except letters, numbers, and spaces so you won't get issues with illegal filenames
+        String levelName = level.getTitle().replaceAll("[^a-zA-Z0-9 ]",""); //Delete everything except letters, numbers, and spaces so you won't get issues with illegal filenames
         //levelName = levelName.substring(0, levelName.length()-1).replaceAll("\\s","_"); //No longer needed as the previous line now takes care of this but kept commented in case its needed in future
         return paths.getJSONPath(dat.getLevelsetName(), level.getLevelNumber(), levelName, level.getRuleset().name());
     }
@@ -177,7 +177,7 @@ public class SuperCC {
                 solution = new Solution(new char[] {}, 0, Step.EVEN, Solution.BASIC_MOVES, level.getRuleset(), Direction.UP);
                 if(hasGui) {
                     window.repaint(true);
-                    window.setTitle("SuperCC - " + new String(level.getTitle()));
+                    window.setTitle("SuperCC - " + level.getTitle());
                 }
             }
         }
@@ -270,11 +270,11 @@ public class SuperCC {
                 // System.out.println(s.efficiency);
                 s.load(this);
                 if (level.getLayerFG().get(level.getChip().getPosition()) != Tile.EXITED_CHIP && !level.isCompleted()) {
-                    System.out.println("failed level "+level.getLevelNumber()+" "+new String(level.getTitle()));
+                    System.out.println("failed level "+level.getLevelNumber()+" "+ level.getTitle());
                 }
             }
             catch (Exception exc) {
-                System.out.println("Error loading "+level.getLevelNumber()+" "+new String(level.getTitle()));
+                System.out.println("Error loading "+level.getLevelNumber()+" "+ level.getTitle());
                 exc.printStackTrace();
             }
         }

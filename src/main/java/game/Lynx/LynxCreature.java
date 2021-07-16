@@ -430,7 +430,7 @@ public class LynxCreature extends Creature {
             }
 
             if (enteringTile == HIDDENWALL_TEMP || enteringTile == BLUEWALL_REAL) {
-                if (timeTraveled == 0)
+                if (timeTraveled == 0 && level.getLayerFG().get(this.position) != TELEPORT)
                     level.getLayerFG().set(position, WALL);
                 return false;
             }

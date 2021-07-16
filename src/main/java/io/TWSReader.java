@@ -7,6 +7,7 @@ import game.Ruleset;
 import game.Step;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static emulator.SuperCC.*;
@@ -20,7 +21,7 @@ public class TWSReader{
     private final Ruleset ruleset;
 
     public Solution readSolution(Level level) throws IOException{
-        byte[] password = level.getPassword();
+        byte[] password = level.getPassword().getBytes("Windows-1252");
         Long pass = Integer.toUnsignedLong(
                 password[0] + 0x100 * password[1] + 0x10000 * password[2] + 0x1000000 * password[3]
         );

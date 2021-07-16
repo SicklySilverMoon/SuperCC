@@ -98,8 +98,8 @@ public abstract class GamePanel extends JPanel
         overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterListNumbers) drawMonsterListNumbers(level, level.getMonsterList(), overlayImage);
         if (showSlipListNumbers && level.supportsSliplist()) drawSlipListNumbers(level.getSlipList(), overlayImage);
-        if (showCloneConnections) drawButtonConnections(level.getRedButtons().values(), overlayImage);
-        if (showTrapConnections) drawButtonConnections(level.getBrownButtons().values(), overlayImage);
+        if (showCloneConnections) drawButtonConnections(level.getRedButtons().allValues(), overlayImage);
+        if (showTrapConnections) drawButtonConnections(level.getBrownButtons().allValues(), overlayImage);
         if (showHistory) drawChipHistory(level.getChip().getPosition(), overlayImage);
     }
 

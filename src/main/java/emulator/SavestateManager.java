@@ -12,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -317,9 +319,9 @@ public class SavestateManager implements Serializable {
         return currentNode;
     }
     
-    SavestateManager(SuperCC emulator, Level level){
+    SavestateManager(SuperCC emulator, Level level) throws UnsupportedEncodingException {
         this.emulator = emulator;
-        levelTitle = level.getTitle();
+        levelTitle = level.getTitle().getBytes("Windows-1252");
 //        emulator.savestateCompressor.initialise();
         currentNode = new TreeNode<>(level.save(), null);
         playbackNodes.add(currentNode);
@@ -334,9 +336,9 @@ public class SavestateManager implements Serializable {
         return chipHistory;
     }
 
-    public void setEmulator(SuperCC emulator) {
+    public void setEmulator(SuperCC emulator) throws UnsupportedEncodingException {
         this.emulator = emulator;
-        levelTitle = emulator.getLevel().getTitle();
+        levelTitle = emulator.getLevel().getTitle().getBytes("Windows-1252");
         emulator.repaint(true);
 //        emulator.savestateCompressor.initialise();
         /* Yes having this here does make the method do more than its name implies, however seeing as the only reason

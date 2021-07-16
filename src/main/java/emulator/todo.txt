@@ -1,8 +1,0 @@
-shift + arrows to click
-"lynx" timing mode
-chip waiting timer
-monster cheats
-reload dat when changing level
-brute force
-travelling salesman
-invalid tiles

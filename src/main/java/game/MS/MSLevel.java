@@ -31,7 +31,7 @@ public class MSLevel extends MSSavestate implements Level {
     private final Ruleset RULESET = Ruleset.MS;
 
     private int levelNumber, startTime;
-    private final byte[] title, password, hint;
+    private final String title, password, hint, author;
     private final Position[] toggleDoors, teleports;
     private MultiHashMap<Position, GreenButton> greenButtons;
     private MultiHashMap<Position, RedButton> redButtons;
@@ -52,16 +52,20 @@ public class MSLevel extends MSSavestate implements Level {
         return startTime;
     }
     @Override
-    public byte[] getTitle() {
+    public String getTitle() {
         return title;
     }
     @Override
-    public byte[] getPassword() {
+    public String getPassword() {
         return password;
     }
     @Override
-    public byte[] getHint() {
+    public String getHint() {
         return hint;
+    }
+    @Override
+    public String getAuthor() {
+        return author;
     }
     @Override
     public Position[] getToggleDoors() {
@@ -252,7 +256,7 @@ public class MSLevel extends MSSavestate implements Level {
     }
     @Override
     public void setTrap(Position trapPos, boolean open) {
-        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+        for (List<BrownButton> buttons : brownButtons.rawValues()) {
             for (BrownButton b : buttons) {
                 if (b.getTargetPosition().equals(trapPos))
                     traps.set(b.getTrapIndex(), open);
@@ -346,7 +350,7 @@ public class MSLevel extends MSSavestate implements Level {
     }
     @Override
     public boolean isTrapOpen(Position position) {
-        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+        for (List<BrownButton> buttons : brownButtons.rawValues()) {
             for (BrownButton b : buttons) {
                 if (b.getTargetPosition().equals(position) && traps.get(b.getTrapIndex()))
                     return true;
@@ -358,8 +362,10 @@ public class MSLevel extends MSSavestate implements Level {
     private int moveType(char c, boolean halfMove, boolean chipSliding){
         if (SuperCC.isClick(c) || c == WAIT){
             if (mouseGoal != NO_CLICK) {
-                if (chipSliding) return CLICK_EARLY;
-                if (halfMove) return CLICK_LATE;
+                if (chipSliding)
+                    return CLICK_EARLY;
+                if (halfMove)
+                    return CLICK_LATE;
             }
             else return HALF_WAIT;
         }
@@ -390,7 +396,7 @@ public class MSLevel extends MSSavestate implements Level {
 
     private void finaliseTraps(){
         HashSet<Position> pressedButtons = new HashSet<>();
-        for (List<BrownButton> buttons : brownButtons.valuesList()) {
+        for (List<BrownButton> buttons : brownButtons.rawValues()) {
             for (BrownButton b : buttons) {
                 if (layerFG.get(b.getButtonPosition()) != BUTTON_BROWN && !pressedButtons.contains(b.getButtonPosition())) {
                     traps.set(b.getTrapIndex(), true);
@@ -513,63 +519,58 @@ public class MSLevel extends MSSavestate implements Level {
         boolean lowOrder = xPosition % 2 == 0;
         int shiftBy = xPosition % 2 == 0 ? 0 : 8;
         switch (xPosition) {
-            case 0:
-            case 1:
+            case 0, 1 -> {
                 lowByte = (byte) levelNumber;
                 highByte = (byte) (levelNumber >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (levelNumber >>> shiftBy)));
                 return;
-            case 2:
-            case 3:
+            }
+            case 2, 3 -> {
                 lowByte = (byte) LEVELSET_LENGTH;
                 highByte = (byte) (LEVELSET_LENGTH >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (LEVELSET_LENGTH >>> shiftBy)));
                 return;
-            case 4:
-            case 5:
+            }
+            case 4, 5 -> {
                 int msccTime = startTime / 100;
                 lowByte = (byte) msccTime;
                 highByte = (byte) (msccTime >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (msccTime >>> shiftBy)));
                 return;
-            case 6:
-            case 7:
+            }
+            case 6, 7 -> {
                 lowByte = (byte) INITIAL_CHIPS_AMOUNT;
                 highByte = (byte) (INITIAL_CHIPS_AMOUNT >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_CHIPS_AMOUNT >>> shiftBy)));
                 return;
-            case 8:
-            case 9:
+            }
+            case 8, 9 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().x >>> shiftBy)));
                 chip.setPosition(new Position(0, chip.getPosition().y));
                 return;
-            case 10:
-            case 11:
+            }
+            case 10, 11 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().y >>> shiftBy)));
                 chip.setPosition(new Position(chip.getPosition().x, 0));
                 return;
-            case 12:
-            case 13:
+            }
+            case 12, 13 -> {
                 int sliding = chip.isSliding() ? 1 : 0;
                 layerBG.set(position, Tile.fromOrdinal((byte) (sliding >>> shiftBy)));
                 chip.setSliding(false);
                 return;
-            case 14:
-            case 15: //buffered input, unsupported by SuCC
-            case 16:
-            case 17: //MSCC's level title visibility, unsupported by SuCC
-            case 18:
-            case 19: //keystroke directions, unsupported by SuCC
-            case 20:
-            case 21:
+            } //buffered input, unsupported by SuCC
+            //MSCC's level title visibility, unsupported by SuCC
+            //keystroke directions, unsupported by SuCC
+            case 14, 15, 16, 17, 18, 19, 20, 21 -> {
                 layerBG.set(position, FLOOR);
                 return;
-            case 22:
-            case 23:
+            }
+            case 22, 23 -> {
                 int deathCause = 0;
                 Tile chipFG = layerFG.get(chip.getPosition());
                 Tile chipBG = layerBG.get(chip.getPosition());
@@ -588,8 +589,8 @@ public class MSLevel extends MSSavestate implements Level {
                 layerBG.set(position, Tile.fromOrdinal((byte) (deathCause >>> shiftBy)));
                 chip.setCreatureType(CreatureID.CHIP);
                 return;
-            case 24:
-            case 25:
+            }
+            case 24, 25 -> {
                 if (!chip.isSliding()) {
                     layerBG.set(position, FLOOR);
                     return;
@@ -605,8 +606,8 @@ public class MSLevel extends MSSavestate implements Level {
                 }
                 layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionX >>> shiftBy)));
                 return;
-            case 26:
-            case 27:
+            }
+            case 26, 27 -> {
                 if (!chip.isSliding()) {
                     layerBG.set(position, FLOOR);
                     return;
@@ -622,26 +623,30 @@ public class MSLevel extends MSSavestate implements Level {
                 }
                 layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionY >>> shiftBy)));
                 return;
-            case 28:
-            case 29:
+            }
+            case 28, 29 -> {
                 lowByte = (byte) INITIAL_MONSTER_LIST_SIZE;
                 highByte = (byte) (INITIAL_MONSTER_LIST_SIZE >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_LIST_SIZE >>> shiftBy)));
                 return;
-            case 30:
+            }
+            case 30 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.x)));
                 return;
-            case 31:
+            }
+            case 31 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.y)));
                 return;
+            }
         }
     }
 
-    public MSLevel(int levelNumber, byte[] title, byte[] password, byte[] hint, Position[] toggleDoors, Position[] teleports,
+    public MSLevel(int levelNumber, String title, String password, String hint, String author,
+                   Position[] toggleDoors, Position[] teleports,
                    MultiHashMap<Position, GreenButton> greenButtons, MultiHashMap<Position, RedButton> redButtons,
-                   MultiHashMap<Position, BrownButton> brownButtons, MultiHashMap<Position, BlueButton> blueButtons, BitSet traps,
-                   Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
+                   MultiHashMap<Position, BrownButton> brownButtons, MultiHashMap<Position, BlueButton> blueButtons,
+                   BitSet traps, Layer layerBG, Layer layerFG, CreatureList monsterList, SlipList slipList,
                    MSCreature chip, int time, int chips, RNG rng, int rngSeed, Step step, int levelsetLength){
 
         super(layerBG, layerFG, monsterList, slipList, chip,
@@ -652,6 +657,7 @@ public class MSLevel extends MSSavestate implements Level {
         this.title = title;
         this.password = password;
         this.hint = hint;
+        this.author = author;
         this.toggleDoors = toggleDoors;
         this.teleports = teleports;
         this.greenButtons = greenButtons;
@@ -670,7 +676,7 @@ public class MSLevel extends MSSavestate implements Level {
         this.slipList.setLevel(this);
         this.monsterList.setLevel(this);
 
-        for (List<BrownButton> buttons : getBrownButtons().valuesList()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
+        for (List<BrownButton> buttons : getBrownButtons().rawValues()) {  //On level start every single trap is actually open in MSCC, this implements that so creatures and blocks starting on traps can exit them at any point in the level
             for (BrownButton b : buttons) {
                 if (getLayerFG().get(b.getTargetPosition()).isChip() || getLayerFG().get(b.getTargetPosition()) == BLOCK || getLayerFG().get(b.getTargetPosition()) == ICE_BLOCK) {
                     b.press(this);

@@ -18,7 +18,7 @@ public class VerifyTWS {
         ArrayList<String> results = new ArrayList<>(lastLevel);
         for (int i = 1; i < lastLevel; i++) {
             emulator.loadLevel(i);
-            titles.add(i + "   " + new String(emulator.getLevel().getTitle()));
+            titles.add(i + "   " + emulator.getLevel().getTitle());
             try {
                 results.add(emulator.twsReader.readSolution(emulator.getLevel()).efficiency > 0.9 ? "Tile World" : "SuCC");
             }

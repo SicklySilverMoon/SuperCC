@@ -97,8 +97,16 @@ public class MultiHashMap<K, V> implements Map<K, V> {
         return values;
     }
 
-    public Collection<List<V>> valuesList() {
+    public Collection<List<V>> rawValues() {
         return map.values();
+    }
+
+    public List<V> allValues() {
+        ArrayList<V> list = new ArrayList<>(map.size());
+        for (List<V> vals : map.values()) {
+            list.addAll(vals);
+        }
+        return list;
     }
 
     @Override
