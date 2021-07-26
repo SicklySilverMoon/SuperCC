@@ -79,6 +79,7 @@ public class TWSReader{
 
         Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionTime;
+        System.out.println(s.efficiency + " : " + reader.ineffiencies);
         return s;
     }
 
@@ -113,7 +114,7 @@ public class TWSReader{
         reader.close();
     }
 
-    private class twsInputStream extends FileInputStream{
+    private static class twsInputStream extends FileInputStream{
         private final char[] DIRECTIONS = new char[] {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT, UP_RIGHT, DOWN_RIGHT};
         
         public int solutionLengthOffset = 0;
@@ -126,23 +127,23 @@ public class TWSReader{
             int length = b & 0b11;
             counter += length;
             int time;
-            char direction;
+            char direction = DIRECTIONS[(b & 0b11100) >>> 2];
             if (length == 1){
-                direction = DIRECTIONS[(b & 0b11100) >>> 2];
                 time = (b & 0b11100000) >>> 5;
             }
             else{
-                direction = DIRECTIONS[(b & 0b11100) >>> 2];
                 time = ((b & 0b11100000) >>> 5 | readByte() << 3);
             }
-            for (int i = 0; i < time; i++) writer.write('~');
+            for (int i = 0; i < time; i++)
+                writer.write('~');
             writer.write(direction);
         }
         public void readFormat2(int b, Writer writer) throws IOException{
             counter += 4;
             char direction = DIRECTIONS[(b & 0b1100) >>> 2];
             int time = ((b & 0b11100000) >> 5) | readByte() << 3 | readByte() << 11 | (readByte() & 0xf) << 19;
-            if (time < 2047) ineffiencies += 1;
+            if (time < 2047)
+                ineffiencies++;
             for (int i = 0; i < time; i++) writer.write('~');
             writer.write(direction);
         }
@@ -165,8 +166,16 @@ public class TWSReader{
             int b2 = readByte();
             int d = (b >>> 5) | ((b2 & 0b00111111) << 3);
             int time = (b2 & 0b11000000) >> 6;
-            for (int i = 0; i < length - 2; i++) time |= ((readByte() & (i == 2 ? 0x1f : 0xff)) << (2 + 8*i));
-            for (int i = 0; i < time; i++) writer.write('~');
+            for (int i = 0; i < length - 2; i++)
+                time |= ((readByte() & (i == 2 ? 0x1f : 0xff)) << (2 + 8*i));
+            for (int i = 0; i < time; i++)
+                writer.write('~');
+            if (length >= 4) {
+                if (length == 4 && time < 0x400) //2^10
+                    ineffiencies++;
+                else if (time < 0x40000) //len 5 and 2^18
+                    ineffiencies++;
+            }
             char direction = switch (d) {
                 case NORTH -> UP;
                 case WEST -> LEFT;
