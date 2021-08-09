@@ -65,7 +65,7 @@ public class SuccPaths {
         String succ = settingsMap.get("Paths:succ");
         if (succ != null) return succ;
         else {
-            setSuccPath("");
+            setSuccPath("succsave");
             return "";
         }
     }

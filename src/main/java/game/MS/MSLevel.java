@@ -381,17 +381,24 @@ public class MSLevel extends MSSavestate implements Level {
         if (bgTile.isFF()) chip.tick(new Direction[] {direction}, true);
         else chip.tick(chip.getSlideDirectionPriority(bgTile, rng, true), true);
     }
-    
-    private void moveChip(Direction[] directions){
+
+    //returns true if both directions were attempted and failed
+    private boolean moveChip(Direction[] directions){
         Position oldPosition = chip.getPosition().clone();
+        int attemptedDirs = 0;
         for (Direction direction : directions) {
             if (chip.isSliding()) {
-                if (!layerBG.get(chip.getPosition()).isFF()) continue;
-                if (direction == chip.getDirection()) continue;
+                if (!layerBG.get(chip.getPosition()).isFF())
+                    continue;
+                if (direction == chip.getDirection())
+                    continue;
             }
+            attemptedDirs++;
             chip.tick(new Direction[] {direction}, false);
-            if (!chip.getPosition().equals(oldPosition)) break;
+            if (!chip.getPosition().equals(oldPosition))
+                return false;
         }
+        return attemptedDirs == directions.length;
     }
 
     private void finaliseTraps(){
@@ -434,7 +441,7 @@ public class MSLevel extends MSSavestate implements Level {
                     layerFG.set(m.getPosition(), m.toTile());
             }
         }
-        for (Creature m : monsterList.getNewClones()) { //Ensures Frankenstein glitch works in all situations, prior to this it wouldn't flip tanks that had been cloned earlier that tick due to them not being on the monster list and instead being on the newClones list, this now flips those on the newClones list as well
+        for (Creature m : monsterList.getNewClones()) {
             if (m.getCreatureType().isTank() && !m.isSliding()) {
                 m.setCreatureType(TANK_MOVING);
                 m.turn(TURN_AROUND);
@@ -461,12 +468,13 @@ public class MSLevel extends MSSavestate implements Level {
 
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         initialiseSlidingMonsters();
-        boolean isHalfMove = (tickNumber & 0x1) != 0; //A faster version of tickNumber % 2 != 0;
+        boolean isHalfMove = (tickNumber & 0x1) != 0; //odd tick
         int moveType = moveType(c, isHalfMove, chip.isSliding());
+        boolean failedDirections = false;
         monsterList.initialise();
 
-//        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad
-        if (!voluntaryMoveAllowed && idleMoves > 0) voluntaryMoveAllowed = true;
+        if (isHalfMove) voluntaryMoveAllowed = true; //This is not used in finding out if the emulator should tick twice, that is instead handled by the value of this function's return, this is only used for TSG moves, yeah its bad
+//        if (!voluntaryMoveAllowed && idleMoves > 0) voluntaryMoveAllowed = true;
 
         if (isHalfMove && mouseGoal == NO_CLICK && moveType == HALF_WAIT) {
             idleMoves++;
@@ -480,9 +488,14 @@ public class MSLevel extends MSSavestate implements Level {
         if (endTick()) return false;
         if (chip.isSliding()) moveChipSliding();
         if (endTick()) return false;
-        if (moveType == CLICK_EARLY) { //Todo: TSG Is now broken, please fix
-            if (voluntaryMoveAllowed) {
-                moveChip(chip.seek(new Position(mouseGoal)));
+        if (moveType == CLICK_EARLY && voluntaryMoveAllowed) { //todo: it seems like it should be impossible to do a key move onto an FF and then TSG right after
+//            System.out.println("tsg");
+            Direction sought = chip.seek(new Position(mouseGoal))[0];
+            /* CCLP4:34, the TWS Sharpeye provided has a discrepancy between TW and SuCC, the first click has an offset
+            from Chip of (-2, 1), in TW this is below the gravel, in SuCC its below and one to the right, much like how
+            TW-TSG can't load a lot of normal mouse solutions, we can't load a lot of TSG solutions */
+            if (!chip.isSliding() || !sought.equals(chip.getDirection())) {
+                failedDirections = moveChip(new Direction[]{sought});
                 idleMoves = 0;
                 voluntaryMoveAllowed = false;
             }
@@ -499,16 +512,23 @@ public class MSLevel extends MSSavestate implements Level {
             idleMoves = 0;
             voluntaryMoveAllowed = false;
         }
-        else if (moveType == CLICK_LATE && !chip.isSliding()) {
-            moveChip(chip.seek(new Position(mouseGoal)));
+        else if (moveType == CLICK_LATE && !chip.isSliding() && voluntaryMoveAllowed) {
+//            System.out.println("normal");
+            failedDirections = moveChip(chip.seek(new Position(mouseGoal)));
             idleMoves = 0;
-            voluntaryMoveAllowed = true;
+//            voluntaryMoveAllowed = false; //this causes the TSG unit test instances to desync, something is wrong here
+            if (failedDirections)
+                voluntaryMoveAllowed = true; //this way causes the bottom part of SuCCTest L 75 to desync, but why???
         }
-        if (endTick()) return false;
+        if (endTick())
+            return false;
 
         monsterList.finalise();
         finaliseTraps();
-        if (moveType == KEY || chip.getPosition().getIndex() == mouseGoal) mouseGoal = NO_CLICK;
+        if (moveType == KEY || chip.getPosition().getIndex() == mouseGoal)
+            mouseGoal = NO_CLICK;
+        else if ((moveType == CLICK_LATE || moveType == CLICK_EARLY) && failedDirections)
+            mouseGoal = NO_CLICK;
 
         return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
     }
@@ -524,14 +544,12 @@ public class MSLevel extends MSSavestate implements Level {
                 highByte = (byte) (levelNumber >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (levelNumber >>> shiftBy)));
-                return;
             }
             case 2, 3 -> {
                 lowByte = (byte) LEVELSET_LENGTH;
                 highByte = (byte) (LEVELSET_LENGTH >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (LEVELSET_LENGTH >>> shiftBy)));
-                return;
             }
             case 4, 5 -> {
                 int msccTime = startTime / 100;
@@ -539,37 +557,30 @@ public class MSLevel extends MSSavestate implements Level {
                 highByte = (byte) (msccTime >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (msccTime >>> shiftBy)));
-                return;
             }
             case 6, 7 -> {
                 lowByte = (byte) INITIAL_CHIPS_AMOUNT;
                 highByte = (byte) (INITIAL_CHIPS_AMOUNT >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_CHIPS_AMOUNT >>> shiftBy)));
-                return;
             }
             case 8, 9 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().x >>> shiftBy)));
                 chip.setPosition(new Position(0, chip.getPosition().y));
-                return;
             }
             case 10, 11 -> {
                 layerBG.set(position, Tile.fromOrdinal((byte) (chip.getPosition().y >>> shiftBy)));
                 chip.setPosition(new Position(chip.getPosition().x, 0));
-                return;
             }
             case 12, 13 -> {
                 int sliding = chip.isSliding() ? 1 : 0;
                 layerBG.set(position, Tile.fromOrdinal((byte) (sliding >>> shiftBy)));
                 chip.setSliding(false);
-                return;
-            } //buffered input, unsupported by SuCC
+            }
+            //buffered input, unsupported by SuCC
             //MSCC's level title visibility, unsupported by SuCC
             //keystroke directions, unsupported by SuCC
-            case 14, 15, 16, 17, 18, 19, 20, 21 -> {
-                layerBG.set(position, FLOOR);
-                return;
-            }
+            case 14, 15, 16, 17, 18, 19, 20, 21 -> layerBG.set(position, FLOOR);
             case 22, 23 -> {
                 int deathCause = 0;
                 Tile chipFG = layerFG.get(chip.getPosition());
@@ -588,7 +599,6 @@ public class MSLevel extends MSSavestate implements Level {
                     deathCause = 5;
                 layerBG.set(position, Tile.fromOrdinal((byte) (deathCause >>> shiftBy)));
                 chip.setCreatureType(CreatureID.CHIP);
-                return;
             }
             case 24, 25 -> {
                 if (!chip.isSliding()) {
@@ -605,7 +615,6 @@ public class MSLevel extends MSSavestate implements Level {
                     chip.setSliding(false);
                 }
                 layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionX >>> shiftBy)));
-                return;
             }
             case 26, 27 -> {
                 if (!chip.isSliding()) {
@@ -622,23 +631,15 @@ public class MSLevel extends MSSavestate implements Level {
                     chip.setSliding(false);
                 }
                 layerBG.set(position, Tile.fromOrdinal((byte) (slipDirectionY >>> shiftBy)));
-                return;
             }
             case 28, 29 -> {
                 lowByte = (byte) INITIAL_MONSTER_LIST_SIZE;
                 highByte = (byte) (INITIAL_MONSTER_LIST_SIZE >>> 8);
                 if ((lowOrder ? lowByte : highByte) != 49)
                     layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_LIST_SIZE >>> shiftBy)));
-                return;
             }
-            case 30 -> {
-                layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.x)));
-                return;
-            }
-            case 31 -> {
-                layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.y)));
-                return;
-            }
+            case 30 -> layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.x)));
+            case 31 -> layerBG.set(position, Tile.fromOrdinal((byte) (INITIAL_MONSTER_POSITION.y)));
         }
     }
 

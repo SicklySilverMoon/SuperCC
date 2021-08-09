@@ -26,6 +26,9 @@ public class SeedSearch {
     private JRadioButton untilPositionRadioButton;
     private JLabel searchTypeLabel;
     private JTextField positionField;
+    private JSlider threadSlider;
+    private JLabel threadLabel;
+    private JLabel rulesetWarningLabel;
 
     private static final int UPDATE_VALUE_RATE = 1000;
     private static final int UPDATE_GUI_RATE = UPDATE_VALUE_RATE * 2;
@@ -45,28 +48,37 @@ public class SeedSearch {
     private Position endPosition = new Position(0, 0);
 
     public SeedSearch(SuperCC emulator, Solution solution) {
-        int numCores = Runtime.getRuntime().availableProcessors();
-        long numSeeds = Integer.MAX_VALUE;
-        long seedPoolSize = (numSeeds + 1) / numCores; //avoids overflow before reducing back in range
+        int maxNumThreads = Runtime.getRuntime().availableProcessors();
+        threadSlider.setMaximum(maxNumThreads);
+        threadSlider.setValue(maxNumThreads);
+
+        if (solution.ruleset != emulator.getLevel().getRuleset()) {
+            rulesetWarningLabel.setVisible(true);
+            rulesetWarningLabel.setText("The provided solution does not match the current ruleset, the ruleset HAS been changed");
+        }
 
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), 0, solution.step, false,
-                Ruleset.CURRENT, solution.initialSlide);
+                solution.ruleset, solution.initialSlide);
         startingState = emulator.getLevel().save();
     
         resultsLabel.setText("Successes: 0/0 (0%)");
         df = new DecimalFormat("##.####");
 
         startStopButton.addActionListener((e) -> {
+            int numThreads = threadSlider.getValue();
+            int start = Integer.parseInt(startField.getText());
+            long numSeeds = Integer.MAX_VALUE;
+            long seedPoolSize = (numSeeds + 1) / numThreads; //avoids overflow before reducing back in range
+
             if (running) {
                 startStopButton.setText("Resume");
                 killFlag = true;
             }
             else {
                 if (!ranAlready) {
-                    threadCurrentSeed = new int[numCores];
+                    threadCurrentSeed = new int[numThreads];
                     ranAlready = true;
-                    int start = Integer.parseInt(startField.getText());
-                    for (int i=0; i < numCores; i++) {
+                    for (int i=0; i < numThreads; i++) {
                         threadCurrentSeed[i] = (int) (start + seedPoolSize * i);
                     }
                 }
@@ -74,9 +86,11 @@ public class SeedSearch {
                     String positionString = positionField.getText().replaceAll("\\s+",""); //Remove whitespace
                     String[] positionStrings = positionString.split(",");
                     int[] positions = {Integer.parseInt(positionStrings[0]), Integer.parseInt(positionStrings[1])};
-                    endPosition = new Position(
-                            positions[0] < 32 ? positions[0] : 31, //Just a little ternary check to make sure the position are within bounds, and to put them in bounds if they aren't
-                            positions[1] < 32 ? positions[1] : 31);
+                    positions[0] = Integer.max(positions[0], 0);
+                    positions[0] = Integer.min(positions[0], 31);
+                    positions[1] = Integer.max(positions[1], 0);
+                    positions[1] = Integer.min(positions[1], 31);
+                    endPosition = new Position(positions[0], positions[1]);
                 }
                 searchTypeLabel.setVisible(false);
                 untilExitRadioButton.setVisible(false);
@@ -84,12 +98,16 @@ public class SeedSearch {
                 positionField.setVisible(false);
                 startLabel.setVisible(false);
                 startField.setVisible(false);
+                threadLabel.setVisible(false);
+                threadSlider.setVisible(false);
+                rulesetWarningLabel.setVisible(false);
                 startStopButton.setText("Pause");
 
-                for (int i = 0; i < numCores; i++) {
+                for (int i = 0; i < numThreads; i++) {
                     int end;
-                    if (i == numCores - 1)
-                        end = (int) (threadCurrentSeed[i] + seedPoolSize * (i + 1) - 1);
+                    if (i != numThreads - 1) {
+                        end = (int) (start + seedPoolSize * (i + 1) - 1);
+                    }
                     else
                         end = Integer.MAX_VALUE;
 

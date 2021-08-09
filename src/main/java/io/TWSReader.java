@@ -8,6 +8,7 @@ import game.Step;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static emulator.SuperCC.*;
@@ -79,7 +80,6 @@ public class TWSReader{
 
         Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionTime;
-        System.out.println(s.efficiency + " : " + reader.ineffiencies);
         return s;
     }
 
@@ -133,6 +133,8 @@ public class TWSReader{
             }
             else{
                 time = ((b & 0b11100000) >>> 5 | readByte() << 3);
+                if (time < 8)
+                    ineffiencies++;
             }
             for (int i = 0; i < time; i++)
                 writer.write('~');
