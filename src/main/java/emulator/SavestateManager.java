@@ -253,6 +253,10 @@ public class SavestateManager implements Serializable {
             emulator.tick(SuperCC.lowerCase(c), TickFlags.PRELOADING);
         }
     }
+
+    public CharList[] getMacros() {
+        return macros;
+    }
     
     public boolean load(int key, Level level){
         TreeNode<byte[]> loadedNode = savestates.get(key);

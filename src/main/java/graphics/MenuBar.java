@@ -14,9 +14,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import tools.*;
+import util.CharList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -328,6 +331,63 @@ class MenuBar extends JMenuBar{
             addIcon(paste, "/resources/icons/paste.gif");
             add(paste);
     
+            addSeparator();
+
+            JMenuItem copyFromStart = new JMenuItem("Copy all previous moves");
+            copyFromStart.addActionListener(e -> {
+                Level level = emulator.getLevel();
+                int currentIndex = emulator.getSavestates().getPlaybackIndex();
+                Solution solution = new Solution(emulator.getSavestates().getMoveList().sublist(0, currentIndex),
+                        level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                emulator.showAction("Copied moves");
+            });
+            add(copyFromStart);
+
+            JMenuItem copyToEnd = new JMenuItem("Copy all future moves");
+            copyToEnd.addActionListener(e -> {
+                Level level = emulator.getLevel();
+                int currentIndex = emulator.getSavestates().getPlaybackIndex();
+                CharList moves = emulator.getSavestates().getMoveList();
+                Solution solution = new Solution(moves.sublist(currentIndex, moves.size()),
+                        level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                emulator.showAction("Copied moves");
+            });
+            add(copyToEnd);
+
+            JMenu copyMacroMenu = new JMenu("Copy macro moves");
+            copyMacroMenu.addMenuListener(new MenuListener() {
+                @Override
+                public void menuSelected(MenuEvent e) {
+                    copyMacroMenu.removeAll(); //clear the previous menu
+
+                    CharList[] macros = emulator.getSavestates().getMacros();
+                    Level level = emulator.getLevel();
+                    for (int i = 0; i < macros.length; i++) {
+                        CharList macro = macros[i];
+                        if (macro == null || macro.size() == 0)
+                            continue;
+
+                        JMenuItem copyMacro = new JMenuItem("Copy moves from macro #" + i);
+                        copyMacro.addActionListener(e2 -> {
+                            Solution solution = new Solution(macro, level.getRngSeed(), level.getStep(),
+                                    level.getRuleset(), level.getInitialRFFDirection());
+                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                            emulator.showAction("Copied moves from macro");
+                        });
+                        copyMacroMenu.add(copyMacro);
+                    }
+                }
+                @Override
+                public void menuDeselected(MenuEvent e) {
+                }
+                @Override
+                public void menuCanceled(MenuEvent e) {
+                }
+            });
+            add(copyMacroMenu);
+
             addSeparator();
     
             JMenuItem saveSavestates = new JMenuItem("Save all states to disk");
