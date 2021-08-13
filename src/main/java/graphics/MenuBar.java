@@ -339,7 +339,7 @@ class MenuBar extends JMenuBar{
                 int currentIndex = emulator.getSavestates().getPlaybackIndex();
                 Solution solution = new Solution(emulator.getSavestates().getMoveList().sublist(0, currentIndex),
                         level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(new String(solution.basicMoves)), null);
                 emulator.showAction("Copied moves");
             });
             add(copyFromStart);
@@ -351,7 +351,7 @@ class MenuBar extends JMenuBar{
                 CharList moves = emulator.getSavestates().getMoveList();
                 Solution solution = new Solution(moves.sublist(currentIndex, moves.size()),
                         level.getRngSeed(), level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(new String(solution.basicMoves)), null);
                 emulator.showAction("Copied moves");
             });
             add(copyToEnd);
@@ -373,7 +373,7 @@ class MenuBar extends JMenuBar{
                         copyMacro.addActionListener(e2 -> {
                             Solution solution = new Solution(macro, level.getRngSeed(), level.getStep(),
                                     level.getRuleset(), level.getInitialRFFDirection());
-                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(solution.toString()), null);
+                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(new String(solution.basicMoves)), null);
                             emulator.showAction("Copied moves from macro");
                         });
                         copyMacroMenu.add(copyMacro);
