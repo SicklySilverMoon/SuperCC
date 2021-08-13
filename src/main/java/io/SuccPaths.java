@@ -2,6 +2,7 @@ package io;
 
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ public class SuccPaths {
     private Map<String, String> settingsMap;
     
     private void updateSettingsFile() {
-        try (PrintWriter writer = new PrintWriter(settingsFile, "UTF-8")) {
+        try (PrintWriter writer = new PrintWriter(settingsFile, StandardCharsets.UTF_8)) {
             writer.println("[Paths]");
             writer.printf("%s = %s\n", "Levelset", settingsMap.get("Paths:Levelset"));
             writer.printf("%s = %s\n", "TWS", settingsMap.get("Paths:TWS"));
@@ -36,6 +37,7 @@ public class SuccPaths {
 
             writer.println("[Graphics]");
             writer.printf("%s = %s\n", "TilesheetNum", settingsMap.get("Graphics:TilesheetNum"));
+            writer.printf("%s = %s\n", "LynxTilesheetNum", settingsMap.get("Graphics:LynxTilesheetNum"));
             writer.printf("%s = %s\n", "TileWidth", settingsMap.get("Graphics:TileWidth"));
             writer.printf("%s = %s\n", "TileHeight", settingsMap.get("Graphics:TileHeight"));
             writer.printf("%s = %s", "TWSNotate", settingsMap.get("Graphics:TWSNotate"));
@@ -92,12 +94,21 @@ public class SuccPaths {
             setControls(controls);
         return controls;
     }
-    public int getTilesetNum() {
+    public int getMSTilesetNum() {
         try {
             return Integer.parseInt(settingsMap.get("Graphics:TilesheetNum"));
         }
         catch (NumberFormatException e) {
-            setTilesetNum(0);
+            setMSTilesetNum(0);
+            return 0;
+        }
+    }
+    public int getLynxTilesetNum() {
+        try {
+            return Integer.parseInt(settingsMap.get("Graphics:LynxTilesheetNum"));
+        }
+        catch (NumberFormatException e) {
+            setLynxTilesetNum(0);
             return 0;
         }
     }
@@ -155,8 +166,12 @@ public class SuccPaths {
         settingsMap.put("Controls:Play", String.valueOf(controls[11]));
         updateSettingsFile();
     }
-    public void setTilesetNum(int tilesetNum) {
+    public void setMSTilesetNum(int tilesetNum) {
         settingsMap.put("Graphics:TilesheetNum", String.valueOf(tilesetNum));
+        updateSettingsFile();
+    }
+    public void setLynxTilesetNum(int tilesetNum) {
+        settingsMap.put("Graphics:LynxTilesheetNum", String.valueOf(tilesetNum));
         updateSettingsFile();
     }
     public void setTileSizes(int[] tileSizes) {

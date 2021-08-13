@@ -8,6 +8,7 @@ import game.Direction;
 import game.Level;
 import game.Ruleset;
 import game.Step;
+import io.SuccPaths;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -41,6 +42,13 @@ class MenuBar extends JMenuBar{
 
     private final SuperCC emulator;
     private final Gui window;
+    private final LevelMenu levelMenu;
+    private final SolutionMenu solutionMenu;
+    private final TWSMenu twsMenu;
+    private final ViewMenu viewMenu;
+    private final ToolMenu toolMenu;
+    private final CheatMenu cheatMenu;
+    private final HelpMenu helpMenu;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -154,6 +162,26 @@ class MenuBar extends JMenuBar{
                     Level level = emulator.getLevel();
                     emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
                             level.getRuleset().swap(), level.getInitialRFFDirection());
+
+                    try {
+                        TileSheet tileSheet;
+                        SuccPaths paths = emulator.getPaths();
+                        int tilesheetNum;
+                        if (emulator.getLevel().getRuleset() == Ruleset.MS)
+                            tilesheetNum = paths.getMSTilesetNum();
+                        else
+                            tilesheetNum = paths.getLynxTilesetNum();
+                        tileSheet = TileSheet.values()[tilesheetNum];
+                        BufferedImage[] tilesetImages = tileSheet.getTileSheets(paths.getTileSizes()[0], paths.getTileSizes()[1]);
+                        viewMenu.tilesetButtons[tilesheetNum].setSelected(true);
+
+                        window.getGamePanel().initialise(emulator, tilesetImages, tileSheet, window.getGamePanel().getTileWidth(), window.getGamePanel().getTileHeight());
+                        window.getInventoryPanel().initialise(emulator);
+                        window.repaint(true);
+                    }
+                    catch (IOException e1) {
+                        emulator.throwError("Could not load relevant tilesheet");
+                    }
                 }
             });
             addIcon(changeRules, "/resources/icons/change.gif");
@@ -402,16 +430,21 @@ class MenuBar extends JMenuBar{
     }
 
     private class ViewMenu extends JMenu{
+        ButtonGroup tilesetButtonGroup;
+        JRadioButton[] tilesetButtons;
+
         ViewMenu(){
             super("View");
     
             JMenu tileset = new JMenu("Tileset");
-            ButtonGroup allTilesets = new ButtonGroup();
+            tilesetButtonGroup = new ButtonGroup();
             String[] tilesetNames = TileSheet.getNames();
             TileSheet[] tileSheets = TileSheet.values();
+            tilesetButtons = new JRadioButton[tilesetNames.length];
             for (int i = 0; i < tilesetNames.length; i++) {
                 JRadioButton tilesheetButton = new JRadioButton(tilesetNames[i]);
                 TileSheet tileSheet = tileSheets[i];
+                tilesetButtons[i] = tilesheetButton;
                 tilesheetButton.addActionListener(e -> {
                     int tileWidth, tileHeight;
                     try {
@@ -429,12 +462,15 @@ class MenuBar extends JMenuBar{
                         window.getInventoryPanel().initialise(emulator);
                         window.repaint(true);
 
-                        emulator.getPaths().setTilesetNum(tileSheet.ordinal());
+                        if (emulator.getLevel().getRuleset() == Ruleset.MS)
+                            emulator.getPaths().setMSTilesetNum(tileSheet.ordinal());
+                        else
+                            emulator.getPaths().setLynxTilesetNum(tileSheet.ordinal());
                     } catch (IOException exc) {
                         emulator.throwError(exc.getMessage());
                     }
                 });
-                allTilesets.add(tilesheetButton);
+                tilesetButtonGroup.add(tilesheetButton);
                 tileset.add(tilesheetButton);
             }
             add(tileset);
@@ -577,11 +613,21 @@ class MenuBar extends JMenuBar{
             add(gif);
 
             JMenuItem variations = new JMenuItem("Variation testing");
-            variations.addActionListener(e -> new VariationTesting(emulator));
+            variations.addActionListener(e -> {
+                if (emulator.getLevel().getRuleset() == Ruleset.MS)
+                    new VariationTesting(emulator);
+                else
+                    emulator.throwError("Variation testing is only supported in MS currently.");
+            });
             add(variations);
 
             JMenuItem tsp = new JMenuItem("TSP Solver");
-            tsp.addActionListener(e -> new TSPGUI(emulator));
+            tsp.addActionListener(e -> {
+                if (emulator.getLevel().getRuleset() == Ruleset.MS)
+                    new TSPGUI(emulator);
+                else
+                    emulator.throwError("TSP is only supported in MS currently.");
+            });
             add(tsp);
 
         }
@@ -721,13 +767,20 @@ class MenuBar extends JMenuBar{
         this.emulator = emulator;
         setPreferredSize(new Dimension(0, 24));
         setLocation(0, 0);
-        add(new LevelMenu());
-        add(new SolutionMenu());
-        add(new TWSMenu());
-        add(new ViewMenu());
-        add(new ToolMenu());
-        add(new CheatMenu());
-        add(new HelpMenu());
+        levelMenu = new LevelMenu();
+        solutionMenu = new SolutionMenu();
+        twsMenu = new TWSMenu();
+        viewMenu = new ViewMenu();
+        toolMenu = new ToolMenu();
+        cheatMenu = new CheatMenu();
+        helpMenu = new HelpMenu();
+        add(levelMenu);
+        add(solutionMenu);
+        add(twsMenu);
+        add(viewMenu);
+        add(toolMenu);
+        add(cheatMenu);
+        add(helpMenu);
     }
 
 }

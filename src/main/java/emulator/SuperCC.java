@@ -333,7 +333,7 @@ public class SuperCC {
         Gui window = this.getMainWindow();
         SuccPaths paths = this.getPaths();
         TileSheet[] tileSheets = TileSheet.values();
-        TileSheet tileSheet = tileSheets[paths.getTilesetNum()];
+        TileSheet tileSheet = tileSheets[paths.getMSTilesetNum()];
         int[] tileSizes = paths.getTileSizes();
         int width = tileSizes[0];
         int height = tileSizes[1];

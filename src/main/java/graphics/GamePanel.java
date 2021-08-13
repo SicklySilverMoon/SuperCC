@@ -295,7 +295,21 @@ public abstract class GamePanel extends JPanel
     }
     
     public void mouseClicked(MouseEvent e) {}
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+        mousePressedOrReleased(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+        mousePressedOrReleased(e);
+    }
+    private void mousePressedOrReleased(MouseEvent e) {
+        if(emulator.isLevelLoaded()) {
+            Position clickPosition = new Position(e.getX() / tileWidth + screenTopLeft.getX(), e.getY() / tileHeight + screenTopLeft.getY());
+            if (e.isPopupTrigger()) //docs for this say that it should be checked on both press and release
+                rightClick(clickPosition, e);
+            else if (SwingUtilities.isLeftMouseButton(e))
+                leftClick(clickPosition);
+        }
+    }
     private void leftClick(Position clickPosition) {
         if(emulator.isLevelLoaded()) {
             if (!emulator.getLevel().supportsClick()) return;
@@ -314,13 +328,6 @@ public abstract class GamePanel extends JPanel
         if(emulator.isLevelLoaded()) {
             GamePanel.GamePopupMenu popupMenu = new GamePopupMenu(clickPosition);
             popupMenu.show(e.getComponent(), e.getX(), e.getY());
-        }
-    }
-    public void mouseReleased(MouseEvent e) {
-        if(emulator.isLevelLoaded()) {
-            Position clickPosition = new Position(e.getX() / tileWidth + screenTopLeft.getX(), e.getY() / tileHeight + screenTopLeft.getY());
-            if (e.isPopupTrigger()) rightClick(clickPosition, e);
-            else leftClick(clickPosition);
         }
     }
     public void mouseEntered(MouseEvent e) {}
