@@ -24,7 +24,7 @@ public enum Ruleset { //For the love of god do not use this outside of solution/
     public String toString() {
         return switch (this) {
             case MS -> "MS";
-            case LYNX -> "LYNX";
+            case LYNX -> "Lynx";
             default -> null;
         };
     }
