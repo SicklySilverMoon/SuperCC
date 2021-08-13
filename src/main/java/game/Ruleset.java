@@ -19,4 +19,13 @@ public enum Ruleset { //For the love of god do not use this outside of solution/
         if (this == LYNX) return MS;
         return CURRENT;
     }
+
+    @Override
+    public String toString() {
+        return switch (this) {
+            case MS -> "MS";
+            case LYNX -> "Lynx";
+            default -> null;
+        };
+    }
 }
