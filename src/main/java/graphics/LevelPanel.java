@@ -64,10 +64,11 @@ public class LevelPanel extends TextPanel {
         drawText(g, level.getTitle(), 3);
 
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        drawText(g, "Password: " + new String(level.getPassword()), 1);
+        drawText(g, "Password: " + level.getPassword(), 1);
+        drawText(g, "Ruleset: " + level.getRuleset().toString(), 1);
         if (level.getAuthor() != null)
-            drawText(g, "Author: " + new String(level.getAuthor()), 1);
-        drawText(g, level.getStep().toString()+" step, seed: "+level.getRngSeed(), 1);
+            drawText(g, "Author: " + level.getAuthor(), 1);
+        drawText(g, level.getStep().toString()+" step, seed: " + level.getRngSeed(), 1);
         if (level.hasCyclicRFF())
             drawText(g, "RFF Initial Direction: "+level.getInitialRFFDirection(), 1);
 

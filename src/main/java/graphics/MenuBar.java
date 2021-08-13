@@ -139,6 +139,7 @@ class MenuBar extends JMenuBar{
                             Ruleset.CURRENT, oldLevel.getInitialRFFDirection());
                 }
             });
+            changeStep.setAccelerator(KeyStroke.getKeyStroke(VK_F1, 0));
             add(changeStep);
 
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
@@ -156,6 +157,7 @@ class MenuBar extends JMenuBar{
                     }
                 }
             });
+            rngSeed.setAccelerator(KeyStroke.getKeyStroke(VK_F2, 0));
             addIcon(rngSeed, "/resources/icons/rng.gif");
             add(rngSeed);
 
@@ -187,6 +189,7 @@ class MenuBar extends JMenuBar{
                     }
                 }
             });
+            changeRules.setAccelerator(KeyStroke.getKeyStroke(VK_F3, 0));
             addIcon(changeRules, "/resources/icons/change.gif");
             add(changeRules);
 
@@ -198,6 +201,7 @@ class MenuBar extends JMenuBar{
                             level.getRuleset(), level.getInitialRFFDirection().turn(Direction.TURN_RIGHT));
                 }
             });
+            changeInitialSlide.setAccelerator(KeyStroke.getKeyStroke(VK_F4, 0));
             addIcon(changeInitialSlide, "/resources/icons/RFF.png");
             add(changeInitialSlide);
         }
