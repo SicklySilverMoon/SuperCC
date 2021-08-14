@@ -67,7 +67,7 @@ public class SeedSearch {
         startStopButton.addActionListener((e) -> {
             int numThreads = threadSlider.getValue();
             int start = Integer.parseInt(startField.getText());
-            long numSeeds = Integer.MAX_VALUE;
+            long numSeeds = Integer.MAX_VALUE - start;
             long seedPoolSize = (numSeeds + 1) / numThreads; //avoids overflow before reducing back in range
 
             if (running) {
