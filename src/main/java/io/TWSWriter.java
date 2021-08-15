@@ -19,6 +19,7 @@ public class TWSWriter{
     
     public static byte[] write(Level level, Solution solution, SavestateManager savestates) {
         //Goes over the level and transforms all mouse moves into a form TW can handle
+        savestates.addSavestate(-1); //shouldn't be possible for a user to save a savestate to this key
         CharList mouseMoves = new CharList();
         savestates.restart();
         ListIterator<Character> itr = savestates.getMoveList().listIterator(false);
@@ -35,6 +36,7 @@ public class TWSWriter{
             }
             savestates.replay();
         }
+        savestates.load(-1, level);
 
         try(TWSOutputStream writer = new TWSOutputStream()) {
             final int ticksPerMove = level.getRuleset().ticksPerMove;

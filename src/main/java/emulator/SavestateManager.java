@@ -124,6 +124,7 @@ public class SavestateManager implements Serializable {
     }
     
     public void restart() {
+        pause = true;
         while (currentNode.hasParent()) {
             currentNode = currentNode.getParent();
             playbackIndex--;
@@ -131,6 +132,7 @@ public class SavestateManager implements Serializable {
     }
     
     public void rewind(){
+        pause = true;
         if (currentNode.hasParent()) {
             currentNode = currentNode.getParent();
             playbackIndex--;
@@ -138,6 +140,7 @@ public class SavestateManager implements Serializable {
     }
     
     public void playbackRewind(int index){
+        pause = true;
         currentNode = playbackNodes.get(index);
         playbackIndex = index;
     }
@@ -149,6 +152,7 @@ public class SavestateManager implements Serializable {
     }
 
     public void replayAll() {
+        pause = true;
         while (playbackIndex + 1 < playbackNodes.size()) {
             currentNode = playbackNodes.get(++playbackIndex);
         }
@@ -163,18 +167,16 @@ public class SavestateManager implements Serializable {
     }
     
     public void play(SuperCC emulator) {
-        final TickFlags replayNoSave = new TickFlags(true, false, false);
         pause = false;
-        int levelNumber = emulator.getLevel().getLevelNumber();
         try {
-            while (emulator.getLevel().getLevelNumber() == levelNumber && !pause && playbackIndex + 1 < playbackNodes.size()) {
+            while (!pause && playbackIndex + 1 < playbackNodes.size()) {
                 emulator.getLevel().load(currentNode.getData());
                 char c = SuperCC.lowerCase(moves.get(playbackIndex));
-                boolean tickMulti = emulator.tick(c, replayNoSave);
+                boolean tickMulti = emulator.tick(c, TickFlags.REPLAY);
                 Thread.sleep(playbackWaitTime);
                 if (tickMulti) {
                     for (int i=0; i < emulator.getLevel().ticksPerMove() - 1; i++) {
-                        emulator.tick(SuperCC.WAIT, replayNoSave);
+                        emulator.tick(SuperCC.WAIT, TickFlags.REPLAY);
                         Thread.sleep(playbackWaitTime);
                     }
                 }
@@ -192,6 +194,7 @@ public class SavestateManager implements Serializable {
     }
     
     public List<BufferedImage> play(SuperCC emulator, int numTicks) {
+        pause = true;
         ArrayList<BufferedImage> images = new ArrayList<>();
         Gui window = emulator.getMainWindow();
         int tileWidth = window.getGamePanel().getTileWidth();
@@ -248,6 +251,7 @@ public class SavestateManager implements Serializable {
     }
 
     void playMacro(int key) {
+        pause = true;
         CharList macro = macros[key];
         for (char c : macro) {
             emulator.tick(SuperCC.lowerCase(c), TickFlags.PRELOADING);
@@ -259,6 +263,7 @@ public class SavestateManager implements Serializable {
     }
     
     public boolean load(int key, Level level){
+        pause = true;
         TreeNode<byte[]> loadedNode = savestates.get(key);
         if (loadedNode == null) return false;
         currentNode = loadedNode;
@@ -279,6 +284,7 @@ public class SavestateManager implements Serializable {
     }
 
     public void setPlaybackNodes(TreeNode<byte[]> node) {
+        pause = true;
         this.playbackNodes = new ArrayList<>();
         this.playbackNodes.addAll(node.getHistory());
     }
@@ -288,6 +294,7 @@ public class SavestateManager implements Serializable {
     }
 
     public void setPlaybackIndex(int index) {
+        pause = true;
         this.playbackIndex = index;
     }
     
@@ -312,6 +319,7 @@ public class SavestateManager implements Serializable {
     }
 
     public void setMoves(CharList moves) {
+        pause = true;
         this.moves = moves;
     }
     
@@ -341,6 +349,7 @@ public class SavestateManager implements Serializable {
     }
 
     public void setEmulator(SuperCC emulator) throws UnsupportedEncodingException {
+        pause = true;
         this.emulator = emulator;
         levelTitle = emulator.getLevel().getTitle().getBytes("Windows-1252");
         emulator.repaint(true);

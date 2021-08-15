@@ -85,7 +85,7 @@ public class Gui extends JFrame{
         timeSlider.setUI(new BasicSliderUI(timeSlider));
         try {
             ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheets(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
-            playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
+            changePlayButton(false);
         }
         catch (IOException e){
             emulator.throwError("Error loading tileset: "+e.getMessage());
@@ -114,19 +114,14 @@ public class Gui extends JFrame{
         playButton.addActionListener((e) -> {
             emulator.getMainWindow().requestFocus();
             emulator.getSavestates().togglePause();
-            try {
-                if (emulator.getSavestates().isPaused()) {
-                    emulator.showAction("Pausing solution playback");
-                    playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
-                }
-                else {
-                    emulator.showAction("Playing solution");
-                    playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
-                    new Thread(() -> emulator.getSavestates().play(emulator)).start();
-                }
+            if (emulator.getSavestates().isPaused()) {
+                emulator.showAction("Pausing solution playback");
+                changePlayButton(false);
             }
-            catch (IOException exc) {
-                exc.printStackTrace();
+            else {
+                emulator.showAction("Playing solution");
+                changePlayButton(true);
+                new Thread(() -> emulator.getSavestates().play(emulator)).start();
             }
         });
         speedSlider.addChangeListener((e) -> {
@@ -179,6 +174,18 @@ public class Gui extends JFrame{
         lastActionPanel.repaint();
         movePanel.repaint();
     }
+
+    public void changePlayButton(boolean paused) {
+        try {
+            if (paused)
+                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
+            else
+                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     
     public void repaint(boolean fromScratch){
         if(emulator.isLevelLoaded()) {
@@ -187,6 +194,7 @@ public class Gui extends JFrame{
         }
         leftPanel.repaint();
         gamePanel.repaint();
+        changePlayButton(emulator.getSavestates().isPaused());
         repaintRightContainer();
     }
     

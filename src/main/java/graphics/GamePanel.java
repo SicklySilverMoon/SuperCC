@@ -296,17 +296,17 @@ public abstract class GamePanel extends JPanel
     
     public void mouseClicked(MouseEvent e) {}
     public void mousePressed(MouseEvent e) {
-        mousePressedOrReleased(e);
+        mousePressedOrReleased(e, true);
     }
     public void mouseReleased(MouseEvent e) {
-        mousePressedOrReleased(e);
+        mousePressedOrReleased(e, false);
     }
-    private void mousePressedOrReleased(MouseEvent e) {
+    private void mousePressedOrReleased(MouseEvent e, boolean checkLeft) {
         if(emulator.isLevelLoaded()) {
             Position clickPosition = new Position(e.getX() / tileWidth + screenTopLeft.getX(), e.getY() / tileHeight + screenTopLeft.getY());
             if (e.isPopupTrigger()) //docs for this say that it should be checked on both press and release
                 rightClick(clickPosition, e);
-            else if (SwingUtilities.isLeftMouseButton(e))
+            else if (checkLeft && SwingUtilities.isLeftMouseButton(e))
                 leftClick(clickPosition);
         }
     }
