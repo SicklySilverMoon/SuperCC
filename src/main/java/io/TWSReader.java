@@ -15,32 +15,60 @@ import static emulator.SuperCC.*;
 
 public class TWSReader{
 
-    private HashMap<Long, Long> lPassLevelOffsets = new HashMap<>();
-    private HashMap<Long, Long> passLevelOffsets = new HashMap<>();
+    private int headerLength;
+    private Ruleset ruleset;
 
     private final File twsFile;
-    private final Ruleset ruleset;
+
+    public void verifyAndInit() throws IOException {
+        twsInputStream reader = new twsInputStream(twsFile);
+        try{
+            if (reader.readInt() != -1717882059)
+                throw new IOException("Invalid signature");
+            if (reader.readByte() == 2)
+                ruleset = Ruleset.MS;
+            else
+                ruleset = Ruleset.LYNX;
+            reader.skip(2);
+            int len = reader.readByte();
+            headerLength = 8 + len;
+            reader.skip(len);
+            reader.close();
+        }
+        catch (IOException e){
+            reader.close();
+            throw e;
+        }
+    }
 
     public Solution readSolution(Level level) throws IOException{
-        byte[] password = level.getPassword().getBytes("Windows-1252");
-        Long pass = Integer.toUnsignedLong(
-                password[0] + 0x100 * password[1] + 0x10000 * password[2] + 0x1000000 * password[3]
-        );
-        long lpass = pass + (Integer.toUnsignedLong(level.getLevelNumber()) << 32);
-        long solutionOffset;
-        if (lPassLevelOffsets.containsKey(lpass)) solutionOffset = lPassLevelOffsets.get(lpass);
-        else if (passLevelOffsets.containsKey(pass)) solutionOffset = passLevelOffsets.get(pass);
-        else throw new IOException("Level not found in tws");
-
+        verifyAndInit();
         twsInputStream reader = new twsInputStream(twsFile);
-        reader.skip(solutionOffset);
+        reader.skip(headerLength);
 
-        int solutionLength = reader.readInt();
-        reader.bytesRead = 0; //cancel out the length being read
-        if (solutionLength == 6) throw new IOException("No solution recorded"); //If the offset is equal to 6 it means that the only thing the TWS file stores for that level is its level number, and its password
-        reader.readShort();                     // Level number
-        reader.readInt();                       // Password
-        reader.readByte();                      // Other Flags (always 0)
+        long offset = headerLength;
+        int recordLength = 0;
+
+        while (offset < twsFile.length()){
+            recordLength = reader.readInt();
+            int levelNumber = reader.readShort();
+            int twsPassword = reader.readInt();
+
+            byte[] levelPass = level.getPassword().getBytes("Windows-1252");
+            long pass = Integer.toUnsignedLong(levelPass[0] + (levelPass[1] << 8) + (levelPass[2] << 16) + (levelPass[3] << 24));
+
+            if (levelNumber == level.getLevelNumber() && twsPassword == pass)
+                break;
+            offset += recordLength + 4;              //4: length of recordLength
+            reader.skip(recordLength - 6);        //6: bytes read since recordLength
+        }
+        if (offset >= twsFile.length())
+            throw new IOException("Level not found in tws");
+
+        if (recordLength == 6)
+            throw new IOException("No solution recorded"); //If the offset is equal to 6 it means that the only thing the TWS file stores for that level is its level number, and its password
+        reader.bytesRead = 6; //cancel out earlier readings and add len of level number and pass
+        reader.readByte();    //Other Flags
 
         int stepSlideValue = reader.readByte();
         Step step = Step.fromTWS(stepSlideValue);
@@ -51,7 +79,7 @@ public class TWSReader{
 
         reader.counter = 0;
         CharArrayWriter writer = new CharArrayWriter();
-        while (reader.bytesRead < solutionLength){
+        while (reader.bytesRead < recordLength){
             int b = reader.readByte();
             try {
                 switch (b & 0b11) {
@@ -85,33 +113,7 @@ public class TWSReader{
 
     public TWSReader (File twsFile) throws IOException{
         this.twsFile = twsFile;
-        twsInputStream reader = new twsInputStream(twsFile);
-        try{
-            if (reader.readInt() != -1717882059) throw new IOException("Invalid signature");
-            if (reader.readByte() == 2) ruleset = Ruleset.MS;
-            else ruleset = Ruleset.LYNX;
-            reader.readByte();
-            reader.readByte();
-            int length = reader.readByte();
-            reader.skip(length);
-            long offset = 8 + length;
-            int levelOffset;
-
-            while (offset < twsFile.length()){
-                levelOffset = reader.readInt();
-                int levelNumber = reader.readShort();
-                int password = reader.readInt();
-                passLevelOffsets.put(Integer.toUnsignedLong(password), offset);
-                lPassLevelOffsets.put(Integer.toUnsignedLong(password) + (Integer.toUnsignedLong(levelNumber) << 32), offset);
-                reader.skip(levelOffset - 6);       // 10: bytes read since levelOffset
-                offset += levelOffset + 4;              // 4: length of levelOffset
-            }
-        }
-        catch (IOException e){
-            reader.close();
-            throw e;
-        }
-        reader.close();
+        verifyAndInit();
     }
 
     private static class twsInputStream extends FileInputStream{

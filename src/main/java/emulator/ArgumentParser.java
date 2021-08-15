@@ -138,7 +138,7 @@ final class ArgumentParser {
         System.out.println(
                 "usage: SuperCC.jar [-h] [LEVELSET [-lr N] [-s STEP] [-f DIR] [-m RULE] [TWS [--testtws]]]\n"+
                         "-h        Display this help and exit.\n"+
-                        "-l        Load level number T.\n" +
+                        "-l        Load level number N.\n" +
                         "-r        Load level with starting RNG seed N.\n" +
                         "-s        Load level with a step parity of STEP.\n" +
                         "-f        Load level with an initial random force floor direction of DIR.\n" +

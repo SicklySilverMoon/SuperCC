@@ -481,7 +481,7 @@ class MenuBar extends JMenuBar{
                 try {
                     emulator.twsReader.readSolution(emulator.getLevel()).load(emulator);
                 } catch (IOException | NullPointerException e) {
-                    emulator.throwError("Error while loading solution");
+                    emulator.throwError("Error while loading solution: " + e.getMessage());
                 }
             });
             add(loadSolution);

@@ -437,8 +437,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public boolean shouldDrawCreatureNumber(Creature creature) {
-        return !(creature.isDead() && creature.getAnimationTimer() == 0)
-                && layerFG.get(creature.getPosition()) != Tile.CLONE_MACHINE;
+        return !(creature.isDead() && creature.getAnimationTimer() == 0);
     }
 
     @Override
