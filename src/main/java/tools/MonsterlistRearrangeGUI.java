@@ -75,7 +75,7 @@ public class MonsterlistRearrangeGUI {
         if (useSliplist)
             level.getSlipList().setSliplist(list);
         else
-            level.getMonsterList().setCreatures(list, level.getLayerFG());
+            level.getMonsterList().setCreatures(list);
         emulator.getMainWindow().repaint(false);
     }
 }

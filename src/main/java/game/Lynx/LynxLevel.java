@@ -16,7 +16,8 @@ public class LynxLevel extends LynxSavestate implements Level {
     private static final int HALF_WAIT = 0, KEY = 1;
     private final int LEVELSET_LENGTH;
 
-    private int levelNumber, startTime;
+    private final int levelNumber;
+    private int startTime;
     private final String title, password, hint, author;
     private final Position[] toggleDoors, teleports;
     private MultiHashMap<Position, GreenButton> greenButtons;
@@ -148,6 +149,31 @@ public class LynxLevel extends LynxSavestate implements Level {
 
     @Override
     public boolean chipInMonsterList() {
+        return true;
+    }
+
+    @Override
+    public boolean trapRequiresHeldButton() {
+        return true;
+    }
+
+    @Override
+    public boolean creaturesAreTiles() {
+        return false;
+    }
+
+    @Override
+    public boolean hasStillTanks() {
+        return false;
+    }
+
+    @Override
+    public boolean swimmingChipIsCreature() {
+        return true;
+    }
+
+    @Override
+    public boolean blocksInMonsterList() {
         return true;
     }
 
@@ -443,6 +469,14 @@ public class LynxLevel extends LynxSavestate implements Level {
     @Override
     public void turnTanks() {
         turnTanks ^= true;
+    }
+
+    @Override
+    //for the love of god make SURE to override this if anything extends this class
+    public Creature newCreature(Direction dir, CreatureID creatureType, Position position) {
+        Creature creature = new LynxCreature(dir, creatureType, position);
+        creature.setLevel(this);
+        return creature;
     }
 
     public LynxLevel(int levelNumber, String title, String password, String hint, String author,

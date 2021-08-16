@@ -561,6 +561,12 @@ public class LynxCreature extends Creature {
         return c;
     }
 
+    public LynxCreature(Direction dir, CreatureID creatureType, Position position) {
+        this.direction = dir;
+        this.creatureType = creatureType;
+        this.position = position;
+    }
+
     public LynxCreature(Position position, Tile tile) {
         this.position = position;
 

@@ -151,6 +151,11 @@ public class MSCreatureList extends game.CreatureList {
     }
 
     @Override
+    public void addCreature(Creature creature) {
+        newClones.add(creature);
+    }
+
+    @Override
     public void finalise(){
 
         if (numDeadMonsters == 0 && newClones.size() == 0) return;

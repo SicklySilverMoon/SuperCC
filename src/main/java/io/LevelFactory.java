@@ -73,16 +73,22 @@ public class LevelFactory {
     }
     private static LynxCreatureList getLynxMonsterList(Layer layerFG, Layer layerBG){ //Probably not the best solution for this, but it does work
         List<LynxCreature> creatures = new ArrayList<>();
+        int numChips = 0;
         int index = 0;
-        for (Tile tile: layerFG) {
-            if (tile.isCreature() || tile == Tile.BLOCK || tile.isChip() || tile.isSwimmingChip()) {
+        for (Tile tile : layerFG) {
+            if (tile.isCreature() || tile == Tile.BLOCK || (tile.isChip() && numChips == 0) || tile.isSwimmingChip()) {
                 creatures.add(new LynxCreature(new Position(index), tile));
+                if (tile.isChip())
+                    numChips++;
 
-                layerFG.set(index, layerBG.get(index)); //Lynx doesn't have a lowerImage layer, so every creature's tile needs to be popped
+                layerFG.set(index, layerBG.get(index)); //Lynx doesn't have a lower layer, so every creature's tile needs to be popped
                 layerBG.set(index, Tile.FLOOR);
             }
             index++;
         }
+        if (numChips == 0)
+            creatures.add(new LynxCreature(new Position(0, 0), Tile.CHIP_DOWN));
+            //the idea is that instead of making levels invalid we instead "legalize" them
         for (int i=0; i < creatures.size(); i++) {
             LynxCreature c = creatures.get(i);
             if (c.getCreatureType() == CreatureID.CHIP) {
@@ -90,7 +96,12 @@ public class LevelFactory {
                 break;
             }
         }
-        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]), layerFG);
+        for (int i = 0; i < 1024; i++) {
+            Tile tileFG = layerBG.get(i);
+            if (tileFG.isChip() || tileFG.isCreature() || tileFG == Tile.BLOCK)
+                layerFG.set(i, Tile.FLOOR); //clear out illegal tiles
+        }
+        return new LynxCreatureList(creatures.toArray(new LynxCreature[0]));
     }
     private static MSCreature findMSPlayer(Layer layerFG){
         for (int i = 32*32-1; i >= 0; i--){
@@ -210,31 +221,31 @@ public class LevelFactory {
             );
         }
         else {
-            LynxCreatureList creatures = getLynxMonsterList(layerFG, layerBG);
+            LynxCreatureList creatures;
+            creatures = getLynxMonsterList(layerFG, layerBG);
             return new LynxLevel(
-                levelNumber,
-                title,
-                password,
-                hint,
-                author,
-                getToggleDoors(layerFG, layerBG),
-                getTeleports(layerFG, layerBG),
-                getGreenButtons(layerFG, layerBG),
-                getRedButtons(cloneConnections),
-                getBrownButtons(trapConnections),
-                getBlueButtons(layerFG, layerBG),
-                layerFG,
-                creatures,
-                creatures.get(0),
-                getTimer(timeLimit, 95),
-                chips,
-                new RNG(rngSeed, 0, 0),
-                rngSeed,
-                step,
-                lastLevel,
-                initialSlide
+                    levelNumber,
+                    title,
+                    password,
+                    hint,
+                    author,
+                    getToggleDoors(layerFG, layerBG),
+                    getTeleports(layerFG, layerBG),
+                    getGreenButtons(layerFG, layerBG),
+                    getRedButtons(cloneConnections),
+                    getBrownButtons(trapConnections),
+                    getBlueButtons(layerFG, layerBG),
+                    layerFG,
+                    creatures,
+                    creatures.get(0),
+                    getTimer(timeLimit, 95),
+                    chips,
+                    new RNG(rngSeed, 0, 0),
+                    rngSeed,
+                    step,
+                    lastLevel,
+                    initialSlide
             );
         }
     }
-
 }

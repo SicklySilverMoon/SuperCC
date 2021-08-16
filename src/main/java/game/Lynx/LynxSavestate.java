@@ -71,7 +71,7 @@ public class LynxSavestate implements Savestate {
             rng.setPRNG1(reader.readInt());
             rng.setPRNG2(reader.readInt());
             rffDirection = Direction.fromOrdinal(reader.read());
-            monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()), layerFG);
+            monsterList.setCreatures(reader.readLynxMonsterArray(reader.readShort()));
             monsterList.setClaimedArray(reader.readBools(1024));
             lastMoveForced = reader.readBool();
 

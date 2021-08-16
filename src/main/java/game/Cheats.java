@@ -85,9 +85,12 @@ public class Cheats {
         level.getMonsterList().finalise();
     }
     public void reviveChip() {
-        level.getChip().setCreatureType(CreatureID.CHIP);
+        Creature chip = level.getChip();
+        chip.kill();
+        chip.kill(); //remove any animations and timers
+        chip.setCreatureType(CreatureID.CHIP);
         if (level.supportsLayerBG())
-            level.getLayerFG().set(level.getChip().getPosition(), Tile.CHIP_DOWN);
+            level.getLayerFG().set(chip.getPosition(), Tile.CHIP_DOWN);
     }
     public void moveChip(Position position) {
         if (level.supportsLayerBG())
@@ -127,6 +130,13 @@ public class Cheats {
 
             level.setBlueButtons(blueButtons);
         }
+    }
+    public void insertCreature(Direction dir, CreatureID creatureType, Position position) {
+        Creature creature = level.newCreature(dir, creatureType, position);
+        if (level.creaturesAreTiles())
+            level.insertTile(position, creature.toTile());
+        level.getMonsterList().addCreature(creature);
+        level.getMonsterList().finalise();
     }
     
     // Level related cheats

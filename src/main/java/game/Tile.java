@@ -168,6 +168,9 @@ public enum Tile {
     public boolean isButton() {
         return this == BUTTON_BROWN || this == BUTTON_BLUE || this == BUTTON_RED || this == BUTTON_GREEN;
     }
+    public boolean isBlock() {
+        return this == BLOCK || this == ICE_BLOCK;
+    }
 
     private String str;
     @Override public String toString() {
@@ -177,5 +180,4 @@ public enum Tile {
     Tile(String s) {
         this.str = s;
     }
-
 }

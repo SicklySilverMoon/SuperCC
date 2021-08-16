@@ -10,7 +10,7 @@ public class LynxCreatureList extends CreatureList {
     private int phase;
 
     @Override
-    public void setCreatures(Creature[] creatures, Layer layerFG) {
+    public void setCreatures(Creature[] creatures) {
         list = creatures;
         creatureLayer = new boolean[1024];
 
@@ -229,6 +229,15 @@ public class LynxCreatureList extends CreatureList {
         creature.tick(true);
     }
 
+    @Override
+    public void addCreature(Creature creature) {
+        if (list.length + newClones.size() >= 2048)
+            return;
+        newClones.add(creature);
+        if (!creature.isDead())
+            adjustClaim(creature.getPosition(), true);
+    }
+
     private void teleportCreature(Creature creature) {
         Position[] teleports = level.getTeleports();
         int teleportIndex = -1;
@@ -272,8 +281,8 @@ public class LynxCreatureList extends CreatureList {
         return;
     }
 
-    public LynxCreatureList(Creature[] creatures, Layer layerFG) {
+    public LynxCreatureList(Creature[] creatures) {
         super(creatures);
-        setCreatures(creatures, layerFG);
+        setCreatures(creatures);
     }
 }

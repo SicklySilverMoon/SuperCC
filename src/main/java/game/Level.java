@@ -56,6 +56,19 @@ public interface Level extends Savestate {
 
     boolean chipInMonsterList();
 
+    /**
+     * Represents if a trap's button has to be held for the trap to be open.
+     */
+    boolean trapRequiresHeldButton();
+
+    boolean creaturesAreTiles();
+
+    boolean hasStillTanks();
+
+    boolean swimmingChipIsCreature();
+
+    boolean blocksInMonsterList();
+
     int ticksPerMove();
 
     Layer getLayerBG();
@@ -179,4 +192,6 @@ public interface Level extends Savestate {
     boolean shouldDrawCreatureNumber(Creature creature);
 
     void turnTanks();
+
+    Creature newCreature(Direction dir, CreatureID creatureType, Position position);
 }

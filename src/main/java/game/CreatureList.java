@@ -70,7 +70,7 @@ public abstract class CreatureList implements Iterable<Creature> {
         chipToCr = cr;
     }
 
-    public void setCreatures(Creature[] creatures, Layer layerFG) {
+    public void setCreatures(Creature[] creatures) {
         list = creatures;
         for (Creature c : list)
             c.setLevel(level);
@@ -113,6 +113,8 @@ public abstract class CreatureList implements Iterable<Creature> {
     public abstract void addClone(Position position);
 
     public abstract void springTrappedCreature(Position position);
+
+    public abstract void addCreature(Creature creature);
 
     @Override
     public String toString(){

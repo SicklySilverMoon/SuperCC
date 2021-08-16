@@ -88,7 +88,7 @@ public abstract class GamePanel extends JPanel
     protected abstract void drawLevel(Level level, boolean fromScratch);
     protected abstract void drawMonsterListNumbers(Level level, CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipListNumbers(SlipList monsterList, BufferedImage overlay);
-    protected abstract void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay);
+    protected abstract void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay, Color color);
     public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
     
@@ -98,8 +98,9 @@ public abstract class GamePanel extends JPanel
         overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterListNumbers) drawMonsterListNumbers(level, level.getMonsterList(), overlayImage);
         if (showSlipListNumbers && level.supportsSliplist()) drawSlipListNumbers(level.getSlipList(), overlayImage);
-        if (showCloneConnections) drawButtonConnections(level.getRedButtons().allValues(), overlayImage);
-        if (showTrapConnections) drawButtonConnections(level.getBrownButtons().allValues(), overlayImage);
+        if (showCloneConnections) drawButtonConnections(level.getRedButtons().allValues(), overlayImage, Color.BLACK);
+        if (showTrapConnections) drawButtonConnections(level.getBrownButtons().allValues(), overlayImage, Color.BLACK);
+        if (hoveredButton != null) drawButtonConnections(List.of(hoveredButton), overlayImage, Color.RED);
         if (showHistory) drawChipHistory(level.getChip().getPosition(), overlayImage);
     }
 
@@ -152,7 +153,7 @@ public abstract class GamePanel extends JPanel
     }
     protected abstract void initialiseTileGraphics(BufferedImage tilespng);
     protected abstract void initialiseOverlayGraphics(BufferedImage tilespng);
-    protected abstract void initialiseCreatureGraphics(BufferedImage tilespng);
+    protected abstract void initialiseCreatureGraphics(BufferedImage overlayImage, BufferedImage tilesImage);
     protected abstract void initialiseLayers();
 
     public void initialise(SuperCC emulator, BufferedImage[] tilespng, TileSheet tileSheet, int tileWidth, int tileHeight) {
@@ -165,7 +166,7 @@ public abstract class GamePanel extends JPanel
         initialiseDigits();
         initialiseTileGraphics(tilespng[0]);
         initialiseOverlayGraphics(tilespng[1]);
-        initialiseCreatureGraphics(tilespng[1]);
+        initialiseCreatureGraphics(tilespng[1], tilespng[0]);
         initialiseLayers();
         if (getMouseListeners().length == 0) { //Just so you don't add extra mouse listeners when you update tilesize or something
             addMouseListener(this);
@@ -177,12 +178,13 @@ public abstract class GamePanel extends JPanel
         
         GamePopupMenu(Position position) {
             add(new JLabel("Cheats", SwingConstants.CENTER));
-            Cheats cheats = emulator.getLevel().getCheats();
+            Level level = emulator.getLevel();
+            Cheats cheats = level.getCheats();
 
-            Tile tileFG = emulator.getLevel().getLayerFG().get(position);
+            Tile tileFG = level.getLayerFG().get(position);
             Tile[] tiles;
-            if(emulator.getLevel().supportsLayerBG()) {
-                Tile tileBG = emulator.getLevel().getLayerBG().get(position);
+            if(level.supportsLayerBG()) {
+                Tile tileBG = level.getLayerBG().get(position);
                 tiles = new Tile[] {tileFG, tileBG};
             } else {
                 tiles = new Tile[] {tileFG};
@@ -199,7 +201,7 @@ public abstract class GamePanel extends JPanel
                     add(press);
                 }
                 
-                if (tile == Tile.TRAP) {
+                if (tile == Tile.TRAP && !level.trapRequiresHeldButton()) {
                     JMenuItem open = new JMenuItem("Open Trap");
                     open.addActionListener((e) -> cheats.setTrap(position, true));
                     add(open);
@@ -219,7 +221,7 @@ public abstract class GamePanel extends JPanel
                 
             }
             
-            Creature c = emulator.getLevel().getMonsterList().creatureAt(position, false);
+            Creature c = emulator.getLevel().getMonsterList().creatureAt(position, level.chipInMonsterList());
             if (c != null) {
                 JMenu setDirection = new JMenu("Change Creature's Direction");
                 for (Direction d : Direction.CARDINALS) {
@@ -271,13 +273,17 @@ public abstract class GamePanel extends JPanel
                 add(pop);
             }
             
-            JMenu insert = new JMenu("Insert Tile");
+            JMenu insertTile = new JMenu("Insert Tile");
             Tile[] allTiles = Tile.values();
-            for (int i = 0; i < 0x70; i+= 0x10) {
-                JMenu tileSubsetMenu = new JMenu(i + " - " + (i+0XF));
+            for (int i = 0; i < allTiles.length; i+= 0x10) {
+                if (!level.creaturesAreTiles() && (Tile.BUG_UP.ordinal() <= i && i <= Tile.BLOB_RIGHT.ordinal()))
+                    continue;
+                JMenu tileSubsetMenu = new JMenu(String.format("0x%02X - 0x%02X", i, i+0XF));
                 for (int j = i; j < i + 0x10; j++) {
                     Tile t = allTiles[j];
-                    JMenuItem menuItem = new JMenuItem(t.toString());
+                    if (!level.creaturesAreTiles() && (t.isCreature() || t.isChip() || t.isBlock() || t.isSwimmingChip()))
+                        continue;
+                    JMenuItem menuItem = new JMenuItem(String.format("0x%02X - %s", j, t.toString()));
                     menuItem.addActionListener((e) -> {
                         cheats.insertTile(position, t);
                         updateGraphics(false);
@@ -285,11 +291,36 @@ public abstract class GamePanel extends JPanel
                     });
                     tileSubsetMenu.add(menuItem);
                 }
-                insert.add(tileSubsetMenu);
+                insertTile.add(tileSubsetMenu);
             }
-            
-            add(insert);
-            
+            add(insertTile);
+
+            JMenuItem insertCreature = new JMenu("Insert Creature");
+            CreatureID[] allIDs = CreatureID.values();
+            for (CreatureID id : allIDs) {
+                //ah, the mess that is different rulesets
+                if (!level.hasStillTanks() && id == CreatureID.TANK_STATIONARY)
+                    continue;
+                if (!level.blocksInMonsterList() && id.isBlock() || id == CreatureID.ICE_BLOCK)
+                    continue;
+                if (!level.swimmingChipIsCreature() && id == CreatureID.CHIP_SWIMMING)
+                    continue;
+                if (id.isChip() || id == CreatureID.DEAD)
+                    continue;
+
+                JMenu dirSubMenu = new JMenu(id.toString());
+                Direction[] cardinals = Direction.CARDINALS;
+                for (Direction d : cardinals) {
+                    JMenuItem menuItem = new JMenuItem(d.toString());
+                    menuItem.addActionListener(e -> {
+                        cheats.insertCreature(d, id, position);
+                        emulator.getMainWindow().repaint(false);
+                    });
+                    dirSubMenu.add(menuItem);
+                }
+                insertCreature.add(dirSubMenu);
+            }
+            add(insertCreature);
         }
         
     }

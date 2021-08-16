@@ -225,24 +225,16 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    protected void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay){
+    protected void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay, Color color){
         Graphics2D g = overlay.createGraphics();
-        g.setColor(Color.BLACK);
+        g.setColor(color);
         for (ConnectionButton connection : connections){
-            if (connection == null || connection == hoveredButton)
+            if (connection == null)
                 continue;
             int x1 = (connection.getButtonPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
             int y1 = (connection.getButtonPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
             int x2 = (connection.getTargetPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
             int y2 = (connection.getTargetPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
-            g.drawLine(x1, y1, x2, y2);
-        }
-        if (hoveredButton != null) {
-            g.setColor(Color.RED);
-            int x1 = (hoveredButton.getButtonPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
-            int y1 = (hoveredButton.getButtonPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
-            int x2 = (hoveredButton.getTargetPosition().getX() - screenTopLeft.getX()) * tileWidth + tileWidth/2;
-            int y2 = (hoveredButton.getTargetPosition().getY() - screenTopLeft.getY()) * tileHeight + tileHeight/2;
             g.drawLine(x1, y1, x2, y2);
         }
     }
@@ -301,27 +293,27 @@ public class SmallGamePanel extends GamePanel {
     }
 
     @Override
-    protected void initialiseCreatureGraphics(BufferedImage allTiles) {
+    protected void initialiseCreatureGraphics(BufferedImage overlayImage, BufferedImage tilesImage) {
         creatureImages = new Image[13][4]; //11 creatures (plus blocks and death effect), each has 4 direction images
         for (int i = 0; i < 10; i++) {
             int offset = 60 + i*4; //60 is Swimming Chip N's tile
             int x = offset / 16;
             for (int j = 0; j < 4; j++) {
                 int y = (offset + j) % 16;
-                creatureImages[i][j] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+                creatureImages[i][j] = overlayImage.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
             }
         }
         for (int k=0; k<4; k++) { //Chip's graphics are separate from the rest of the creatures so we handle them here
             int offset = 108; //Chip's tile
             int x = offset / 16;
             int y = (offset + k) % 16;
-            creatureImages[10][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            creatureImages[10][k] = overlayImage.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
 
             if (k < 2) offset = 14; //Clone blocks start at 14
             else offset = 16; //And they're split across 2 columns for some reason
             x = offset / 16;
             y = (offset + (k % 2)) % 16;
-            creatureImages[11][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            creatureImages[11][k] = overlayImage.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
 
             int vOff = 0;
             if (k > 0) { //splash image is at 51 and explode is at 54 followed by chip death explosion
@@ -332,7 +324,8 @@ public class SmallGamePanel extends GamePanel {
                 offset = 51;
             x = offset / 16;
             y = (offset + vOff) % 16;
-            creatureImages[12][k] = allTiles.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            creatureImages[12][k] = tilesImage.getSubimage(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+            //we actually *don't* want the hole cut through the animations
         }
     }
     

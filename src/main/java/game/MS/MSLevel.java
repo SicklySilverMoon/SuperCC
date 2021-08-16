@@ -147,6 +147,31 @@ public class MSLevel extends MSSavestate implements Level {
     }
 
     @Override
+    public boolean trapRequiresHeldButton() {
+        return false;
+    }
+
+    @Override
+    public boolean creaturesAreTiles() {
+        return true;
+    }
+
+    @Override
+    public boolean hasStillTanks() {
+        return true;
+    }
+
+    @Override
+    public boolean swimmingChipIsCreature() {
+        return false;
+    }
+
+    @Override
+    public boolean blocksInMonsterList() {
+        return false;
+    }
+
+    @Override
     public int ticksPerMove() {
         return RULESET.ticksPerMove;
     }
@@ -448,6 +473,13 @@ public class MSLevel extends MSSavestate implements Level {
             }
         }
     }
+
+    @Override
+    public Creature newCreature(Direction dir, CreatureID creatureType, Position position) {
+        Creature creature = new MSCreature(dir, creatureType, position);
+        creature.setLevel(this);
+        return creature;
+    }
     
     /**
      * Advances a tick (10th of a second).
@@ -593,7 +625,7 @@ public class MSLevel extends MSSavestate implements Level {
                     deathCause = 1;
                 else if (chipFG == BURNED_CHIP)
                     deathCause = 2;
-                else if (chipFG == BLOCK || chipFG == ICE_BLOCK)
+                else if (chipFG.isBlock())
                     deathCause = 4;
                 else if (chipFG.isMonster())
                     deathCause = 5;
