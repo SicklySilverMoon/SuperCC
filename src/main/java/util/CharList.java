@@ -6,7 +6,7 @@ import java.util.*;
 
 /**
  * This class is basically an ArrayList for the char primitive, used for
- * storing moves. The reason I don't just use ArrayList[Byte] is to make
+ * storing moves. The reason we don't just use ArrayList[Char] is to make
  * copying and String conversions simpler and faster.
  *
  * The initial capacity is set to 200. This doubles when it is reached. The

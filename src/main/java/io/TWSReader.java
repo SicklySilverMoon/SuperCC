@@ -7,9 +7,7 @@ import game.Ruleset;
 import game.Step;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Set;
 
 import static emulator.SuperCC.*;
 
@@ -108,6 +106,7 @@ public class TWSReader{
 
         Solution s = new Solution(writer.toCharArray(), rngSeed, step, Solution.QUARTER_MOVES, ruleset, initialSlide);
         s.efficiency = 1 - (double) reader.ineffiencies / solutionTime;
+        s.melindaRouterGenerated = reader.melindaRouter;
         return s;
     }
 
@@ -118,10 +117,14 @@ public class TWSReader{
 
     private static class twsInputStream extends FileInputStream{
         private final char[] DIRECTIONS = new char[] {UP, LEFT, DOWN, RIGHT, UP_LEFT, DOWN_LEFT, UP_RIGHT, DOWN_RIGHT};
-        
+        private final Set<Character> cardinalSet = Set.of(UP, LEFT, DOWN, RIGHT);
+
         public int solutionLengthOffset = 0;
 
         public int ineffiencies = 0;
+        public int numCardinals = 0; //These are used for MR detection, counting if 3 ortho moves are in a row with 3 tick between
+        public int num3TickTime = 0;
+        public boolean melindaRouter = false;
 
         public int bytesRead = 0;
         public int counter;
@@ -141,6 +144,17 @@ public class TWSReader{
             for (int i = 0; i < time; i++)
                 writer.write('~');
             writer.write(direction);
+
+            if (cardinalSet.contains(direction) && time == 3) {
+                numCardinals++;
+                num3TickTime++;
+            }
+            else {
+                numCardinals = 0;
+                num3TickTime = 0;
+            }
+            if (numCardinals == 3 && num3TickTime == 3)
+                melindaRouter = true;
         }
         public void readFormat2(int b, Writer writer) throws IOException{
             counter += 4;

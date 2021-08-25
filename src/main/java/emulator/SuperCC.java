@@ -229,7 +229,7 @@ public class SuperCC {
         else{
             for (char charMovementKey : CHAR_MOVEMENT_KEYS) {
                 if (charMovementKey == c) {
-                    directions = new Direction[]{DIRECTIONS.get(c)};
+                    directions = new Direction[] {DIRECTIONS.get(c)};
                     return tick(c, directions, flags);
                 }
             }

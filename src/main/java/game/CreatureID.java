@@ -25,7 +25,7 @@ public enum CreatureID {
     public int getBits() {
         return bits;
     }
-    public String toString() {
+    public String prettyPrint() {
         return name;
     }
     

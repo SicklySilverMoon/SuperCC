@@ -112,7 +112,6 @@ public class EmulatorKeyListener extends KeyAdapter {
                     break;
             }
         }
-        
     }
     
     public EmulatorKeyListener(SuperCC emulator) {

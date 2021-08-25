@@ -1,5 +1,6 @@
 package tools;
 
+import emulator.Solution;
 import emulator.SuperCC;
 
 import javax.swing.*;
@@ -20,7 +21,11 @@ public class VerifyTWS {
             emulator.loadLevel(i);
             titles.add(i + "   " + emulator.getLevel().getTitle());
             try {
-                results.add(emulator.twsReader.readSolution(emulator.getLevel()).efficiency > 0.9 ? "Tile World" : "SuCC");
+                Solution s = emulator.twsReader.readSolution(emulator.getLevel());
+                if (s.melindaRouterGenerated)
+                    results.add("Melinda Router");
+                else
+                    results.add(s.efficiency > 0.9 ? "Tile World" : "SuCC");
             }
             catch (Exception e) {
                 results.add("Could not read tws");

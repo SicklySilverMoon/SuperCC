@@ -3,6 +3,7 @@ package emulator;
 import game.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import util.CharList;
 
 import java.io.CharArrayWriter;
@@ -29,6 +30,7 @@ public class Solution{
     public final String encoding = "UTF-8";
     
     public double efficiency = -1;
+    public boolean melindaRouterGenerated = false;
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put(STEP, step.name());
@@ -53,7 +55,7 @@ public class Solution{
             Direction slidingDirection = Direction.valueOf(slideString == null ? "UP" : slideString);
             return new Solution(basicMoves, rngSeed, step, BASIC_MOVES, ruleset, slidingDirection);
         }
-        catch (Exception e){
+        catch (ParseException e){
             throw new IllegalArgumentException("Invalid solution file:\n" + s);
         }
     }
@@ -63,9 +65,12 @@ public class Solution{
     }
     
     public void load(SuperCC emulator, TickFlags tickFlags){
-        if (emulator.getLevel().getRuleset() != ruleset)
+        if (emulator.getLevel().getRuleset() != ruleset) {
             if (!emulator.throwQuestion("Solution has a different ruleset than currently selected, change rulesets?"))
                 return;
+            if (emulator.hasGui)
+                emulator.getMainWindow().swapRulesetTilesheet(ruleset);
+        }
 
         emulator.loadLevel(emulator.getLevel().getLevelNumber(), rngSeed, step, false, ruleset, initialSlide);
         tickBasicMoves(emulator, tickFlags);

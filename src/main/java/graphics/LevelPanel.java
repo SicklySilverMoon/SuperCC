@@ -65,7 +65,7 @@ public class LevelPanel extends TextPanel {
 
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         drawText(g, "Password: " + level.getPassword(), 1);
-        drawText(g, "Ruleset: " + level.getRuleset().toString(), 1);
+        drawText(g, "Ruleset: " + level.getRuleset().prettyPrint(), 1);
         if (level.getAuthor() != null)
             drawText(g, "Author: " + level.getAuthor(), 1);
         drawText(g, level.getStep().toString()+" step, seed: " + level.getRngSeed(), 1);

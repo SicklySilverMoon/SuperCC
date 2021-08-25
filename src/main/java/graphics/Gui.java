@@ -3,6 +3,8 @@ package graphics;
 import emulator.EmulatorKeyListener;
 import emulator.SavestateManager;
 import emulator.SuperCC;
+import game.Ruleset;
+import io.SuccPaths;
 import util.TreeNode;
 
 import javax.imageio.ImageIO;
@@ -26,16 +28,17 @@ public class Gui extends JFrame{
     private JSlider speedSlider;
     private JPanel sliderPanel;
     private JButton playButton;
+    private MenuBar menuBar;
     
     static final int DEFAULT_TILE_WIDTH = 20;
     static final int DEFAULT_TILE_HEIGHT = 20;
     public static final TileSheet DEFAULT_TILESHEET = TileSheet.CCEDIT_TW;
+
+    private final SuperCC emulator;
     
     public JSlider getTimeSlider(){
         return timeSlider;
     }
-    
-    private final SuperCC emulator;
 
     public static final Color DARK_GREY = new Color(0x3C3F41);
     
@@ -99,6 +102,64 @@ public class Gui extends JFrame{
         }
     }
     
+    public void updateTimeSlider(SavestateManager manager) {
+        List<TreeNode<byte[]>> playbackNodes = manager.getPlaybackNodes();
+        timeSlider.setMaximum(playbackNodes.size() - 1);
+        timeSlider.setValue(manager.getPlaybackIndex());
+    }
+    
+    public void repaintRightContainer(){
+        levelPanel.repaint();
+        inventoryPanel.repaint();
+        lastActionPanel.repaint();
+        movePanel.repaint();
+    }
+
+    public void changePlayButton(boolean paused) {
+        try {
+            if (paused)
+                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
+            else
+                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void repaint(boolean fromScratch){
+        if(emulator.isLevelLoaded()) {
+            updateTimeSlider(emulator.getSavestates());
+            getGamePanel().updateGraphics(fromScratch);
+        }
+        leftPanel.repaint();
+        gamePanel.repaint();
+        changePlayButton(emulator.getSavestates().isPaused());
+        repaintRightContainer();
+    }
+
+    public void swapRulesetTilesheet(Ruleset ruleset) {
+        try {
+            TileSheet tileSheet;
+            SuccPaths paths = emulator.getPaths();
+            int tilesheetNum;
+            if (ruleset == Ruleset.MS)
+                tilesheetNum = paths.getMSTilesetNum();
+            else
+                tilesheetNum = paths.getLynxTilesetNum();
+            tileSheet = TileSheet.values()[tilesheetNum];
+            BufferedImage[] tilesetImages = tileSheet.getTileSheets(paths.getTileSizes()[0], paths.getTileSizes()[1]);
+            menuBar.tilesetButtons[tilesheetNum].setSelected(true);
+
+            getGamePanel().initialise(emulator, tilesetImages, tileSheet, getGamePanel().getTileWidth(), getGamePanel().getTileHeight());
+            getInventoryPanel().initialise(emulator);
+            repaint(true);
+        }
+        catch (IOException e1) {
+            emulator.throwError("Could not load relevant tilesheet");
+        }
+    }
+
     public Gui(SuperCC emulator) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -147,7 +208,8 @@ public class Gui extends JFrame{
         getGamePanel().setEmulator(emulator);
         setContentPane(mainPanel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setJMenuBar(new MenuBar(this, emulator));
+        menuBar = new MenuBar(this, emulator);
+        setJMenuBar(menuBar);
         pack();
         setVisible(true);
         rightContainer.setBackground(Color.DARK_GRAY);
@@ -161,41 +223,4 @@ public class Gui extends JFrame{
         addKeyListener(keyListener);
         emulator.setControls(keyListener);
     }
-    
-    public void updateTimeSlider(SavestateManager manager) {
-        List<TreeNode<byte[]>> playbackNodes = manager.getPlaybackNodes();
-        timeSlider.setMaximum(playbackNodes.size() - 1);
-        timeSlider.setValue(manager.getPlaybackIndex());
-    }
-    
-    public void repaintRightContainer(){
-        levelPanel.repaint();
-        inventoryPanel.repaint();
-        lastActionPanel.repaint();
-        movePanel.repaint();
-    }
-
-    public void changePlayButton(boolean paused) {
-        try {
-            if (paused)
-                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
-            else
-                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void repaint(boolean fromScratch){
-        if(emulator.isLevelLoaded()) {
-            updateTimeSlider(emulator.getSavestates());
-            getGamePanel().updateGraphics(fromScratch);
-        }
-        leftPanel.repaint();
-        gamePanel.repaint();
-        changePlayButton(emulator.getSavestates().isPaused());
-        repaintRightContainer();
-    }
-    
 }

@@ -20,8 +20,7 @@ public enum Ruleset { //For the love of god do not use this outside of solution/
         return CURRENT;
     }
 
-    @Override
-    public String toString() {
+    public String prettyPrint() {
         return switch (this) {
             case MS -> "MS";
             case LYNX -> "Lynx";

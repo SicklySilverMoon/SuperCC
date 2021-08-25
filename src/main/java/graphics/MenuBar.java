@@ -8,7 +8,6 @@ import game.Direction;
 import game.Level;
 import game.Ruleset;
 import game.Step;
-import io.SuccPaths;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -43,15 +42,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 class MenuBar extends JMenuBar{
 
-    private final SuperCC emulator;
-    private final Gui window;
-    private final LevelMenu levelMenu;
-    private final SolutionMenu solutionMenu;
-    private final TWSMenu twsMenu;
-    private final ViewMenu viewMenu;
-    private final ToolMenu toolMenu;
-    private final CheatMenu cheatMenu;
-    private final HelpMenu helpMenu;
+    final SuperCC emulator;
+    final Gui window;
+    final LevelMenu levelMenu;
+    final SolutionMenu solutionMenu;
+    final TWSMenu twsMenu;
+    final ViewMenu viewMenu;
+    final ToolMenu toolMenu;
+    final CheatMenu cheatMenu;
+    final HelpMenu helpMenu;
+
+    JRadioButton[] tilesetButtons;
     
     private void addIcon(JMenuItem m, String path){
         try {
@@ -165,28 +166,10 @@ class MenuBar extends JMenuBar{
             changeRules.addActionListener(e -> {
                 if (!SuperCC.areToolsRunning()) {
                     Level level = emulator.getLevel();
+                    Ruleset ruleset = level.getRuleset().swap();
                     emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
-                            level.getRuleset().swap(), level.getInitialRFFDirection());
-
-                    try {
-                        TileSheet tileSheet;
-                        SuccPaths paths = emulator.getPaths();
-                        int tilesheetNum;
-                        if (emulator.getLevel().getRuleset() == Ruleset.MS)
-                            tilesheetNum = paths.getMSTilesetNum();
-                        else
-                            tilesheetNum = paths.getLynxTilesetNum();
-                        tileSheet = TileSheet.values()[tilesheetNum];
-                        BufferedImage[] tilesetImages = tileSheet.getTileSheets(paths.getTileSizes()[0], paths.getTileSizes()[1]);
-                        viewMenu.tilesetButtons[tilesheetNum].setSelected(true);
-
-                        window.getGamePanel().initialise(emulator, tilesetImages, tileSheet, window.getGamePanel().getTileWidth(), window.getGamePanel().getTileHeight());
-                        window.getInventoryPanel().initialise(emulator);
-                        window.repaint(true);
-                    }
-                    catch (IOException e1) {
-                        emulator.throwError("Could not load relevant tilesheet");
-                    }
+                            ruleset, level.getInitialRFFDirection());
+                    window.swapRulesetTilesheet(ruleset);
                 }
             });
             changeRules.setAccelerator(KeyStroke.getKeyStroke(VK_F3, 0));
@@ -495,7 +478,6 @@ class MenuBar extends JMenuBar{
 
     private class ViewMenu extends JMenu{
         ButtonGroup tilesetButtonGroup;
-        JRadioButton[] tilesetButtons;
 
         ViewMenu(){
             super("View");
@@ -555,9 +537,7 @@ class MenuBar extends JMenuBar{
                         SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
                         emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheets(size, size), ts, size, size);
                         window.getInventoryPanel().initialise(emulator);
-                        window.getInventoryPanel().setPreferredSize(new Dimension(4 * size + 10, 2 * size + 10));
-                        window.getInventoryPanel().setSize(4 * size + 10, 2 * size + 10);
-                        window.setSize(200 + size * gamePanel.getWindowSizeX(), 200 + size * gamePanel.getWindowSizeY());
+                        window.setSize(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY());
                         window.getGamePanel().setPreferredSize(new Dimension(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY()));
                         window.getGamePanel().setSize(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY());
                         window.pack();

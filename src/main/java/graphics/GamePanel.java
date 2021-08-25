@@ -308,7 +308,7 @@ public abstract class GamePanel extends JPanel
                 if (id.isChip() || id == CreatureID.DEAD)
                     continue;
 
-                JMenu dirSubMenu = new JMenu(id.toString());
+                JMenu dirSubMenu = new JMenu(id.prettyPrint());
                 Direction[] cardinals = Direction.CARDINALS;
                 for (Direction d : cardinals) {
                     JMenuItem menuItem = new JMenuItem(d.toString());
