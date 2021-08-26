@@ -138,17 +138,20 @@ public class MSCreature extends Creature {
         }
         MSLevel msLevel = (MSLevel) level;
         if (wasSliding && !isSliding){
-            if (!isDead() && creatureType.isChip()) setCreatureType(CHIP);
+            if (!isDead() && creatureType.isChip())
+                setCreatureType(CHIP);
             else if (!creatureType.isBlock() || msLevel.getLayerBG().get(position) != TRAP)
                 msLevel.slipList.remove(this);
             // Handles block colliding on trap
-            else if (creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP && canLeave(direction, position)) {
+            else if (creatureType.isBlock() && msLevel.getLayerBG().get(position) == TRAP) {
                 msLevel.slipList.remove(this);
-                msLevel.slipList.add(this);
+                if (canLeave(direction, position))
+                    msLevel.slipList.add(this);
             }
         }
         else if (!wasSliding && isSliding){
-            if (creatureType.isChip()) setCreatureType(CHIP_SLIDING);
+            if (creatureType.isChip())
+                setCreatureType(CHIP_SLIDING);
             else if (msLevel.getSlipList().contains(this)) {
                 new RuntimeException("adding block twice on level "+msLevel.getLevelNumber()+" "+ msLevel.getTitle()).printStackTrace();
             }
@@ -262,6 +265,8 @@ public class MSCreature extends Creature {
                 if (block.tryMove(direction, false, pressedButtons) && (canEnter(direction, exitTile))) {
                     break; //The loop shouldn't break if Chip can't enter the tile, instead he should move onto the next teleport, AFTER pushing the block however, and this should in fact be done multiple times in a row if the situation allows
                 }
+                else if (block.isSliding() && level.getLayerBG().get(exitPosition) == TRAP && !level.isTrapOpen(exitPosition))
+                    block.setSliding(true, false);
             }
             if (canEnter(direction, exitTile)) break;
             if((getCreatureType() == BUG || getCreatureType() == WALKER) && exitTile == FIRE) {
