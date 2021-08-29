@@ -380,6 +380,7 @@ public class LynxLevel extends LynxSavestate implements Level {
 
         if (layerFG.get(chip.getPosition()) == Tile.EXIT && chip.getTimeTraveled() == 0
                 && chip.getAnimationTimer() == 1) { //this is a hack but it ensures that starting on an exit won't win the level
+            tickNumber++;
             chip.kill();
             chip.kill(); //destroys the animation as well
             layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);

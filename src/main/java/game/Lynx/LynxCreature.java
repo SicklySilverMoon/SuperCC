@@ -148,7 +148,6 @@ public class LynxCreature extends Creature {
                 if (creatureType != GLIDER && !(creatureType == CreatureID.CHIP && level.getBoots()[0] != 0))
                     kill();
                 break;
-//            case ICE:
             case ICE_SLIDE_SOUTHEAST:
             case ICE_SLIDE_SOUTHWEST:
             case ICE_SLIDE_NORTHWEST:
@@ -157,15 +156,6 @@ public class LynxCreature extends Creature {
                     this.direction = getSlideDirection(this.direction, newTile, null, false);
                 }
                 break;
-//            case FF_DOWN:
-//            case FF_UP:
-//            case FF_RIGHT:
-//            case FF_LEFT:
-//            case FF_RANDOM:
-//                if (creatureType != CreatureID.CHIP) {
-//                    this.direction = getSlideDirection(this.direction, newTile, null, true);
-//                }
-//                break;
             case BUTTON_GREEN:
             case BUTTON_RED:
 //            case BUTTON_BROWN left out intentionally, handled later
@@ -260,7 +250,7 @@ public class LynxCreature extends Creature {
                 break;
             case EXIT:
                 if (creatureType == CreatureID.CHIP)
-                    animationTimer = 2; //see the relevant comment in LynxLevel.java's tick() method
+                    animationTimer = 1; //see the relevant comment in LynxLevel.java's tick() method
                 break;
             case THIEF:
                 if (creatureType == CreatureID.CHIP)
@@ -368,7 +358,7 @@ public class LynxCreature extends Creature {
             else if (tile.isFF()) {
                 if (creatureType == CreatureID.CHIP && level.getBoots()[3] != 0)
                     return false;
-                fDirection = getSlideDirection(direction, tile, null, true);;
+                fDirection = getSlideDirection(direction, tile, null, true);
                 return !overrideToken;
             }
             else if (teleportFlag) { //please find how the CS_TELEPORTED flag works in TW

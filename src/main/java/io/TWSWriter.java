@@ -19,24 +19,26 @@ public class TWSWriter{
     
     public static byte[] write(Level level, Solution solution, SavestateManager savestates) {
         //Goes over the level and transforms all mouse moves into a form TW can handle
-        savestates.addSavestate(-1); //shouldn't be possible for a user to save a savestate to this key
         CharList mouseMoves = new CharList();
-        savestates.restart();
-        ListIterator<Character> itr = savestates.getMoveList().listIterator(false);
-        while (itr.hasNext()) {
-            char c = itr.next();
-            if (SuperCC.isClick(c)) { //Use to math out the relative click position for TWS writing with mouse moves
-                Position screenPosition = Position.screenPosition(level.getChip().getPosition());
-                Position clickedPosition = Position.clickPosition(screenPosition, c);
-                int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
-                int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
+        if (level.supportsClick()) {
+            savestates.addSavestate(-1); //shouldn't be possible for a user to save a savestate to this key
+            savestates.restart();
+            ListIterator<Character> itr = savestates.getMoveList().listIterator(false);
+            while (itr.hasNext()) {
+                char c = itr.next();
+                if (SuperCC.isClick(c)) { //Use to math out the relative click position for TWS writing with mouse moves
+                    Position screenPosition = Position.screenPosition(level.getChip().getPosition());
+                    Position clickedPosition = Position.clickPosition(screenPosition, c);
+                    int relativeClickX = clickedPosition.getX() - level.getChip().getPosition().getX(); //down and to the right of Chip are positive, this just quickly gets the relative position following that
+                    int relativeClickY = clickedPosition.getY() - level.getChip().getPosition().getY();
 
-                mouseMoves.add(relativeClickX);
-                mouseMoves.add(relativeClickY);
+                    mouseMoves.add(relativeClickX);
+                    mouseMoves.add(relativeClickY);
+                }
+                savestates.replay();
             }
-            savestates.replay();
+            savestates.load(-1, level);
         }
-        savestates.load(-1, level);
 
         try(TWSOutputStream writer = new TWSOutputStream()) {
             final int ticksPerMove = level.getRuleset().ticksPerMove;
@@ -58,7 +60,7 @@ public class TWSWriter{
                     int relativeClickX;
                     int relativeClickY;
                     int twsRelativeClick = 0;
-                    if (SuperCC.isClick(c)) {
+                    if (SuperCC.isClick(c) && level.supportsClick()) {
                         relativeClickX = mouseMoves.get(i++);
                         relativeClickY = mouseMoves.get(i++);
 
@@ -140,8 +142,7 @@ public class TWSWriter{
             SuCC writes a time value one higher than it should be,
             this however can't be helped without introducing potential side effects */
             else if (level.getRuleset().ticksPerMove == 4)
-                writeInt(solution.basicMoves.length - 1);
-            //solutions are always 1 extra for unknown reasons, likely TW stopping the counter early or something
+                writeInt(solution.basicMoves.length);
         }
         private static final int LEVEL_HEADER_SIZE = 16;
     
@@ -170,7 +171,6 @@ public class TWSWriter{
             write(((time >> 19) & 0b00001111) | 011 << 01104);
         }
         void writeFormat4(int direction, int time) throws IOException {
-            System.out.println(direction);
             // First byte DDD1NN11
             //int numBytes = measureTime(time);
             write(0b11011 | (direction & 0b111) << 5); //(2 << 2), the first 2 used to be the result of measureTime however as all bytes have to be 4 long its forced to being 2 now

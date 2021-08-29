@@ -149,7 +149,7 @@ public class MSCreature extends Creature {
                     msLevel.slipList.add(this);
             }
         }
-        else if (!wasSliding && isSliding){
+        else if (!wasSliding){
             if (creatureType.isChip())
                 setCreatureType(CHIP_SLIDING);
             else if (msLevel.getSlipList().contains(this)) {
@@ -181,13 +181,13 @@ public class MSCreature extends Creature {
      */
     @Override
     public Tile toTile(){
-        switch (creatureType){
-            case BLOCK: return Tile.BLOCK;
-            case ICE_BLOCK: return Tile.ICE_BLOCK;
-            case CHIP_SLIDING: return Tile.fromOrdinal(Tile.CHIP_UP.ordinal() | direction.ordinal());
-            case TANK_STATIONARY: return Tile.fromOrdinal(TANK_UP.ordinal() | direction.ordinal());
-            default: return Tile.fromOrdinal((creatureType.ordinal() << 2) + 0x40 | direction.ordinal());
-        }
+        return switch (creatureType) {
+            case BLOCK -> Tile.BLOCK;
+            case ICE_BLOCK -> Tile.ICE_BLOCK;
+            case CHIP_SLIDING -> Tile.fromOrdinal(Tile.CHIP_UP.ordinal() | direction.ordinal());
+            case TANK_STATIONARY -> Tile.fromOrdinal(TANK_UP.ordinal() | direction.ordinal());
+            default -> Tile.fromOrdinal((creatureType.ordinal() << 2) + 0x40 | direction.ordinal());
+        };
     }
 
     @Override
@@ -302,91 +302,58 @@ public class MSCreature extends Creature {
     }
 
     public boolean canEnter(Direction direction, Tile tile){
-        switch (tile) {
-            case FLOOR: return true;
-            case WALL: return false;
-            case CHIP: return creatureType.isChip();
-            case WATER: return true;
-            case FIRE: return getCreatureType() != BUG && getCreatureType() != WALKER;
-            case INVISIBLE_WALL: return false;
-            case THIN_WALL_UP: return direction != DOWN;
-            case THIN_WALL_RIGHT: return direction != LEFT;
-            case THIN_WALL_DOWN: return direction != UP;
-            case THIN_WALL_LEFT: return direction != RIGHT;
-            case BLOCK: return false;
-            case DIRT: return creatureType.isChip();
-            case ICE:
-            case FF_DOWN: return true;
-            case BLOCK_UP:
-            case BLOCK_LEFT:
-            case BLOCK_RIGHT:
-            case BLOCK_DOWN: return false;
-            case FF_UP:
-            case FF_LEFT:
-            case FF_RIGHT: return true;
-            case EXIT: return !creatureType.isMonster();
-            case DOOR_BLUE: return creatureType.isChip() && level.getKeys()[0] > 0;
-            case DOOR_RED: return creatureType.isChip() && level.getKeys()[1] > 0;
-            case DOOR_GREEN: return creatureType.isChip() && level.getKeys()[2] > 0;
-            case DOOR_YELLOW: return creatureType.isChip() && level.getKeys()[3] > 0;
-            case ICE_SLIDE_SOUTHEAST: return direction == UP || direction == LEFT;
-            case ICE_SLIDE_NORTHEAST: return direction == DOWN || direction == LEFT;
-            case ICE_SLIDE_NORTHWEST: return direction == DOWN || direction == RIGHT;
-            case ICE_SLIDE_SOUTHWEST: return direction == UP || direction == RIGHT;
-            case BLUEWALL_FAKE: return creatureType.isChip();
-            case BLUEWALL_REAL: return false;
-            case OVERLAY_BUFFER: return false;
-            case THIEF: return creatureType.isChip();
-            case SOCKET: return creatureType.isChip() && level.getChipsLeft() <= 0;
-            case BUTTON_GREEN: return true;
-            case BUTTON_RED: return true;
-            case TOGGLE_CLOSED: return false;
-            case TOGGLE_OPEN: return true;
-            case BUTTON_BROWN:
-            case BUTTON_BLUE:
-            case TELEPORT:
-            case BOMB:
-            case TRAP: return true;
-            case HIDDENWALL_TEMP: return false;
-            case GRAVEL: return (!creatureType.isMonster());
-            case POP_UP_WALL: return creatureType.isChip();
-            case HINT: return true;
-            case THIN_WALL_DOWN_RIGHT: return direction == DOWN || direction == RIGHT;
-            case CLONE_MACHINE: return false;
-            case FF_RANDOM: return !creatureType.isMonster();
-            case DROWNED_CHIP:
-            case BURNED_CHIP:
-            case BOMBED_CHIP:
-            case UNUSED_36:
-            case UNUSED_37: return false;
-            case ICE_BLOCK: return creatureType == CreatureID.ICE_BLOCK;
-            case EXITED_CHIP:
-            case EXIT_EXTRA_1:
-            case EXIT_EXTRA_2: return false;
-            case CHIP_SWIMMING_UP:
-            case CHIP_SWIMMING_LEFT:
-            case CHIP_SWIMMING_DOWN:
-            case CHIP_SWIMMING_RIGHT: return !creatureType.isChip();
+        return switch (tile) {
+            case FLOOR -> true;
+            case WALL -> false;
+            case CHIP -> creatureType.isChip();
+            case WATER -> true;
+            case FIRE -> getCreatureType() != BUG && getCreatureType() != WALKER;
+            case INVISIBLE_WALL -> false;
+            case THIN_WALL_UP -> direction != DOWN;
+            case THIN_WALL_RIGHT -> direction != LEFT;
+            case THIN_WALL_DOWN -> direction != UP;
+            case THIN_WALL_LEFT -> direction != RIGHT;
+            case BLOCK -> false;
+            case DIRT -> creatureType.isChip();
+            case ICE, FF_DOWN -> true;
+            case BLOCK_UP, BLOCK_LEFT, BLOCK_RIGHT, BLOCK_DOWN -> false;
+            case FF_UP, FF_LEFT, FF_RIGHT -> true;
+            case EXIT -> !creatureType.isMonster();
+            case DOOR_BLUE -> creatureType.isChip() && level.getKeys()[0] > 0;
+            case DOOR_RED -> creatureType.isChip() && level.getKeys()[1] > 0;
+            case DOOR_GREEN -> creatureType.isChip() && level.getKeys()[2] > 0;
+            case DOOR_YELLOW -> creatureType.isChip() && level.getKeys()[3] > 0;
+            case ICE_SLIDE_SOUTHEAST -> direction == UP || direction == LEFT;
+            case ICE_SLIDE_NORTHEAST -> direction == DOWN || direction == LEFT;
+            case ICE_SLIDE_NORTHWEST -> direction == DOWN || direction == RIGHT;
+            case ICE_SLIDE_SOUTHWEST -> direction == UP || direction == RIGHT;
+            case BLUEWALL_FAKE -> creatureType.isChip();
+            case BLUEWALL_REAL -> false;
+            case OVERLAY_BUFFER -> false;
+            case THIEF -> creatureType.isChip();
+            case SOCKET -> creatureType.isChip() && level.getChipsLeft() <= 0;
+            case BUTTON_GREEN -> true;
+            case BUTTON_RED -> true;
+            case TOGGLE_CLOSED -> false;
+            case TOGGLE_OPEN -> true;
+            case BUTTON_BROWN, BUTTON_BLUE, TELEPORT, BOMB, TRAP -> true;
+            case HIDDENWALL_TEMP -> false;
+            case GRAVEL -> (!creatureType.isMonster());
+            case POP_UP_WALL -> creatureType.isChip();
+            case HINT -> true;
+            case THIN_WALL_DOWN_RIGHT -> direction == DOWN || direction == RIGHT;
+            case CLONE_MACHINE -> false;
+            case FF_RANDOM -> !creatureType.isMonster();
+            case DROWNED_CHIP, BURNED_CHIP, BOMBED_CHIP, UNUSED_36, UNUSED_37 -> false;
+            case ICE_BLOCK -> creatureType == CreatureID.ICE_BLOCK;
+            case EXITED_CHIP, EXIT_EXTRA_1, EXIT_EXTRA_2 -> false;
+            case CHIP_SWIMMING_UP, CHIP_SWIMMING_LEFT, CHIP_SWIMMING_DOWN, CHIP_SWIMMING_RIGHT -> !creatureType.isChip();
             //monsters
-            default: return creatureType.isChip();
-            case KEY_BLUE:
-            case KEY_RED:
-            case KEY_GREEN:
-            case KEY_YELLOW: return true;
-            case BOOTS_WATER:
-            case BOOTS_FIRE:
-            case BOOTS_ICE:
-            case BOOTS_FF: return !creatureType.isMonster();
-            case CHIP_UP:
-            case CHIP_LEFT:
-            case CHIP_RIGHT:
-            case CHIP_DOWN: return !creatureType.isChip();
-        }
-    }
-
-    //pretty much exists for Lynx benefit
-    public boolean canEnter(Direction direction, Position position, boolean clearAnims, boolean pushBlocks, boolean pushBlocksNow) {
-        return canEnter(direction, level.getLayerFG().get(position));
+            default -> creatureType.isChip();
+            case KEY_BLUE, KEY_RED, KEY_GREEN, KEY_YELLOW -> true;
+            case BOOTS_WATER, BOOTS_FIRE, BOOTS_ICE, BOOTS_FF -> !creatureType.isMonster();
+            case CHIP_UP, CHIP_LEFT, CHIP_RIGHT, CHIP_DOWN -> !creatureType.isChip();
+        };
     }
 
     @Override
@@ -776,7 +743,9 @@ public class MSCreature extends Creature {
         boolean isBlock = creatureType.isBlock();
         boolean isMonster = creatureType.isMonster();
         boolean pickupCheck = false;
-        boolean blockMachineCheck = newTileBG != CLONE_MACHINE || isBlock;
+        boolean blockMachineCheck = true;
+        if (level.getLayerBG().get(newPosition) == CLONE_MACHINE && (level.getLayerFG().get(newPosition) == Tile.BLOCK || level.getLayerFG().get(newPosition) == Tile.ICE_BLOCK)) blockMachineCheck = true;
+        else if (level.getLayerBG().get(newPosition) == CLONE_MACHINE && !isBlock) blockMachineCheck = false;
 
         if ((creatureType.isMonster()) && newTileFG.isChip()) newTileFG = newTileBG;
         if (newTileFG.isPickup()) {
