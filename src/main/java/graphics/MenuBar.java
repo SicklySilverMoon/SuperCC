@@ -440,8 +440,6 @@ class MenuBar extends JMenuBar{
 
                 Path tws = saveNewFile(TWSWriter.write(level, solution, emulator.getSavestates()), emulator.getPaths().getTWSPath(), "tws");
                 emulator.getPaths().setTWSPath(tws.getParent().toString());
-                if (solution.ruleset == Ruleset.LYNX)
-                    emulator.throwMessage("Please verify this TWS in TW before using it for anything!");
             });
             add(newTWS);
             addIcon(newTWS, "/resources/icons/new.gif");
