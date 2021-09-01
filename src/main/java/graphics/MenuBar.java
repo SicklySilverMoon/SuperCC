@@ -50,7 +50,7 @@ class MenuBar extends JMenuBar{
     final ViewMenu viewMenu;
     final ToolMenu toolMenu;
     final CheatMenu cheatMenu;
-    final HelpMenu helpMenu;
+//    final HelpMenu helpMenu;
 
     JRadioButton[] tilesetButtons;
     
@@ -723,33 +723,33 @@ class MenuBar extends JMenuBar{
         }
     }
 
-    private class HelpMenu extends JMenu{
-        HelpMenu() {
-            super("Help");
-
-            JMenuItem helpPopup = new JMenuItem("Help");
-            helpPopup.addActionListener(e -> new HelpWindow(emulator));
-            addIcon(helpPopup, "/resources/icons/help.gif");
-            add(helpPopup);
-
-            JMenuItem variationHelp = new JMenuItem("Variation Tester Documentation");
-            variationHelp.addActionListener(e -> {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(new URI("https://supercc.bitbusters.club/VariationScriptDocumentation.pdf"));
-                    } catch (IOException | URISyntaxException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-            add(variationHelp);
-
-            JMenuItem tspHelpPopup = new JMenuItem("TSP Solver Help");
-            tspHelpPopup.addActionListener(e -> new TSPHelpWindow(emulator));
-            addIcon(tspHelpPopup, "/resources/icons/help.gif");
-            add(tspHelpPopup);
-        }
-    }
+//    private class HelpMenu extends JMenu{
+//        HelpMenu() {
+//            super("Help");
+//
+//            JMenuItem helpPopup = new JMenuItem("Help");
+//            helpPopup.addActionListener(e -> new HelpWindow(emulator));
+//            addIcon(helpPopup, "/resources/icons/help.gif");
+//            add(helpPopup);
+//
+//            JMenuItem variationHelp = new JMenuItem("Variation Tester Documentation");
+//            variationHelp.addActionListener(e -> {
+//                if (Desktop.isDesktopSupported()) {
+//                    try {
+//                        Desktop.getDesktop().browse(new URI("https://supercc.bitbusters.club/VariationScriptDocumentation.pdf"));
+//                    } catch (IOException | URISyntaxException ex) {
+//                        ex.printStackTrace();
+//                    }
+//                }
+//            });
+//            add(variationHelp);
+//
+//            JMenuItem tspHelpPopup = new JMenuItem("TSP Solver Help");
+//            tspHelpPopup.addActionListener(e -> new TSPHelpWindow(emulator));
+//            addIcon(tspHelpPopup, "/resources/icons/help.gif");
+//            add(tspHelpPopup);
+//        }
+//    }
 
     private Path saveNewFile(byte[] out, String path, String extension) {
         try {
@@ -815,14 +815,14 @@ class MenuBar extends JMenuBar{
         viewMenu = new ViewMenu();
         toolMenu = new ToolMenu();
         cheatMenu = new CheatMenu();
-        helpMenu = new HelpMenu();
+//        helpMenu = new HelpMenu();
         add(levelMenu);
         add(solutionMenu);
         add(twsMenu);
         add(viewMenu);
         add(toolMenu);
         add(cheatMenu);
-        add(helpMenu);
+//        add(helpMenu);
     }
 
 }
