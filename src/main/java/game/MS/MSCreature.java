@@ -758,9 +758,10 @@ public class MSCreature extends Creature {
         if (canEnter(direction, newTileBG) ||
                 (!newTileFG.isTransparent() && (isBlock || blockMachineCheck)) //Look at this if statement, this is all just to get transparency to work
                 || (pickupCheck && blockMachineCheck)
-                || (isBlock && (newTileFG.isBoot() || newTileFG.isChip() || newTileFG.isSwimmingChip()))) { //This right here can sometimes cause Mini Challenges (CCLP3 116) to hang if you mess with the mouse code
+                || (isBlock && (newTileFG.isBoot() || newTileFG.isChip() || newTileFG.isSwimmingChip()))
+                || newTileBG == CLONE_MACHINE) {
 
-            if (newTileBG == CLONE_MACHINE && creatureType == BLOCK) newTileFG = newTileBG; //Putting a check for clone machines on the lower layer with blocks in the if statement above causes massive slide delay issues, so i set newTile to be the clone machine here and those issues are gone and lower layer clone machines now work properly
+            if (newTileBG == CLONE_MACHINE && (!isChip || newTileFG.isCreature())) newTileFG = newTileBG;
 
             if (tryEnter(direction, newPosition, newTileFG, pressedButtons)) {
                 if (newTileFG != TELEPORT) level.popTile(position);
