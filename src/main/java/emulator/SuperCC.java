@@ -160,7 +160,9 @@ public class SuperCC {
         catch (IOException e){
             throwError("Could not read file:\n"+e.getLocalizedMessage());
         }
-        loadLevel(1);
+        loadLevel(1, 0, Step.EVEN, false, dat.getRuleset(), Direction.UP);
+        if (hasGui)
+            window.swapRulesetTilesheet(level.getRuleset());
     }
 
     public synchronized void loadLevel(int levelNumber, int rngSeed, Step step, boolean keepMoves, Ruleset rules, Direction initialSlide){

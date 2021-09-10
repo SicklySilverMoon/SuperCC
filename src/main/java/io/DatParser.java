@@ -21,7 +21,7 @@ public class DatParser{
     private final static int MSCC_SIGNATURE = 0x0002AAAC;
     private final static int MSCC_PG_SIGNATURE = 0x0003AAAC;
     private final static int TWORLD_LYNX_SIGNATURE = 0x0102AAAC;
-    private final static Set<Integer> SIGNATURES = new HashSet<>(Arrays.asList(MSCC_SIGNATURE, MSCC_PG_SIGNATURE, TWORLD_LYNX_SIGNATURE));
+    private final static Set<Integer> SIGNATURES = Set.of(MSCC_SIGNATURE, MSCC_PG_SIGNATURE, TWORLD_LYNX_SIGNATURE);
 
     private final File file;
     private long[] levelStart;
@@ -38,6 +38,10 @@ public class DatParser{
 
     public String getLevelsetPath() {
         return file.getPath();
+    }
+
+    public Ruleset getRuleset() {
+        return rules;
     }
 
     /**
@@ -104,7 +108,8 @@ public class DatParser{
      */
     public Level parseLevel(int level, int rngSeed, Step step, Ruleset rules, Direction initialSlide) throws IOException{
         DatReader reader = new DatReader(file);
-        if (rules != Ruleset.CURRENT) this.rules = rules;
+        if (rules != Ruleset.CURRENT)
+            this.rules = rules;
         try {
             reader.skip(levelStart[level]);
             final int levelNumber = reader.readWord();
@@ -190,8 +195,10 @@ public class DatParser{
             if (!SIGNATURES.contains(signature)) {
                 throw new IOException("Invalid signature");
             }
-            if (signature == MSCC_SIGNATURE || signature == MSCC_PG_SIGNATURE) rules = Ruleset.MS;
-            else rules = Ruleset.LYNX;
+            if (signature == MSCC_SIGNATURE || signature == MSCC_PG_SIGNATURE)
+                rules = Ruleset.MS;
+            else
+                rules = Ruleset.LYNX;
             final int levels = reader.readWord();
             long byteN = 4+2;
             levelStart = new long[levels+1];  // +1 because we skip level #0

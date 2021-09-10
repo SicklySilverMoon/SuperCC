@@ -139,6 +139,8 @@ public class Gui extends JFrame{
     }
 
     public void swapRulesetTilesheet(Ruleset ruleset) {
+        if (ruleset == Ruleset.CURRENT || ruleset == null)
+            return;
         try {
             TileSheet tileSheet;
             SuccPaths paths = emulator.getPaths();
