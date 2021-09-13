@@ -564,7 +564,7 @@ public class MSLevel extends MSSavestate implements Level {
 
         if ((moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding())
             return MASK_TICK_MULTI;
-        return MASK_DISCARD_INPUT;
+        return 0;
     }
 
     void resetData(int xPosition) {
