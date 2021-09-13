@@ -199,17 +199,22 @@ public class SuperCC {
         if (directions[0].isDiagonal() && !level.supportsDiagonal()) {
             directions[0] = directions[0].decompose()[0]; //take vertical
             for (char c1 : DIRECTIONS.keySet()) { //switch the char part to vertical
-                if (directions[0] == DIRECTIONS.get(c1))
+                if (directions[0] == DIRECTIONS.get(c1)) {
                     c = c1;
+                    break;
+                }
             }
         }
-        boolean tickMulti = level.tick(c, directions);
+        int levelFlags = level.tick(c, directions);
+        boolean tickMulti = (levelFlags & Level.MASK_TICK_MULTI) != 0;
         if (flags.multiTick && tickMulti) {
             for (int i=0; i < level.ticksPerMove() - 1; i++) {
                 c = capital(c);
                 level.tick(c, new Direction[] {Direction.NONE});
             }
         }
+        if ((levelFlags & Level.MASK_DISCARD_INPUT) != 0)
+            c = WAIT;
         if (flags.save) {
             savestates.addRewindState(level, c);
         }

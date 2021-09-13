@@ -8,6 +8,9 @@ import java.util.BitSet;
 import java.util.Map;
 
 public interface Level extends Savestate {
+    int MASK_TICK_MULTI     = 0b01;
+    int MASK_DISCARD_INPUT  = 0b10;
+
     int getLevelNumber();
 
     int getStartTime();
@@ -177,9 +180,10 @@ public interface Level extends Savestate {
      *          interpreted as a mouse click. Note that the click itself is not
      *          set here - use {@link #setClick(int)} for that.
      * @param directions The directions in which chip should try to move
-     * @return true if the next move should be made automatically without input
+     * @return An int with bit 0 representing if the next move should be made automatically without input
+     *         and bit 1 representing if the input given to this move should be discarded.
      */
-    boolean tick(char c, Direction[] directions);
+    int tick(char c, Direction[] directions);
 
     void insertTile(Position position, Tile tile);
 

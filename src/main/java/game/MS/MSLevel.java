@@ -496,7 +496,7 @@ public class MSLevel extends MSSavestate implements Level {
      * @return true if the next move should be made automatically without input
      */
     @Override
-    public boolean tick(char c, Direction[] directions){
+    public int tick(char c, Direction[] directions){
 
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         initialiseSlidingMonsters();
@@ -517,9 +517,9 @@ public class MSLevel extends MSSavestate implements Level {
 
         if (tickNumber > 0 && !isHalfMove) monsterList.tick();
 
-        if (endTick()) return false;
+        if (endTick()) return 0;
         if (chip.isSliding()) moveChipSliding();
-        if (endTick()) return false;
+        if (endTick()) return 0;
         if (moveType == CLICK_EARLY && voluntaryMoveAllowed) { //todo: it seems like it should be impossible to do a key move onto an FF and then TSG right after
 //            System.out.println("tsg");
             Direction sought = chip.seek(new Position(mouseGoal))[0];
@@ -535,10 +535,10 @@ public class MSLevel extends MSSavestate implements Level {
 //                moveType = CLICK_LATE;
 //            }
         }
-        if (endTick()) return false;
+        if (endTick()) return 0;
         tickNumber++;
         slipList.tick();
-        if (endTick()) return false;
+        if (endTick()) return 0;
         if (moveType == KEY) {
             moveChip(directions);
             idleMoves = 0;
@@ -553,7 +553,7 @@ public class MSLevel extends MSSavestate implements Level {
                 voluntaryMoveAllowed = true; //this way causes the bottom part of SuCCTest L 75 to desync, but why???
         }
         if (endTick())
-            return false;
+            return 0;
 
         monsterList.finalise();
         finaliseTraps();
@@ -562,7 +562,9 @@ public class MSLevel extends MSSavestate implements Level {
         else if ((moveType == CLICK_LATE || moveType == CLICK_EARLY) && failedDirections)
             mouseGoal = NO_CLICK;
 
-        return (moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding();
+        if ((moveType == KEY || moveType == CLICK_EARLY) && !isHalfMove && !chip.isSliding())
+            return MASK_TICK_MULTI;
+        return MASK_DISCARD_INPUT;
     }
 
     void resetData(int xPosition) {

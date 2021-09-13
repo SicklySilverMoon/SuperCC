@@ -352,7 +352,7 @@ public class LynxLevel extends LynxSavestate implements Level {
     }
 
     @Override
-    public boolean tick(char c, Direction[] directions) {
+    public int tick(char c, Direction[] directions) {
         tickNumber++;
         setLevelWon(false); //Each tick sets the level won state to false so that even when rewinding unless you stepped into the exit the level is not won
         turnTanks = false;
@@ -360,8 +360,13 @@ public class LynxLevel extends LynxSavestate implements Level {
         monsterList.initialise();
         monsterList.tick(); //select monster moves
         Tile chipTileOld = layerFG.get(chip.getPosition());
-        if (chip.getTimeTraveled() == 0)
-            selectChipMove(directions[0]);
+        int discard = 0;
+        if (chip.getTimeTraveled() == 0) {
+            if (selectChipMove(directions[0]))
+                discard = MASK_DISCARD_INPUT;
+        }
+        else
+            discard = MASK_DISCARD_INPUT;
         Direction chipTDir = chip.getTDirection();
         monsterList.tick(); //move monsters
         boolean result = moveChip();
@@ -385,29 +390,33 @@ public class LynxLevel extends LynxSavestate implements Level {
             chip.kill(); //destroys the animation as well
             layerFG.set(chip.getPosition(), Tile.EXITED_CHIP);
             setLevelWon(true);
-            return false;
+            return discard;
         }
         boolean sliding = chipTileOld.isSliding() || chipTileNew.isSliding()
                 || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP;
         boolean ff = (chipTileNew.isFF() || chipTileOld.isFF()) && boots[3] == 0;
         boolean ice = (chipTileNew.isIce() || chipTileOld.isIce()) && boots[2] == 0;
 
-        return (result && !chip.isSliding() && !(sliding && (ff || ice)
-                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP));
+        if (result && !chip.isSliding() && !(sliding && (ff || ice)
+                || chipTileOld == Tile.TRAP || chipTileNew == Tile.TRAP))
+            return MASK_TICK_MULTI | discard;
+        else
+            return discard;
         //traps perform forced moves but aren't counted as sliding tiles as it would fuck some logic up
     }
 
-    private void selectChipMove(Direction direction) {
+    //return true if the input given to make this move should be discarded
+    private boolean selectChipMove(Direction direction) {
         chip.setTDirection(NONE);
         chip.setFDirection(NONE);
 
         Position chipPos = chip.getPosition();
         if (chip.getForcedMove(layerFG.get(chipPos))) {
-            return;
+            return true;
         }
 
         if (direction == NONE) {
-            return;
+            return false;
         }
 
         if (direction.isDiagonal()) {
@@ -418,7 +427,7 @@ public class LynxLevel extends LynxSavestate implements Level {
                 boolean canMoveOther = chip.canMakeMove(other, chipPos.move(other), false, true, false, false);
                 if (!canMoveMain && canMoveOther) {
                     chip.setTDirection(other);
-                    return;
+                    return false;
                 }
                 chip.setTDirection(chipDir);
             }
@@ -432,11 +441,12 @@ public class LynxLevel extends LynxSavestate implements Level {
                     chip.setTDirection(vert);
                 }
             }
-            return;
+            return false;
         }
 
         chip.canMakeMove(direction, chipPos.move(direction), false, true, false, false); //for side effects
         chip.setTDirection(direction);
+        return false;
     }
 
     private boolean moveChip() {
