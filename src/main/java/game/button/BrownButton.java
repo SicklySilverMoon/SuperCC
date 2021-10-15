@@ -4,9 +4,6 @@ import game.Level;
 import game.Position;
 
 public class BrownButton extends ConnectionButton {
-    
-    private final int trapIndex;
-    
     @Override
     public void press(Level level) {
         level.setTrap(targetPosition, true);
@@ -20,13 +17,8 @@ public class BrownButton extends ConnectionButton {
         level.setTrap(targetPosition, false);
     }
     
-    public int getTrapIndex() {
-        return trapIndex;
-    }
-    
-    public BrownButton(Position buttonPosition, Position trapPosition, int trapIndex) {
+    public BrownButton(Position buttonPosition, Position trapPosition) {
         super(buttonPosition, trapPosition);
-        this.trapIndex = trapIndex;
     }
     
 }

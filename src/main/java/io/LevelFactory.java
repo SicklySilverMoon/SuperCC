@@ -61,10 +61,12 @@ public class LevelFactory {
         }
         MSCreature[] monsterList = new MSCreature[l];
         l = 0;
-        for (int i = 0; i < monsterPositions.length; i++){
-            int x = monsterPositions[i][0];
-            int y = monsterPositions[i][1];
+        for (int[] monsterPosition : monsterPositions) {
+            int x = monsterPosition[0];
+            int y = monsterPosition[1];
             Position position = new Position(x, y);
+            if (!position.isValid())
+                continue;
             if (layerFG.get(position).isMonster() && (layerBG.get(position) != Tile.CLONE_MACHINE)) {
                 monsterList[l++] = new MSCreature(position, layerFG.get(position));
             }
@@ -142,9 +144,9 @@ public class LevelFactory {
     }
     private static MultiHashMap<Position, BrownButton> getBrownButtons(int[][] trapConnections) {
         MultiHashMap<Position, BrownButton> buttons = new MultiHashMap<>(trapConnections.length);
-        for (int i = 0; i < trapConnections.length; i++) {
-            Position buttonPos = new Position(trapConnections[i][0]);
-            buttons.put(buttonPos, new BrownButton(buttonPos, new Position(trapConnections[i][1]), i));
+        for (int[] trapConnection : trapConnections) {
+            Position buttonPos = new Position(trapConnection[0]);
+            buttons.put(buttonPos, new BrownButton(buttonPos, new Position(trapConnection[1])));
         }
         return buttons;
     }

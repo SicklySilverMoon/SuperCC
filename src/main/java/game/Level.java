@@ -35,11 +35,14 @@ public interface Level extends Savestate {
 
     MultiHashMap<Position, BlueButton> getBlueButtons();
 
+    /**
+     * While brown buttons returns a map of button-position:button mappings,
+     * this returns a map of trap-position:button mappings.
+     * @return A Trap-Position:Brown-Button mapping.
+     */
+    MultiHashMap<Position, BrownButton> getTrapButtons();
+
     void setGreenButtons(MultiHashMap<Position, GreenButton> greenButtons);
-
-    void setRedButtons(MultiHashMap<Position, RedButton> redButtons);
-
-    void setBrownButtons(MultiHashMap<Position, BrownButton> brownButtons);
 
     void setBlueButtons(MultiHashMap<Position, BlueButton> blueButtons);
 
