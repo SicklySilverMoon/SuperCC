@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class Gui extends JFrame{
     private JPanel mainPanel;
@@ -28,7 +29,7 @@ public class Gui extends JFrame{
     private JSlider speedSlider;
     private JPanel sliderPanel;
     private JButton playButton;
-    private MenuBar menuBar;
+    private final MenuBar menuBar;
     
     static final int DEFAULT_TILE_WIDTH = 20;
     static final int DEFAULT_TILE_HEIGHT = 20;
@@ -94,11 +95,11 @@ public class Gui extends JFrame{
             emulator.throwError("Error loading tileset: "+e.getMessage());
             try {
                 ((GamePanel) gamePanel).initialise(emulator,
-                        new BufferedImage[] {ImageIO.read(getClass().getResource("/resources/tw-edit-overlay.png")), //complete backfall in case of emergencies
-                                ImageIO.read(getClass().getResource("/resources/tw-edit-tiles.png"))},
+                        new BufferedImage[] {ImageIO.read(Objects.requireNonNull(getClass().getResource("/resources/tw-edit-overlay.png"))), //complete backfall in case of emergencies
+                                ImageIO.read(Objects.requireNonNull(getClass().getResource("/resources/tw-edit-tiles.png")))},
                         TileSheet.CCEDIT_TW, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             }
-            catch (IOException e2){ }
+            catch (IOException ignored){ }
         }
     }
     
@@ -118,9 +119,9 @@ public class Gui extends JFrame{
     public void changePlayButton(boolean paused) {
         try {
             if (paused)
-                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/play.gif"))));
+                playButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResource("/resources/icons/play.gif")))));
             else
-                playButton.setIcon(new ImageIcon(ImageIO.read(getClass().getResource("/resources/icons/pause.gif"))));
+                playButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResource("/resources/icons/pause.gif")))));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -128,10 +129,10 @@ public class Gui extends JFrame{
     }
     
     public void repaint(boolean fromScratch){
-        if(emulator.isLevelLoaded()) {
-            updateTimeSlider(emulator.getSavestates());
-            getGamePanel().updateGraphics(fromScratch);
-        }
+        if (!emulator.isLevelLoaded())
+            return;
+        updateTimeSlider(emulator.getSavestates());
+        getGamePanel().updateGraphics(fromScratch);
         leftPanel.repaint();
         gamePanel.repaint();
         changePlayButton(emulator.getSavestates().isPaused());
@@ -170,11 +171,13 @@ public class Gui extends JFrame{
             e.printStackTrace();
         }
         try {
-            setIconImage(ImageIO.read(getClass().getResource("/resources/icons/windowIcon.png")));
+            setIconImage(ImageIO.read(Objects.requireNonNull(getClass().getResource("/resources/icons/windowIcon.png"))));
         }
         catch (IOException ignored) {
         }
         playButton.addActionListener((e) -> {
+            if (emulator.getSavestates() == null)
+                return;
             emulator.getMainWindow().requestFocus();
             emulator.getSavestates().togglePause();
             if (emulator.getSavestates().isPaused()) {
@@ -188,10 +191,14 @@ public class Gui extends JFrame{
             }
         });
         speedSlider.addChangeListener((e) -> {
+            if (emulator.getSavestates() == null)
+                return;
             emulator.getSavestates().setPlaybackSpeed(speedSlider.getValue());
             emulator.getMainWindow().requestFocus();
         });
         timeSlider.addChangeListener((e) -> {
+            if (emulator.getSavestates() == null)
+                return;
             if (timeSlider.getValueIsAdjusting()) {
                 emulator.getSavestates().playbackRewind(timeSlider.getValue());
                 emulator.getLevel().load(emulator.getSavestates().getSavestate());

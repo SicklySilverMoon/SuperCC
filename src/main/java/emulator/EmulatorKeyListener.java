@@ -33,7 +33,7 @@ public class EmulatorKeyListener extends KeyAdapter {
         }
         Key() {}
     }
-    private HashMap<Integer, Key> keyMap = new HashMap<>();
+    private final HashMap<Integer, Key> keyMap = new HashMap<>();
     
     public void setKeyCode(Key key, int keyCode) {
         keyMap.remove(key.keyCode);
@@ -43,13 +43,16 @@ public class EmulatorKeyListener extends KeyAdapter {
     
     @Override
     public void keyPressed(KeyEvent e) {
+        SavestateManager savestates = emulator.getSavestates();
+        if (savestates == null)
+            return;
         int keyCode = e.getKeyCode();
         Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
         if (k == null) {
             if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
                 if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
                     try {
-                        boolean recording = emulator.getSavestates().macroRecorder(keyCode - KeyEvent.VK_0);
+                        boolean recording = savestates.macroRecorder(keyCode - KeyEvent.VK_0);
                         if (recording)
                             emulator.showAction("Started macro record");
                         else
@@ -61,18 +64,18 @@ public class EmulatorKeyListener extends KeyAdapter {
                 }
                 else {
                     if (!e.isControlDown()) { //Just so you can't accidentally save a state into these
-                        emulator.getSavestates().addSavestate(keyCode);
+                        savestates.addSavestate(keyCode);
                         emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
                     }
                 }
             }
             else {
                 if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
-                    emulator.getSavestates().playMacro(keyCode-KeyEvent.VK_0);
+                    savestates.playMacro(keyCode-KeyEvent.VK_0);
                     emulator.getMainWindow().repaint(false);
                     emulator.showAction("Macro " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
                 }
-                else if (emulator.getSavestates().load(keyCode, emulator.getLevel())) {
+                else if (savestates.load(keyCode, emulator.getLevel())) {
                     emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
                     emulator.getMainWindow().repaint(false);
                 }
@@ -99,13 +102,13 @@ public class EmulatorKeyListener extends KeyAdapter {
                     }
                     break;
                 case REWIND:
-                    emulator.getSavestates().rewind();
+                    savestates.rewind();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Rewind");
                     emulator.getMainWindow().repaint(false);
                     break;
                 case FORWARD:
-                    emulator.getSavestates().replay();
+                    savestates.replay();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Replay");
                     emulator.getMainWindow().repaint(false);

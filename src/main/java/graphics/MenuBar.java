@@ -34,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static java.awt.event.KeyEvent.*;
@@ -56,7 +57,7 @@ class MenuBar extends JMenuBar{
     
     private void addIcon(JMenuItem m, String path){
         try {
-            m.setIcon(new ImageIcon(ImageIO.read(getClass().getResource(path))));
+            m.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResource(path)))));
         }
         catch (Exception ignored) {}
     }
@@ -81,7 +82,7 @@ class MenuBar extends JMenuBar{
     
             JMenuItem restart = new JMenuItem("Restart");
             restart.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) {
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded()) {
                     emulator.getSavestates().restart();
                     emulator.getLevel().load(emulator.getSavestates().getSavestate());
                     emulator.showAction("Restarted Level");
@@ -94,7 +95,8 @@ class MenuBar extends JMenuBar{
     
             JMenuItem next = new JMenuItem("Next");
             next.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1);
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded())
+                    emulator.loadLevel(emulator.getLevel().getLevelNumber() + 1);
             });
             next.setAccelerator(KeyStroke.getKeyStroke(VK_N, InputEvent.CTRL_DOWN_MASK));
             addIcon(next, "/resources/icons/right.gif");
@@ -102,7 +104,8 @@ class MenuBar extends JMenuBar{
 
             JMenuItem previous = new JMenuItem("Previous");
             previous.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1);
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded())
+                    emulator.loadLevel(emulator.getLevel().getLevelNumber() - 1);
             });
             previous.setAccelerator(KeyStroke.getKeyStroke(VK_P, InputEvent.CTRL_DOWN_MASK));
             addIcon(previous, "/resources/icons/left.gif");
@@ -145,7 +148,7 @@ class MenuBar extends JMenuBar{
 
             JMenuItem rngSeed = new JMenuItem("Set RNG Seed");
             rngSeed.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) {
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded()) {
                     String s = JOptionPane.showInputDialog(window, "Choose a starting seed");
                     if (s.equals("")) return;
                     try {
@@ -164,7 +167,7 @@ class MenuBar extends JMenuBar{
 
             JMenuItem changeRules = new JMenuItem("Change ruleset");
             changeRules.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) {
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded()) {
                     Level level = emulator.getLevel();
                     Ruleset ruleset = level.getRuleset().swap();
                     emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), false,
@@ -178,7 +181,7 @@ class MenuBar extends JMenuBar{
 
             JMenuItem changeInitialSlide = new JMenuItem("Change Initial RFF Direction");
             changeInitialSlide.addActionListener(e -> {
-                if (!SuperCC.areToolsRunning()) {
+                if (!SuperCC.areToolsRunning() && emulator.isLevelLoaded()) {
                     Level level = emulator.getLevel();
                     emulator.loadLevel(level.getLevelNumber(), level.getRngSeed(), level.getStep(), true,
                             level.getRuleset(), level.getInitialRFFDirection().turn(Direction.TURN_RIGHT));
@@ -439,6 +442,7 @@ class MenuBar extends JMenuBar{
                         level.getStep(), level.getRuleset(), level.getInitialRFFDirection());
 
                 Path tws = saveNewFile(TWSWriter.write(level, solution, emulator.getSavestates()), emulator.getPaths().getTWSPath(), "tws");
+                assert tws != null;
                 emulator.getPaths().setTWSPath(tws.getParent().toString());
             });
             add(newTWS);
@@ -614,11 +618,11 @@ class MenuBar extends JMenuBar{
                     "Switch Decimal Notation",
             };
 
-            List<Consumer<Boolean>> HUDSetters = Arrays.asList( //Yes yes this and the next are stupid as its only one value, but this also future proofs it
+            List<Consumer<Boolean>> HUDSetters = List.of( //Yes yes this and the next are stupid as its only one value, but this also future proofs it
                     b -> window.getLevelPanel().changeNotation(b)
             );
 
-            List<Boolean> selected = Arrays.asList(
+            List<Boolean> selected = List.of(
                     emulator.getPaths().getTWSNotation()
             );
 
@@ -780,7 +784,7 @@ class MenuBar extends JMenuBar{
 
     private byte[] openFileBytes(String path, String... extensions) {
         try{
-            return Files.readAllBytes(openFile(path, extensions).toPath());
+            return Files.readAllBytes(Objects.requireNonNull(openFile(path, extensions)).toPath());
         }
         catch (IOException e){
             e.printStackTrace();

@@ -13,15 +13,15 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TSPSolverTest {
-    private SuperCC emulator = new SuperCC(false);
-    private TSPGUI tspgui = new TSPGUI(emulator, false);
-    private JTextPane output = new JTextPane();
-    private SimulatedAnnealingParameters simulatedAnnealingParameters = new SimulatedAnnealingParameters(100, 0.1, 0.9, 100);
-    private ActingWallParameters actingWallParameters = new ActingWallParameters(false, false, false, false, false);
+    private final SuperCC emulator = new SuperCC(false);
+    private final TSPGUI tspgui = new TSPGUI(emulator, false);
+    private final JTextPane output = new JTextPane();
+    private final SimulatedAnnealingParameters simulatedAnnealingParameters = new SimulatedAnnealingParameters(100, 0.1, 0.9, 100);
+    private final ActingWallParameters actingWallParameters = new ActingWallParameters(false, false, false, false, false);
 
     @BeforeEach
     void setup() {
-        emulator.openLevelset(new File("testData/sets/TSPSolverTest.dat"));
+        emulator.openLevelset(new File("testData/sets/TSPSolverTest.DAT"));
     }
 
     @Test

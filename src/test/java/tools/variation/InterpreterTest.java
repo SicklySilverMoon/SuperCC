@@ -12,13 +12,14 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterpreterTest {
-    private SuperCC emulator = new SuperCC(false);
-    private VariationTesting variationTesting = new VariationTesting(emulator, false);
-    private JTextPane console = variationTesting.getConsole();
+    private final SuperCC emulator = new SuperCC(false);
+    private final VariationTesting variationTesting = new VariationTesting(emulator, false);
+    private final JTextPane console = variationTesting.getConsole();
+    private final String newLine = System.getProperty("line.separator");
 
     @BeforeEach
     void setup() {
-        emulator.openLevelset(new File("testData/sets/variationScriptTest.dat"));
+        emulator.openLevelset(new File("testData/sets/variationScriptTest.DAT"));
         variationTesting.clearConsole();
     }
 
@@ -31,7 +32,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\nnull\r\n3.14\r\ntrue\r\n4ud\r\nGlider - Left"));
+        assertTrue(consoleText.contains("1" + newLine + "null" + newLine + "3.14" + newLine + "true" + newLine + "4ud" + newLine + "Glider - Left"));
     }
 
     @Test
@@ -43,7 +44,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("9\r\n20\r\n7.56"));
+        assertTrue(consoleText.contains("9" + newLine + "20" + newLine + "7.56"));
     }
 
     @Test
@@ -55,7 +56,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("4\r\n4"));
+        assertTrue(consoleText.contains("4" + newLine + "4"));
     }
 
     @Test
@@ -67,7 +68,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("true\r\ntrue\r\ntrue\r\ntrue\r\ntrue\r\ntrue\r\nfalse"));
+        assertTrue(consoleText.contains("true" + newLine + "true" + newLine + "true" + newLine + "true" + newLine + "true" + newLine + "true" + newLine + "false"));
     }
 
     @Test
@@ -79,7 +80,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("true\r\nfalse\r\nfalse\r\ntrue"));
+        assertTrue(consoleText.contains("true" + newLine + "false" + newLine + "false" + newLine + "true"));
     }
 
     @Test
@@ -91,7 +92,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\n4"));
+        assertTrue(consoleText.contains("1" + newLine + "4"));
     }
 
     @Test
@@ -104,7 +105,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\n4\r\n6\r\n7\r\n10"));
+        assertTrue(consoleText.contains("1" + newLine + "4" + newLine + "6" + newLine + "7" + newLine + "10"));
     }
 
     @Test
@@ -117,7 +118,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("0\r\n2\r\n4\r\n6\r\n8\r\n0\r\n2\r\n4\r\n0"));
+        assertTrue(consoleText.contains("0" + newLine + "2" + newLine + "4" + newLine + "6" + newLine + "8" + newLine + "0" + newLine + "2" + newLine + "4" + newLine + "0"));
     }
 
     @Test
@@ -130,7 +131,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\n2\r\n11\r\n12\r\n11\r\n12\r\n1\r\n2\r\n11\r\n12\r\n11\r\n12"));
+        assertTrue(consoleText.contains("1" + newLine + "2" + newLine + "11" + newLine + "12" + newLine + "11" + newLine + "12" + newLine + "1" + newLine + "2" + newLine + "11" + newLine + "12" + newLine + "11" + newLine + "12"));
     }
 
     @Test
@@ -172,7 +173,7 @@ class InterpreterTest {
         String consoleText = console.getText();
 
         assertEquals(1, interpreter.solutions.size());
-        assertTrue(consoleText.contains("14\r\n13"));
+        assertTrue(consoleText.contains("14" + newLine + "13"));
     }
 
     @Test
@@ -228,7 +229,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("14\r\n13"));
+        assertTrue(consoleText.contains("14" + newLine + "13"));
     }
 
     @Test
@@ -240,7 +241,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("3\r\nr\r\nd\r\nl"));
+        assertTrue(consoleText.contains("3" + newLine + "r" + newLine + "d" + newLine + "l"));
     }
 
     @Test
@@ -252,7 +253,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("null\r\nr\r\nr\r\nd\r\nl\r\nl"));
+        assertTrue(consoleText.contains("null" + newLine + "r" + newLine + "r" + newLine + "d" + newLine + "l" + newLine + "l"));
     }
 
     @Test
@@ -264,7 +265,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("r\r\nd\r\nl\r\nl\r\nl\r\nnull"));
+        assertTrue(consoleText.contains("r" + newLine + "d" + newLine + "l" + newLine + "l" + newLine + "l" + newLine + "null"));
     }
 
     @Test
@@ -276,7 +277,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("0\r\nl\r\n1\r\nu\r\n2\r\nr"));
+        assertTrue(consoleText.contains("0" + newLine + "l" + newLine + "1" + newLine + "u" + newLine + "2" + newLine + "r"));
     }
 
     @Test
@@ -288,7 +289,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("0\r\n1\r\n2\r\n1\r\n2\r\n3\r\n2\r\n3"));
+        assertTrue(consoleText.contains("0" + newLine + "1" + newLine + "2" + newLine + "1" + newLine + "2" + newLine + "3" + newLine + "2" + newLine + "3"));
     }
 
     @Test
@@ -300,7 +301,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("1\r\n0"));
+        assertTrue(consoleText.contains("1" + newLine + "0"));
     }
 
     @Test
@@ -312,7 +313,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("Block\r\nFire"));
+        assertTrue(consoleText.contains("Block" + newLine + "Fire"));
     }
 
     @Test
@@ -324,7 +325,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("100.9\r\n98.8"));
+        assertTrue(consoleText.contains("100.9" + newLine + "98.8"));
     }
 
     @Test
@@ -336,7 +337,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("0\r\n3\r\n7\r\n5"));
+        assertTrue(consoleText.contains("0" + newLine + "3" + newLine + "7" + newLine + "5"));
     }
 
     @Test
@@ -437,8 +438,8 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("0\r\n0\r\n0\r\n0\r\nfalse\r\nfalse\r\nfalse\r\nfalse\r\n" +
-                "1\r\n1\r\n1\r\n1\r\ntrue\r\ntrue\r\ntrue\r\ntrue"));
+        assertTrue(consoleText.contains("0" + newLine + "0" + newLine + "0" + newLine + "0" + newLine + "false" + newLine + "false" + newLine + "false" + newLine + "false" + newLine + "" +
+                "1" + newLine + "1" + newLine + "1" + newLine + "1" + newLine + "true" + newLine + "true" + newLine + "true" + newLine + "true"));
     }
 
     @Test
@@ -450,7 +451,7 @@ class InterpreterTest {
         interpreter.interpret();
         String consoleText = console.getText();
 
-        assertTrue(consoleText.contains("12\r\n13"));
+        assertTrue(consoleText.contains("12" + newLine + "13"));
         assertEquals(0, interpreter.solutions.size());
     }
 
@@ -496,23 +497,24 @@ class InterpreterTest {
     @Test
     void multipleSequenceFullMexample() {
         emulator.loadLevel(6);
-        String code = "all;\n" +
-                "[3ud][ud, 3w](4){}\n" +
-                "for(;getPlayerX() != 12;) move(r);\n" +
-                "move(4u, 3r, d);\n" +
-                "[2l, 2r](1,4){}\n" +
-                "move(u);\n" +
-                "for(;getPlayerX() != 17;) move(r);\n" +
-                "move(d, 2r, 3d, r);\n" +
-                "[2ww](0,2){}\n" +
-                "[3r](1,3){}\n" +
-                "[urd](0,1){}\n" +
-                "move(4u);\n" +
-                "if(getPlayerX() > 23) move(l);\n" +
-                "for(;getPlayerX() != 23;) move(r);\n" +
-                "move(udrru);\n" +
-                "[w](0,1){}\n" +
-                "move(ddrlddrr);";
+        String code = """
+                all;
+                [3ud][ud, 3w](4){}
+                for(;getPlayerX() != 12;) move(r);
+                move(4u, 3r, d);
+                [2l, 2r](1,4){}
+                move(u);
+                for(;getPlayerX() != 17;) move(r);
+                move(d, 2r, 3d, r);
+                [2ww](0,2){}
+                [3r](1,3){}
+                [urd](0,1){}
+                move(4u);
+                if(getPlayerX() > 23) move(l);
+                for(;getPlayerX() != 23;) move(r);
+                move(udrru);
+                [w](0,1){}
+                move(ddrlddrr);""";
 
         Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
         interpreter.interpret();
@@ -544,10 +546,11 @@ class InterpreterTest {
     @Test
     void terminatingAtSequenceBorderShouldntCrash() {
         emulator.loadLevel(3);
-        String code = "all;\n" +
-                "[u,r,d,l](3){}\n" +
-                "[u,r,d,l](3){}\n" +
-                "[u,r,d,l](3){}";
+        String code = """
+                all;
+                [u,r,d,l](3){}
+                [u,r,d,l](3){}
+                [u,r,d,l](3){}""";
 
         Interpreter interpreter = new Interpreter(emulator, variationTesting, console, code);
         interpreter.interpret();

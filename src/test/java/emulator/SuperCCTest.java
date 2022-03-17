@@ -13,7 +13,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class SuperCCTest {
-    private SuperCC emulator = new SuperCC(false);
+    private final SuperCC emulator = new SuperCC(false);
 
     /**
      * If solution is stored in TWS file, provide the exact filename.
@@ -24,7 +24,7 @@ class SuperCCTest {
         boolean[] solved = new boolean[levels];
         Arrays.fill(solved, Boolean.FALSE);
 
-        if (solutionName.substring(solutionName.length() - 4).equals(".tws")) {
+        if (solutionName.endsWith(".tws")) {
             emulator.setTWSFile(new File(solutionName));
         }
 
@@ -52,7 +52,7 @@ class SuperCCTest {
         return solved;
     }
 
-    Solution getSolution(String solutionName, int level) throws IOException {
+    Solution getSolution(String solutionName, int level) {
         try {
             if (emulator.twsReader != null) {
                 return emulator.twsReader.readSolution(emulator.getLevel());
@@ -123,7 +123,7 @@ class SuperCCTest {
 
     @Test
     void solveCHIPSLynx() {
-        emulator.openLevelset(new File("./testData/sets/CHIPS-lynx.DAT"));
+        emulator.openLevelset(new File("./testData/sets/CHIPS-Lynx.DAT"));
         boolean[] solved = solveLevelset("./testData/tws/public_CHIPS-lynx.dac.tws");
         solved[144] = true; //"Thanks to...", not playable in Lynx, so we give it a free pass
 
@@ -135,7 +135,7 @@ class SuperCCTest {
 
     @Test
     void solveCCLP1Lynx() {
-        emulator.openLevelset(new File("./testData/sets/CCLP1-Lynx.dat"));
+        emulator.openLevelset(new File("./testData/sets/CCLP1-Lynx.DAT"));
         boolean[] solved = solveLevelset("./testData/tws/public_CCLP1-lynx.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
@@ -146,7 +146,7 @@ class SuperCCTest {
 
     @Test
     void solveCCLXP2() {
-        emulator.openLevelset(new File("./testData/sets/CCLXP2.dat"));
+        emulator.openLevelset(new File("./testData/sets/CCLXP2.DAT"));
         boolean[] solved = solveLevelset("./testData/tws/public_CCLXP2.dac.tws");
 
         boolean[] expectedSolved = new boolean[149];
@@ -179,7 +179,7 @@ class SuperCCTest {
 
     @Test
     void solveUnitTests() {
-        emulator.openLevelset(new File("./testData/sets/unitTest.dat"));
+        emulator.openLevelset(new File("./testData/sets/unitTest.DAT"));
         boolean[] solved = solveLevelset("./testData/json/unitTest/unitTest");
 
         boolean[] expectedSolved = new boolean[emulator.lastLevelNumber() - 1];
