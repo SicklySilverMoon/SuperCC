@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SeedSearch {
 
@@ -39,10 +40,10 @@ public class SeedSearch {
     private static AtomicInteger numAlive = new AtomicInteger(0);
     private DecimalFormat df;
 
-    private int[] threadCurrentSeed;
-    private AtomicInteger globalAttempts = new AtomicInteger(0);
-    private AtomicInteger globalSuccesses = new AtomicInteger(0);
-    private AtomicInteger globalLastSuccess = new AtomicInteger(-1);
+    private long[] threadCurrentSeed;
+    private AtomicLong globalAttempts = new AtomicLong(0);
+    private AtomicLong globalSuccesses = new AtomicLong(0);
+    private AtomicLong globalLastSuccess = new AtomicLong(-1);
     private boolean ranAlready = false;
     private boolean untilPosition = false;
     private Position endPosition = new Position(0, 0);
@@ -76,10 +77,10 @@ public class SeedSearch {
             }
             else {
                 if (!ranAlready) {
-                    threadCurrentSeed = new int[numThreads];
+                    threadCurrentSeed = new long[numThreads];
                     ranAlready = true;
                     for (int i=0; i < numThreads; i++) {
-                        threadCurrentSeed[i] = (int) (start + seedPoolSize * i);
+                        threadCurrentSeed[i] = (start + seedPoolSize * i);
                     }
                 }
                 if (untilPosition) {
@@ -104,9 +105,9 @@ public class SeedSearch {
                 startStopButton.setText("Pause");
 
                 for (int i = 0; i < numThreads; i++) {
-                    int end;
+                    long end;
                     if (i != numThreads - 1) {
-                        end = (int) (start + seedPoolSize * (i + 1) - 1);
+                        end = start + seedPoolSize * (i + 1) - 1;
                     }
                     else
                         end = Integer.MAX_VALUE;
@@ -142,7 +143,7 @@ public class SeedSearch {
         exampleSeedLabel = new JLabel("Example seed:");
     }
 
-    private void updateValues(int attempsSinceUpdate, int successes, int exampleSuccess, int currentSeed) {
+    private void updateValues(int attempsSinceUpdate, int successes, long exampleSuccess, long currentSeed) {
         globalAttempts.addAndGet(attempsSinceUpdate);
         globalSuccesses.addAndGet(successes);
         if (exampleSuccess >= 0)
@@ -152,9 +153,9 @@ public class SeedSearch {
     }
 
     private void updateText() {
-        int lastSuccessNA = globalLastSuccess.get();
-        int globalSuccessesNA = globalSuccesses.get();
-        int globalAttemptsNA = globalAttempts.get();
+        long lastSuccessNA = globalLastSuccess.get();
+        long globalSuccessesNA = globalSuccesses.get();
+        long globalAttemptsNA = globalAttempts.get();
         resultsLabel.setText("Successes: "+ globalSuccessesNA +"/"+globalAttemptsNA+" ("+df.format(100.0 * globalSuccessesNA / globalAttemptsNA)+"%)");
         resultsLabel.repaint();
         if (lastSuccessNA >= 0)
@@ -162,10 +163,10 @@ public class SeedSearch {
         exampleSeedLabel.repaint();
     }
 
-    private boolean verifySeed(int seed, Solution solution, SuperCC emulator) {
-        solution.rngSeed = seed;
+    private boolean verifySeed(long seed, Solution solution, SuperCC emulator) {
+        solution.rngSeed = (int) seed;
         emulator.getLevel().load(startingState);
-        emulator.getLevel().getCheats().setRng(seed);
+        emulator.getLevel().getCheats().setRng((int) seed);
         solution.loadMoves(emulator, TickFlags.LIGHT, false);
         if (!untilPosition)
             return emulator.getLevel().isCompleted();
@@ -178,7 +179,8 @@ public class SeedSearch {
     }
 
     private class SeedSearchThread extends Thread {
-        int threadNum, endSeed, currentSeed, attemptsSinceUpdate, successesSinceUpdate, lastSuccess;
+        int threadNum, attemptsSinceUpdate, successesSinceUpdate;
+        long currentSeed, endSeed, lastSuccess;
         SuperCC emulator;
         Solution solution;
         public void run(){
@@ -206,7 +208,7 @@ public class SeedSearch {
             }
         }
 
-        SeedSearchThread(int threadNum, int endSeed, SuperCC emulator, Solution solution) {
+        SeedSearchThread(int threadNum, long endSeed, SuperCC emulator, Solution solution) {
             this.threadNum = threadNum;
             this.currentSeed = threadCurrentSeed[threadNum];
             this.endSeed = endSeed;
