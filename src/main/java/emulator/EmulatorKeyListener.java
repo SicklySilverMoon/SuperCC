@@ -1,5 +1,7 @@
 package emulator;
 
+import io.SuccPaths;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -119,11 +121,11 @@ public class EmulatorKeyListener extends KeyAdapter {
     
     public EmulatorKeyListener(SuperCC emulator) {
         this.emulator = emulator;
-        int[] controls = emulator.getPaths().getControls();
+        SuccPaths.Controls controls = emulator.getPaths().getControls();
         Key[] allKeys = Key.values();
         for (int i = 0; i < allKeys.length; i++) {
-            allKeys[i].keyCode = controls[i];
-            keyMap.put(controls[i], allKeys[i]);
+            allKeys[i].keyCode = controls.keys[i];
+            keyMap.put(controls.keys[i], allKeys[i]);
         }
     }
     
