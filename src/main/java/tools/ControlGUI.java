@@ -48,7 +48,8 @@ public class ControlGUI {
             }
         }
         autoDiagonals.setSelected(emulator.getPaths().getControls().autoDiagonals);
-        
+        updateDiagonalButtons();
+
         JFrame frame = new JFrame("Controls");
         frame.setContentPane(mainPanel);
         frame.pack();
@@ -65,8 +66,17 @@ public class ControlGUI {
                 emulator.getPaths().setControls(controls);
             }
         });
+        autoDiagonals.addChangeListener((e) -> {
+            updateDiagonalButtons();
+        });
     }
-    
+    private void updateDiagonalButtons() {
+        boolean diagonalsEnabled = !autoDiagonals.isSelected();
+        upRightButton.setEnabled(diagonalsEnabled);
+        upLeftButton.setEnabled(diagonalsEnabled);
+        downRightButton.setEnabled(diagonalsEnabled);
+        downLeftButton.setEnabled(diagonalsEnabled);
+    }
     private void createUIComponents() {
         upButton = new KeyRemapButton(EmulatorKeyListener.Key.UP);
         leftButton = new KeyRemapButton(EmulatorKeyListener.Key.LEFT);
