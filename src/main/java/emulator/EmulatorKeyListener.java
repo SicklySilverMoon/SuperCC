@@ -4,7 +4,7 @@ import io.SuccPaths;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
+import java.util.*;
 
 public class EmulatorKeyListener extends KeyAdapter {
     
@@ -42,17 +42,13 @@ public class EmulatorKeyListener extends KeyAdapter {
         key.keyCode = keyCode;
         keyMap.put(keyCode, key);
     }
-    
-    @Override
-    public void keyPressed(KeyEvent e) {
+    void processKeyPress(Key k, int keyCode, boolean control, boolean shift) {
         SavestateManager savestates = emulator.getSavestates();
         if (savestates == null)
             return;
-        int keyCode = e.getKeyCode();
-        Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
         if (k == null) {
-            if (e.getKeyCode() != KeyEvent.VK_SHIFT && e.isShiftDown()) {
-                if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
+            if (keyCode != KeyEvent.VK_SHIFT && shift) {
+                if (control && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
                     try {
                         boolean recording = savestates.macroRecorder(keyCode - KeyEvent.VK_0);
                         if (recording)
@@ -65,20 +61,20 @@ public class EmulatorKeyListener extends KeyAdapter {
                     }
                 }
                 else {
-                    if (!e.isControlDown()) { //Just so you can't accidentally save a state into these
+                    if (!control) { //Just so you can't accidentally save a state into these
                         savestates.addSavestate(keyCode);
-                        emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " saved");
+                        emulator.showAction("State " + KeyEvent.getKeyText(keyCode) + " saved");
                     }
                 }
             }
             else {
-                if (e.isControlDown() && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
+                if (control && KeyEvent.VK_0 <= keyCode && keyCode <= KeyEvent.VK_9) {
                     savestates.playMacro(keyCode-KeyEvent.VK_0);
                     emulator.getMainWindow().repaint(false);
-                    emulator.showAction("Macro " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
+                    emulator.showAction("Macro " + KeyEvent.getKeyText(keyCode) + " loaded");
                 }
                 else if (savestates.load(keyCode, emulator.getLevel())) {
-                    emulator.showAction("State " + KeyEvent.getKeyText(e.getKeyCode()) + " loaded");
+                    emulator.showAction("State " + KeyEvent.getKeyText(keyCode) + " loaded");
                     emulator.getMainWindow().repaint(false);
                 }
             }
@@ -117,6 +113,43 @@ public class EmulatorKeyListener extends KeyAdapter {
                     break;
             }
         }
+    }
+    Set<Key> heldKeys = new HashSet<>();
+    boolean diagonalsWaitHappening = false;
+    @Override
+    public void keyPressed(KeyEvent e) {
+        Key k = keyMap.getOrDefault(e.getKeyCode(), null); //Checks if the pressed key is one of the 'action' keys
+        if (!emulator.getPaths().getControls().autoDiagonals || k == null) {
+            processKeyPress(k, e.getKeyCode(), e.isControlDown(), e.isShiftDown());
+            return;
+        }
+        heldKeys.add(k);
+        if (diagonalsWaitHappening) return;
+        diagonalsWaitHappening = true;
+
+        new Timer(true).schedule(new TimerTask () {
+            @Override
+            public void run() {
+                diagonalsWaitHappening = false;
+                List<Key> lHeldKeys = heldKeys.stream().toList();
+                if(lHeldKeys.isEmpty()) return;
+                Key activeKey = null;
+                if (lHeldKeys.contains(Key.UP) && lHeldKeys.contains(Key.RIGHT)) activeKey = Key.UP_RIGHT;
+                if (lHeldKeys.contains(Key.RIGHT) && lHeldKeys.contains(Key.DOWN)) activeKey = Key.DOWN_RIGHT;
+                if (lHeldKeys.contains(Key.DOWN) && lHeldKeys.contains(Key.LEFT)) activeKey = Key.DOWN_LEFT;
+                if (lHeldKeys.contains(Key.LEFT) && lHeldKeys.contains(Key.UP)) activeKey = Key.UP_LEFT;
+                if (activeKey == null) activeKey = lHeldKeys.get(0);
+
+                processKeyPress(activeKey, 0, false, false);
+                //heldKeys.clear();
+            }
+        }, 1000 / 20);
+    }
+    @Override
+    public void keyReleased(KeyEvent e) {
+        Key k = keyMap.getOrDefault(e.getKeyCode(), null);
+        if (!emulator.getPaths().getControls().autoDiagonals || k == null) return;
+        heldKeys.remove(k);
     }
     
     public EmulatorKeyListener(SuperCC emulator) {
