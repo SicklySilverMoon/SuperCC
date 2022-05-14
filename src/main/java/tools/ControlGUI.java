@@ -2,9 +2,9 @@ package tools;
 
 import emulator.EmulatorKeyListener;
 import emulator.SuperCC;
+import io.SuccPaths;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -28,6 +28,7 @@ public class ControlGUI {
     private JButton downLeftButton;
     private JButton downRightButton;
     private JButton upRightButton;
+    private JCheckBox autoDiagonals;
 
     private SuperCC emulator;
     
@@ -46,7 +47,9 @@ public class ControlGUI {
                 krb.setText(KeyEvent.getKeyText(krb.key.getKeyCode()));
             }
         }
-        
+        autoDiagonals.setSelected(emulator.getPaths().getControls().autoDiagonals);
+        updateDiagonalButtons();
+
         JFrame frame = new JFrame("Controls");
         frame.setContentPane(mainPanel);
         frame.pack();
@@ -55,15 +58,25 @@ public class ControlGUI {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int[] keyCodes = new int[buttons.length];
+                SuccPaths.Controls controls = new SuccPaths.Controls();
                 for (int i = 0; i < buttons.length; i++) {
-                    keyCodes[i] = ((KeyRemapButton) buttons[i]).key.getKeyCode();
+                    controls.keys[i] = ((KeyRemapButton) buttons[i]).key.getKeyCode();
                 }
-                emulator.getPaths().setControls(keyCodes);
+                controls.autoDiagonals = autoDiagonals.isSelected();
+                emulator.getPaths().setControls(controls);
             }
         });
+        autoDiagonals.addChangeListener((e) -> {
+            updateDiagonalButtons();
+        });
     }
-    
+    private void updateDiagonalButtons() {
+        boolean diagonalsEnabled = !autoDiagonals.isSelected();
+        upRightButton.setEnabled(diagonalsEnabled);
+        upLeftButton.setEnabled(diagonalsEnabled);
+        downRightButton.setEnabled(diagonalsEnabled);
+        downLeftButton.setEnabled(diagonalsEnabled);
+    }
     private void createUIComponents() {
         upButton = new KeyRemapButton(EmulatorKeyListener.Key.UP);
         leftButton = new KeyRemapButton(EmulatorKeyListener.Key.LEFT);
@@ -88,6 +101,7 @@ public class ControlGUI {
             addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
+
                     if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         KeyRemapButton.super.setText("Disabled");
                     }

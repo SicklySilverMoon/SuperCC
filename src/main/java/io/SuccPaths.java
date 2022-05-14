@@ -32,6 +32,7 @@ public class SuccPaths {
             writer.printf("%s = %s\n", "DownLeft", settingsMap.get("Controls:DownLeft"));
             writer.printf("%s = %s\n", "DownRight", settingsMap.get("Controls:DownRight"));
             writer.printf("%s = %s\n", "UpRight", settingsMap.get("Controls:UpRight"));
+            writer.printf("%s = %s\n", "AutoDiagonals", settingsMap.get("Controls:AutoDiagonals"));
             writer.printf("%s = %s\n", "Rewind", settingsMap.get("Controls:Rewind"));
             writer.printf("%s = %s\n\n", "Play", settingsMap.get("Controls:Play"));
 
@@ -71,25 +72,29 @@ public class SuccPaths {
             return "";
         }
     }
-    public int[] getControls() {
-        String[] mapKeys = new String[] {"Controls:Up", "Controls:Left", "Controls:Down", "Controls:Right",
+    public static class Controls {
+        public static String[] keyNames = new String[] {"Controls:Up", "Controls:Left", "Controls:Down", "Controls:Right",
                 "Controls:UpLeft", "Controls:DownLeft", "Controls:DownRight", "Controls:UpRight",
                 "Controls:HalfWait", "Controls:FullWait", "Controls:Rewind", "Controls:Play"};
-        int[] controls = new int[mapKeys.length];
-        int[] defaultControls = new int[] {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
+        public int[] keys = new int[] {KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
                 KeyEvent.VK_U, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I, KeyEvent.VK_SPACE, KeyEvent.VK_ESCAPE,
                 KeyEvent.VK_BACK_SPACE, KeyEvent.VK_ENTER};
+        public boolean autoDiagonals = false;
+    }
+    public Controls getControls() {
+        Controls controls = new Controls();
         boolean error = false;
 
-        for (int i=0; i < mapKeys.length; i++) {
+        for (int i=0; i < controls.keyNames.length; i++) {
             try {
-                controls[i] = Integer.parseInt(settingsMap.get(mapKeys[i]));
+                controls.keys[i] = Integer.parseInt(settingsMap.get(controls.keyNames[i]));
             }
             catch (NumberFormatException e) {
-                controls[i] = defaultControls[i];
                 error = true;
             }
         }
+        controls.autoDiagonals = Boolean.parseBoolean(settingsMap.get("Controls:AutoDiagonals"));
+
         if (error)
             setControls(controls);
         return controls;
@@ -151,19 +156,11 @@ public class SuccPaths {
         settingsMap.put("Paths:succ", succPath);
         updateSettingsFile();
     }
-    public void setControls(int[] controls) {
-        settingsMap.put("Controls:Up", String.valueOf(controls[0]));
-        settingsMap.put("Controls:Left", String.valueOf(controls[1]));
-        settingsMap.put("Controls:Down", String.valueOf(controls[2]));
-        settingsMap.put("Controls:Right", String.valueOf(controls[3]));
-        settingsMap.put("Controls:UpLeft", String.valueOf(controls[4]));
-        settingsMap.put("Controls:DownLeft", String.valueOf(controls[5]));
-        settingsMap.put("Controls:DownRight", String.valueOf(controls[6]));
-        settingsMap.put("Controls:UpRight", String.valueOf(controls[7]));
-        settingsMap.put("Controls:HalfWait", String.valueOf(controls[8]));
-        settingsMap.put("Controls:FullWait", String.valueOf(controls[9]));
-        settingsMap.put("Controls:Rewind", String.valueOf(controls[10]));
-        settingsMap.put("Controls:Play", String.valueOf(controls[11]));
+    public void setControls(Controls controls) {
+        for(int i = 0;i < controls.keyNames.length;i++) {
+            settingsMap.put(controls.keyNames[i], String.valueOf(controls.keys[i]));
+        }
+        settingsMap.put("Controls:AutoDiagonals", String.valueOf(controls.autoDiagonals));
         updateSettingsFile();
     }
     public void setMSTilesetNum(int tilesetNum) {
