@@ -348,7 +348,7 @@ public class SuperCC {
         this.getMainWindow().getGamePanel().setTileSheet(tileSheet);
         BufferedImage[] tilesetImages = null;
         try {
-            tilesetImages = tileSheet.getTileSheets(width, height);
+            tilesetImages = tileSheet.getTileSheets(this, width, height);
         } catch (IOException e) {
             e.printStackTrace();
         }

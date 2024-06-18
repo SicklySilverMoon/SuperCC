@@ -1,9 +1,14 @@
 package graphics;
 
+import emulator.SuperCC;
+import io.SuccPaths;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
 
 public enum TileSheet {
@@ -14,7 +19,8 @@ public enum TileSheet {
     MSCC("/resources/ms-overlay.png", "/resources/ms-tiles.png", "MSCC"),
 //    CCEDIT_CC2("/resources/cc2-edit-overlay.png", "/resources/cc2-edit-tiles.png", "CC2 (CCEdit)"), //removed on account of not having permission to use and trying to avoid issues
 //    CC2("/resources/cc2-overlay.png", "/resources/cc2-tiles.png", "CC2"),
-    CCEDIT_BLACK_AND_WHITE("/resources/bw-overlay.png", "/resources/bw-tiles.png", "MSCC (Black and White - Editor)"); //should probably do a non-editor version
+    CCEDIT_BLACK_AND_WHITE("/resources/bw-overlay.png", "/resources/bw-tiles.png", "MSCC (Black and White - Editor)"), //should probably do a non-editor version
+    CUSTOM(null, null, "custom");
 
     private static final int TILESHEET_WIDTH = 7, TILESHEET_HEIGHT = 16;
     
@@ -41,22 +47,28 @@ public enum TileSheet {
         this.name = name;
     }
     
-    public BufferedImage[] getTileSheets(int tileWidth, int tileHeight) throws IOException {
-        Image tilesPNG = ImageIO.read(Objects.requireNonNull(getClass().getResource(urlTiles)));
-        Image tilesPNGResized = tilesPNG.getScaledInstance(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, Image.SCALE_SMOOTH);
-        BufferedImage tilesOut = new BufferedImage(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D tGr = tilesOut.createGraphics();
-        tGr.drawImage(tilesPNGResized, 0, 0, null);
-        tGr.dispose();
-
-        Image overlayPNG = ImageIO.read(Objects.requireNonNull(getClass().getResource(urlOverlay)));
-        Image overlayPNGResized = overlayPNG.getScaledInstance(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, Image.SCALE_SMOOTH);
-        BufferedImage overlayOut = new BufferedImage(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D oGr = overlayOut.createGraphics();
-        oGr.drawImage(overlayPNGResized, 0, 0 ,null);
-        oGr.dispose();
-
-        return new BufferedImage[] {tilesOut, overlayOut};
+    public BufferedImage[] getTileSheets(SuperCC emulator, int tileWidth, int tileHeight) throws IOException {
+        URL localUrlTiles;
+        URL localUrlOverlay;
+        if (this == TileSheet.CUSTOM) {
+            SuccPaths paths = emulator.getPaths();
+            String[] imgPaths = paths.getCustomTilesetImages();
+            if (imgPaths == null) throw new IOException();
+            localUrlTiles = new File(imgPaths[0]).toURI().toURL();
+            localUrlOverlay = new File(imgPaths[1]).toURI().toURL();
+        } else {
+            localUrlTiles = TileSheet.class.getResource(urlTiles);
+            localUrlOverlay = TileSheet.class.getResource(urlOverlay);
+        }
+        return new BufferedImage[] {this.loadTilesetImage(localUrlTiles, tileWidth, tileHeight), this.loadTilesetImage(localUrlOverlay, tileWidth, tileHeight)};
     }
-    
+    public static BufferedImage loadTilesetImage(URL url, int tileWidth, int tileHeight) throws IOException {
+        Image image = ImageIO.read(Objects.requireNonNull(url));
+        Image imageResized = image.getScaledInstance(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, Image.SCALE_SMOOTH);
+        BufferedImage imageBuf = new BufferedImage(tileWidth * TILESHEET_WIDTH, tileHeight * TILESHEET_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gr = imageBuf.createGraphics();
+        gr.drawImage(imageResized, 0, 0, null);
+        gr.dispose();
+        return imageBuf;
+    }
 }

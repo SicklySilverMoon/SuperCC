@@ -41,7 +41,7 @@ public class SmallGamePanel extends GamePanel {
         this.windowSizeX = windowSizeX;
         this.windowSizeY = windowSizeY;
         try {
-            super.initialise(emulator, getTileSheet().getTileSheets(tileWidth, tileHeight), getTileSheet(), tileWidth, tileHeight);
+            super.initialise(emulator, getTileSheet().getTileSheets(emulator, tileWidth, tileHeight), getTileSheet(), tileWidth, tileHeight);
         }
         catch (IOException e) {}
     }
