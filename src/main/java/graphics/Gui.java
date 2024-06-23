@@ -88,7 +88,7 @@ public class Gui extends JFrame{
         timeSlider.setBackground(DARK_GREY);
         timeSlider.setUI(new BasicSliderUI(timeSlider));
         try {
-            ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheets(DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
+            ((GamePanel) gamePanel).initialise(emulator, DEFAULT_TILESHEET.getTileSheets(emulator, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT), DEFAULT_TILESHEET, DEFAULT_TILE_WIDTH, DEFAULT_TILE_HEIGHT);
             changePlayButton(false);
         }
         catch (IOException e){
@@ -151,7 +151,7 @@ public class Gui extends JFrame{
             else
                 tilesheetNum = paths.getLynxTilesetNum();
             tileSheet = TileSheet.values()[tilesheetNum];
-            BufferedImage[] tilesetImages = tileSheet.getTileSheets(paths.getTileSizes()[0], paths.getTileSizes()[1]);
+            BufferedImage[] tilesetImages = tileSheet.getTileSheets(emulator, paths.getTileSizes()[0], paths.getTileSizes()[1]);
             menuBar.tilesetButtons[tilesheetNum].setSelected(true);
 
             getGamePanel().initialise(emulator, tilesetImages, tileSheet, getGamePanel().getTileWidth(), getGamePanel().getTileHeight());

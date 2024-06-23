@@ -8,6 +8,7 @@ import game.Direction;
 import game.Level;
 import game.Ruleset;
 import game.Step;
+import io.SuccPaths;
 import io.TWSWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -68,7 +69,7 @@ class MenuBar extends JMenuBar{
 
             JMenuItem openLevelset = new JMenuItem("Open levelset");
             openLevelset.addActionListener(e -> {
-                File levelset = openFile(emulator.getPaths().getLevelsetFolderPath(), "dat", "ccl");
+                File levelset = openFile(emulator.getPaths().getLevelsetFolderPath(), "Levelset file", "dat", "ccl");
                 if (levelset != null) {
                     emulator.getPaths().setLevelsetFolderPath(levelset.getParent());
                     emulator.openLevelset(levelset);
@@ -228,7 +229,7 @@ class MenuBar extends JMenuBar{
             JMenuItem open = new JMenuItem("Open");
             open.setAccelerator(KeyStroke.getKeyStroke(VK_O, InputEvent.CTRL_DOWN_MASK));
             open.addActionListener(event -> {
-                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
+                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "JSON route file", "json", "route");
                 if (fileBytes != null) {
                     Solution solution;
                     JSONParser parser = new JSONParser();
@@ -251,7 +252,7 @@ class MenuBar extends JMenuBar{
             
             JMenuItem seedSearch = new JMenuItem("Search for seeds");
             seedSearch.addActionListener(event -> {
-                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "json");
+                byte[] fileBytes = openFileBytes(emulator.getJSONPath(), "JSON route file", "json", "route");
                 if (fileBytes != null) {
                     Solution solution;
                     JSONParser parser = new JSONParser();
@@ -401,7 +402,7 @@ class MenuBar extends JMenuBar{
             JMenuItem loadStates = new JMenuItem("Load states from disk");
             loadStates.addActionListener(event -> {
                 try {
-                    byte[] fileBytes = openFileBytes(emulator.getSerPath(), "ser");
+                    byte[] fileBytes = openFileBytes(emulator.getSerPath(), "Savestate file", "ser");
                     if (fileBytes != null) {
                         ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
                         SavestateManager savestates = (SavestateManager) new ObjectInputStream(bis).readObject();
@@ -450,7 +451,7 @@ class MenuBar extends JMenuBar{
 
             JMenuItem openTWS = new JMenuItem("Open tws");
             openTWS.addActionListener(e -> {
-                File file = openFile(emulator.getPaths().getTWSPath(), "tws");
+                File file = openFile(emulator.getPaths().getTWSPath(), "TWS solution file", "tws");
                 if (file != null) {
                     emulator.getPaths().setTWSPath(file.getParent());
                     emulator.setTWSFile(file);
@@ -504,7 +505,26 @@ class MenuBar extends JMenuBar{
                         tileHeight = Gui.DEFAULT_TILE_HEIGHT;
                     }
                     try {
-                        BufferedImage[] tilesetImages = tileSheet.getTileSheets(tileWidth, tileHeight);
+                        if (tileSheet == TileSheet.CUSTOM) {
+                            SuccPaths paths = emulator.getPaths();
+                            String basePath;
+                            String overlayPath;
+                            String[] customImages = paths.getCustomTilesetImages();
+                            if (customImages != null) {
+                                basePath = customImages[0];
+                                overlayPath = customImages[1];
+                            } else {
+                                basePath = "";
+                                overlayPath = "";
+                            }
+                            File baseImage = openFile(basePath, "Tileset base image", "png");
+                            File overlayImage = openFile(overlayPath, "Tileset overlay image", "png");
+                            if (baseImage == null || overlayImage == null) throw new IOException("No tileset image provided");
+                            basePath = baseImage.getAbsolutePath();
+                            overlayPath = overlayImage.getAbsolutePath();
+                            paths.setCustomTilesetImages(basePath, overlayPath);
+                        }
+                        BufferedImage[] tilesetImages = tileSheet.getTileSheets(emulator,tileWidth, tileHeight);
                         window.getGamePanel().initialise(emulator, tilesetImages, tileSheet,
                                 window.getGamePanel().getTileWidth(), window.getGamePanel().getTileHeight());
                         window.getInventoryPanel().initialise(emulator);
@@ -537,7 +557,7 @@ class MenuBar extends JMenuBar{
                             ts = Gui.DEFAULT_TILESHEET;
                         }
                         SmallGamePanel gamePanel = (SmallGamePanel) emulator.getMainWindow().getGamePanel();
-                        emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheets(size, size), ts, size, size);
+                        emulator.getMainWindow().getGamePanel().initialise(emulator, ts.getTileSheets(emulator, size, size), ts, size, size);
                         window.getInventoryPanel().initialise(emulator);
                         window.setSize(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY());
                         window.getGamePanel().setPreferredSize(new Dimension(size * gamePanel.getWindowSizeX(), size * gamePanel.getWindowSizeY()));
@@ -782,9 +802,9 @@ class MenuBar extends JMenuBar{
         return null;
     }
 
-    private byte[] openFileBytes(String path, String... extensions) {
+    private byte[] openFileBytes(String path, String description, String... extensions) {
         try{
-            return Files.readAllBytes(Objects.requireNonNull(openFile(path, extensions)).toPath());
+            return Files.readAllBytes(Objects.requireNonNull(openFile(path, description, extensions)).toPath());
         }
         catch (IOException e){
             e.printStackTrace();
@@ -793,9 +813,9 @@ class MenuBar extends JMenuBar{
         return null;
     }
 
-    private File openFile(String path, String... extensions) {
+    private File openFile(String path, String description, String... extensions) {
         JFileChooser fc = new JFileChooser();
-        fc.setFileFilter(new FileNameExtensionFilter(extensions[0], extensions));
+        fc.setFileFilter(new FileNameExtensionFilter(description, extensions));
         File file = new File(path);
         if (file.isDirectory()) fc.setCurrentDirectory(file);
         else {

@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +42,9 @@ public class SuccPaths {
             writer.printf("%s = %s\n", "LynxTilesheetNum", settingsMap.get("Graphics:LynxTilesheetNum"));
             writer.printf("%s = %s\n", "TileWidth", settingsMap.get("Graphics:TileWidth"));
             writer.printf("%s = %s\n", "TileHeight", settingsMap.get("Graphics:TileHeight"));
-            writer.printf("%s = %s", "TWSNotate", settingsMap.get("Graphics:TWSNotate"));
+            writer.printf("%s = %s\n", "TWSNotate", settingsMap.get("Graphics:TWSNotate"));
+            writer.printf("%s = %s\n", "CustomBaseImage", settingsMap.get("Graphics:CustomBaseImage"));
+            writer.printf("%s = %s\n", "CustomOverlayImage", settingsMap.get("Graphics:CustomOverlayImage"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -143,6 +146,15 @@ public class SuccPaths {
     public String getSccPath(String levelsetName, int levelNumber, String levelName) {
         return Paths.get(getSuccPath(), levelsetName, Integer.toString(levelNumber), levelName+".scc").toString();
     }
+    public String[] getCustomTilesetImages() {
+        try {
+            return new String[]{Objects.requireNonNull(settingsMap.get("Graphics:CustomBaseImage")),
+                            Objects.requireNonNull(settingsMap.get("Graphics:CustomOverlayImage"))};
+        }
+        catch (NullPointerException e) {
+            return null;
+        }
+    }
 
     public void setLevelsetFolderPath(String levelsetFolderPath) {
         settingsMap.put("Paths:Levelset", levelsetFolderPath);
@@ -178,6 +190,11 @@ public class SuccPaths {
     }
     public void setTWSNotation(boolean twsNotation) {
         settingsMap.put("Graphics:TWSNotate", String.valueOf(twsNotation));
+        updateSettingsFile();
+    }
+    public void setCustomTilesetImages(String baseImage, String overlayImage) {
+        settingsMap.put("Graphics:CustomBaseImage", baseImage);
+        settingsMap.put("Graphics:CustomOverlayImage", overlayImage);
         updateSettingsFile();
     }
 
