@@ -132,7 +132,7 @@ public class Gui extends JFrame{
         if (!emulator.isLevelLoaded())
             return;
         updateTimeSlider(emulator.getSavestates());
-        getGamePanel().updateGraphics(fromScratch);
+        getGamePanel().updateGraphics();
         leftPanel.repaint();
         gamePanel.repaint();
         changePlayButton(emulator.getSavestates().isPaused());

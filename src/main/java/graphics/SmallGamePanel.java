@@ -15,9 +15,6 @@ public class SmallGamePanel extends GamePanel {
     
     private Position screenBottomRight;                 // not included
     private int windowSizeX, windowSizeY;
-    private byte[] previousLayerFG = new byte[32*32];
-    private byte[] previousLayerBG = new byte[32*32];
-    private Position previousScreenTopLeft = new Position(-1, -1);
     
     private static final double[] offsets = new double[] {
         (double) 7/15 + (double) 1/30,
@@ -65,7 +62,7 @@ public class SmallGamePanel extends GamePanel {
     }
     
     @Override
-    void updateGraphics(boolean fromScratch) {
+    void updateGraphics() {
         Position chipPosition = emulator.getLevel().getChip().getPosition();
         int screenX, screenY;
         int chipX = chipPosition.getX();
@@ -81,88 +78,56 @@ public class SmallGamePanel extends GamePanel {
     
         screenTopLeft = new Position(screenX, screenY);
         screenBottomRight = screenTopLeft.add(windowSizeX, windowSizeY);
-        super.updateGraphics(fromScratch);
+        super.updateGraphics();
     }
     
     @Override
-    protected void drawLevel(Level level, boolean fromScratch) {
-        if (level.supportsLayerBG()) drawLevelWithBGSupport(level, fromScratch);
-        else drawLevelWithoutBGSupport(level, fromScratch);
+    protected void drawLevel(Level level) {
+        if (level.supportsLayerBG()) drawLevelWithBGSupport(level);
+        else drawLevelWithoutBGSupport(level);
     }
 
-    protected void drawLevelWithBGSupport(Level level, boolean fromScratch) {
-        byte[] layerBG;
-        byte[] layerFG;
-
-        WritableRaster rasterFG;
-        WritableRaster rasterBG;
-
-        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
-
-        rasterFG = upperImage.getRaster();
-        rasterBG = lowerImage.getRaster();
-
-        try{
-            layerFG = level.getLayerFG().getBytes();
-            layerBG = level.getLayerBG().getBytes();
-        }
-        catch (NullPointerException npe){
-            return;
-        }
+    protected void drawLevelWithBGSupport(Level level) {
+        WritableRaster rasterFG = upperImage.getRaster();
+        WritableRaster rasterBG = lowerImage.getRaster();
 
         for (int xPos = 0; xPos < windowSizeX; xPos++) {
             for (int yPos = 0; yPos < windowSizeY; yPos++) {
                 Position p = new Position(screenTopLeft.getX() + xPos, screenTopLeft.getY() + yPos);
                 int i = p.getIndex();
-                if (fromScratch || layerFG[i] != previousLayerFG[i - screenMotion] || layerBG[i] != previousLayerBG[i - screenMotion]) {
-                    int x = tileWidth * xPos, y = tileHeight * yPos;
-                    rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerBG[i]]);
-                    if (layerBG[i] != Tile.FLOOR.ordinal())
-                        rasterFG.setPixels(x, y, tileWidth, tileHeight, overlayTileImage[layerFG[i]]);
-                    else
-                        rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
-                }
+                int x = tileWidth * xPos, y = tileHeight * yPos;
+                Tile bg = level.getLayerBG().get(p);
+                Tile fg = level.getLayerFG().get(p);
+
+                rasterBG.setPixels(x, y, tileWidth, tileHeight, tileImage[bg.ordinal()]);
+                if (bg != Tile.FLOOR)
+                    rasterFG.setPixels(x, y, tileWidth, tileHeight, overlayTileImage[fg.ordinal()]);
+                else
+                    rasterFG.setPixels(x, y, tileWidth, tileHeight, tileImage[fg.ordinal()]);
             }
         }
-        previousLayerFG = layerFG.clone();
-        previousLayerBG = layerBG.clone();
-        previousScreenTopLeft = screenTopLeft.clone();
     }
 
-    protected void drawLevelWithoutBGSupport(Level level, boolean fromScratch) {
-        byte[] layerFG;
-
-        Graphics graphicsCreatures;
-        WritableRaster rasterTerrain;
-
-        int screenMotion = screenTopLeft.getIndex() - previousScreenTopLeft.getIndex();
-
-        upperImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
-        graphicsCreatures = upperImage.getGraphics();
-        rasterTerrain = lowerImage.getRaster();
+    protected void drawLevelWithoutBGSupport(Level level) {
         /* We create a blank/transparent image since we have to redraw the creature list every time we want a
         transparent image/raster to draw overtop of, so we just create a blank image the correct size and go from there */
-        try{
-            layerFG = level.getLayerFG().getBytes();
-        }
-        catch (NullPointerException npe){
-            return;
-        }
+        upperImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics graphicsCreatures = upperImage.getGraphics();
+        WritableRaster rasterTerrain = lowerImage.getRaster();
 
         for (int xPos = 0; xPos < windowSizeX; xPos++) {
             for (int yPos = 0; yPos < windowSizeY; yPos++) {
                 Position p = new Position(screenTopLeft.getX() + xPos, screenTopLeft.getY() + yPos);
                 int i = p.getIndex();
-                if (fromScratch || layerFG[i] != previousLayerFG[i - screenMotion]) {
-                    int x = tileWidth * xPos, y = tileHeight * yPos;
+                int x = tileWidth * xPos, y = tileHeight * yPos;
+                Tile fg = level.getLayerFG().get(p);
 
-                    rasterTerrain.setPixels(x, y, tileWidth, tileHeight, tileImage[layerFG[i]]);
-                    /* If there's no bottom layer than that means we have to draw the creature list on top of
-                    everything else, however it would be extremely wasteful to create an entire other raster for
-                    that and leave the BG raster and BBG raster unused and only use the FG raster and the new creature
-                    raster so instead I draw the FG layer onto the BG raster and draw the creature list on the FG
-                    raster to avoid creating new rasters and having unused ones */
-                }
+                rasterTerrain.setPixels(x, y, tileWidth, tileHeight, tileImage[fg.ordinal()]);
+                /* If there's no bottom layer than that means we have to draw the creature list on top of
+                everything else, however it would be extremely wasteful to create an entire other raster for
+                that and leave the BG raster and BBG raster unused and only use the FG raster and the new creature
+                raster so instead I draw the FG layer onto the BG raster and draw the creature list on the FG
+                raster to avoid creating new rasters and having unused ones */
             }
         }
         for (Creature creature : emulator.getLevel().getMonsterList()) { //If we don't support BG (meaning: lynx) it means we have to draw the creature list separately
@@ -189,9 +154,6 @@ public class SmallGamePanel extends GamePanel {
             };
             graphicsCreatures.drawImage(creatureImage, x, y, tileWidth, tileHeight, null);
         }
-
-        previousLayerFG = layerFG.clone();
-        previousScreenTopLeft = screenTopLeft.clone();
 
         graphicsCreatures.dispose();
     }

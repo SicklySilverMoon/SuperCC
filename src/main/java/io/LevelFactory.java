@@ -192,8 +192,8 @@ public class LevelFactory {
                              String hint, String author, int[][] monsterPositions, int rngSeed, Step step,
                              int lastLevel, Ruleset rules, Direction initialSlide) {
 
-        Layer layerBG = new ByteLayer(byteLayerBG);
-        Layer layerFG = new ByteLayer(byteLayerFG);
+        Layer layerBG = new Layer(byteLayerBG);
+        Layer layerFG = new Layer(byteLayerFG);
 
         if (rules == Ruleset.MS) {
             return new MSLevel(

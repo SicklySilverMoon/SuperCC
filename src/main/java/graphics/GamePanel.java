@@ -85,16 +85,16 @@ public abstract class GamePanel extends JPanel
             raster.setPixels(x+4*j, y, SMALL_NUMERAL_WIDTH+2, SMALL_NUMERAL_HEIGHT+2, digitRaster[digit]);
         }
     }
-    protected abstract void drawLevel(Level level, boolean fromScratch);
+    protected abstract void drawLevel(Level level);
     protected abstract void drawMonsterListNumbers(Level level, CreatureList monsterList, BufferedImage overlay);
     protected abstract void drawSlipListNumbers(SlipList monsterList, BufferedImage overlay);
     protected abstract void drawButtonConnections(Collection<? extends ConnectionButton> connections, BufferedImage overlay, Color color);
     public abstract void drawPositionList(List<Position> positionList, Graphics2D g);
     protected abstract void drawChipHistory(Position currentPosition, BufferedImage overlay);
     
-    void updateGraphics(boolean fromScratch) {
+    void updateGraphics() {
         Level level = emulator.getLevel();
-        drawLevel(level, fromScratch);
+        drawLevel(level);
         overlayImage = new BufferedImage(32 * tileWidth, 32 * tileHeight, BufferedImage.TYPE_4BYTE_ABGR);
         if (showMonsterListNumbers) drawMonsterListNumbers(level, level.getMonsterList(), overlayImage);
         if (showSlipListNumbers && level.supportsSliplist()) drawSlipListNumbers(level.getSlipList(), overlayImage);
@@ -195,7 +195,7 @@ public abstract class GamePanel extends JPanel
                     JMenuItem press = new JMenuItem("Press button");
                     press.addActionListener((e) -> {
                         cheats.pressButton(position);
-                        updateGraphics(false);
+                        updateGraphics();
                         emulator.getMainWindow().repaint();
                     });
                     add(press);
@@ -228,7 +228,7 @@ public abstract class GamePanel extends JPanel
                     JMenuItem menuItem = new JMenuItem(d.toString());
                     menuItem.addActionListener((e) -> {
                         cheats.setDirection(c, d);
-                        updateGraphics(false);
+                        updateGraphics();
                         emulator.getMainWindow().repaint();
                     });
                     setDirection.add(menuItem);
@@ -237,7 +237,7 @@ public abstract class GamePanel extends JPanel
                 JMenuItem kill = new JMenuItem("Kill Creature");
                 kill.addActionListener((e) -> {
                     cheats.kill(c);
-                    updateGraphics(false);
+                    updateGraphics();
                     emulator.getMainWindow().repaint();
                 });
                 add(kill);
@@ -247,7 +247,7 @@ public abstract class GamePanel extends JPanel
                 JMenuItem revive = new JMenuItem("Revive Chip");
                 revive.addActionListener((e) -> {
                     cheats.reviveChip();
-                    updateGraphics(false);
+                    updateGraphics();
                     emulator.getMainWindow().repaint();
                 });
                 add(revive);
@@ -256,7 +256,7 @@ public abstract class GamePanel extends JPanel
             JMenuItem teleportChip = new JMenuItem("Move Chip Here");
             teleportChip.addActionListener((e) -> {
                 cheats.moveChip(position);
-                updateGraphics(false);
+                updateGraphics();
                 emulator.getMainWindow().repaint();
             });
             add(teleportChip);
@@ -267,7 +267,7 @@ public abstract class GamePanel extends JPanel
                         emulator.getLevel().getSlipList().removeIf(creature -> creature.getPosition().equals(position)); //In practice this only affects sliding blocks
                     }
                     cheats.popTile(position);
-                    updateGraphics(false);
+                    updateGraphics();
                     emulator.getMainWindow().repaint();
                 });
                 add(pop);
@@ -286,7 +286,7 @@ public abstract class GamePanel extends JPanel
                     JMenuItem menuItem = new JMenuItem(String.format("0x%02X - %s", j, t.toString()));
                     menuItem.addActionListener((e) -> {
                         cheats.insertTile(position, t);
-                        updateGraphics(false);
+                        updateGraphics();
                         emulator.getMainWindow().repaint();
                     });
                     tileSubsetMenu.add(menuItem);

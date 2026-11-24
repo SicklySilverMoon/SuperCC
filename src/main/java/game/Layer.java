@@ -1,34 +1,71 @@
 package game;
 
-/**
- *
- *
- * Benchmarks:
- *
- * Time taken to run pain, without writing savesates:
- * ByteLayer: 12.42920485ms
- * TileLayer: 12.07655951ms
- *
- * Time taken to run pain, with writing savesates:
- * ByteLayer: 20.73663555ms
- * TileLayer: 26.42774384ms
- *
- */
+import java.util.Iterator;
+import java.util.function.Consumer;
 
-public interface Layer extends Iterable<Tile> {
+public class Layer implements Iterable<Tile> {
     
-    public Tile get(int i);
+    private final byte[] layer;
     
-    public Tile get(Position p);
+    public Tile get(int i){
+        return Tile.fromOrdinal(layer[i]);
+    }
     
-    public void set(int i, Tile t);
+    public Tile get(Position p){
+        if (!p.isValid()) return Tile.WALL;
+        return get(p.getIndex());
+    }
     
-    public void set(Position p, Tile t);
+    public void set(int i, Tile t){
+        layer[i] = (byte) t.ordinal();
+    }
     
-    public byte[] getBytes();
+    public void set(Position p, Tile t){
+        set(p.getIndex(), t);
+    }
     
-    public Tile[] getTiles();
+    public byte[] getBytes() {
+        return layer;
+    }
     
-    public void load(byte[] b);
+    public Tile[] getTiles() {
+        Tile[] out = new Tile[32*32];
+        for (int i = 0; i < 32 * 32; i++) {
+            out[i] = get(i);
+        }
+        return out;
+    }
+    
+    public void load(byte[] b) {
+        System.arraycopy(b, 0, layer, 0, layer.length);
+    }
+    
+    public Layer(byte[] layer){
+        for (int i=0; i < layer.length; i++) {
+            byte b = layer[i];
+            if (b < Tile.FLOOR.ordinal() || b > Tile.CHIP_RIGHT.ordinal()) layer[i] = (byte) Tile.WALL.ordinal();
+        }
+        this.layer = layer;
+    }
+    
+    public Iterator<Tile> iterator() {
+        return new Iterator<>() {
+            private int i;
+
+            @Override
+            public boolean hasNext() {
+                return i < 32 * 32;
+            }
+
+            @Override
+            public Tile next() {
+                return get(i++);
+            }
+        };
+    }
+    
+    public void forEach(Consumer<? super Tile> action) {
+        for (byte b : layer) action.accept(Tile.fromOrdinal(b));
+    }
     
 }
